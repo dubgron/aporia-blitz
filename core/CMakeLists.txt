@@ -1,0 +1,65 @@
+if(NOT DEFINED ENV{SFML_BUILD})
+    message(FATAL_ERROR "Environmental variable SFML_BUILD is not set!")
+endif()
+
+set(SFML_STATIC_LIBRARIES TRUE)
+set(SFML_DIR $ENV{SFML_BUILD})
+set(SFML_ROOT "${PROJECT_SOURCE_DIR}/thirdparty/SFML/extlibs/libs-msvc-universal/x64")
+find_package(SFML 2.5.1 REQUIRED COMPONENTS 
+    graphics
+    audio
+    window
+    system)
+
+if(NOT DEFINED ENV{NLOHMANN_JSON_BUILD})
+    message(FATAL_ERROR "Environmental variable NLOHMANN_JSON_BUILD is not set!")
+endif()
+
+find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
+    
+add_library(core SHARED
+    "aporia.hpp"
+    "config.cpp"
+    "config.hpp"
+    "engine.cpp"
+    "engine.hpp"
+    "entry_point.hpp"
+    "platform.hpp"
+    "utils/read_file.hpp")
+
+target_link_libraries(core 
+    sfml-graphics
+    sfml-audio
+    sfml-window
+    sfml-system
+    nlohmann_json::nlohmann_json)
+
+target_include_directories(core 
+    PUBLIC
+        "${PROJECT_SOURCE_DIR}/core"
+    PRIVATE
+        "${PROJECT_SOURCE_DIR}/thirdparty/nlohmann_json/single_include")
+    
+target_compile_features(core PUBLIC cxx_std_17)
+    
+target_compile_definitions(core 
+    PRIVATE
+    APORIA_EXPORT 
+    __PROJECT__="core"
+    SFML_STATIC)
+
+source_group("core" FILES
+    "aporia.hpp"
+    "config.cpp"
+    "config.hpp"
+    "engine.cpp"
+    "engine.hpp"
+    "entry_point.hpp"
+    "platform.hpp"
+    "utils/read_file.hpp")
+
+set_target_properties(core PROPERTIES
+    USE_FOLDERS                       ON
+    OUTPUT_NAME                       "aporia-blitz"
+    RUNTIME_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
+    VS_DEBUGGER_WORKING_DIRECTORY     "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core")
