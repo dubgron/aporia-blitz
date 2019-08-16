@@ -1,6 +1,4 @@
-#include "config.hpp"
-
-#include <type_traits>
+#include "config_manager.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -8,7 +6,7 @@
 
 namespace Aporia
 {
-    Config::Config(const std::string& config)
+    ConfigManager::ConfigManager(const std::string& config)
     {
         using json = nlohmann::json;
         

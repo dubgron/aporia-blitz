@@ -1,9 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <iostream>
-
 #include <SFML/System/Vector2.hpp>
 
 #include "platform.hpp"
@@ -18,14 +15,6 @@ namespace Aporia
         unsigned int height = 0;
 
         WindowConfig(std::string title, sf::Vector2i position, unsigned int width, unsigned int height)
-            : title(std::move(title)), position(std::move(position)), width(width), height(height) { }
-    };
-
-    struct APORIA_API Config
-    {
-        Config() = default;
-        Config(const std::string& config);
-
-        std::vector<WindowConfig> window_data;
+            : title(std::move(title)), position(std::move(position)), width(width), height(height) {}
     };
 }

@@ -19,13 +19,15 @@ find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
     
 add_library(core SHARED
     "aporia.hpp"
-    "config.cpp"
-    "config.hpp"
+    "configs.hpp"
+    "config_manager.cpp"
+    "config_manager.hpp"
     "engine.cpp"
     "engine.hpp"
     "entry_point.hpp"
     "platform.hpp"
-    "utils/read_file.hpp")
+    "utils/read_file.hpp"
+    "configs/window_config.hpp")
 
 target_link_libraries(core 
     sfml-graphics
@@ -50,13 +52,15 @@ target_compile_definitions(core
 
 source_group("core" FILES
     "aporia.hpp"
-    "config.cpp"
-    "config.hpp"
+    "configs.hpp"
+    "config_manager.cpp"
+    "config_manager.hpp"
     "engine.cpp"
     "engine.hpp"
     "entry_point.hpp"
     "platform.hpp"
-    "utils/read_file.hpp")
+    "utils/read_file.hpp"
+    "configs/window_config.hpp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS                       ON

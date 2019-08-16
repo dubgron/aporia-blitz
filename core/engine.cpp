@@ -2,8 +2,8 @@
 
 namespace Aporia
 {
-    Engine::Engine(const std::string& config)
-        : _config(config)
+    Engine::Engine(const std::string& config_file)
+        : _configs(config_file)
     {
     }
 }
