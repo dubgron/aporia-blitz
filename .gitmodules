@@ -5,3 +5,6 @@
 [submodule "thirdparty/SFML"]
 	path = thirdparty/SFML
 	url = https://github.com/SFML/SFML.git
+[submodule "thirdparty/spdlog"]
+	path = thirdparty/spdlog
+	url = https://github.com/gabime/spdlog.git

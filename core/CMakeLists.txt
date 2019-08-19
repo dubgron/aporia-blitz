@@ -1,6 +1,12 @@
+if(NOT DEFINED ENV{NLOHMANN_JSON_BUILD})
+    message(FATAL_ERROR "Environmental variable NLOHMANN_JSON_BUILD is not set!")
+endif()
+
+find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
+
 if(NOT DEFINED ENV{SFML_BUILD})
     message(FATAL_ERROR "Environmental variable SFML_BUILD is not set!")
-endif()
+endif()    
 
 set(SFML_STATIC_LIBRARIES TRUE)
 set(SFML_DIR $ENV{SFML_BUILD})
@@ -10,13 +16,13 @@ find_package(SFML 2.5.1 REQUIRED COMPONENTS
     audio
     window
     system)
-
-if(NOT DEFINED ENV{NLOHMANN_JSON_BUILD})
-    message(FATAL_ERROR "Environmental variable NLOHMANN_JSON_BUILD is not set!")
+    
+if(NOT DEFINED ENV{SPDLOG_BUILD})
+    message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
 endif()
 
-find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
-    
+find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD})
+
 add_library(core SHARED
     "aporia.hpp"
     "configs.hpp"
@@ -34,6 +40,7 @@ target_link_libraries(core
     sfml-audio
     sfml-window
     sfml-system
+    spdlog::spdlog
     nlohmann_json::nlohmann_json)
 
 target_include_directories(core 
@@ -45,10 +52,11 @@ target_include_directories(core
 target_compile_features(core PUBLIC cxx_std_17)
     
 target_compile_definitions(core 
+    PUBLIC
+        SFML_STATIC
     PRIVATE
-    APORIA_EXPORT 
-    __PROJECT__="core"
-    SFML_STATIC)
+        APORIA_EXPORT 
+        __PROJECT__="core")
 
 source_group("core" FILES
     "aporia.hpp"
