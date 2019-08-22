@@ -31,6 +31,10 @@ add_library(core SHARED
     "engine.cpp"
     "engine.hpp"
     "entry_point.hpp"
+    "log_buffer.hpp"
+    "logger.cpp"
+    "logger.hpp"
+    "logger.tpp"
     "platform.hpp"
     "utils/read_file.hpp"
     "configs/window_config.hpp")
@@ -66,6 +70,10 @@ source_group("core" FILES
     "engine.cpp"
     "engine.hpp"
     "entry_point.hpp"
+    "log_buffer.hpp"
+    "logger.cpp"
+    "logger.hpp"
+    "logger.tpp"
     "platform.hpp"
     "utils/read_file.hpp"
     "configs/window_config.hpp")
