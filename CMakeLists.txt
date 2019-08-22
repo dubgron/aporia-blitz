@@ -20,3 +20,4 @@ add_subdirectory(example)
 
 set_property(DIRECTORY ${PROJECT_SOURCE_DIR} 
     PROPERTY VS_STARTUP_PROJECT example)
+    
