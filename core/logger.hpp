@@ -28,5 +28,3 @@ namespace Aporia
         std::shared_ptr<spdlog::logger> _logger;
     };
 }
-
-#include "logger.tpp"
