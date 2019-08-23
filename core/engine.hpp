@@ -7,7 +7,7 @@
 
 namespace Aporia
 {
-    class APORIA_API Engine
+    class APORIA_API Engine final
     {
     public:
         Engine(const std::string& config_file);

@@ -8,7 +8,7 @@
 
 namespace Aporia
 {
-    struct APORIA_API ConfigManager
+    struct APORIA_API ConfigManager final
     {
         ConfigManager() = default;
         ConfigManager(const std::string& config);

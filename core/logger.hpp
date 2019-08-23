@@ -17,7 +17,7 @@
 
 namespace Aporia
 {
-    class APORIA_API Logger
+    class APORIA_API Logger final
     {
     public:
         Logger(const std::string& name);

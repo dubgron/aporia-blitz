@@ -7,7 +7,7 @@
 
 namespace Aporia
 {
-    struct APORIA_API WindowConfig
+    struct APORIA_API WindowConfig final
     {
         std::string title = "";
         sf::Vector2i position = { 0, 0 };
