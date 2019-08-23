@@ -25,9 +25,9 @@ namespace Aporia
         }
 
     private:
-        std::shared_ptr<spdlog::logger> _logger;
-        spdlog::source_loc _source;
-        spdlog::level::level_enum _lvl;
+        const std::shared_ptr<spdlog::logger> _logger;
+        const spdlog::source_loc _source;
+        const spdlog::level::level_enum _lvl;
 
         std::ostringstream _buffer;
     };
