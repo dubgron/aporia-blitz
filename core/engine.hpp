@@ -3,6 +3,7 @@
 #include <string>
 
 #include "config_manager.hpp"
+#include "logger.hpp"
 #include "platform.hpp"
 
 namespace Aporia
@@ -13,6 +14,8 @@ namespace Aporia
         Engine(const std::string& config_file);
 
     private:
-        ConfigManager _configs;
+        std::shared_ptr<Logger> _logger;
+
+        std::unique_ptr<ConfigManager> _configs;
     };
 }
