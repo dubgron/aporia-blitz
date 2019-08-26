@@ -35,6 +35,8 @@ add_library(core SHARED
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
+    "texture_manager.cpp"
+    "texture_manager.hpp"    
     "utils/read_file.hpp"
     "configs/window_config.hpp")
 
