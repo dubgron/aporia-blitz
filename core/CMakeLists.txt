@@ -35,6 +35,8 @@ add_library(core SHARED
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
+    "window.cpp"
+    "window.hpp"
     "utils/read_file.hpp"
     "configs/window_config.hpp")
 
@@ -61,7 +63,7 @@ target_compile_definitions(core
         APORIA_EXPORT 
         __PROJECT__="core")
 
-source_group("core" FILES
+source_group(core FILES
     "aporia.hpp"
     "configs.hpp"
     "config_manager.cpp"
@@ -73,8 +75,14 @@ source_group("core" FILES
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
-    "utils/read_file.hpp"
+    "window.cpp"
+    "window.hpp")
+
+source_group(core\\config FILES
     "configs/window_config.hpp")
+
+source_group(core\\utils FILES
+    "utils/read_file.hpp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS                       ON
