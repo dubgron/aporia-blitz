@@ -43,7 +43,7 @@ namespace Aporia {
 			unsigned int width = texture["frame"]["w"];
 			unsigned int height = texture["frame"]["h"];
 
-			name.erase(name.end() - 3);
+			name.erase(name.find_last_of("."));
 
 			if (_textures.find(name) != _textures.end())
 			{
