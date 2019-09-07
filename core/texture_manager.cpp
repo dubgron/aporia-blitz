@@ -1,7 +1,11 @@
 #include "texture_manager.hpp"
 
 #include <filesystem>
-#include <fstream>
+#include <string>
+
+#include <nlohmann/json.hpp>
+
+#include "utils/read_file.hpp"
 
 namespace Aporia {
 	TextureManager::TextureManager(std::shared_ptr<Logger> logger)
@@ -11,32 +15,35 @@ namespace Aporia {
 
 	bool TextureManager::load_textures(const std::string& atlas_name)
 	{
+		using json = nlohmann::json;
+
 		sf::Image atlas;
 		if (!std::filesystem::exists(atlas_name + ".png"))
 		{
 			_logger->log(LOG_ERROR) << "File '" << atlas_name << ".png' does not open!";
 			return false;
 		}
-		atlas.loadFromFile(atlas_name + ".txt");
+		atlas.loadFromFile(atlas_name + ".png");
 		_logger->log(LOG_INFO) << "Opened '" << atlas_name << ".png' successfully";
 
-		std::ifstream texture_data(atlas_name + ".txt");
-		if (texture_data.fail()) 
+		if (!std::filesystem::exists(atlas_name + ".json")) 
 		{
-			_logger->log(LOG_ERROR) << "File '" << atlas_name << ".txt' does not open!";
+			_logger->log(LOG_ERROR) << "File '" << atlas_name << ".json' does not open!";
 			return false;
 		}
-		_logger->log(LOG_INFO) << "Opened '" << atlas_name << ".txt' successfully";
+		std::string data = Utils::read_file(atlas_name + ".json");
+		json texture_json = json::parse(data);
+		_logger->log(LOG_INFO) << "Opened '" << atlas_name << ".json' successfully";
 
-		while (texture_data.good())
+		for (auto& texture : texture_json["frames"]) 
 		{
-			std::string path;
-			int x, y, width, height;
+			std::string name = texture["filename"];
+			unsigned int x = texture["frame"]["x"];
+			unsigned int y = texture["frame"]["y"];
+			unsigned int width = texture["frame"]["w"];
+			unsigned int height = texture["frame"]["h"];
 
-			texture_data >> path;
-			texture_data >> x >> y >> width >> height;
-
-			std::string name = path.substr(path.find_last_of('/') + 1);
+			name.erase(name.end() - 3);
 
 			if (_textures.find(name) != _textures.end())
 			{
@@ -53,7 +60,6 @@ namespace Aporia {
 		}
 
 		_logger->log(LOG_INFO) << "All textures from '" << atlas_name << "' loaded successfully";
-		texture_data.close();
 		return true;
 	}
 
