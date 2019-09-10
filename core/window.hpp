@@ -13,6 +13,8 @@ namespace Aporia
 {
     class APORIA_API Window final
     {
+        friend class EventManager;
+
     public:
         Window(std::shared_ptr<Logger> logger, const WindowConfig& config);
         ~Window();
