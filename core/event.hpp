@@ -6,12 +6,24 @@
 
 namespace Aporia
 {
-    template<typename... Ts>
-    using Event = std::vector<std::function<void(Ts...)>>;
+    template<unsigned int ID, typename... Ts>
+    class Event
+    {
+    public:
+        using event_type = typename std::function<void(Ts...)>;
 
-    template<typename... Ts>
-    using WindowEvent = Event<Window&, Ts...>;
+        Event() = default;
+        Event(std::function<void(Ts...)>) {};
 
-    using WindowCloseEvent = WindowEvent<>;
-    using WindowResizeEvent = WindowEvent<unsigned int, unsigned int>;
+        std::vector<std::function<void(Ts...)>> listeners;
+
+    private:
+        unsigned int id = ID;
+    };
+
+    template<unsigned int ID, typename... Ts>
+    using WindowEvent = Event<ID, Window&, Ts...>;
+
+    using WindowCloseEvent = WindowEvent<0>;
+    using WindowResizeEvent = WindowEvent<1, unsigned int, unsigned int>;
 }
