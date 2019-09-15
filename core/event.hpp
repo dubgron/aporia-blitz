@@ -1,7 +1,9 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
+#include "logger.hpp"
 #include "window.hpp"
 
 namespace Aporia
@@ -10,12 +12,12 @@ namespace Aporia
     class Event
     {
     public:
-        using event_type = typename std::function<void(Ts...)>;
+        using event_type = typename std::function<void(std::shared_ptr<Logger>, Ts...)>;
 
         Event() = default;
-        Event(std::function<void(Ts...)>) {};
+        Event(event_type) {};
 
-        std::vector<std::function<void(Ts...)>> listeners;
+        std::vector<event_type> listeners;
 
     private:
         unsigned int id = ID;

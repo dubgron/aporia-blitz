@@ -21,11 +21,11 @@ namespace Aporia
             switch (event.type)
             {
                 case sf::Event::Closed:
-                    call_event<WindowCloseEvent>(window);
+                    call_event<WindowCloseEvent>(_logger, window);
                     break;
 
                 case sf::Event::Resized:
-                    call_event<WindowResizeEvent>(window, event.size.width, event.size.height);
+                    call_event<WindowResizeEvent>(_logger, window, event.size.width, event.size.height);
                     break;
             }
         }
