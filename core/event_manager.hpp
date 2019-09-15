@@ -22,8 +22,8 @@ namespace Aporia
             typename = std::enable_if_t<std::is_invocable_v<T::event_type, Ts&...>>>
         void call_event(Ts&... args);
 
-        /* TODO: Add std::enable_if check */
-        template<typename T, typename U>
+        template<typename T, typename U,
+            typename = std::enable_if_t<std::is_constructible_v<T, U>>>
         void add_listener(U func);
 
     private:

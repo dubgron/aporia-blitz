@@ -10,7 +10,7 @@ namespace Aporia
             func(args...);
         }
     }
-    template<typename T, typename U>
+    template<typename T, typename U, typename>
     void EventManager::add_listener(U func)
     {
         std::get<T>(_events).listeners.push_back(std::move(func));
