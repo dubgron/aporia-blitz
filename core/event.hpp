@@ -14,9 +14,6 @@ namespace Aporia
     public:
         using event_type = typename std::function<void(std::shared_ptr<Logger>, Ts...)>;
 
-        Event() = default;
-        Event(event_type) {};
-
         std::vector<event_type> listeners;
 
     private:

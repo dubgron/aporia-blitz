@@ -19,11 +19,11 @@ namespace Aporia
         void listen_for_events(Window& window);
 
         template<typename T, typename... Ts, 
-            typename = std::enable_if_t<std::is_invocable_v<T::event_type, Ts&...>>>
+            typename = std::enable_if_t<std::is_invocable_v<typename T::event_type, Ts&...>>>
         void call_event(Ts&... args);
 
         template<typename T, typename U,
-            typename = std::enable_if_t<std::is_constructible_v<T, U>>>
+            typename = std::enable_if_t<std::is_constructible_v<typename T::event_type, U>>>
         void add_listener(U func);
 
     private:
