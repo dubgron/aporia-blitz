@@ -9,5 +9,7 @@ namespace Aporia
         _configs = std::make_unique<ConfigManager>(_logger, config_file);
         if (!_configs->is_ok())
             return;
+
+        _events = std::make_unique<EventManager>(_logger);
     }
 }
