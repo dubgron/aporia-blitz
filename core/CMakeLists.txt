@@ -35,6 +35,7 @@ add_library(core SHARED
     "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
+    "inputs.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
@@ -42,6 +43,8 @@ add_library(core SHARED
     "window.cpp"
     "window.hpp"
     "utils/read_file.hpp"
+    "inputs/keyboard.hpp"
+    "inputs/mouse.hpp"
     "configs/window_config.hpp")
 
 target_link_libraries(core 
@@ -79,6 +82,7 @@ source_group(core FILES
     "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
+    "inputs.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
@@ -88,6 +92,10 @@ source_group(core FILES
 
 source_group(core\\config FILES
     "configs/window_config.hpp")
+
+source_group(core\\inputs FILES
+    "inputs/keyboard.hpp"
+    "inputs/mouse.hpp")
 
 source_group(core\\utils FILES
     "utils/read_file.hpp")
