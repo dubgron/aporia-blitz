@@ -2,7 +2,7 @@
 
 #include <SFML/Window/Event.hpp>
 
-#include "event.hpp"
+#include "inputs.hpp"
 
 namespace Aporia
 {
@@ -16,6 +16,9 @@ namespace Aporia
     {
         sf::Event event;
 
+        Keyboard key;
+        Mouse button;
+
         while (window._window.pollEvent(event))
         {
             switch (event.type)
@@ -26,6 +29,26 @@ namespace Aporia
 
                 case sf::Event::Resized:
                     call_event<WindowResizeEvent>(_logger, window, event.size.width, event.size.height);
+                    break;
+
+                case sf::Event::KeyPressed:
+                    key = static_cast<Keyboard>(event.key.code);
+                    call_event<KeyPressedEvent>(_logger, key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    break;
+
+                case sf::Event::KeyReleased:
+                    key = static_cast<Keyboard>(event.key.code);
+                    call_event<KeyReleasedEvent>(_logger, key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    break;
+
+                case sf::Event::MouseButtonPressed:
+                    button = static_cast<Mouse>(event.mouseButton.button);
+                    call_event<ButtonPressedEvent>(_logger, button, event.mouseButton.x, event.mouseButton.y);
+                    break;
+
+                case sf::Event::MouseButtonReleased:
+                    button = static_cast<Mouse>(event.mouseButton.button);
+                    call_event<ButtonReleasedEvent>(_logger, button, event.mouseButton.x, event.mouseButton.y);
                     break;
             }
         }

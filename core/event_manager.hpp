@@ -13,6 +13,13 @@ namespace Aporia
 {
     class APORIA_API EventManager final
     {
+        using Events = std::tuple<WindowCloseEvent,
+                                  WindowResizeEvent,
+                                  KeyPressedEvent,
+                                  KeyReleasedEvent,
+                                  ButtonPressedEvent,
+                                  ButtonReleasedEvent>;
+
     public:
         EventManager(std::shared_ptr<Logger> logger);
 
@@ -27,9 +34,12 @@ namespace Aporia
         void add_listener(U func);
 
     private:
-        std::tuple<
-            WindowCloseEvent,
-            WindowResizeEvent> _events = std::make_tuple(WindowCloseEvent(), WindowResizeEvent());
+        Events _events = std::make_tuple(WindowCloseEvent(),
+                                         WindowResizeEvent(),
+                                         KeyPressedEvent(),
+                                         KeyReleasedEvent(),
+                                         ButtonPressedEvent(),
+                                         ButtonReleasedEvent());
 
         std::shared_ptr<Logger> _logger;
     };
