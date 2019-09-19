@@ -43,6 +43,7 @@ add_library(core SHARED
     "window.cpp"
     "window.hpp"
     "utils/read_file.hpp"
+    "utils/type_traits.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
     "configs/window_config.hpp")
@@ -98,7 +99,8 @@ source_group(core\\inputs FILES
     "inputs/mouse.hpp")
 
 source_group(core\\utils FILES
-    "utils/read_file.hpp")
+    "utils/read_file.hpp"
+    "utils/type_traits.hpp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS                       ON
