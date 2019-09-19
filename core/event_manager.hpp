@@ -25,13 +25,13 @@ namespace Aporia
 
         void listen_for_events(Window& window);
 
-        template<typename T, typename... Ts, 
-            typename = std::enable_if_t<std::is_invocable_v<typename T::event_type, Ts&...>>>
-        void call_event(Ts&... args);
+        template<typename Ev, typename... Args, 
+            typename = std::enable_if_t<std::is_invocable_v<typename Ev::event_type, Args&...>>>
+        void call_event(Args&... args);
 
-        template<typename T, typename U,
-            typename = std::enable_if_t<std::is_constructible_v<typename T::event_type, U>>>
-        void add_listener(U func);
+        template<typename Ev, typename Listener,
+            typename = std::enable_if_t<std::is_constructible_v<typename Ev::event_type, Listener>>>
+        void add_listener(Listener listener);
 
     private:
         Events _events = std::make_tuple(WindowCloseEvent(),
