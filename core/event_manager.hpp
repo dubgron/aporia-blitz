@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <tuple>
 #include <type_traits>
 
@@ -8,6 +7,7 @@
 #include "logger.hpp"
 #include "platform.hpp"
 #include "window.hpp"
+#include "utils/type_traits.hpp"
 
 namespace Aporia
 {
@@ -26,11 +26,17 @@ namespace Aporia
         void listen_for_events(Window& window);
 
         template<typename Ev, typename... Args, 
-            typename = std::enable_if_t<std::is_invocable_v<typename Ev::event_type, Args&...>>>
+            typename = std::enable_if_t<
+                std::is_invocable_v<typename Ev::event_type, Args&...> &&
+                Utils::is_in_tuple_v<Ev, Events>
+            >>
         void call_event(Args&... args);
 
         template<typename Ev, typename Listener,
-            typename = std::enable_if_t<std::is_constructible_v<typename Ev::event_type, Listener>>>
+            typename = std::enable_if_t<
+                std::is_constructible_v<typename Ev::event_type, Listener> &&
+                Utils::is_in_tuple_v<Ev, Events>
+            >>
         void add_listener(Listener listener);
 
     private:
