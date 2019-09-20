@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "inputs.hpp"
-#include "logger.hpp"
 #include "window.hpp"
 
 namespace Aporia
@@ -13,7 +12,7 @@ namespace Aporia
     class Event final
     {
     public:
-        using event_type = std::function<void(std::shared_ptr<Logger>, Ts...)>;
+        using event_type = std::function<void(Ts...)>;
 
         std::vector<event_type> listeners;
 

@@ -25,31 +25,31 @@ namespace Aporia
             switch (event.type)
             {
                 case sf::Event::Closed:
-                    call_event<WindowCloseEvent>(_logger, window);
+                    call_event<WindowCloseEvent>(window);
                     break;
 
                 case sf::Event::Resized:
-                    call_event<WindowResizeEvent>(_logger, window, event.size.width, event.size.height);
+                    call_event<WindowResizeEvent>(window, event.size.width, event.size.height);
                     break;
 
                 case sf::Event::KeyPressed:
                     key = static_cast<Keyboard>(event.key.code);
-                    call_event<KeyPressedEvent>(_logger, key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    call_event<KeyPressedEvent>(key, event.key.alt, event.key.control, event.key.shift, event.key.system);
                     break;
 
                 case sf::Event::KeyReleased:
                     key = static_cast<Keyboard>(event.key.code);
-                    call_event<KeyReleasedEvent>(_logger, key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    call_event<KeyReleasedEvent>(key, event.key.alt, event.key.control, event.key.shift, event.key.system);
                     break;
 
                 case sf::Event::MouseButtonPressed:
                     button = static_cast<Mouse>(event.mouseButton.button);
-                    call_event<ButtonPressedEvent>(_logger, button, event.mouseButton.x, event.mouseButton.y);
+                    call_event<ButtonPressedEvent>(button, event.mouseButton.x, event.mouseButton.y);
                     break;
 
                 case sf::Event::MouseButtonReleased:
                     button = static_cast<Mouse>(event.mouseButton.button);
-                    call_event<ButtonReleasedEvent>(_logger, button, event.mouseButton.x, event.mouseButton.y);
+                    call_event<ButtonReleasedEvent>(button, event.mouseButton.x, event.mouseButton.y);
                     break;
             }
         }
