@@ -10,7 +10,7 @@
 namespace Aporia
 {
     template<unsigned int ID, typename... Ts>
-    class Event
+    class Event final
     {
     public:
         using event_type = std::function<void(std::shared_ptr<Logger>, Ts...)>;

@@ -2,6 +2,7 @@
 
 #include <SFML/Window/Event.hpp>
 
+#include "event.hpp"
 #include "inputs.hpp"
 
 namespace Aporia
