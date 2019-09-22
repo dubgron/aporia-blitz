@@ -6,7 +6,7 @@ find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
 
 if(NOT DEFINED ENV{SFML_BUILD})
     message(FATAL_ERROR "Environmental variable SFML_BUILD is not set!")
-endif()    
+endif()
 
 set(SFML_STATIC_LIBRARIES TRUE)
 set(SFML_DIR $ENV{SFML_BUILD})
@@ -22,6 +22,12 @@ if(NOT DEFINED ENV{SPDLOG_BUILD})
 endif()
 
 find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD})
+
+if(NOT DEFINED ENV{MAGIC_ENUM_BUILD})
+    message(FATAL_ERROR "Environmental variable MAGIC_ENUM_BUILD is not set!")
+endif()
+
+find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
 add_library(core SHARED
     "aporia.hpp"
@@ -54,7 +60,8 @@ target_link_libraries(core
     sfml-window
     sfml-system
     spdlog::spdlog
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    magic_enum::magic_enum)
 
 target_include_directories(core 
     PUBLIC
