@@ -34,22 +34,22 @@ namespace Aporia
 
                 case sf::Event::KeyPressed:
                     key = static_cast<Keyboard>(event.key.code);
-                    call_event<KeyPressedEvent>(key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    call_event<KeyPressedEvent>(key);
                     break;
 
                 case sf::Event::KeyReleased:
                     key = static_cast<Keyboard>(event.key.code);
-                    call_event<KeyReleasedEvent>(key, event.key.alt, event.key.control, event.key.shift, event.key.system);
+                    call_event<KeyReleasedEvent>(key);
                     break;
 
                 case sf::Event::MouseButtonPressed:
                     button = static_cast<Mouse>(event.mouseButton.button);
-                    call_event<ButtonPressedEvent>(button, event.mouseButton.x, event.mouseButton.y);
+                    call_event<ButtonPressedEvent>(button);
                     break;
 
                 case sf::Event::MouseButtonReleased:
                     button = static_cast<Mouse>(event.mouseButton.button);
-                    call_event<ButtonReleasedEvent>(button, event.mouseButton.x, event.mouseButton.y);
+                    call_event<ButtonReleasedEvent>(button);
                     break;
             }
         }

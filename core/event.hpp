@@ -26,9 +26,9 @@ namespace Aporia
     using WindowCloseEvent = WindowEvent<0>;
     using WindowResizeEvent = WindowEvent<1, unsigned int, unsigned int>;
 
-    using KeyPressedEvent = Event<2, Keyboard, bool, bool, bool, bool>;
-    using KeyReleasedEvent = Event<3, Keyboard, bool, bool, bool, bool>;
+    using KeyPressedEvent = Event<2, Keyboard>;
+    using KeyReleasedEvent = Event<3, Keyboard>;
 
-    using ButtonPressedEvent = Event<4, Mouse, int, int>;
-    using ButtonReleasedEvent = Event<5, Mouse, int, int>;
+    using ButtonPressedEvent = Event<4, Mouse>;
+    using ButtonReleasedEvent = Event<5, Mouse>;
 }
