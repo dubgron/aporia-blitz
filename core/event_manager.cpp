@@ -20,6 +20,8 @@ namespace Aporia
         Keyboard key;
         Mouse button;
 
+        call_event<BeginProcessingWindowEvents>();
+
         while (window._window.pollEvent(event))
         {
             switch (event.type)
@@ -53,5 +55,7 @@ namespace Aporia
                     break;
             }
         }
+
+        call_event<EndProcessingWindowEvents>();
     }
 }
