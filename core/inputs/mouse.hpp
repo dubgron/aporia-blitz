@@ -16,4 +16,27 @@ namespace Aporia
         VerticalWheel,  /* The vertical mouse wheel */
         HorizontalWheel /* The horizontal mouse wheel */
     };
+
+    constexpr const char* buttoncode_name(Mouse button)
+    {
+        switch (button)
+        {
+            case Mouse::Left:       return "Left";
+            case Mouse::Right:      return "Right";
+            case Mouse::Middle:     return "Middle";
+            case Mouse::XButton1:   return "XButton1";
+            case Mouse::XButton2:   return "XButton2";
+            default:                return "None";
+        }
+    }
+
+    constexpr const char* wheelcode_name(MouseWheel wheel)
+    {
+        switch (wheel)
+        {
+            case MouseWheel::VerticalWheel:      return "VerticalWheel";
+            case MouseWheel::HorizontalWheel:    return "HorizontalWheel";
+            default:                             return "None";
+        }
+    }
 }
