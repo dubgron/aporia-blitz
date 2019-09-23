@@ -19,6 +19,7 @@ namespace Aporia
             KeyReleasedEvent,
             ButtonPressedEvent,
             ButtonReleasedEvent,
+            MouseWheelScrollEvent,
             BeginProcessingWindowEvents,
             EndProcessingWindowEvents>;
 
@@ -48,6 +49,7 @@ namespace Aporia
                                          KeyReleasedEvent(),
                                          ButtonPressedEvent(),
                                          ButtonReleasedEvent(),
+                                         MouseWheelScrollEvent(),
                                          BeginProcessingWindowEvents(),
                                          EndProcessingWindowEvents());
         std::shared_ptr<Logger> _logger;

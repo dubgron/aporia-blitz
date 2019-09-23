@@ -32,6 +32,8 @@ namespace Aporia
     using ButtonPressedEvent = Event<4, Mouse>;
     using ButtonReleasedEvent = Event<5, Mouse>;
 
-    using BeginProcessingWindowEvents = Event<6>;
-    using EndProcessingWindowEvents = Event<7>;
+    using MouseWheelScrollEvent = Event<6, float>;
+
+    using BeginProcessingWindowEvents = Event<7>;
+    using EndProcessingWindowEvents = Event<8>;
 }
