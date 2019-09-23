@@ -30,7 +30,7 @@ namespace Aporia
         }
     }
 
-    constexpr const char* wheelcode_name(MouseWheel wheel)
+    constexpr const char* wheelcode_name(MouseWheel wheel = MouseWheel::VerticalWheel)
     {
         switch (wheel)
         {
