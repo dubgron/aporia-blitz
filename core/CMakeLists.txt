@@ -35,10 +35,12 @@ add_library(core SHARED
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
-    "window.cpp"
-    "window.hpp"
+    "renderer.cpp"
+    "renderer.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
+    "window.cpp"
+    "window.hpp"
     "utils/read_file.hpp"
     "configs/window_config.hpp")
 
@@ -77,6 +79,8 @@ source_group(core FILES
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
+    "renderer.cpp"
+    "renderer.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"
     "window.cpp"
