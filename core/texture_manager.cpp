@@ -17,13 +17,12 @@ namespace Aporia {
 	{
 		using json = nlohmann::json;
 
-		sf::Image atlas;
 		if (!std::filesystem::exists(atlas_name + ".png"))
 		{
 			_logger->log(LOG_ERROR) << "File '" << atlas_name << ".png' does not open!";
 			return false;
 		}
-		atlas.loadFromFile(atlas_name + ".png");
+		_atlas.loadFromFile(atlas_name + ".png");
 		_logger->log(LOG_INFO) << "Opened '" << atlas_name << ".png' successfully";
 
 		if (!std::filesystem::exists(atlas_name + ".json")) 
@@ -38,34 +37,39 @@ namespace Aporia {
 		for (auto& texture : texture_json["frames"]) 
 		{
 			std::string name = texture["filename"];
-			unsigned int x = texture["frame"]["x"];
-			unsigned int y = texture["frame"]["y"];
-			unsigned int width = texture["frame"]["w"];
-			unsigned int height = texture["frame"]["h"];
-
-			name.erase(name.find_last_of("."));
 
 			if (_textures.find(name) != _textures.end())
 			{
 				_logger->log(LOG_WARNING) << "There are two textures called '" << name << "'! One of them will be overwritten!";
 			}
 
-			_textures[name].loadFromImage(atlas, sf::IntRect(x, y, width, height));
+			name.erase(name.find_last_of("."));
+
+			_textures[name].x = texture["frame"]["x"];
+			_textures[name].y = texture["frame"]["y"];
+			_textures[name].width = texture["frame"]["w"];
+			_textures[name].height = texture["frame"]["h"];
 		}
 
 		if (_textures.find("default") == _textures.end())
 		{
 			_logger->log(LOG_WARNING) << "There is no default texture in '" << atlas_name << ".png'!";
-			_textures["default"] = sf::Texture();
+			/* TODO: Set default texture, while atlas doesn't have one */
+			//_textures["default"] = 
 		}
 
 		_logger->log(LOG_INFO) << "All textures from '" << atlas_name << "' loaded successfully";
 		return true;
 	}
 
-	const sf::Texture& TextureManager::get_texture(const std::string& name)
+	const Texture_info& TextureManager::get_texture_info(const std::string& name)
 	{
-		auto texture = _textures.find(name);
-		return (texture != _textures.end() ? texture->second : _textures["default"]);
+		auto texture_info = _textures.find(name);
+		return texture_info->second;
+	}
+
+	const sf::Texture& TextureManager::get_atlas()
+	{
+		return _atlas;
 	}
 }

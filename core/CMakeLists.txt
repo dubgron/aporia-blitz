@@ -76,6 +76,8 @@ source_group("core" FILES
     "logger.hpp"
     "platform.hpp"
     "utils/read_file.hpp"
+    "texture_manager.cpp"
+    "texture_manager.hpp"
     "configs/window_config.hpp")
 
 set_target_properties(core PROPERTIES

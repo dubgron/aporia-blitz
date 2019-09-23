@@ -11,6 +11,13 @@
 
 namespace Aporia
 {
+	struct Texture_info {
+		float x;
+		float y;
+		float width;
+		float height;
+	};
+
 	class TextureManager 
 	{
 	public:
@@ -18,10 +25,12 @@ namespace Aporia
 
 		bool load_textures(const std::string& atlas_name);
 
-		const sf::Texture& get_texture(const std::string& name);
+		const Texture_info& get_texture_info(const std::string& name);
+		const sf::Texture& get_atlas();
 
 	private:
 		std::shared_ptr<Logger> _logger;
-		std::map<std::string, sf::Texture> _textures;
+		std::map<std::string, Texture_info> _textures;
+		sf::Texture _atlas;
 	};
 }
