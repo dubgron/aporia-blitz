@@ -16,7 +16,7 @@ namespace Aporia
         friend class EventManager;
 
     public:
-        Window(std::shared_ptr<Logger> logger, const WindowConfig& config);
+        Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config);
         ~Window();
 
         void open();

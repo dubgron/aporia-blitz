@@ -7,7 +7,7 @@
 
 namespace Aporia
 {
-    EventManager::EventManager(std::shared_ptr<Logger> logger)
+    EventManager::EventManager(const std::shared_ptr<Logger>& logger)
         : _logger(logger)
     {
 

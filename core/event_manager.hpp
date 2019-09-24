@@ -14,17 +14,17 @@ namespace Aporia
     class APORIA_API EventManager final
     {
         using Events = std::tuple<WindowCloseEvent,
-            WindowResizeEvent,
-            KeyPressedEvent,
-            KeyReleasedEvent,
-            ButtonPressedEvent,
-            ButtonReleasedEvent,
-            MouseWheelScrollEvent,
-            BeginProcessingWindowEvents,
-            EndProcessingWindowEvents>;
+                                  WindowResizeEvent,
+                                  KeyPressedEvent,
+                                  KeyReleasedEvent,
+                                  ButtonPressedEvent,
+                                  ButtonReleasedEvent,
+                                  MouseWheelScrollEvent,
+                                  BeginProcessingWindowEvents,
+                                  EndProcessingWindowEvents>;
 
     public:
-        EventManager(std::shared_ptr<Logger> logger);
+        EventManager(const std::shared_ptr<Logger>& logger);
 
         void listen_for_events(Window& window);
 
@@ -52,6 +52,7 @@ namespace Aporia
                                          MouseWheelScrollEvent(),
                                          BeginProcessingWindowEvents(),
                                          EndProcessingWindowEvents());
+
         std::shared_ptr<Logger> _logger;
     };
 }
