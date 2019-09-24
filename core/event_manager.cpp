@@ -19,6 +19,7 @@ namespace Aporia
 
         Keyboard key;
         Mouse button;
+        MouseWheel wheel;
 
         call_event<BeginProcessingWindowEvents>();
 
@@ -52,6 +53,11 @@ namespace Aporia
                 case sf::Event::MouseButtonReleased:
                     button = static_cast<Mouse>(event.mouseButton.button);
                     call_event<ButtonReleasedEvent>(button);
+                    break;
+
+                case sf::Event::MouseWheelScrolled:
+                    wheel = static_cast<MouseWheel>(event.mouseWheelScroll.wheel);
+                    call_event<MouseWheelScrollEvent>(wheel, event.mouseWheelScroll.delta);
                     break;
             }
         }
