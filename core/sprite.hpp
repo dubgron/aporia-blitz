@@ -6,7 +6,7 @@
 
 #include "logger.hpp"
 #include "platform.hpp"
-#include "texture_manager.hpp"
+#include "texture.hpp"
 
 namespace Aporia
 {
