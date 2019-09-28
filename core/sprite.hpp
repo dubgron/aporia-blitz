@@ -10,10 +10,10 @@
 
 namespace Aporia
 {
-    class APORIA_API Sprite
+    class APORIA_API Sprite final
     {
     public:
-        Sprite(const std::shared_ptr<Logger>& logger, std::shared_ptr<Texture> texture, sf::Vector2f position)
+        Sprite(const std::shared_ptr<Logger>& logger, const std::shared_ptr<Texture>& texture, sf::Vector2f position)
             :_logger(logger), _texture(texture), _position(position) {};
 
         sf::Vector2f get_position() const

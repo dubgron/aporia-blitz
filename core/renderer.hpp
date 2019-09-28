@@ -11,7 +11,7 @@
 
 namespace Aporia
 {
-    class APORIA_API Renderer
+    class APORIA_API Renderer final
     {
     public:
         Renderer(const std::shared_ptr<Logger>& logger);

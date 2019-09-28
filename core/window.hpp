@@ -15,8 +15,6 @@ namespace Aporia
 {
     class APORIA_API Window final
     {
-        friend class Engine;
-
     public:
         Window(std::shared_ptr<Logger> logger, const WindowConfig& config);
         ~Window();
@@ -35,11 +33,11 @@ namespace Aporia
         bool is_visible() const;
 
     private:
-        std::shared_ptr<Logger> _logger;
-
         sf::RenderWindow _window;
         const WindowConfig& _config;
 
         bool _visible = false;
+
+        std::shared_ptr<Logger> _logger;
     };
 }

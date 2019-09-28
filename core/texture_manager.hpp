@@ -13,7 +13,7 @@
 
 namespace Aporia
 {
-    class APORIA_API TextureManager 
+    class APORIA_API TextureManager final
     {
     public:
         TextureManager(const std::shared_ptr<Logger>& logger);
