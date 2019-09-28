@@ -39,6 +39,8 @@ add_library(core SHARED
     "renderer.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
+    "vertex_array.cpp"
+    "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
     "utils/read_file.hpp"
@@ -83,6 +85,8 @@ source_group(core FILES
     "renderer.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"
+    "vertex_array.cpp"
+    "vertex_array.hpp"
     "window.cpp"
     "window.hpp")
 
