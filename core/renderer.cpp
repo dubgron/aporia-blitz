@@ -1,3 +1,4 @@
+/*
 #include "renderer.hpp"
 #include "texture_manager.hpp"
 
@@ -45,3 +46,4 @@ namespace Aporia
 		target.draw(_vertices, states);
 	}
 }
+*/
