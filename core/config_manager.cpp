@@ -35,7 +35,7 @@ namespace Aporia
             window_data.emplace_back(title, position, width, height);
         }
 
-		texture_data.atlas = config_json["texture_config"]["src"];
+        texture_data.atlas = config_json["texture_config"]["src"];
 
         _ok = true;
     }

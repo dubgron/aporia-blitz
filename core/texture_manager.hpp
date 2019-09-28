@@ -13,30 +13,30 @@
 
 namespace Aporia
 {
-	struct APORIA_API Texture
-	{
-		unsigned int x, y;
-		unsigned width, height;
+    struct APORIA_API Texture
+    {
+        unsigned int x, y;
+        unsigned width, height;
 
-		std::shared_ptr<sf::Texture> atlas;
+        std::shared_ptr<sf::Texture> origin;
 
-		Texture(unsigned int x, unsigned int y, unsigned int width, unsigned int height, std::shared_ptr<sf::Texture> altas)
-			: x(x), y(y), width(width), height(height), atlas(atlas) {};
-	};
+        Texture(unsigned int x, unsigned int y, unsigned int width, unsigned int height, std::shared_ptr<sf::Texture> origin)
+            : x(x), y(y), width(width), height(height), origin(origin) {};
+    };
 
-	class APORIA_API TextureManager 
-	{
-	public:
-		TextureManager(const std::shared_ptr<Logger>& logger, const TextureData& config);
+    class APORIA_API TextureManager 
+    {
+    public:
+        TextureManager(const std::shared_ptr<Logger>& logger, const TextureData& config);
 
-		bool load_textures();
+        bool load_textures();
 
-		std::shared_ptr<Texture>& get_sprite(const std::string& name);
+        std::shared_ptr<Texture>& get_sprite(const std::string& name);
 
-	private:
-		std::shared_ptr<Logger> _logger;
+    private:
+        std::shared_ptr<Logger> _logger;
 
-		std::map<std::string, std::shared_ptr<Texture>> _textures;
-		const TextureData& _config;
-	};
+        std::map<std::string, std::shared_ptr<Texture>> _textures;
+        const TextureData& _config;
+    };
 }
