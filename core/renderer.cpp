@@ -1,49 +1,48 @@
-/*
 #include "renderer.hpp"
-#include "texture_manager.hpp"
 
+#include <array>
+
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Vertex.hpp>
+#include <SFML/System/Vector2.hpp>
 
 namespace Aporia
 {
-	Renderer::Renderer(std::shared_ptr<Logger> logger)
-		: _logger(logger), _textureManager(logger)
-	{
-		_textureManager.load_textures("atlas");
-		_atlas = _textureManager.get_atlas();
-		_size = 0;
-	}
+    Renderer::Renderer(const std::shared_ptr<Logger>& logger)
+        : _logger(logger)
+    {
+    }
 
-	void Renderer::add_quad(std::string& name, int x, int y, unsigned int width, unsigned int height)
-	{
-		_size++;
+    void Renderer::draw(const Sprite& sprite)
+    {
+        std::array<sf::Vertex, 4> vertecies;
+        const std::shared_ptr<Texture>& texture = sprite.get_texture();
+        sf::Vector2f position = sprite.get_position();
 
-		_vertices.setPrimitiveType(sf::Quads);
-		_vertices.resize(_size * 4);
+        vertecies[0].position = position;
+        vertecies[1].position = position + sf::Vector2f(texture->width, 0);
+        vertecies[2].position = position + sf::Vector2f(texture->width, texture->height);
+        vertecies[3].position = position + sf::Vector2f(0, texture->height);
 
-		Texture_info texture_info;
-		texture_info = _textureManager.get_texture_info(name);
+        vertecies[0].texCoords = sf::Vector2f(texture->x, texture->y);
+        vertecies[1].texCoords = sf::Vector2f(texture->x + texture->width, texture->y);
+        vertecies[2].texCoords = sf::Vector2f(texture->x + texture->width, texture->y + texture->height);
+        vertecies[3].texCoords = sf::Vector2f(texture->x, texture->y + texture->height);
 
-		sf::Vertex* quad = &_vertices[(_size - 1) * 4];
+        if (_queue.find(texture) == _queue.end())
+            _queue.try_emplace(texture, sf::Quads, _sprites);
 
-		quad[0].position = sf::Vector2f(x, y);
-		quad[1].position = sf::Vector2f(x + width, y);
-		quad[2].position = sf::Vector2f(x + width, y + height);
-		quad[3].position = sf::Vector2f(x, y + height);
+        _queue[texture].add(vertecies);
+    }
+    
+    void Renderer::render(Window& window)
+    {
+        for (auto& [texture, vertex_array] : _queue)
+        {
+            sf::RenderStates states(texture->origin.get());
 
-		quad[0].texCoords = sf::Vector2f(texture_info.x, texture_info.y);
-		quad[1].texCoords = sf::Vector2f(texture_info.x + texture_info.width, texture_info.y);
-		quad[2].texCoords = sf::Vector2f(texture_info.x +texture_info.width, texture_info.y + texture_info.height);
-		quad[3].texCoords = sf::Vector2f(texture_info.x, texture_info.y + texture_info.height);
-	}
-
-	void Renderer::draw(sf::RenderTarget& target, sf::RenderStates states) const
-	{
-		states.transform = getTransform();
-
-		states.texture = &_atlas;
-
-		target.draw(_vertices, states);
-	}
+            window.draw(vertex_array, states);
+            vertex_array.clear();
+        }
+    }
 }
-*/

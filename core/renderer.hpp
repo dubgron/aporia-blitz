@@ -1,35 +1,29 @@
 #pragma once
 
-#include <iostream>
-#include <string>
+#include <map>
+#include <memory>
 
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
-#include <SFML/Graphics/Texture.hpp>
-
-#include "platform.hpp"
 #include "logger.hpp"
-#include "texture_manager.hpp"
+#include "platform.hpp"
+#include "sprite.hpp"
+#include "vertex_array.hpp"
+#include "window.hpp"
 
-namespace Aporia 
+namespace Aporia
 {
-	class Renderer : public sf::Drawable, public sf::Transformable
-	{
-	public:
-		Renderer(std::shared_ptr<Logger> logger);
+    class APORIA_API Renderer
+    {
+    public:
+        Renderer(const std::shared_ptr<Logger>& logger);
 
-		void add_quad(std::string& name, int x, int y, unsigned int width, unsigned int height);
+        void draw(const Sprite& sprite);
+        void render(Window& window);
 
-	private:
-		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    private:
+        std::map<std::shared_ptr<Texture>, VertexArray> _queue;
 
-		std::shared_ptr<Logger> _logger;
-		TextureManager _textureManager;
-		unsigned int _size;
-		sf::VertexArray _vertices;
-		sf::Texture _atlas;	
-	};
+        const size_t _sprites = 10000;
+
+        std::shared_ptr<Logger> _logger;
+    };
 }

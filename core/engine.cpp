@@ -1,5 +1,7 @@
 #include "engine.hpp"
 
+#include <SFML/Graphics.hpp>
+
 namespace Aporia
 {
     Engine::Engine(const std::string& config_file)
@@ -15,5 +17,6 @@ namespace Aporia
         if (!_texture_manager->load_textures(_configs->texture_data))
             return;
 
+        _renderer = std::make_unique<Renderer>(_logger);
     }
 }
