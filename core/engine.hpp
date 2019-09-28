@@ -18,6 +18,6 @@ namespace Aporia
         std::shared_ptr<Logger> _logger;
 
         std::unique_ptr<ConfigManager> _configs;
-		std::unique_ptr<TextureManager> _texture_manager;
+        std::unique_ptr<TextureManager> _texture_manager;
     };
 }

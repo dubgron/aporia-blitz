@@ -10,9 +10,10 @@ namespace Aporia
         if (!_configs->is_ok())
             return;
 
-		_texture_manager = std::make_unique<TextureManager>(_logger, _configs->texture_data);
+        _texture_manager = std::make_unique<TextureManager>(_logger);
 
-		if (_texture_manager->load_textures())
-			return;
+        if (!_texture_manager->load_textures(_configs->texture_data))
+            return;
+
     }
 }
