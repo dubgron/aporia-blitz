@@ -21,7 +21,7 @@ namespace Aporia
         }
         else
         {
-            _window.create(sf::VideoMode(_config.width, _config.width), _config.title);
+            _window.create(sf::VideoMode(_config.width, _config.height), _config.title);
             _window.setPosition(_config.position);
             _visible = true;
         }
