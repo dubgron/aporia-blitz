@@ -65,6 +65,21 @@ namespace Aporia
             _logger->log(LOG_WARNING) << "Window '" << _config.title << "' is already hidden!";
         }
     }
+    
+    void Window::clear(const sf::Color& color)
+    {
+        _window.clear(color);
+    }
+
+    void Window::draw(const VertexArray& vertex_array, sf::RenderStates states)
+    {
+        _window.draw(vertex_array, states);
+    }
+
+    void Window::display()
+    {
+        _window.display();
+    }
 
     bool Window::is_open() const
     {
