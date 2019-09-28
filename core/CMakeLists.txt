@@ -44,6 +44,7 @@ add_library(core SHARED
     "window.cpp"
     "window.hpp"
     "utils/read_file.hpp"
+    "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
 target_link_libraries(core 
@@ -91,6 +92,7 @@ source_group(core FILES
     "window.hpp")
 
 source_group(core\\config FILES
+    "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
 source_group(core\\utils FILES

@@ -18,6 +18,7 @@ namespace Aporia
         bool is_ok() const;
 
         std::vector<WindowConfig> window_data;
+		TextureData texture_data;
 
     private:
         std::shared_ptr<Logger> _logger;
