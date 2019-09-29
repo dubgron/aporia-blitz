@@ -23,7 +23,7 @@ namespace Aporia
 
         call_event<BeginProcessingWindowEvents>();
 
-        while (window._window.pollEvent(event))
+        while (window.poll_event(event))
         {
             switch (event.type)
             {

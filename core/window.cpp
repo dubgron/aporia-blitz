@@ -81,6 +81,11 @@ namespace Aporia
         _window.display();
     }
 
+    bool Window::poll_event(sf::Event& event)
+    {
+        return _window.pollEvent(event);
+    }
+
     bool Window::is_open() const
     {
         return _window.isOpen();

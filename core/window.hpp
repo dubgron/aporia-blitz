@@ -5,6 +5,7 @@
 
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
 
 #include "logger.hpp"
 #include "platform.hpp"
@@ -15,8 +16,6 @@ namespace Aporia
 {
     class APORIA_API Window final
     {
-        friend class EventManager;
-
     public:
         Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config);
         ~Window();
@@ -30,6 +29,8 @@ namespace Aporia
         void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
         void draw(const VertexArray& vertex_array, sf::RenderStates states);
         void display();
+
+        bool poll_event(sf::Event& event);
 
         bool is_open() const;
         bool is_visible() const;
