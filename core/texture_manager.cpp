@@ -65,7 +65,7 @@ namespace Aporia {
         return true;
     }
 
-    const std::shared_ptr<Texture>& TextureManager::get_sprite(const std::string& name) const
+    const std::shared_ptr<Texture>& TextureManager::get_texture(const std::string& name) const
     {
         auto texture = _textures.find(name);
         return texture != _textures.end() ? texture->second : _textures.at("default");

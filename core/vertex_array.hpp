@@ -18,7 +18,7 @@ namespace Aporia
     public:
         VertexArray(sf::PrimitiveType primitive_type = sf::Quads, size_t size = 10000);
 
-        void add(const std::array<sf::Vertex, 4>& vertecies);
+        void add(const std::array<sf::Vertex, 4>& vertices);
         void clear();
 
         size_t size() const;

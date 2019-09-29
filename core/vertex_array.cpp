@@ -1,7 +1,5 @@
 #include "vertex_array.hpp"
 
-#include <iostream>
-
 namespace Aporia
 {
     VertexArray::VertexArray(sf::PrimitiveType primitive_type, size_t size)
@@ -10,9 +8,9 @@ namespace Aporia
         _vertices.reserve(size);
     }
 
-    void VertexArray::add(const std::array<sf::Vertex, 4>& vertecies)
+    void VertexArray::add(const std::array<sf::Vertex, 4>& vertices)
     {
-        for (const auto& vertex : vertecies)
+        for (const auto& vertex : vertices)
         {
             _vertices.push_back(std::move(vertex));
         }

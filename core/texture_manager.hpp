@@ -20,7 +20,7 @@ namespace Aporia
 
         bool load_textures(const TextureData& config);
 
-        const std::shared_ptr<Texture>& get_sprite(const std::string& name) const;
+        const std::shared_ptr<Texture>& get_texture(const std::string& name) const;
 
     private:
         std::map<std::string, std::shared_ptr<Texture>> _textures;
