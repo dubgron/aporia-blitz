@@ -3,7 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace Aporia::Utils
+namespace Aporia
 {
     template<typename T, typename Tuple>
     struct is_in_tuple;

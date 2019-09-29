@@ -19,7 +19,7 @@ namespace Aporia
 
         using json = nlohmann::json;
         
-        std::string data = Utils::read_file(config);
+        std::string data = read_file(config);
         json config_json = json::parse(data);
 
         /* TODO: Handling when json file is not correct */

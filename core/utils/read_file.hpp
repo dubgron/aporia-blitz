@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-namespace Aporia::Utils
+namespace Aporia
 {
     inline std::string read_file(std::string path)
     {

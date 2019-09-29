@@ -24,7 +24,7 @@ namespace Aporia {
             return false;
         }
 
-        std::string data = Utils::read_file(config.atlas);
+        std::string data = read_file(config.atlas);
         json texture_json = json::parse(data);
 
         _logger->log(LOG_INFO) << "Opened '" << config.atlas << "' successfully";
