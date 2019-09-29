@@ -3,6 +3,8 @@
 #include <map>
 #include <memory>
 
+#include <SFML/Graphics/Texture.hpp>
+
 #include "logger.hpp"
 #include "platform.hpp"
 #include "sprite.hpp"
@@ -20,7 +22,7 @@ namespace Aporia
         void render(Window& window);
 
     private:
-        std::map<std::shared_ptr<Texture>, VertexArray> _queue;
+        std::map<std::shared_ptr<sf::Texture>, VertexArray> _queue;
 
         const size_t _sprites = 10000;
 

@@ -29,17 +29,17 @@ namespace Aporia
         vertecies[2].texCoords = sf::Vector2f(texture->x + texture->width, texture->y + texture->height);
         vertecies[3].texCoords = sf::Vector2f(texture->x, texture->y + texture->height);
 
-        if (_queue.find(texture) == _queue.end())
-            _queue.try_emplace(texture, sf::Quads, _sprites);
+        if (_queue.find(texture->origin) == _queue.end())
+            _queue.try_emplace(texture->origin, sf::Quads, _sprites);
 
-        _queue[texture].add(vertecies);
+        _queue[texture->origin].add(vertecies);
     }
     
     void Renderer::render(Window& window)
     {
         for (auto& [texture, vertex_array] : _queue)
         {
-            sf::RenderStates states(texture->origin.get());
+            sf::RenderStates states(texture.get());
 
             window.draw(vertex_array, states);
             vertex_array.clear();
