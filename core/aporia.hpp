@@ -3,6 +3,7 @@
 
 /* Configs */
 #include <configs.hpp>
+#include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
 
 /* Inputs */
