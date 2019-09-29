@@ -121,7 +121,7 @@ source_group(core FILES
     "window.cpp"
     "window.hpp")
 
-source_group(core\\config FILES
+source_group(core\\configs FILES
     "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
