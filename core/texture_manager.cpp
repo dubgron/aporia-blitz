@@ -1,10 +1,10 @@
 #include "texture_manager.hpp"
 
 #include <filesystem>
-#include <string>
 
 #include <nlohmann/json.hpp>
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 #include "utils/read_file.hpp"
 

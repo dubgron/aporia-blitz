@@ -4,12 +4,10 @@
 #include <memory>
 #include <string>
 
-#include <SFML/Graphics/Texture.hpp>
-
-#include "configs/texture_config.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
 #include "texture.hpp"
+#include "configs/texture_config.hpp"
 
 namespace Aporia
 {
