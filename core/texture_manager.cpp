@@ -48,7 +48,7 @@ namespace Aporia {
 
             if (_textures.find(name) != _textures.end())
             {
-                _logger->log(LOG_WARNING) << "There are two textures called '" << name << "'! One of them will be overwritten!";
+                _logger->log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
             }
 
             auto tex = texture["frame"];
@@ -68,6 +68,12 @@ namespace Aporia {
     const std::shared_ptr<Texture>& TextureManager::get_texture(const std::string& name) const
     {
         auto texture = _textures.find(name);
-        return texture != _textures.end() ? texture->second : _textures.at("default");
+        if (texture == _textures.end())
+        {
+            _logger->log(LOG_WARNING) << "There is no texture named " << name << "!";
+            return _textures.at("default");
+        }
+        else
+            return texture->second;
     }
 }
