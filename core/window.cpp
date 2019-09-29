@@ -2,7 +2,7 @@
 
 namespace Aporia
 {
-    Window::Window(std::shared_ptr<Logger> logger, const WindowConfig& config)
+    Window::Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config)
         : _logger(logger), _config(config)
     {
         open();

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <tuple>
 #include <type_traits>
 
@@ -8,28 +7,51 @@
 #include "logger.hpp"
 #include "platform.hpp"
 #include "window.hpp"
+#include "utils/type_traits.hpp"
 
 namespace Aporia
 {
     class APORIA_API EventManager final
     {
+        using Events = std::tuple<WindowCloseEvent,
+                                  WindowResizeEvent,
+                                  KeyPressedEvent,
+                                  KeyReleasedEvent,
+                                  ButtonPressedEvent,
+                                  ButtonReleasedEvent,
+                                  MouseWheelScrollEvent,
+                                  BeginProcessingWindowEvents,
+                                  EndProcessingWindowEvents>;
+
     public:
-        EventManager(std::shared_ptr<Logger> logger);
+        EventManager(const std::shared_ptr<Logger>& logger);
 
         void listen_for_events(Window& window);
 
-        template<typename T, typename... Ts, 
-            typename = std::enable_if_t<std::is_invocable_v<typename T::event_type, Ts&...>>>
-        void call_event(Ts&... args);
+        template<typename Ev, typename... Args, 
+            typename = std::enable_if_t<
+                std::is_invocable_v<typename Ev::event_type, Args&...> &&
+                Utils::is_in_tuple_v<Ev, Events>
+            >>
+        void call_event(Args&... args);
 
-        template<typename T, typename U,
-            typename = std::enable_if_t<std::is_constructible_v<typename T::event_type, U>>>
-        void add_listener(U func);
+        template<typename Ev, typename Listener,
+            typename = std::enable_if_t<
+                std::is_constructible_v<typename Ev::event_type, Listener> &&
+                Utils::is_in_tuple_v<Ev, Events>
+            >>
+        void add_listener(Listener listener);
 
     private:
-        std::tuple<
-            WindowCloseEvent,
-            WindowResizeEvent> _events = std::make_tuple(WindowCloseEvent(), WindowResizeEvent());
+        Events _events = std::make_tuple(WindowCloseEvent(),
+                                         WindowResizeEvent(),
+                                         KeyPressedEvent(),
+                                         KeyReleasedEvent(),
+                                         ButtonPressedEvent(),
+                                         ButtonReleasedEvent(),
+                                         MouseWheelScrollEvent(),
+                                         BeginProcessingWindowEvents(),
+                                         EndProcessingWindowEvents());
 
         std::shared_ptr<Logger> _logger;
     };

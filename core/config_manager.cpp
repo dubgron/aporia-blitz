@@ -8,7 +8,7 @@
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(std::shared_ptr<Logger> logger, const std::string& config)
+    ConfigManager::ConfigManager(const std::shared_ptr<Logger>& logger, const std::string& config)
         : _logger(logger)
     {
         if (!std::filesystem::exists(config))

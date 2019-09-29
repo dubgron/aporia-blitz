@@ -13,7 +13,7 @@ namespace Aporia
     struct APORIA_API ConfigManager final
     {
         ConfigManager() = default;
-        ConfigManager(std::shared_ptr<Logger> logger, const std::string& config);
+        ConfigManager(const std::shared_ptr<Logger>& logger, const std::string& config);
 
         bool is_good() const;
 
