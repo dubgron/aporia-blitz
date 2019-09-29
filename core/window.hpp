@@ -3,11 +3,13 @@
 #include <memory>
 #include <string>
 
-#include <SFML/Window.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
-#include "configs/window_config.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
+#include "vertex_array.hpp"
+#include "configs/window_config.hpp"
 
 namespace Aporia
 {
@@ -25,15 +27,19 @@ namespace Aporia
         void show();
         void hide();
 
+        void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
+        void draw(const VertexArray& vertex_array, sf::RenderStates states);
+        void display();
+
         bool is_open() const;
         bool is_visible() const;
 
     private:
-        std::shared_ptr<Logger> _logger;
-
-        sf::Window _window;
+        sf::RenderWindow _window;
         const WindowConfig& _config;
 
         bool _visible = false;
+
+        std::shared_ptr<Logger> _logger;
     };
 }

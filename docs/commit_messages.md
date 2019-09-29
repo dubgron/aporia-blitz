@@ -18,8 +18,8 @@ The title consists of the type of the message and subject.
 
 The type is contained within the title and can be one of these types:
 
-* `feat: ` introduced a new feature,
-* `bugfix:` fixed a bug,
+* `feat`: introduced a new feature,
+* `bugfix`: fixed a bug,
 * `docs`: changed the documentation,
 * `style`: changed formatting, added missing semi colons, etc; no code change,
 * `refactor`: refactored production code,

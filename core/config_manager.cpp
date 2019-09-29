@@ -35,11 +35,13 @@ namespace Aporia
             window_data.emplace_back(title, position, width, height);
         }
 
-        _ok = true;
+        texture_data.atlas = config_json["texture_config"]["src"];
+
+        _good = true;
     }
 
-    bool ConfigManager::is_ok() const
+    bool ConfigManager::is_good() const
     {
-        return _ok;
+        return _good;
     }
 }

@@ -39,9 +39,18 @@ add_library(core SHARED
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
+    "renderer.cpp"
+    "renderer.hpp"
+    "sprite.hpp"
+    "texture.hpp"
+    "texture_manager.cpp"
+    "texture_manager.hpp"    
+    "vertex_array.cpp"
+    "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
     "utils/read_file.hpp"
+    "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
 target_link_libraries(core 
@@ -83,10 +92,19 @@ source_group(core FILES
     "logger.cpp"
     "logger.hpp"
     "platform.hpp"
+    "renderer.cpp"
+    "renderer.hpp"
+    "sprite.hpp"
+    "texture.hpp"
+    "texture_manager.cpp"
+    "texture_manager.hpp"
+    "vertex_array.cpp"
+    "vertex_array.hpp"
     "window.cpp"
     "window.hpp")
 
 source_group(core\\config FILES
+    "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
 source_group(core\\utils FILES
