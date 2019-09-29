@@ -18,7 +18,7 @@ namespace Aporia
 
     private:
         std::unique_ptr<ConfigManager> _configs;
-        std::unique_ptr<TextureManager> _texture_manager;
+        std::unique_ptr<TextureManager> _textures;
         std::unique_ptr<EventManager> _events;
         std::unique_ptr<Renderer> _renderer;
 
