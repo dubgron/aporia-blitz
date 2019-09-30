@@ -11,4 +11,14 @@ namespace Aporia
     {
         return _texture;
     }
+
+    void Sprite::move(float x, float y)
+    {
+        move(sf::Vector2f(x, y));
+    }
+
+    void Sprite::move(const sf::Vector2f& pos)
+    {
+        _position += pos;
+    }
 }

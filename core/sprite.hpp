@@ -20,6 +20,9 @@ namespace Aporia
 
         const std::shared_ptr<Texture>& get_texture() const;
 
+        void move(float x, float y);
+        void move(const sf::Vector2f& pos);
+
     private:
         std::shared_ptr<Logger> _logger;
         std::shared_ptr<Texture> _texture;
