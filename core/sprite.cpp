@@ -21,4 +21,48 @@ namespace Aporia
     {
         _position += pos;
     }
+
+    void Sprite::set_origin(sf::Vector2f origin)
+    {
+        _origin = origin;
+    }
+
+    void Sprite::set_origin(Origin origin)
+    {
+        switch (origin)
+        {
+        case Origin::Center:
+            set_origin(sf::Vector2f(_texture->width / 2, _texture->height / 2));
+            break;
+        case Origin::Left:
+            set_origin(sf::Vector2f(0, _texture->height / 2));
+            break;
+        case Origin::Right:
+            set_origin(sf::Vector2f(_texture->width, _texture->height / 2));
+            break;
+        case Origin::Top:
+            set_origin(sf::Vector2f(_texture->width / 2, 0));
+            break;
+        case Origin::Bottom:
+            set_origin(sf::Vector2f(_texture->width / 2, _texture->height));
+            break;
+        case Origin::TopLeft:
+            set_origin(sf::Vector2f(0, 0));
+            break;
+        case Origin::TopRight:
+            set_origin(sf::Vector2f(_texture->width, 0));
+            break;
+        case Origin::BottomLeft:
+            set_origin(sf::Vector2f(0, _texture->height));
+            break;
+        case Origin::BottomRight:
+            set_origin(sf::Vector2f(_texture->width, _texture->height));
+            break;
+        }
+    }
+
+    const sf::Vector2f& Sprite::get_origin() const
+    {
+        return _origin;
+    }
 }
