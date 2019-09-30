@@ -16,15 +16,9 @@ namespace Aporia
         Sprite(const std::shared_ptr<Logger>& logger, const std::shared_ptr<Texture>& texture, sf::Vector2f position)
             :_logger(logger), _texture(texture), _position(position) {};
 
-        sf::Vector2f get_position() const
-        {
-            return _position;
-        }
+        sf::Vector2f get_position() const;
 
-        const std::shared_ptr<Texture>& get_texture() const
-        {
-            return _texture;
-        }
+        const std::shared_ptr<Texture>& get_texture() const;
 
     private:
         std::shared_ptr<Logger> _logger;
