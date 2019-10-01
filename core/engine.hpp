@@ -4,6 +4,7 @@
 
 #include "config_manager.hpp"
 #include "event_manager.hpp"
+#include "input_manager.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
 #include "renderer.hpp"
@@ -19,6 +20,7 @@ namespace Aporia
     private:
         std::shared_ptr<ConfigManager> _configs;
         std::shared_ptr<EventManager> _events;
+        std::shared_ptr<InputManager> _inputs;
         std::shared_ptr<TextureManager> _textures;
 
         std::unique_ptr<Renderer> _renderer;
