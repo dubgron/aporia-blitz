@@ -6,16 +6,16 @@ namespace Aporia
     {
         _logger = std::make_shared<Logger>("engine");
 
-        _configs = std::make_unique<ConfigManager>(_logger, config_file);
+        _configs = std::make_shared<ConfigManager>(_logger, config_file);
         if (!_configs->is_good())
             return;
 
-        _textures = std::make_unique<TextureManager>(_logger);
+        _textures = std::make_shared<TextureManager>(_logger);
 
         if (!_textures->load_textures(_configs->texture_data))
             return;
 
-        _events = std::make_unique<EventManager>(_logger);
+        _events = std::make_shared<EventManager>(_logger);
 
         _renderer = std::make_unique<Renderer>(_logger);
     }
