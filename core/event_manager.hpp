@@ -21,7 +21,8 @@ namespace Aporia
                                   ButtonReleasedEvent,
                                   MouseWheelScrollEvent,
                                   BeginProcessingWindowEvents,
-                                  EndProcessingWindowEvents>;
+                                  EndProcessingWindowEvents,
+                                  DrawSpriteEvent>;
 
     public:
         EventManager(const std::shared_ptr<Logger>& logger);
@@ -51,7 +52,8 @@ namespace Aporia
                                          ButtonReleasedEvent(),
                                          MouseWheelScrollEvent(),
                                          BeginProcessingWindowEvents(),
-                                         EndProcessingWindowEvents());
+                                         EndProcessingWindowEvents(),
+                                         DrawSpriteEvent());
 
         std::shared_ptr<Logger> _logger;
     };

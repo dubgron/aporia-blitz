@@ -18,6 +18,6 @@ namespace Aporia
         _events = std::make_shared<EventManager>(_logger);
         _inputs = std::make_shared<InputManager>(_logger, _events);
 
-        _renderer = std::make_unique<Renderer>(_logger);
+        _renderer = std::make_unique<Renderer>(_logger, _events);
     }
 }
