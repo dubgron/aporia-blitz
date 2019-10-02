@@ -20,4 +20,13 @@ namespace Aporia
 
         _renderer = std::make_unique<Renderer>(_logger, _events);
     }
+
+    void Engine::run(std::unique_ptr<Game> game)
+    {
+        game->_configs = _configs;
+        game->_events = _events;
+        game->_inputs = _inputs;
+        game->_textures = _textures;
+        game->_logger = std::make_unique<Logger>(_configs->window_data.title);
+    }
 }

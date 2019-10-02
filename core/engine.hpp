@@ -4,6 +4,7 @@
 
 #include "config_manager.hpp"
 #include "event_manager.hpp"
+#include "game.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
@@ -16,6 +17,8 @@ namespace Aporia
     {
     public:
         Engine(const std::string& config_file);
+
+        void run(std::unique_ptr<Game> game);
 
     private:
         std::shared_ptr<ConfigManager> _configs;
