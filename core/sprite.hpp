@@ -26,8 +26,7 @@ namespace Aporia
     class APORIA_API Sprite final
     {
     public:
-        Sprite(const std::shared_ptr<Logger>& logger, const std::shared_ptr<Texture>& texture, sf::Vector2f position)
-            :_logger(logger), _texture(texture), _position(position) {};
+        Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position);
 
         sf::Vector2f get_position() const;
         const sf::Vector2f& get_origin() const;
@@ -41,7 +40,6 @@ namespace Aporia
         void set_origin(Origin origin);
 
     private:
-        std::shared_ptr<Logger> _logger;
         std::shared_ptr<Texture> _texture;
         sf::Vector2f _position;
         sf::Vector2f _origin;

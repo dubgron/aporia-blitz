@@ -2,6 +2,11 @@
 
 namespace Aporia
 {
+    Sprite::Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position)
+        : _texture(texture), _position(position)
+    {
+    }
+
     sf::Vector2f Sprite::get_position() const
     {
         return _position;
