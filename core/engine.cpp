@@ -31,5 +31,21 @@ namespace Aporia
         game->_inputs = _inputs;
         game->_textures = _textures;
         game->_logger = std::make_unique<Logger>(_configs->window_data.title);
+
+        game->on_init();
+
+        while (_window->is_open())
+        {
+            _events->listen_for_events(*_window);
+            _window->clear();
+
+            game->on_update();
+
+            _renderer->render(*_window);
+
+            _window->display();
+        }
+
+        game->on_terminate();
     }
 }
