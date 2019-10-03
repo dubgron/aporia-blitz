@@ -7,7 +7,7 @@ namespace Aporia
     {
     }
 
-    sf::Vector2f Sprite::get_position() const
+    const sf::Vector2f& Sprite::get_position() const
     {
         return _position;
     }

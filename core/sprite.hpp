@@ -28,7 +28,7 @@ namespace Aporia
     public:
         Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position);
 
-        sf::Vector2f get_position() const;
+        const sf::Vector2f& get_position() const;
         const sf::Vector2f& get_origin() const;
 
         const std::shared_ptr<Texture>& get_texture() const;
