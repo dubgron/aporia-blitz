@@ -19,6 +19,9 @@ namespace Aporia
         _inputs = std::make_shared<InputManager>(_logger, _events);
 
         _renderer = std::make_unique<Renderer>(_logger, _events);
+        _window = std::make_shared<Window>(_logger, _configs->window_data);
+
+        _events->add_listener<WindowCloseEvent>([](Window& window) { window.close(); });
     }
 
     void Engine::run(std::unique_ptr<Game> game)

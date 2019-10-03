@@ -10,6 +10,7 @@
 #include "platform.hpp"
 #include "renderer.hpp"
 #include "texture_manager.hpp"
+#include "window.hpp"
 
 namespace Aporia
 {
@@ -27,6 +28,7 @@ namespace Aporia
         std::shared_ptr<TextureManager> _textures;
 
         std::unique_ptr<Renderer> _renderer;
+        std::shared_ptr<Window> _window;
 
         std::shared_ptr<Logger> _logger;
     };
