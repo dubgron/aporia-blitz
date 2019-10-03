@@ -2,8 +2,14 @@
 
 namespace Aporia
 {
-    Sprite::Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position)
+    Sprite::Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position, Origin origin)
         : _texture(texture), _position(position)
+    {
+        set_origin(origin);
+    }
+
+    Sprite::Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position, sf::Vector2f origin)
+        : _texture(texture), _position(position), _origin(origin)
     {
     }
 

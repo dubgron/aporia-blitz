@@ -26,7 +26,8 @@ namespace Aporia
     class APORIA_API Sprite final
     {
     public:
-        Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position);
+        Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position, Origin origin = Origin::Center);
+        Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position, sf::Vector2f origin);
 
         const sf::Vector2f& get_position() const;
         const sf::Vector2f& get_origin() const;
