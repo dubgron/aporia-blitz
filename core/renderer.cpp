@@ -1,6 +1,7 @@
 #include "renderer.hpp"
 
 #include <array>
+#include <cmath>
 #include <functional>
 
 #include <SFML/Graphics/RenderStates.hpp>
@@ -22,13 +23,25 @@ namespace Aporia
     void Renderer::draw(const Sprite& sprite)
     {
         std::array<sf::Vertex, 4> vertecies;
-        const std::shared_ptr<Texture>& texture = sprite.get_texture();
-        sf::Vector2f position = sprite.get_position();
 
-        vertecies[0].position = position;
-        vertecies[1].position = position + sf::Vector2f(texture->width, 0);
-        vertecies[2].position = position + sf::Vector2f(texture->width, texture->height);
-        vertecies[3].position = position + sf::Vector2f(0, texture->height);
+        const std::shared_ptr<Texture>& texture = sprite.get_texture();
+        const sf::Vector2f& position = sprite.get_position();
+        const sf::Vector2f& origin = position + sprite.get_origin();
+        double rotation = sprite.get_rotation();
+
+        sf::Vector2f pos = position - origin;
+        double sin = std::sin(rotation);
+        double cos = std::cos(rotation);
+
+        auto rotate = [=](float x, float y)
+        {
+            return sf::Vector2f(x * cos - y * sin, x * sin + y * cos);
+        };
+
+        vertecies[0].position = rotate(pos.x, pos.y) + origin;
+        vertecies[1].position = rotate(pos.x + texture->width, pos.y) + origin;
+        vertecies[2].position = rotate(pos.x + texture->width, pos.y + texture->height) + origin;
+        vertecies[3].position = rotate(pos.x, pos.y + texture->height) + origin;
 
         vertecies[0].texCoords = sf::Vector2f(texture->x, texture->y);
         vertecies[1].texCoords = sf::Vector2f(texture->x + texture->width, texture->y);
@@ -40,7 +53,7 @@ namespace Aporia
 
         _queue[texture->origin].add(vertecies);
     }
-    
+
     void Renderer::render(Window& window)
     {
         for (auto& [texture, vertex_array] : _queue)
