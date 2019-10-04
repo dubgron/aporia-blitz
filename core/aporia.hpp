@@ -33,6 +33,9 @@
 #include <event_manager.hpp>
 #include <texture_manager.hpp>
 
+/* Game */
+#include <game.hpp>
+
 /* Engine */
 #include <engine.hpp>
 

@@ -9,12 +9,10 @@ namespace Aporia
 {
     struct APORIA_API WindowConfig final
     {
-        std::string title = "";
-        sf::Vector2i position = { 0, 0 };
-        unsigned int width = 0;
-        unsigned int height = 0;
-
-        WindowConfig(std::string title, sf::Vector2i position, unsigned int width, unsigned int height)
-            : title(std::move(title)), position(std::move(position)), width(width), height(height) {}
+        std::string title;
+        sf::Vector2i position;
+        unsigned int width;
+        unsigned int height;
+        unsigned int framerate;
     };
 }

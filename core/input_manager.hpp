@@ -15,9 +15,7 @@ namespace Aporia
     class APORIA_API InputManager final
     {
     public:
-        InputManager(const std::shared_ptr<Logger>& logger);
-
-        void bind_to_events(EventManager& event_manager);
+        InputManager(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager);
 
         bool is_key_triggered(Keyboard key) const;
         bool is_key_pressed(Keyboard key) const;

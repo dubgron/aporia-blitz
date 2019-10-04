@@ -4,8 +4,7 @@ add_executable(example example.cpp)
 
 target_compile_definitions(example 
     PRIVATE 
-        APORIA_IMPORT
-        __PROJECT__="example")
+        APORIA_IMPORT)
 
 target_link_libraries(example core)
 

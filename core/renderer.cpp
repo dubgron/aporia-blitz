@@ -1,16 +1,22 @@
 #include "renderer.hpp"
 
 #include <array>
+#include <functional>
 
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include "event.hpp"
+
 namespace Aporia
 {
-    Renderer::Renderer(const std::shared_ptr<Logger>& logger)
+    Renderer::Renderer(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager)
         : _logger(logger)
     {
+        using namespace std::placeholders;
+
+        event_manager->add_listener<DrawSpriteEvent>(std::bind(&Renderer::draw, this, _1));
     }
 
     void Renderer::draw(const Sprite& sprite)

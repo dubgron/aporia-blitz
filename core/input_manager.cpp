@@ -4,28 +4,24 @@
 
 namespace Aporia
 {
-    InputManager::InputManager(const std::shared_ptr<Logger>& logger)
+    InputManager::InputManager(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager)
         : _logger(logger), _keys(logger), _buttons(logger), _wheels(logger)
-    {
-    }
-
-    void InputManager::bind_to_events(EventManager& event_manager)
     {
         using namespace std::placeholders;
 
-        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputManager::_reset_wheel, this));
+        event_manager->add_listener<BeginProcessingWindowEvents>(std::bind(&InputManager::_reset_wheel, this));
 
-        event_manager.add_listener<KeyPressedEvent>(std::bind(&InputManager::_on_key_triggered, this, _1));
-        event_manager.add_listener<KeyReleasedEvent>(std::bind(&InputManager::_on_key_released, this, _1));
+        event_manager->add_listener<KeyPressedEvent>(std::bind(&InputManager::_on_key_triggered, this, _1));
+        event_manager->add_listener<KeyReleasedEvent>(std::bind(&InputManager::_on_key_released, this, _1));
 
-        event_manager.add_listener<ButtonPressedEvent>(std::bind(&InputManager::_on_button_triggered, this, _1));
-        event_manager.add_listener<ButtonReleasedEvent>(std::bind(&InputManager::_on_button_released, this, _1));
+        event_manager->add_listener<ButtonPressedEvent>(std::bind(&InputManager::_on_button_triggered, this, _1));
+        event_manager->add_listener<ButtonReleasedEvent>(std::bind(&InputManager::_on_button_released, this, _1));
 
-        event_manager.add_listener<MouseWheelScrollEvent>(std::bind(&InputManager::_on_wheel_scrolled, this, _1, _2));
+        event_manager->add_listener<MouseWheelScrollEvent>(std::bind(&InputManager::_on_wheel_scrolled, this, _1, _2));
 
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Keyboard>::update, &_keys));
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Mouse>::update, &_buttons));
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<MouseWheel>::update, &_wheels));
+        event_manager->add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Keyboard>::update, &_keys));
+        event_manager->add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Mouse>::update, &_buttons));
+        event_manager->add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<MouseWheel>::update, &_wheels));
     }
 
     bool InputManager::is_key_triggered(Keyboard key) const

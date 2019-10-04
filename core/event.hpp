@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "inputs.hpp"
+#include "sprite.hpp"
 #include "window.hpp"
 
 namespace Aporia
@@ -36,4 +37,6 @@ namespace Aporia
 
     using BeginProcessingWindowEvents = Event<7>;
     using EndProcessingWindowEvents = Event<8>;
+
+    using DrawSpriteEvent = Event<9, const Sprite&>;
 }

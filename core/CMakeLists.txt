@@ -41,6 +41,7 @@ add_library(core SHARED
     "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
+    "game.hpp"
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
@@ -88,8 +89,7 @@ target_compile_definitions(core
     PUBLIC
         SFML_STATIC
     PRIVATE
-        APORIA_EXPORT 
-        __PROJECT__="core")
+        APORIA_EXPORT)
 
 source_group(core FILES
     "aporia.hpp"
@@ -103,6 +103,7 @@ source_group(core FILES
     "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
+    "game.hpp"
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"

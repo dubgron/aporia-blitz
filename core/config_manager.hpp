@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "configs.hpp"
 #include "logger.hpp"
@@ -17,7 +16,7 @@ namespace Aporia
 
         bool is_good() const;
 
-        std::vector<WindowConfig> window_data;
+        WindowConfig window_data;
         TextureData texture_data;
 
     private:
