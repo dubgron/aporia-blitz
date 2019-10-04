@@ -7,9 +7,10 @@ namespace Aporia
     SoundManager::SoundManager(std::shared_ptr<Logger> logger)
         : _logger(logger)
     {
+        _loop = false;
     }
 
-    void SoundManager::play(const std::string& name)
+    void SoundManager::play(const std::string& name, bool loop)
     {
         _music_name = name;
 
@@ -20,6 +21,7 @@ namespace Aporia
         }
 
         _music.openFromFile(name);
+        _music.setLoop(loop);
         _music.play();
         _logger->log(LOG_INFO) << "Music is playing.";
     }
