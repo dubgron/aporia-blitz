@@ -17,21 +17,6 @@ namespace Aporia
     {
     }
 
-    const sf::Vector2f& Sprite::get_position() const
-    {
-        return _position;
-    }
-
-    const std::shared_ptr<Texture>& Sprite::get_texture() const
-    {
-        return _texture;
-    }
-
-    double Sprite::get_rotation() const
-    {
-        return _rotation;
-    }
-
     void Sprite::move(float x, float y)
     {
         move(sf::Vector2f(x, y));
@@ -93,8 +78,23 @@ namespace Aporia
         _rotation = std::fmod(radians, 2 * ARI_PI);
     }
 
+    const sf::Vector2f& Sprite::get_position() const
+    {
+        return _position;
+    }
+
+    const std::shared_ptr<Texture>& Sprite::get_texture() const
+    {
+        return _texture;
+    }
+
     const sf::Vector2f& Sprite::get_origin() const
     {
         return _origin;
+    }
+
+    double Sprite::get_rotation() const
+    {
+        return _rotation;
     }
 }
