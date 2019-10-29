@@ -1,6 +1,6 @@
 set(WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-add_executable(example example.cpp)
+add_executable(example example.cpp level_manager.hpp)
 
 target_compile_definitions(example 
     PRIVATE 

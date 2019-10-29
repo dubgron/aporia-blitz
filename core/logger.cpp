@@ -12,7 +12,7 @@ namespace Aporia
 
         _logger = std::make_shared<spdlog::logger>(spdlog::logger(name, { std::move(console_sink), std::move(file_sink) }));
         _logger->set_pattern("[%Y-%m-%d %H:%M:%S] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
-        _logger->set_level(spdlog::level::debug);
+        _logger->set_level(spdlog::level::err);
         _logger->flush_on(spdlog::level::debug);
     }
 

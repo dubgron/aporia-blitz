@@ -42,6 +42,8 @@ namespace Aporia
         const sf::Vector2f& get_origin() const;
         double get_rotation() const;
 
+        sf::Color color = sf::Color(0xffffffff);
+
     private:
         std::shared_ptr<Texture> _texture;
         sf::Vector2f _position;

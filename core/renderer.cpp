@@ -48,6 +48,11 @@ namespace Aporia
         vertecies[2].texCoords = sf::Vector2f(texture->x + texture->width, texture->y + texture->height);
         vertecies[3].texCoords = sf::Vector2f(texture->x, texture->y + texture->height);
 
+        vertecies[0].color = sprite.color;
+        vertecies[1].color = sprite.color;
+        vertecies[2].color = sprite.color;
+        vertecies[3].color = sprite.color;
+
         if (_queue.find(texture->origin) == _queue.end())
             _queue.try_emplace(texture->origin, sf::Quads, _sprites);
 

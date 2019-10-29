@@ -60,6 +60,17 @@ namespace Aporia
             return !_current_state->test(index) && _past_state->test(index);
         }
 
+        bool is_any_triggered() const
+        {
+            for (size_t i = 0; i < _current_state->size(); ++i)
+            {
+                if (_current_state->test(i) && !_past_state->test(i))
+                    return true;
+            }
+
+            return false;
+        }
+
     private:
         Buffer* _incoming_state = new Buffer(false);
         Buffer* _current_state = new Buffer(false);
