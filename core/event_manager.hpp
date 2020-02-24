@@ -44,16 +44,7 @@ namespace Aporia
         void add_listener(Listener listener);
 
     private:
-        Events _events = std::make_tuple(WindowCloseEvent(),
-                                         WindowResizeEvent(),
-                                         KeyPressedEvent(),
-                                         KeyReleasedEvent(),
-                                         ButtonPressedEvent(),
-                                         ButtonReleasedEvent(),
-                                         MouseWheelScrollEvent(),
-                                         BeginProcessingWindowEvents(),
-                                         EndProcessingWindowEvents(),
-                                         DrawSpriteEvent());
+        Events _events;
 
         std::shared_ptr<Logger> _logger;
     };
