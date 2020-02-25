@@ -39,6 +39,21 @@ namespace Aporia
         return _keys.is_released(key);
     }
 
+    bool InputManager::is_any_key_triggered() const
+    {
+        return _keys.is_any_triggered();
+    }
+
+    bool InputManager::is_any_key_pressed() const
+    {
+        return _keys.is_any_pressed();
+    }
+
+    bool InputManager::is_any_key_released() const
+    {
+        return _keys.is_any_released();
+    }
+
     bool InputManager::is_button_triggered(Mouse button) const
     {
         return _buttons.is_triggered(button);
@@ -52,6 +67,21 @@ namespace Aporia
     bool InputManager::is_button_released(Mouse button) const
     {
         return _buttons.is_released(button);
+    }
+
+    bool InputManager::is_any_button_triggered() const
+    {
+        return _buttons.is_any_triggered();
+    }
+
+    bool InputManager::is_any_button_pressed() const
+    {
+        return _buttons.is_any_pressed();
+    }
+
+    bool InputManager::is_any_button_released() const
+    {
+        return _buttons.is_any_released();
     }
 
     sf::Vector2i InputManager::get_mouse_position() const
