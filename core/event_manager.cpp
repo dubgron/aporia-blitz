@@ -15,14 +15,13 @@ namespace Aporia
 
     void EventManager::listen_for_events(Window& window)
     {
-        sf::Event event;
+        call_event<BeginProcessingWindowEvents>();
 
         Keyboard key;
         Mouse button;
         MouseWheel wheel;
 
-        call_event<BeginProcessingWindowEvents>();
-
+        sf::Event event;
         while (window.poll_event(event))
         {
             switch (event.type)
@@ -36,12 +35,12 @@ namespace Aporia
                     break;
 
                 case sf::Event::KeyPressed:
-                    key = static_cast<Keyboard>(event.key.code);
+                    key = static_cast<Keyboard>(1 + event.key.code);
                     call_event<KeyPressedEvent>(key);
                     break;
 
                 case sf::Event::KeyReleased:
-                    key = static_cast<Keyboard>(event.key.code);
+                    key = static_cast<Keyboard>(1 + event.key.code);
                     call_event<KeyReleasedEvent>(key);
                     break;
 
