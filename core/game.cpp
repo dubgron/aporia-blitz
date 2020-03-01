@@ -1,8 +1,8 @@
-#include "engine.hpp"
+#include "game.hpp"
 
 namespace Aporia
 {
-    Engine::Engine(const std::string& config_file)
+    Game::Game(const std::string& config_file)
     {
         _logger = std::make_shared<Logger>("engine");
 
@@ -24,28 +24,22 @@ namespace Aporia
         _events->add_listener<WindowCloseEvent>([](Window& window) { window.close(); });
     }
 
-    void Engine::run(std::unique_ptr<Game> game)
+    void Game::run()
     {
-        game->_configs = _configs;
-        game->_events = _events;
-        game->_inputs = _inputs;
-        game->_textures = _textures;
-        game->_logger = std::make_unique<Logger>(_configs->window_data.title);
-
-        game->on_init();
+        this->on_init();
 
         while (_window->is_open())
         {
             _events->listen_for_events(*_window);
             _window->clear();
 
-            game->on_update();
+            this->on_update();
 
             _renderer->render(*_window);
 
             _window->display();
         }
 
-        game->on_terminate();
+        this->on_terminate();
     }
 }

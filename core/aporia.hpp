@@ -36,8 +36,5 @@
 /* Game */
 #include <game.hpp>
 
-/* Engine */
-#include <engine.hpp>
-
 /* Entry Point */
 #include <entry_point.hpp>

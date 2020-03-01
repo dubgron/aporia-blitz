@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <memory>
 #include <tuple>
 
@@ -9,6 +10,7 @@
 #include "logger.hpp"
 #include "platform.hpp"
 #include "sprite.hpp"
+#include "renderer.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
 
@@ -16,15 +18,18 @@ namespace Aporia
 {
     class APORIA_API Game
     {
-        friend class Engine;
+        /* Defined by Client */
+        friend std::unique_ptr<Game> create_game();
 
     public:
-        Game() = default;
+        Game(const std::string& config_file);
         virtual ~Game() = default;
 
         virtual void on_init() {};
         virtual void on_update() {};
         virtual void on_terminate() {};
+
+        void run();
 
     protected:
         void draw(const Sprite& sprite)
@@ -53,9 +58,9 @@ namespace Aporia
         std::shared_ptr<InputManager> _inputs;
         std::shared_ptr<TextureManager> _textures;
 
-        std::shared_ptr<Logger> _logger;
+        std::unique_ptr<Renderer> _renderer;
+        std::shared_ptr<Window> _window;
 
-        /* Defined by Client */
-        friend std::unique_ptr<Game> create_game();
+        std::shared_ptr<Logger> _logger;
     };
 }

@@ -3,6 +3,7 @@
 class Example : public Aporia::Game
 {
 public:
+    using Game::Game;
     ~Example() {};
 
     void on_init() override
@@ -20,5 +21,5 @@ public:
 
 std::unique_ptr<Aporia::Game> create_game()
 {
-    return std::make_unique<Example>();
+    return std::make_unique<Example>("config.json");
 }
