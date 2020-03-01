@@ -78,6 +78,26 @@ namespace Aporia
         _rotation = std::fmod(radians, 2 * ARI_PI);
     }
 
+    void Sprite::set_flip_x(bool flip)
+    {
+        _flip.first = flip;
+    }
+
+    void Sprite::set_flip_y(bool flip)
+    {
+        _flip.second = flip;
+    }
+
+    void Sprite::flip_x()
+    {
+        _flip.first = !_flip.first;
+    }
+
+    void Sprite::flip_y()
+    {
+        _flip.second = !_flip.second;
+    }
+
     const sf::Vector2f& Sprite::get_position() const
     {
         return _position;
@@ -96,5 +116,15 @@ namespace Aporia
     double Sprite::get_rotation() const
     {
         return _rotation;
+    }
+
+    bool Sprite::get_flip_x() const
+    {
+        return _flip.first;
+    }
+
+    bool Sprite::get_flip_y() const
+    {
+        return _flip.second;
     }
 }

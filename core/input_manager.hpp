@@ -21,9 +21,17 @@ namespace Aporia
         bool is_key_pressed(Keyboard key) const;
         bool is_key_released(Keyboard key) const;
 
+        bool is_any_key_triggered() const;
+        bool is_any_key_pressed() const;
+        bool is_any_key_released() const;
+
         bool is_button_triggered(Mouse button) const;
         bool is_button_pressed(Mouse button) const;
         bool is_button_released(Mouse button) const;
+
+        bool is_any_button_triggered() const;
+        bool is_any_button_pressed() const;
+        bool is_any_button_released() const;
 
         float is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
 
