@@ -15,7 +15,7 @@ namespace Aporia
     class APORIA_API InputManager final
     {
     public:
-        InputManager(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager);
+        InputManager(Logger& logger, EventManager& event_manager);
 
         bool is_key_triggered(Keyboard key) const;
         bool is_key_pressed(Keyboard key) const;
@@ -52,6 +52,6 @@ namespace Aporia
         InputBuffer<MouseWheel> _wheels;
         float _wheel_delta = 0.0f;
 
-        std::shared_ptr<Logger> _logger;
+        Logger& _logger;
     };
 }

@@ -32,35 +32,14 @@ namespace Aporia
         void run();
 
     protected:
-        void draw(const Sprite& sprite)
-        {
-            _events->call_event<DrawSpriteEvent>(sprite);
-        }
+        Logger _logger;
 
-        std::shared_ptr<TextureManager> get_textures() const
-        {
-            return _textures;
-        }
+        ConfigManager _configs;
+        EventManager _events;
+        InputManager _inputs;
+        TextureManager _textures;
 
-        std::shared_ptr<InputManager> get_inputs() const
-        {
-            return _inputs;
-        }
-
-        std::shared_ptr<Logger> get_logger() const
-        {
-            return _logger;
-        }
-
-    private:
-        std::shared_ptr<ConfigManager> _configs;
-        std::shared_ptr<EventManager> _events;
-        std::shared_ptr<InputManager> _inputs;
-        std::shared_ptr<TextureManager> _textures;
-
-        std::unique_ptr<Renderer> _renderer;
-        std::shared_ptr<Window> _window;
-
-        std::shared_ptr<Logger> _logger;
+        Renderer _renderer;
+        Window _window;
     };
 }

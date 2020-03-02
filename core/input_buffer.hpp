@@ -5,7 +5,6 @@
 
 #include <magic_enum.hpp>
 
-#include "logger.hpp"
 #include "platform.hpp"
 
 namespace Aporia
@@ -16,10 +15,7 @@ namespace Aporia
         using Buffer = std::bitset<magic_enum::enum_count<T>()>;
 
     public:
-        InputBuffer(const std::shared_ptr<Logger>& logger)
-            : _logger(logger)
-        {
-        }
+        InputBuffer() = default;
 
         ~InputBuffer()
         {
@@ -109,7 +105,5 @@ namespace Aporia
         Buffer* _incoming_state = new Buffer(false);
         Buffer* _current_state = new Buffer(false);
         Buffer* _past_state = new Buffer(false);
-
-        std::shared_ptr<Logger> _logger;
     };
 }

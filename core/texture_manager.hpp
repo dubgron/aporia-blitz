@@ -14,7 +14,7 @@ namespace Aporia
     class APORIA_API TextureManager final
     {
     public:
-        TextureManager(const std::shared_ptr<Logger>& logger);
+        TextureManager(Logger& logger);
 
         bool load_textures(const TextureData& config);
 
@@ -23,6 +23,6 @@ namespace Aporia
     private:
         std::map<std::string, std::shared_ptr<Texture>> _textures;
 
-        std::shared_ptr<Logger> _logger;
+        Logger& _logger;
     };
 }

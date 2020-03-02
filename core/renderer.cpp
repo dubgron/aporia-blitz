@@ -12,12 +12,12 @@
 
 namespace Aporia
 {
-    Renderer::Renderer(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager)
+    Renderer::Renderer(Logger& logger, EventManager& event_manager)
         : _logger(logger)
     {
         using namespace std::placeholders;
 
-        event_manager->add_listener<DrawSpriteEvent>(std::bind(&Renderer::draw, this, _1));
+        event_manager.add_listener<DrawSpriteEvent>(std::bind(&Renderer::draw, this, _1));
     }
 
     void Renderer::draw(const Sprite& sprite)

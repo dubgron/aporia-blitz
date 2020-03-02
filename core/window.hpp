@@ -17,7 +17,7 @@ namespace Aporia
     class APORIA_API Window final
     {
     public:
-        Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config);
+        Window(Logger& logger, const WindowConfig& config);
         ~Window();
 
         void open();
@@ -41,6 +41,6 @@ namespace Aporia
 
         bool _visible = false;
 
-        std::shared_ptr<Logger> _logger;
+        Logger& _logger;
     };
 }

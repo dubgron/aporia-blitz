@@ -2,7 +2,7 @@
 
 namespace Aporia
 {
-    Window::Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config)
+    Window::Window(Logger& logger, const WindowConfig& config)
         : _logger(logger), _config(config)
     {
         open();
@@ -17,7 +17,7 @@ namespace Aporia
     {
         if (is_open())
         {
-            _logger->log(LOG_WARNING) << "Window '" << _config.title << "' is already open!";
+            _logger.log(LOG_WARNING) << "Window '" << _config.title << "' is already open!";
         }
         else
         {
@@ -37,7 +37,7 @@ namespace Aporia
         }
         else
         {
-            _logger->log(LOG_WARNING) << "Window '" << _config.title << "' is already closed!";
+            _logger.log(LOG_WARNING) << "Window '" << _config.title << "' is already closed!";
         }
     }
 
@@ -45,7 +45,7 @@ namespace Aporia
     {
         if (is_visible())
         {
-            _logger->log(LOG_WARNING) << "Window '" << _config.title << "' is already visible!";
+            _logger.log(LOG_WARNING) << "Window '" << _config.title << "' is already visible!";
         }
         else
         {
@@ -63,7 +63,7 @@ namespace Aporia
         }
         else
         {
-            _logger->log(LOG_WARNING) << "Window '" << _config.title << "' is already hidden!";
+            _logger.log(LOG_WARNING) << "Window '" << _config.title << "' is already hidden!";
         }
     }
     

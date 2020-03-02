@@ -17,7 +17,7 @@ namespace Aporia
     class APORIA_API Renderer final
     {
     public:
-        Renderer(const std::shared_ptr<Logger>& logger, const std::shared_ptr<EventManager>& event_manager);
+        Renderer(Logger& logger, EventManager& event_manager);
 
         void draw(const Sprite& sprite);
         void render(Window& window);
@@ -27,6 +27,6 @@ namespace Aporia
 
         const size_t _sprites = 10000;
 
-        std::shared_ptr<Logger> _logger;
+        Logger& _logger;
     };
 }

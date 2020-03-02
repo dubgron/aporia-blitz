@@ -8,12 +8,12 @@
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(const std::shared_ptr<Logger>& logger, const std::string& config)
+    ConfigManager::ConfigManager(Logger& logger, const std::string& config)
         : _logger(logger)
     {
         if (!std::filesystem::exists(config))
         {
-            _logger->log(LOG_CRITICAL) << "Config file '" << config << "' doesn't exist!";
+            _logger.log(LOG_CRITICAL) << "Config file '" << config << "' doesn't exist!";
             return;
         }
 
