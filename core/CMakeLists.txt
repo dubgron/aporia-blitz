@@ -31,6 +31,8 @@ find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
 add_library(core SHARED
     "aporia.hpp"
+    "camera.cpp"
+    "camera.hpp"
     "configs.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
@@ -92,6 +94,8 @@ target_compile_definitions(core
 
 source_group(core FILES
     "aporia.hpp"
+    "camera.cpp"
+    "camera.hpp"
     "configs.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
