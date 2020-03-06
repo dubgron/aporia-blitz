@@ -39,10 +39,10 @@ namespace Aporia
             return sf::Vector2f(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos);
         };
 
-        vertecies[0].position = sf::Vector2f(position.x, position.y);
-        vertecies[1].position = sf::Vector2f(position.x + texture->width, position.y);
-        vertecies[2].position = sf::Vector2f(position.x + texture->width, position.y + texture->height);
-        vertecies[3].position = sf::Vector2f(position.x, position.y + texture->height);
+        vertecies[0].position = sf::Vector2f(position.x, position.y + texture->height);
+        vertecies[1].position = sf::Vector2f(position.x + texture->width, position.y + texture->height);
+        vertecies[2].position = sf::Vector2f(position.x + texture->width, position.y);
+        vertecies[3].position = sf::Vector2f(position.x, position.y);
 
         vertecies[0].texCoords = sf::Vector2f(texture->x, texture->y);
         vertecies[1].texCoords = sf::Vector2f(texture->x + texture->width, texture->y);
@@ -70,11 +70,12 @@ namespace Aporia
         _queue[texture->origin].add(vertecies);
     }
 
-    void Renderer::render(Window& window)
+    void Renderer::render(Window& window, Camera& camera)
     {
         for (auto& [texture, vertex_array] : _queue)
         {
             sf::RenderStates states(texture.get());
+            states.transform = camera.get_view_projection_matrix();
 
             window.draw(vertex_array, states);
             vertex_array.clear();

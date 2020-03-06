@@ -24,6 +24,11 @@ namespace Aporia
     {
         this->on_init();
 
+        int w = _configs.window_data.width;
+        int h = _configs.window_data.height;
+
+        Camera cam(-w / 2 - 1, -w / 2 + 1, -h / 2 - 1, -h / 2 + 1);
+
         while (_window.is_open())
         {
             _events.listen_for_events(_window);
@@ -31,7 +36,7 @@ namespace Aporia
 
             this->on_update();
 
-            _renderer.render(_window);
+            _renderer.render(_window, cam);
 
             _window.display();
         }
