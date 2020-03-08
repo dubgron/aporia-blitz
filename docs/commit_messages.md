@@ -21,7 +21,7 @@ The type is contained within the title and can be one of these types:
 * `feat`: introduced a new feature,
 * `bugfix`: fixed a bug,
 * `docs`: changed the documentation,
-* `style`: changed formatting, added missing semi colons, etc; no code change,
+* `style`: changed formatting, added missing semicolons, etc; no code change,
 * `refactor`: refactored production code,
 * `misc`: bumped build version, etc; no production code change
 
