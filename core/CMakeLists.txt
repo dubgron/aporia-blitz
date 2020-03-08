@@ -90,7 +90,8 @@ target_compile_definitions(core
     PUBLIC
         SFML_STATIC
     PRIVATE
-        APORIA_EXPORT)
+        APORIA_EXPORT
+        _USE_MATH_DEFINES)
 
 source_group(core FILES
     "aporia.hpp"
