@@ -72,10 +72,12 @@ namespace Aporia
 
     void Renderer::render(Window& window, Camera& camera)
     {
+        sf::Transform transform = window.get_transform() * camera.get_view_projection_matrix();
+        sf::RenderStates states(transform);
+
         for (auto& [texture, vertex_array] : _queue)
         {
-            sf::RenderStates states(texture.get());
-            states.transform = camera.get_view_projection_matrix();
+            states.texture = texture.get();
 
             window.draw(vertex_array, states);
             vertex_array.clear();

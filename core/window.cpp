@@ -25,6 +25,10 @@ namespace Aporia
             _window.setPosition(_config.position);
             _window.setFramerateLimit(_config.framerate);
             _visible = true;
+
+            _transform = sf::Transform(1, 0, _config.width / 2,
+                                       0, -1, _config.height / 2,
+                                       0, 0, 1);
         }
     }
 
@@ -95,5 +99,10 @@ namespace Aporia
     bool Window::is_visible() const
     {
         return _visible;
+    }
+
+    const sf::Transform& Window::get_transform() const
+    {
+        return _transform;
     }
 }
