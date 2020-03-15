@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "configs.hpp"
+#include "configs/all_configs.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
 

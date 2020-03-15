@@ -33,7 +33,6 @@ add_library(core SHARED
     "aporia.hpp"
     "camera.cpp"
     "camera.hpp"
-    "configs.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
     "entry_point.hpp"
@@ -46,7 +45,6 @@ add_library(core SHARED
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
-    "inputs.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
@@ -62,11 +60,13 @@ add_library(core SHARED
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
-    "utils/read_file.hpp"
+    "configs/all_configs.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
+    "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
+    "utils/read_file.hpp"
     "utils/type_traits.hpp")
 
 target_link_libraries(core 
@@ -128,10 +128,12 @@ source_group(core FILES
     "window.hpp")
 
 source_group(core\\configs FILES
+    "configs/all_configs.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp")
 
 source_group(core\\inputs FILES
+    "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp")
 

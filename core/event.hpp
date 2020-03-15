@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "inputs.hpp"
+#include "inputs/all_inputs.hpp"
 #include "sprite.hpp"
 #include "window.hpp"
 
