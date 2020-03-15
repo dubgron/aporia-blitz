@@ -16,7 +16,7 @@ namespace Aporia
     public:
         TextureManager(Logger& logger);
 
-        bool load_textures(const TextureData& config);
+        bool load_textures(const TextureConfig& config);
 
         const std::shared_ptr<Texture>& get_texture(const std::string& name) const;
 

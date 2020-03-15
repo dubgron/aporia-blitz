@@ -24,17 +24,17 @@ namespace Aporia
 
         /* TODO: Handling when json file is not correct */
 
-        /* Getting Window Data */
+        /* Getting Window Config */
         auto window = config_json["window_config"];
 
-        window_data.title = window["title"];
-        window_data.position = { window["position"][0], window["position"][1] };
-        window_data.width = window["width"];
-        window_data.height = window["height"];
-        window_data.framerate = window["framerate"];
+        window_config.title = window["title"];
+        window_config.position = { window["position"][0], window["position"][1] };
+        window_config.width = window["width"];
+        window_config.height = window["height"];
+        window_config.framerate = window["framerate"];
 
-        /* Getting Texture Data */
-        texture_data.atlas = config_json["texture_config"]["src"];
+        /* Getting Texture Config */
+        texture_config.atlas = config_json["texture_config"]["src"];
 
         _good = true;
     }

@@ -9,12 +9,12 @@ namespace Aporia
           _events(_logger),
           _inputs(_logger, _events),
           _renderer(_logger, _events),
-          _window(_logger, _configs.window_data)
+          _window(_logger, _configs.window_config)
     {
         if (!_configs.is_good())
             return;
 
-        if (!_textures.load_textures(_configs.texture_data))
+        if (!_textures.load_textures(_configs.texture_config))
             return;
 
         _events.add_listener<WindowCloseEvent>([](Window& window) { window.close(); });
@@ -24,8 +24,8 @@ namespace Aporia
     {
         this->on_init();
 
-        int w = _configs.window_data.width;
-        int h = _configs.window_data.height;
+        float w = _configs.window_config.width;
+        float h = _configs.window_config.height;
 
         Camera cam(-w / 2 - 1, -w / 2 + 1, -h / 2 - 1, -h / 2 + 1);
 

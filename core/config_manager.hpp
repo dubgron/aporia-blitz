@@ -16,8 +16,8 @@ namespace Aporia
 
         bool is_good() const;
 
-        WindowConfig window_data;
-        TextureData texture_data;
+        WindowConfig window_config;
+        TextureConfig texture_config;
 
     private:
         bool _good = false;
