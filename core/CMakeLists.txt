@@ -61,6 +61,7 @@ add_library(core SHARED
     "window.cpp"
     "window.hpp"
     "configs/all_configs.hpp"
+    "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
     "inputs/all_inputs.hpp"
@@ -129,6 +130,7 @@ source_group(core FILES
 
 source_group(core\\configs FILES
     "configs/all_configs.hpp"
+    "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp")
 

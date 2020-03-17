@@ -18,6 +18,7 @@ namespace Aporia
 
         WindowConfig window_config;
         TextureConfig texture_config;
+        CameraConfig camera_config;
 
     private:
         bool _good = false;
