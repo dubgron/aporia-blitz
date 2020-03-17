@@ -22,9 +22,11 @@ namespace Aporia
 
         void set_rotation(float rotation);
         void rotate(float rotation);
+        float get_rotation() const;
 
         void set_zoom(float zoom);
         void zoom(float zoom);
+        float get_zoom() const;
 
         const Matrix3& get_projection_matrix() const;
         const Matrix3& get_view_matrix() const;

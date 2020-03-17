@@ -59,6 +59,11 @@ namespace Aporia
         set_rotation(_rotation + rotation);
     }
 
+    float Camera::get_rotation() const
+    {
+        return _rotation;
+    }
+
     void Camera::set_zoom(float zoom)
     {
         _zoom = zoom;
@@ -68,6 +73,11 @@ namespace Aporia
     void Camera::zoom(float zoom)
     {
         set_zoom(_zoom + zoom);
+    }
+
+    float Camera::get_zoom() const
+    {
+        return _zoom;
     }
 
     const Camera::Matrix3& Camera::get_projection_matrix() const
