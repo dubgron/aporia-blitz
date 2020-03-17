@@ -25,13 +25,14 @@ namespace Aporia
         /* TODO: Handling when json file is not correct */
 
         /* Getting Window Config */
-        auto window = config_json["window_config"];
+        const auto& window = config_json["window_config"];
+        const auto& position = window["position"];
 
         window_config.title = window["title"];
-        window_config.position = { window["position"][0], window["position"][1] };
+        window_config.position = sf::Vector2i(position[0], position[1]);
         window_config.width = window["width"];
         window_config.height = window["height"];
-        window_config.framerate = window["framerate"];
+        window_config.vsync = window["vsync"];
 
         /* Getting Texture Config */
         const auto& texture = config_json["texture_config"];
