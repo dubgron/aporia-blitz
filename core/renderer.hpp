@@ -21,7 +21,7 @@ namespace Aporia
         Renderer(Logger& logger, EventManager& event_manager);
 
         void draw(const Sprite& sprite);
-        void render(Window& window, Camera& cam);
+        void render(Window& window, const Camera& cam);
 
     private:
         std::map<std::shared_ptr<sf::Texture>, VertexArray> _queue;

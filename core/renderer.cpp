@@ -70,7 +70,7 @@ namespace Aporia
         _queue[texture->origin].add(vertecies);
     }
 
-    void Renderer::render(Window& window, Camera& camera)
+    void Renderer::render(Window& window, const Camera& camera)
     {
         sf::RenderStates states(camera.get_view_projection_matrix());
 
