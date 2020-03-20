@@ -29,6 +29,12 @@ endif()
 
 find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
+if(NOT DEFINED ENV{IMGUI_SFML_BUILD})
+    message(FATAL_ERROR "Environmental variable IMGUI_SFML_BUILD is not set!")
+endif()
+
+find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
+
 add_library(core SHARED
     "aporia.hpp"
     "configs.hpp"
@@ -74,7 +80,8 @@ target_link_libraries(core
     sfml-system
     spdlog::spdlog
     nlohmann_json::nlohmann_json
-    magic_enum::magic_enum)
+    magic_enum::magic_enum
+    ImGui-SFML::ImGui-SFML)
 
 target_include_directories(core 
     PUBLIC
