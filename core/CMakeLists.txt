@@ -9,9 +9,7 @@ if(NOT DEFINED ENV{SFML_BUILD})
 endif()
 
 set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR $ENV{SFML_BUILD})
-set(SFML_ROOT "${PROJECT_SOURCE_DIR}/thirdparty/SFML/extlibs/libs-msvc-universal/x64")
-find_package(SFML 2.5.1 REQUIRED COMPONENTS 
+find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS
     graphics
     audio
     window
@@ -78,9 +76,7 @@ target_link_libraries(core
 
 target_include_directories(core 
     PUBLIC
-        "${PROJECT_SOURCE_DIR}/core"
-    PRIVATE
-        "${PROJECT_SOURCE_DIR}/thirdparty/nlohmann_json/single_include")
+        "${PROJECT_SOURCE_DIR}/core")
     
 target_compile_features(core PUBLIC cxx_std_17)
     
@@ -90,49 +86,10 @@ target_compile_definitions(core
     PRIVATE
         APORIA_EXPORT)
 
-source_group(core FILES
-    "aporia.hpp"
-    "configs.hpp"
-    "config_manager.cpp"
-    "config_manager.hpp"
-    "entry_point.hpp"
-    "event.hpp"
-    "event_manager.cpp"
-    "event_manager.hpp"
-    "event_manager.tpp"
-    "game.cpp"
-    "game.hpp"
-    "input_buffer.hpp"
-    "input_manager.cpp"
-    "input_manager.hpp"
-    "inputs.hpp"
-    "log_buffer.hpp"
-    "logger.cpp"
-    "logger.hpp"
-    "platform.hpp"
-    "renderer.cpp"
-    "renderer.hpp"
-    "sprite.cpp"
-    "sprite.hpp"
-    "texture.hpp"
-    "texture_manager.cpp"
-    "texture_manager.hpp"
-    "vertex_array.cpp"
-    "vertex_array.hpp"
-    "window.cpp"
-    "window.hpp")
-
-source_group(core\\configs FILES
-    "configs/texture_config.hpp"
-    "configs/window_config.hpp")
-
-source_group(core\\inputs FILES
-    "inputs/keyboard.hpp"
-    "inputs/mouse.hpp")
-
-source_group(core\\utils FILES
-    "utils/read_file.hpp"
-    "utils/type_traits.hpp")
+source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
+source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
+source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
+source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS                       ON
