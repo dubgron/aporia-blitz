@@ -1,5 +1,6 @@
 #include "event_manager.hpp"
 
+#include <imgui-SFML.h>
 #include <SFML/Window/Event.hpp>
 
 #include "event.hpp"
@@ -24,6 +25,8 @@ namespace Aporia
         sf::Event event;
         while (window.poll_event(event))
         {
+            ImGui::SFML::ProcessEvent(event);
+
             switch (event.type)
             {
                 case sf::Event::Closed:
