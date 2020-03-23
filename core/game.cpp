@@ -5,6 +5,7 @@ namespace Aporia
     Game::Game(const std::string& config_file)
         : _logger("engine"),
           _configs(_logger, config_file),
+          _audio(_logger, _configs.audio_data),
           _textures(_logger),
           _events(_logger),
           _inputs(_logger, _events),

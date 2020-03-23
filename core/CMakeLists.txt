@@ -31,6 +31,8 @@ find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
 add_library(core SHARED
     "aporia.hpp"
+    "audio_manager.cpp"
+    "audio_manager.hpp"
     "configs.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
@@ -51,8 +53,6 @@ add_library(core SHARED
     "platform.hpp"
     "renderer.cpp"
     "renderer.hpp"
-    "sound_manager.cpp"
-    "sound_manager.hpp"
     "sprite.cpp"
     "sprite.hpp"
     "texture.hpp"
@@ -95,6 +95,8 @@ target_compile_definitions(core
 
 source_group(core FILES
     "aporia.hpp"
+    "audio_manager.cpp"
+    "audio_manager.hpp"
     "configs.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
@@ -115,8 +117,6 @@ source_group(core FILES
     "platform.hpp"
     "renderer.cpp"
     "renderer.hpp"
-    "sound_manager.cpp"
-    "sound_manager.hpp"
     "sprite.cpp"
     "sprite.hpp"
     "texture.hpp"

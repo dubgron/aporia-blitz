@@ -4,6 +4,7 @@
 #include <memory>
 #include <tuple>
 
+#include "audio_manager.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
 #include "input_manager.hpp"
@@ -33,8 +34,9 @@ namespace Aporia
 
     protected:
         Logger _logger;
-
         ConfigManager _configs;
+
+        AudioManager _audio;
         EventManager _events;
         InputManager _inputs;
         TextureManager _textures;
