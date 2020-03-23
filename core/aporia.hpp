@@ -3,6 +3,7 @@
 
 /* Configs */
 #include <configs.hpp>
+#include <configs/audio_config.hpp>
 #include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
 
@@ -29,6 +30,7 @@
 #include <window.hpp>
 
 /* Managers */
+#include <audio_manager.hpp>
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <texture_manager.hpp>

@@ -36,6 +36,10 @@ namespace Aporia
         /* Getting Texture Data */
         texture_data.atlas = config_json["texture_config"]["src"];
 
+        /* Getting Audio Data*/
+        audio_data.musics = config_json["audio_config"]["musics"].get<std::vector<std::string>>();
+        audio_data.sounds = config_json["audio_config"]["sounds"].get<std::vector<std::string>>();
+
         _good = true;
     }
 

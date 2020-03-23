@@ -16,6 +16,7 @@ namespace Aporia
 
         bool is_good() const;
 
+        AudioConfig audio_data;
         WindowConfig window_data;
         TextureData texture_data;
 
