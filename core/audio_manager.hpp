@@ -20,6 +20,7 @@ namespace Aporia
         AudioManager(Logger& logger, const AudioConfig& config);
         ~AudioManager();
 
+        void play(const std::string& name, float volume);
         void play(const std::string& name, float volume, const sf::Vector3f& position, bool relative = false);
         void play_music(const std::string& name, float volume, const sf::Vector3f& position, bool loop = false);
 

@@ -49,8 +49,13 @@ namespace Aporia
         }
     }
 
+    void AudioManager::play(const std::string& name, float volume)
+    {
+        play(name, volume, sf::Vector3f(0.0f, 0.0f, 0.0f), true);
+    }
+
     void AudioManager::play(const std::string& name, float volume, const sf::Vector3f& position, bool relative)
-    {       
+    {
         _queue_play_sound[_head_sounds].setBuffer(_buffers[name]);
 
         _queue_play_sound[_head_sounds].setVolume(volume);
