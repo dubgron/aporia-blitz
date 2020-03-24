@@ -25,12 +25,12 @@ namespace Aporia
             name.erase(name.find_last_of("."));
             name.erase(0, name.find_last_of("/") + 1);
 
-            if (_queue_play_music.find(name) == _queue_play_music.end())
+            if (_musics.find(name) == _musics.end())
             {
                 sf::Music* music_tmp = new sf::Music();
                 music_tmp->openFromFile(music);
 
-                _queue_play_music.emplace(name, music_tmp);
+                _musics.emplace(name, music_tmp);
             }
             else
             {
@@ -43,48 +43,48 @@ namespace Aporia
 
     AudioManager::~AudioManager()
     {
-        for (const auto& music : _queue_play_music)
+        for (const auto& music : _musics)
         {
             delete music.second;
         }
     }
 
-    void AudioManager::play(const std::string& name, float volume)
+    void AudioManager::play_sound(const std::string& name, float volume)
     {
-        play(name, volume, sf::Vector3f(0.0f, 0.0f, 0.0f), true);
+        play_sound(name, volume, sf::Vector3f(0.0f, 0.0f, 0.0f), true);
     }
 
-    void AudioManager::play(const std::string& name, float volume, const sf::Vector3f& position, bool relative)
+    void AudioManager::play_sound(const std::string& name, float volume, const sf::Vector3f& position, bool relative)
     {
-        _queue_play_sound[_head_sounds].setBuffer(_buffers[name]);
+        _sounds[_head_sounds].setBuffer(_buffers[name]);
 
-        _queue_play_sound[_head_sounds].setVolume(volume);
-        _queue_play_sound[_head_sounds].setPosition(position);
-        _queue_play_sound[_head_sounds].setRelativeToListener(relative);
+        _sounds[_head_sounds].setVolume(volume);
+        _sounds[_head_sounds].setPosition(position);
+        _sounds[_head_sounds].setRelativeToListener(relative);
 
-        _queue_play_sound[_head_sounds].play();
+        _sounds[_head_sounds].play();
 
-        _head_sounds = (_head_sounds + 1u) % _queue_play_sound.size();
+        _head_sounds = (_head_sounds + 1u) % _sounds.size();
 
         _logger.log(LOG_INFO) << "Sound '" << name << "' is playing.";
     }
 
     void AudioManager::play_music(const std::string& name, float volume, const sf::Vector3f& position, bool loop)
     {
-        _queue_play_music[name]->setVolume(volume);
-        _queue_play_music[name]->setPosition(position);
-        _queue_play_music[name]->setLoop(loop);
+        _musics[name]->setVolume(volume);
+        _musics[name]->setPosition(position);
+        _musics[name]->setLoop(loop);
 
-        _queue_play_music[name]->play();
+        _musics[name]->play();
 
         _logger.log(LOG_INFO) << "Music '" << name <<"' is playing.";
     }
 
-    void AudioManager::pause(const std::string& name)
+    void AudioManager::pause_music(const std::string& name)
     {
-        if (_queue_play_music.find(name) != _queue_play_music.end())
+        if (_musics.find(name) != _musics.end())
         {
-            _queue_play_music[name]->pause();
+            _musics[name]->pause();
         }
         else
         {
@@ -92,19 +92,19 @@ namespace Aporia
         }
     }
 
-    void AudioManager::pause_all()
+    void AudioManager::pause_all_music()
     {
-        for (const auto& music : _queue_play_music)
+        for (const auto& music : _musics)
         {
             music.second->pause();
         }
     }
 
-    void AudioManager::stop(const std::string& name)
+    void AudioManager::stop_music(const std::string& name)
     {
-        if (_queue_play_music.find(name) != _queue_play_music.end())
+        if (_musics.find(name) != _musics.end())
         {
-            _queue_play_music[name]->stop();
+            _musics[name]->stop();
         }
         else
         {
@@ -112,19 +112,19 @@ namespace Aporia
         }
     }
 
-    void AudioManager::stop_all()
+    void AudioManager::stop_all_music()
     {
-        for (const auto& music : _queue_play_music)
+        for (const auto& music : _musics)
         {
             music.second->stop();
         }
     }
 
-    void AudioManager::stop_sounds()
+    void AudioManager::stop_all_sounds()
     {
-        for (int i = 0; i < _queue_play_sound.size(); i++)
+        for (sf::Sound& sound : _sounds)
         {
-            _queue_play_sound[i].stop();
+            sound.stop();
         }
     }
 }

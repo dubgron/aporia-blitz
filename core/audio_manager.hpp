@@ -20,25 +20,25 @@ namespace Aporia
         AudioManager(Logger& logger, const AudioConfig& config);
         ~AudioManager();
 
-        void play(const std::string& name, float volume);
-        void play(const std::string& name, float volume, const sf::Vector3f& position, bool relative = false);
+        void play_sound(const std::string& name, float volume);
+        void play_sound(const std::string& name, float volume, const sf::Vector3f& position, bool relative = false);
         void play_music(const std::string& name, float volume, const sf::Vector3f& position, bool loop = false);
 
-        void pause(const std::string& name);
-        void pause_all();
+        void pause_music(const std::string& name);
+        void pause_all_music();
 
-        void stop(const std::string& name);
-        void stop_all();
+        void stop_music(const std::string& name);
+        void stop_all_music();
 
-        void stop_sounds();
+        void stop_all_sounds();
 
     private:
         Logger& _logger;
 
-        std::array<sf::Sound, 64> _queue_play_sound;
+        std::array<sf::Sound, 64> _sounds;
         
         std::unordered_map<std::string, sf::SoundBuffer> _buffers;
-        std::unordered_map<std::string, sf::Music*> _queue_play_music;
+        std::unordered_map<std::string, sf::Music*> _musics;
 
         unsigned int _head_sounds = 0;
     };
