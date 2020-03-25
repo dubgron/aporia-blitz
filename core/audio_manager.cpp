@@ -71,6 +71,9 @@ namespace Aporia
 
     void AudioManager::play_music(const std::string& name, float volume, const sf::Vector3f& position, bool loop)
     {
+        if (_musics[name]->getStatus() != sf::Music::Status::Paused)
+            _musics[name]->stop();
+
         _musics[name]->setVolume(volume);
         _musics[name]->setPosition(position);
         _musics[name]->setLoop(loop);
