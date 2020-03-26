@@ -27,7 +27,5 @@ namespace Aporia
 
         Camera _camera;
         const CameraConfig& _config;
-
-        float _zoom_level = 1.0f;
     };
 }

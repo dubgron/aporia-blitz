@@ -1,5 +1,7 @@
 #include "camera_controller.hpp"
 
+#include <cmath>
+
 namespace Aporia
 {
     CameraController::CameraController(Logger& logger, const CameraConfig& config)
@@ -12,46 +14,52 @@ namespace Aporia
     void CameraController::control_movement(const InputManager& input_manager, float delta_time)
     {
         float movement_speed = _config.movement_speed * delta_time;
+        sf::Vector2f movement;
 
         if (input_manager.is_key_pressed(_config.movement_key_up))
-            _camera.move(sf::Vector2f(0.0f, movement_speed));
+            movement += sf::Vector2f(0.0f, movement_speed);
 
         if (input_manager.is_key_pressed(_config.movement_key_down))
-            _camera.move(sf::Vector2f(0.0f, -movement_speed));
+            movement += sf::Vector2f(0.0f, -movement_speed);
 
         if (input_manager.is_key_pressed(_config.movement_key_left))
-            _camera.move(sf::Vector2f(-movement_speed, 0.0f));
+            movement += sf::Vector2f(-movement_speed, 0.0f);
 
         if (input_manager.is_key_pressed(_config.movement_key_right))
-            _camera.move(sf::Vector2f(movement_speed, 0.0f));
+            movement += sf::Vector2f(movement_speed, 0.0f);
+
+        if (movement.x || movement.y)
+            _camera.move(movement);
     }
 
     void CameraController::control_rotation(const InputManager& input_manager, float delta_time)
     {
         float rotation_speed = _config.rotation_speed * delta_time;
+        float rotation = 0.0f;
 
         if (input_manager.is_key_pressed(_config.rotation_key_left))
-            _camera.rotate(rotation_speed);
+            rotation += rotation_speed;
 
         if (input_manager.is_key_pressed(_config.rotation_key_right))
-            _camera.rotate(-rotation_speed);
+            rotation -= rotation_speed;
+
+        if (rotation)
+            _camera.rotate(rotation);
     }
 
     void CameraController::control_zoom(const InputManager& input_manager, float delta_time)
     {
         float zoom_speed = _config.zoom_speed * delta_time;
+        float zoom = 0.0f;
 
         if (input_manager.is_key_pressed(_config.zoom_key_in))
-        {
-            _zoom_level = std::max(_zoom_level - zoom_speed, _config.zoom_min);
-            _camera.set_zoom(_zoom_level);
-        }
+            zoom -= zoom_speed;
 
         if (input_manager.is_key_pressed(_config.zoom_key_out))
-        {
-            _zoom_level = std::min(_zoom_level + zoom_speed, _config.zoom_max);
-            _camera.set_zoom(_zoom_level);
-        }
+            zoom += zoom_speed;
+
+        if (zoom)
+            _camera.set_zoom(std::clamp(_camera.get_zoom() + zoom, _config.zoom_min, _config.zoom_max));
     }
 
     void CameraController::follow(const sf::Vector2f& to_follow, float delta_time)
