@@ -69,7 +69,15 @@ namespace Aporia
         _logger.log(LOG_INFO) << "Sound '" << name << "' is playing.";
     }
 
-    void AudioManager::play_music(const std::string& name, float volume, const sf::Vector3f& position, bool loop)
+    void AudioManager::stop_all_sounds()
+    {
+        for (sf::Sound& sound : _sounds)
+        {
+            sound.stop();
+        }
+    }
+
+    void AudioManager::play_music(const std::string& name, float volume, bool loop, const sf::Vector3f& position)
     {
         if (_musics[name]->getStatus() != sf::Music::Status::Paused)
             _musics[name]->stop();
@@ -91,7 +99,7 @@ namespace Aporia
         }
         else
         {
-            _logger.log(LOG_ERROR) << "Music '" << name << "' does not excist!";
+            _logger.log(LOG_ERROR) << "Music '" << name << "' does not exist!";
         }
     }
 
@@ -111,7 +119,7 @@ namespace Aporia
         }
         else
         {
-            _logger.log(LOG_ERROR) << "Music '" << name << "' does not excist!";
+            _logger.log(LOG_ERROR) << "Music '" << name << "' does not exist!";
         }
     }
 
@@ -120,14 +128,6 @@ namespace Aporia
         for (const auto& music : _musics)
         {
             music.second->stop();
-        }
-    }
-
-    void AudioManager::stop_all_sounds()
-    {
-        for (sf::Sound& sound : _sounds)
-        {
-            sound.stop();
         }
     }
 }

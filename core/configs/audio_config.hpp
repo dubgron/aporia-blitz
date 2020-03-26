@@ -1,8 +1,7 @@
 #pragma once
 
 #include <string>
-
-#include <SFML/Audio/SoundBuffer.hpp>
+#include <vector>
 
 #include "platform.hpp"
 
