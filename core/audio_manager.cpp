@@ -56,6 +56,9 @@ namespace Aporia
 
     void AudioManager::play_sound(const std::string& name, float volume, const sf::Vector3f& position, bool relative)
     {
+        if (!_find_sound(name))
+            return;
+
         _sounds[_head_sounds].setBuffer(_buffers[name]);
 
         _sounds[_head_sounds].setVolume(volume);
@@ -79,6 +82,9 @@ namespace Aporia
 
     void AudioManager::play_music(const std::string& name, float volume, bool loop, const sf::Vector3f& position)
     {
+        if (!_find_music(name))
+            return;
+
         if (_musics[name]->getStatus() != sf::Music::Status::Paused)
             _musics[name]->stop();
 
@@ -93,14 +99,10 @@ namespace Aporia
 
     void AudioManager::pause_music(const std::string& name)
     {
-        if (_musics.find(name) != _musics.end())
-        {
-            _musics[name]->pause();
-        }
-        else
-        {
-            _logger.log(LOG_ERROR) << "Music '" << name << "' does not exist!";
-        }
+        if (!_find_music(name))
+            return;
+
+        _musics[name]->pause();
     }
 
     void AudioManager::pause_all_music()
@@ -113,14 +115,10 @@ namespace Aporia
 
     void AudioManager::stop_music(const std::string& name)
     {
-        if (_musics.find(name) != _musics.end())
-        {
-            _musics[name]->stop();
-        }
-        else
-        {
-            _logger.log(LOG_ERROR) << "Music '" << name << "' does not exist!";
-        }
+        if (!_find_music(name))
+            return;
+
+        _musics[name]->stop();
     }
 
     void AudioManager::stop_all_music()
@@ -129,5 +127,25 @@ namespace Aporia
         {
             music.second->stop();
         }
+    }
+
+    bool AudioManager::_find_music(const std::string& name) const
+    {
+        bool find = _musics.find(name) != _musics.end();
+
+        if (!find)
+            _logger.log(LOG_ERROR) << "Music '" << name << "' does not exist!";
+
+        return find;
+    }
+
+    bool AudioManager::_find_sound(const std::string& name) const
+    {
+        bool find = _buffers.find(name) != _buffers.end();
+
+        if (!find)
+            _logger.log(LOG_ERROR) << "Sound '" << name << "' does not exist!";
+
+        return find;
     }
 }

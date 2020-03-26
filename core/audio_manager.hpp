@@ -31,6 +31,9 @@ namespace Aporia
         void stop_all_music();
 
     private:
+        bool _find_music(const std::string& name) const; 
+        bool _find_sound(const std::string& name) const;
+
         Logger& _logger;
 
         std::array<sf::Sound, 64> _sounds;
