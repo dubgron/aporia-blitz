@@ -25,9 +25,9 @@ namespace Aporia
         float sin = std::sinf(radians);
         float cos = std::cosf(radians);
 
-        _view_matrix = sf::Transform(cos, -sin, position.x,
-                                     sin, cos, position.y,
-                                     0, 0, 1).getInverse();
+        _view_matrix = sf::Transform(cos, sin, -position.x * cos - position.y * sin,
+                                     -sin, cos, position.x * sin - position.y * cos,
+                                     0, 0, 1);
 
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
