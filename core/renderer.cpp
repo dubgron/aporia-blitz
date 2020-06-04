@@ -17,10 +17,10 @@ namespace Aporia
     {
         using namespace std::placeholders;
 
-        event_manager.add_listener<DrawSpriteEvent>(std::bind(&Renderer::draw, this, _1));
+        event_manager.add_listener<DrawSpriteEvent>(std::bind(&Renderer::draw, this, _1, false));
     }
 
-    void Renderer::draw(const Sprite& sprite)
+    void Renderer::draw(const Sprite& sprite, bool z)
     {
         std::array<sf::Vertex, 4> vertecies;
 
@@ -67,11 +67,23 @@ namespace Aporia
         if (_queue.find(texture->origin) == _queue.end())
             _queue.try_emplace(texture->origin, sf::Quads, _sprites);
 
-        _queue[texture->origin].add(vertecies);
+        if (z)
+            _sort.emplace_back(origin.y, texture->origin, vertecies);
+        else
+            _queue[texture->origin].add(vertecies);
     }
 
     void Renderer::render(Window& window, const Camera& camera)
     {
+        using tup = std::tuple<float, std::shared_ptr<sf::Texture>, std::array<sf::Vertex, 4>>;
+
+        std::sort(_sort.begin(), _sort.end(), [](const tup& t1, const tup& t2){ return std::get<0>(t1) > std::get<0>(t2); });
+        for (auto& s : _sort)
+        {
+            _queue[std::get<1>(s)].add(std::get<2>(s));
+        }
+        _sort.clear();
+
         sf::RenderStates states(camera.get_view_projection_matrix());
 
         for (auto& [texture, vertex_array] : _queue)

@@ -20,7 +20,7 @@ namespace Aporia
         void control_zoom(const InputManager& input_manager, float delta_time);
         void follow(const sf::Vector2f& to_follow, float delta_time);
 
-        const Camera& get_camera() const;
+        Camera& get_camera();
 
     private:
         Logger& _logger;

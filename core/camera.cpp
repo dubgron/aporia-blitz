@@ -34,6 +34,8 @@ namespace Aporia
 
     void Camera::set_position(sf::Vector2f pos)
     {
+        pos.x = int(pos.x);
+        pos.y = int(pos.y);
         _position = std::move(pos);
         set_view_matrix(_position, _rotation);
     }

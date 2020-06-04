@@ -20,11 +20,13 @@ namespace Aporia
     public:
         Renderer(Logger& logger, EventManager& event_manager);
 
-        void draw(const Sprite& sprite);
+        void draw(const Sprite& sprite, bool z = false);
         void render(Window& window, const Camera& cam);
 
     private:
         std::map<std::shared_ptr<sf::Texture>, VertexArray> _queue;
+
+        std::vector<std::tuple<float, std::shared_ptr<sf::Texture>, std::array<sf::Vertex, 4>>> _sort;
 
         const size_t _sprites = 10000;
 

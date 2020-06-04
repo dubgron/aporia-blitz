@@ -34,6 +34,16 @@ namespace Aporia
         void move(const sf::Vector2f& pos);
         void rotate(double degree);
 
+        void set_position(float x, float y)
+        {
+            _position = sf::Vector2f(x, y);
+        }
+
+        void set_position(sf::Vector2f pos)
+        {
+            set_position(pos.x, pos.y);
+        }
+
         void set_origin(sf::Vector2f origin);
         void set_origin(Origin origin);
         void set_rotation(double degree);
