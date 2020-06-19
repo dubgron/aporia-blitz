@@ -14,7 +14,7 @@ namespace Aporia {
     {
     }
 
-    bool TextureManager::load_textures(const TextureData& config)
+    bool TextureManager::load_textures(const TextureConfig& config)
     {
         using json = nlohmann::json;
 

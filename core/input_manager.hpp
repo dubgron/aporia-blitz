@@ -6,7 +6,7 @@
 #include "event.hpp"
 #include "event_manager.hpp"
 #include "input_buffer.hpp"
-#include "inputs.hpp"
+#include "inputs/all_inputs.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
 

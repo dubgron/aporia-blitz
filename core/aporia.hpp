@@ -2,12 +2,13 @@
 #include <platform.hpp>
 
 /* Configs */
-#include <configs.hpp>
+#include <configs/all_configs.hpp>
+#include <configs/camera_config.hpp>
 #include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
 
 /* Inputs */
-#include <inputs.hpp>
+#include <inputs/all_inputs.hpp>
 #include <inputs/keyboard.hpp>
 #include <inputs/mouse.hpp>
 

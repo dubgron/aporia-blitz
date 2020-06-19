@@ -5,6 +5,7 @@
 
 #include <SFML/Graphics/Texture.hpp>
 
+#include "camera.hpp"
 #include "event_manager.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
@@ -20,7 +21,7 @@ namespace Aporia
         Renderer(Logger& logger, EventManager& event_manager);
 
         void draw(const Sprite& sprite);
-        void render(Window& window);
+        void render(Window& window, const Camera& cam);
 
     private:
         std::map<std::shared_ptr<sf::Texture>, VertexArray> _queue;

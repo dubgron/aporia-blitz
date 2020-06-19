@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "configs.hpp"
+#include "configs/all_configs.hpp"
 #include "logger.hpp"
 #include "platform.hpp"
 
@@ -16,8 +16,9 @@ namespace Aporia
 
         bool is_good() const;
 
-        WindowConfig window_data;
-        TextureData texture_data;
+        WindowConfig window_config;
+        TextureConfig texture_config;
+        CameraConfig camera_config;
 
     private:
         bool _good = false;

@@ -29,7 +29,10 @@ find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
 add_library(core SHARED
     "aporia.hpp"
-    "configs.hpp"
+    "camera.cpp"
+    "camera.hpp"
+    "camera_controller.cpp"
+    "camera_controller.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
     "entry_point.hpp"
@@ -42,7 +45,6 @@ add_library(core SHARED
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
-    "inputs.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
@@ -58,11 +60,14 @@ add_library(core SHARED
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
-    "utils/read_file.hpp"
+    "configs/all_configs.hpp"
+    "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
+    "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
+    "utils/read_file.hpp"
     "utils/type_traits.hpp")
 
 target_link_libraries(core 
@@ -84,7 +89,8 @@ target_compile_definitions(core
     PUBLIC
         SFML_STATIC
     PRIVATE
-        APORIA_EXPORT)
+        APORIA_EXPORT
+        _USE_MATH_DEFINES)
 
 source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")

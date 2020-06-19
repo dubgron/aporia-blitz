@@ -36,11 +36,11 @@ namespace Aporia
         bool is_visible() const;
 
     private:
+        Logger& _logger;
+
         sf::RenderWindow _window;
         const WindowConfig& _config;
 
         bool _visible = false;
-
-        Logger& _logger;
     };
 }

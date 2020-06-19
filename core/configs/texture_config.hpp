@@ -6,7 +6,7 @@
 
 namespace Aporia
 {
-	struct APORIA_API TextureData final
+	struct APORIA_API TextureConfig final
 	{
 		std::string atlas;
 	};
