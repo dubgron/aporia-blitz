@@ -2,11 +2,9 @@
 
 #include <SFML/Graphics/Transform.hpp>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
-    class APORIA_API Camera final
+    class Camera final
     {
         using Matrix3 = sf::Transform;
 

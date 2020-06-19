@@ -5,11 +5,10 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include "logger.hpp"
-#include "platform.hpp"
 
 namespace Aporia
 {
-    struct APORIA_API Texture final
+    struct Texture final
     {
         unsigned int x, y;
         unsigned width, height;

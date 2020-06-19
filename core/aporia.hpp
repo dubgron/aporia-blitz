@@ -1,6 +1,3 @@
-/* Platform-specific */
-#include <platform.hpp>
-
 /* Configs */
 #include <configs/all_configs.hpp>
 #include <configs/camera_config.hpp>

@@ -5,11 +5,10 @@
 
 #include "configs/all_configs.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 
 namespace Aporia
 {
-    struct APORIA_API ConfigManager final
+    struct ConfigManager final
     {
         ConfigManager() = default;
         ConfigManager(Logger& logger, const std::string& config);

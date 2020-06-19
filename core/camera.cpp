@@ -43,7 +43,7 @@ namespace Aporia
         set_position(_position + vec);
     }
 
-    inline const sf::Vector2f& Camera::get_position() const
+    const sf::Vector2f& Camera::get_position() const
     {
         return _position;
     }

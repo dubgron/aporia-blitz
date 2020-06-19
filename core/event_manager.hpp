@@ -5,13 +5,12 @@
 
 #include "event.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 #include "window.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
 {
-    class APORIA_API EventManager final
+    class EventManager final
     {
         using Events = std::tuple<WindowCloseEvent,
                                   WindowResizeEvent,

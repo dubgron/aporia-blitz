@@ -6,11 +6,10 @@
 #include "configs/camera_config.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 
 namespace Aporia
 {
-    class APORIA_API CameraController
+    class CameraController
     {
     public:
         CameraController(Logger& logger, const CameraConfig& config);

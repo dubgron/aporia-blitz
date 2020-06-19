@@ -9,11 +9,9 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
-    class APORIA_API VertexArray final : public sf::Drawable
+    class VertexArray final : public sf::Drawable
     {
     public:
         VertexArray(sf::PrimitiveType primitive_type = sf::Quads, size_t size = 10000);

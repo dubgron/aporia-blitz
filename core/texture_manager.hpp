@@ -5,13 +5,12 @@
 #include <string>
 
 #include "logger.hpp"
-#include "platform.hpp"
 #include "texture.hpp"
 #include "configs/texture_config.hpp"
 
 namespace Aporia
 {
-    class APORIA_API TextureManager final
+    class TextureManager final
     {
     public:
         TextureManager(Logger& logger);

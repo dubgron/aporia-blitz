@@ -8,13 +8,12 @@
 #include <SFML/Window/Event.hpp>
 
 #include "logger.hpp"
-#include "platform.hpp"
 #include "vertex_array.hpp"
 #include "configs/window_config.hpp"
 
 namespace Aporia
 {
-    class APORIA_API Window final
+    class Window final
     {
     public:
         Window(Logger& logger, const WindowConfig& config);

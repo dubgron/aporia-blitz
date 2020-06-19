@@ -8,11 +8,10 @@
 #include "input_buffer.hpp"
 #include "inputs/all_inputs.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 
 namespace Aporia
 {
-    class APORIA_API InputManager final
+    class InputManager final
     {
     public:
         InputManager(Logger& logger, EventManager& event_manager);

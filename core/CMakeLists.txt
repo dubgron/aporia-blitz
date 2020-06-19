@@ -33,7 +33,7 @@ endif()
 
 find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 
-add_library(core SHARED
+add_library(core STATIC
     "aporia.hpp"
     "camera.cpp"
     "camera.hpp"
@@ -54,7 +54,6 @@ add_library(core SHARED
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
-    "platform.hpp"
     "renderer.cpp"
     "renderer.hpp"
     "sprite.cpp"
@@ -91,7 +90,7 @@ target_include_directories(core
         "${PROJECT_SOURCE_DIR}/core")
     
 target_compile_features(core PUBLIC cxx_std_17)
-    
+
 target_compile_definitions(core 
     PUBLIC
         SFML_STATIC
@@ -107,5 +106,6 @@ source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 set_target_properties(core PROPERTIES
     USE_FOLDERS                       ON
     OUTPUT_NAME                       "aporia-blitz"
+    ARCHIVE_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
     RUNTIME_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
     VS_DEBUGGER_WORKING_DIRECTORY     "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core")

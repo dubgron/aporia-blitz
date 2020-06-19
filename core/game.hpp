@@ -8,7 +8,6 @@
 #include "event_manager.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 #include "sprite.hpp"
 #include "renderer.hpp"
 #include "texture_manager.hpp"
@@ -16,7 +15,7 @@
 
 namespace Aporia
 {
-    class APORIA_API Game
+    class Game
     {
         /* Defined by Client */
         friend std::unique_ptr<Game> create_game();

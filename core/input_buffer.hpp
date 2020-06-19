@@ -5,12 +5,10 @@
 
 #include <magic_enum.hpp>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
     template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
-    class APORIA_API InputBuffer
+    class InputBuffer
     {
         using Buffer = std::bitset<magic_enum::enum_count<T>()>;
 

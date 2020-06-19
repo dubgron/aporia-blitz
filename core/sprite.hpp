@@ -5,7 +5,6 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "logger.hpp"
-#include "platform.hpp"
 #include "texture.hpp"
 
 namespace Aporia
@@ -23,7 +22,7 @@ namespace Aporia
         BottomRight
     };
 
-    class APORIA_API Sprite final
+    class Sprite final
     {
 
     public:

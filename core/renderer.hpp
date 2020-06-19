@@ -8,14 +8,13 @@
 #include "camera.hpp"
 #include "event_manager.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
 #include "sprite.hpp"
 #include "vertex_array.hpp"
 #include "window.hpp"
 
 namespace Aporia
 {
-    class APORIA_API Renderer final
+    class Renderer final
     {
     public:
         Renderer(Logger& logger, EventManager& event_manager);

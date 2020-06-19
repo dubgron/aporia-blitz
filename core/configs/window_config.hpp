@@ -3,11 +3,9 @@
 #include <string>
 #include <SFML/System/Vector2.hpp>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
-    struct APORIA_API WindowConfig final
+    struct WindowConfig final
     {
         std::string title;
         sf::Vector2i position;

@@ -3,11 +3,10 @@
 #include <SFML/Graphics/Color.hpp>
 
 #include "inputs/keyboard.hpp"
-#include "platform.hpp"
 
 namespace Aporia
 {
-    struct APORIA_API CameraConfig final
+    struct CameraConfig final
     {
         float aspect_ratio;
         float size;
