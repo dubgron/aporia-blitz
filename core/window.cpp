@@ -1,5 +1,8 @@
 #include "window.hpp"
 
+#include <imgui-SFML.h>
+#include <SFML/System/Time.hpp>
+
 namespace Aporia
 {
     Window::Window(Logger& logger, const WindowConfig& config)
@@ -11,6 +14,7 @@ namespace Aporia
     Window::~Window()
     {
         _window.close();
+        ImGui::SFML::Shutdown();
     }
 
     void Window::open()
@@ -27,6 +31,7 @@ namespace Aporia
             _visible = true;
 
             _window.setView(sf::View(sf::FloatRect(-1.0f, 1.0f, 2.0f, -2.0f)));
+            ImGui::SFML::Init(_window);
         }
     }
 
@@ -36,6 +41,7 @@ namespace Aporia
         {
             _window.close();
             _visible = false;
+
         }
         else
         {
@@ -68,7 +74,12 @@ namespace Aporia
             _logger.log(LOG_WARNING) << "Window '" << _config.title << "' is already hidden!";
         }
     }
-    
+
+    void Window::update(const sf::Time& delta_time)
+    {
+        ImGui::SFML::Update(_window, delta_time);
+    }
+
     void Window::clear(const sf::Color& color)
     {
         _window.clear(color);
@@ -81,6 +92,7 @@ namespace Aporia
 
     void Window::display()
     {
+        ImGui::SFML::Render(_window);
         _window.display();
     }
 

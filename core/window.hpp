@@ -26,6 +26,7 @@ namespace Aporia
         void show();
         void hide();
 
+        void update(const sf::Time& delta_time);
         void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
         void draw(const VertexArray& vertex_array, sf::RenderStates states);
         void display();

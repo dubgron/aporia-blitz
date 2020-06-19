@@ -1,5 +1,8 @@
 #include "game.hpp"
 
+#include <imgui.h>
+#include <imgui-SFML.h>
+
 namespace Aporia
 {
     Game::Game(const std::string& config_file)
@@ -29,11 +32,16 @@ namespace Aporia
 
         Camera cam(-w / 2 - 1, -w / 2 + 1, -h / 2 - 1, -h / 2 + 1);
 
+        sf::Clock time;
+        sf::Time delta_time;
         while (_window.is_open())
         {
+            delta_time = time.restart();
+
             _events.listen_for_events(_window);
             _window.clear();
 
+            _window.update(delta_time);
             this->on_update();
 
             _renderer.render(_window, cam);
