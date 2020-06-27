@@ -9,11 +9,7 @@ if(NOT DEFINED ENV{SFML_BUILD})
 endif()
 
 set(SFML_STATIC_LIBRARIES TRUE)
-find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS
-    graphics
-    audio
-    window
-    system)
+find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS graphics audio window system)
     
 if(NOT DEFINED ENV{SPDLOG_BUILD})
     message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
