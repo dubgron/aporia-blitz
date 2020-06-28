@@ -5,7 +5,7 @@
 #include <string>
 
 #include "logger.hpp"
-#include "texture.hpp"
+#include "components/texture.hpp"
 #include "configs/texture_config.hpp"
 
 namespace Aporia

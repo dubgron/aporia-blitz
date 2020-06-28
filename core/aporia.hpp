@@ -19,7 +19,6 @@
 
 /* Graphics */
 #include <sprite.hpp>
-#include <texture.hpp>
 
 #include <renderer.hpp>
 
@@ -30,6 +29,9 @@
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <texture_manager.hpp>
+
+/* Components */
+#include <components/texture.hpp>
 
 /* Game */
 #include <game.hpp>

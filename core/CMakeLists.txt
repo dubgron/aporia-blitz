@@ -54,13 +54,13 @@ add_library(core STATIC
     "renderer.hpp"
     "sprite.cpp"
     "sprite.hpp"
-    "texture.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
     "vertex_array.cpp"
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
+    "components/texture.hpp"
     "configs/all_configs.hpp"
     "configs/camera_config.hpp"
     "configs/texture_config.hpp"
@@ -96,6 +96,7 @@ target_compile_definitions(core
 
 source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
+source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 

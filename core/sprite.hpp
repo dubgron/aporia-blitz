@@ -4,8 +4,8 @@
 
 #include <SFML/System/Vector2.hpp>
 
+#include "components/texture.hpp"
 #include "logger.hpp"
-#include "texture.hpp"
 
 namespace Aporia
 {

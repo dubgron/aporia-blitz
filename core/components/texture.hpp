@@ -4,8 +4,6 @@
 
 #include <SFML/Graphics/Texture.hpp>
 
-#include "logger.hpp"
-
 namespace Aporia
 {
     struct Texture final
