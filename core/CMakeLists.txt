@@ -37,6 +37,7 @@ add_library(core STATIC
     "camera_controller.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
+    "entity.hpp"
     "entry_point.hpp"
     "event.hpp"
     "event_manager.cpp"
