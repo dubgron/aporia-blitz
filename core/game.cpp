@@ -11,7 +11,7 @@ namespace Aporia
           _textures(_logger),
           _events(_logger),
           _inputs(_logger, _events),
-          _renderer(_logger, _events),
+          _renderer(_logger),
           _window(_logger, _configs.window_config)
     {
         if (!_configs.is_good())

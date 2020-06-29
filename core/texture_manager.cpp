@@ -52,20 +52,20 @@ namespace Aporia {
             }
 
             auto tex = texture["frame"];
-            _textures.try_emplace(name, std::make_shared<Texture>(tex["x"], tex["y"], tex["w"], tex["h"], atlas));
+            _textures.try_emplace(name, Texture{ tex["x"], tex["y"], tex["w"], tex["h"], atlas });
         }
 
         if (_textures.find("default") == _textures.end())
         {
             _logger.log(LOG_WARNING) << "There is no default texture in '" << atlas_image << "'!";
-            _textures.try_emplace("default", std::make_shared<Texture>(0, 0, 0, 0, atlas));
+            _textures.try_emplace("default", Texture{ 0, 0, 0, 0, atlas });
         }
 
         _logger.log(LOG_INFO) << "All textures from '" << atlas_image << "' loaded successfully";
         return true;
     }
 
-    const std::shared_ptr<Texture>& TextureManager::get_texture(const std::string& name) const
+    const Texture& TextureManager::get_texture(const std::string& name) const
     {
         auto texture = _textures.find(name);
         if (texture == _textures.end())

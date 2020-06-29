@@ -17,9 +17,11 @@ namespace Aporia
     class Renderer final
     {
     public:
-        Renderer(Logger& logger, EventManager& event_manager);
+        Renderer(Logger& logger);
 
-        void draw(const Sprite& sprite);
+        template<typename T, std::enable_if_t<has_types_v<typename T::Components, Transform2D, Texture>, int> = 0>
+        void draw(const T& entity);
+
         void render(Window& window, const Camera& cam);
 
     private:
@@ -30,3 +32,5 @@ namespace Aporia
         Logger& _logger;
     };
 }
+
+#include "renderer.tpp"

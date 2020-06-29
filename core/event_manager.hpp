@@ -20,8 +20,7 @@ namespace Aporia
                                   ButtonReleasedEvent,
                                   MouseWheelScrollEvent,
                                   BeginProcessingWindowEvents,
-                                  EndProcessingWindowEvents,
-                                  DrawSpriteEvent>;
+                                  EndProcessingWindowEvents>;
 
     public:
         EventManager(Logger& logger);

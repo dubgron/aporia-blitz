@@ -53,7 +53,7 @@ add_library(core STATIC
     "logger.hpp"
     "renderer.cpp"
     "renderer.hpp"
-    "sprite.cpp"
+    "renderer.tpp"
     "sprite.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
