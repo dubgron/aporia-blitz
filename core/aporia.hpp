@@ -32,6 +32,7 @@
 
 /* Components */
 #include <components/texture.hpp>
+#include <components/transform2d.hpp>
 
 /* Game */
 #include <game.hpp>
