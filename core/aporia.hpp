@@ -32,6 +32,7 @@
 
 /* Components */
 #include <components/color.hpp>
+#include <components/rectangular.hpp>
 #include <components/texture.hpp>
 #include <components/transform2d.hpp>
 
