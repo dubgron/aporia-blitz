@@ -61,6 +61,7 @@ add_library(core STATIC
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
+    "components/color.hpp"
     "components/texture.hpp"
     "components/transform2d.hpp"
     "configs/all_configs.hpp"

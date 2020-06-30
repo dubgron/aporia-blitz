@@ -31,6 +31,7 @@
 #include <texture_manager.hpp>
 
 /* Components */
+#include <components/color.hpp>
 #include <components/texture.hpp>
 #include <components/transform2d.hpp>
 
