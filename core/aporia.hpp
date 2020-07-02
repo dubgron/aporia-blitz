@@ -19,7 +19,7 @@
 
 /* Graphics */
 #include <sprite.hpp>
-
+#include <rectangle2d.hpp>
 #include <renderer.hpp>
 
 /* Window */

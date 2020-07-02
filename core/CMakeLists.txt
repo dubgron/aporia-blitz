@@ -51,6 +51,7 @@ add_library(core STATIC
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
+    "rectangle2d.hpp"
     "renderer.cpp"
     "renderer.hpp"
     "renderer.tpp"
