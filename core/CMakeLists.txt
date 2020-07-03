@@ -35,6 +35,7 @@ add_library(core STATIC
     "camera.hpp"
     "camera_controller.cpp"
     "camera_controller.hpp"
+    "circle2d.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
     "entity.hpp"
