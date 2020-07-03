@@ -95,9 +95,9 @@ target_compile_features(core PUBLIC cxx_std_17)
 target_compile_definitions(core 
     PUBLIC
         SFML_STATIC
+        _USE_MATH_DEFINES
     PRIVATE
-        APORIA_EXPORT
-        _USE_MATH_DEFINES)
+        APORIA_EXPORT)
 
 source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
