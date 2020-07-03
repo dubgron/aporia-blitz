@@ -31,6 +31,7 @@
 #include <texture_manager.hpp>
 
 /* Components */
+#include <components/circular.hpp>
 #include <components/color.hpp>
 #include <components/rectangular.hpp>
 #include <components/texture.hpp>

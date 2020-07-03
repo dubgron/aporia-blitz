@@ -62,6 +62,7 @@ add_library(core STATIC
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
+    "components/circular.hpp"
     "components/color.hpp"
     "components/rectangular.hpp"
     "components/texture.hpp"
