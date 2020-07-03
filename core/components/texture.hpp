@@ -9,7 +9,7 @@ namespace Aporia
     struct Texture final
     {
         unsigned int x, y;
-        unsigned int width, height;
+        float width, height;
 
         std::shared_ptr<sf::Texture> origin;
     };
