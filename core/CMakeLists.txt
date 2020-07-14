@@ -65,6 +65,7 @@ add_library(core STATIC
     "window.hpp"
     "components/circular.hpp"
     "components/color.hpp"
+    "components/linear2d.hpp"
     "components/rectangular.hpp"
     "components/texture.hpp"
     "components/transform2d.hpp"
