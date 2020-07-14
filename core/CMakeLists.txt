@@ -46,6 +46,7 @@ add_library(core STATIC
     "event_manager.tpp"
     "game.cpp"
     "game.hpp"
+    "line2d.hpp"
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"

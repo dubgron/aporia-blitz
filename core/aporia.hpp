@@ -19,6 +19,7 @@
 
 /* Graphics */
 #include <circle2d.hpp>
+#include <line2d.hpp>
 #include <sprite.hpp>
 #include <rectangle2d.hpp>
 #include <renderer.hpp>
