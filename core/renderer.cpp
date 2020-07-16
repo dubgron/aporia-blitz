@@ -1,12 +1,6 @@
 #include "renderer.hpp"
 
-#include <array>
-#include <cmath>
-#include <functional>
-
 #include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/Vertex.hpp>
-#include <SFML/System/Vector2.hpp>
 
 namespace Aporia
 {
@@ -19,12 +13,23 @@ namespace Aporia
     {
         sf::RenderStates states(camera.get_view_projection_matrix());
 
-        for (auto& [texture, vertex_array] : _queue)
+        for (auto& [texture, vertex_array] : _textured_queue)
         {
             states.texture = texture.get();
 
             window.draw(vertex_array, states);
+
+            states.texture = nullptr;
             vertex_array.clear();
         }
+
+        window.draw(_circle_queue, states);
+        _circle_queue.clear();
+
+        window.draw(_quad_queue, states);
+        _quad_queue.clear();
+
+        window.draw(_line_queue, states);
+        _line_queue.clear();
     }
 }

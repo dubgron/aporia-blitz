@@ -60,7 +60,6 @@ add_library(core STATIC
     "sprite.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
-    "vertex_array.cpp"
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
