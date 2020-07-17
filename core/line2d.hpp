@@ -16,6 +16,6 @@ namespace Aporia
         Line2D() = default;
 
         Line2D(sf::Vector2f p_1, sf::Vector2f p_2, Color color = Colors::Black)
-            : Entity(Transform2D{ p_1, 0.0, (p_2 - p_1) / 2.0f }, Linear2D{ std::make_pair(sf::Vector2f(), p_2 - p_1) }, Color{ color }) {}
+            : Entity(Transform2D{ p_1, (p_2 - p_1) / 2.0f }, Linear2D{ std::make_pair(sf::Vector2f(), p_2 - p_1) }, Color{ color }) {}
     };
 }
