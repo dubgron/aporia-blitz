@@ -15,14 +15,17 @@
 
 /* Logger */
 #include <logger.hpp>
-#include <log_buffer.hpp>
 
 /* Graphics */
 #include <circle2d.hpp>
 #include <line2d.hpp>
-#include <sprite.hpp>
 #include <rectangle2d.hpp>
 #include <renderer.hpp>
+#include <sprite.hpp>
+
+/* Camera */
+#include <camera.hpp>
+#include <camera_controller.hpp>
 
 /* Window */
 #include <window.hpp>
@@ -30,6 +33,7 @@
 /* Managers */
 #include <config_manager.hpp>
 #include <event_manager.hpp>
+#include <input_manager.hpp>
 #include <texture_manager.hpp>
 
 /* Components */
