@@ -18,9 +18,10 @@
 #include <log_buffer.hpp>
 
 /* Graphics */
+#include <circle2d.hpp>
+#include <line2d.hpp>
 #include <sprite.hpp>
-#include <texture.hpp>
-
+#include <rectangle2d.hpp>
 #include <renderer.hpp>
 
 /* Window */
@@ -30,6 +31,14 @@
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <texture_manager.hpp>
+
+/* Components */
+#include <components/circular.hpp>
+#include <components/color.hpp>
+#include <components/linear2d.hpp>
+#include <components/rectangular.hpp>
+#include <components/texture.hpp>
+#include <components/transform2d.hpp>
 
 /* Game */
 #include <game.hpp>

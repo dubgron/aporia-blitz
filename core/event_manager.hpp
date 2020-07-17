@@ -20,8 +20,7 @@ namespace Aporia
                                   ButtonReleasedEvent,
                                   MouseWheelScrollEvent,
                                   BeginProcessingWindowEvents,
-                                  EndProcessingWindowEvents,
-                                  DrawSpriteEvent>;
+                                  EndProcessingWindowEvents>;
 
     public:
         EventManager(Logger& logger);
@@ -31,14 +30,14 @@ namespace Aporia
         template<typename Ev, typename... Args, 
             typename = std::enable_if_t<
                 std::is_invocable_v<typename Ev::event_type, Args&...> &&
-                is_in_tuple_v<Ev, Events>
+                has_type_v<Events, Ev>
             >>
         void call_event(Args&... args);
 
         template<typename Ev, typename Listener,
             typename = std::enable_if_t<
                 std::is_constructible_v<typename Ev::event_type, Listener> &&
-                is_in_tuple_v<Ev, Events>
+                has_type_v<Events, Ev>
             >>
         void add_listener(Listener listener);
 

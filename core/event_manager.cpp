@@ -11,7 +11,6 @@ namespace Aporia
     EventManager::EventManager(Logger& logger)
         : _logger(logger)
     {
-
     }
 
     void EventManager::listen_for_events(Window& window)

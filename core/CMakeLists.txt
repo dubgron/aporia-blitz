@@ -35,8 +35,10 @@ add_library(core STATIC
     "camera.hpp"
     "camera_controller.cpp"
     "camera_controller.hpp"
+    "circle2d.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
+    "entity.hpp"
     "entry_point.hpp"
     "event.hpp"
     "event_manager.cpp"
@@ -44,23 +46,29 @@ add_library(core STATIC
     "event_manager.tpp"
     "game.cpp"
     "game.hpp"
+    "line2d.hpp"
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
+    "rectangle2d.hpp"
     "renderer.cpp"
     "renderer.hpp"
-    "sprite.cpp"
+    "renderer.tpp"
     "sprite.hpp"
-    "texture.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
-    "vertex_array.cpp"
     "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
+    "components/circular.hpp"
+    "components/color.hpp"
+    "components/linear2d.hpp"
+    "components/rectangular.hpp"
+    "components/texture.hpp"
+    "components/transform2d.hpp"
     "configs/all_configs.hpp"
     "configs/camera_config.hpp"
     "configs/texture_config.hpp"
@@ -90,12 +98,13 @@ target_compile_features(core PUBLIC cxx_std_17)
 target_compile_definitions(core 
     PUBLIC
         SFML_STATIC
+        _USE_MATH_DEFINES
     PRIVATE
-        APORIA_EXPORT
-        _USE_MATH_DEFINES)
+        APORIA_EXPORT)
 
 source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
+source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 

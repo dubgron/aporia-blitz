@@ -85,9 +85,9 @@ namespace Aporia
         _window.clear(color);
     }
 
-    void Window::draw(const VertexArray& vertex_array, sf::RenderStates states)
+    void Window::draw(const sf::Drawable& drawable, sf::RenderStates& states)
     {
-        _window.draw(vertex_array, states);
+        _window.draw(drawable, states);
     }
 
     void Window::display()
