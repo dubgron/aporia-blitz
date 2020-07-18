@@ -10,6 +10,7 @@
 #include <inputs/mouse.hpp>
 
 /* Utils */
+#include <utils/color_conversion.hpp>
 #include <utils/read_file.hpp>
 #include <utils/type_traits.hpp>
 

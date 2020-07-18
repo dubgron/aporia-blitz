@@ -76,6 +76,7 @@ add_library(core STATIC
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
+    "utils/color_conversion.hpp"
     "utils/read_file.hpp"
     "utils/type_traits.hpp")
 
