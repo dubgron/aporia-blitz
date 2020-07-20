@@ -35,7 +35,6 @@ add_library(core STATIC
     "camera.hpp"
     "camera_controller.cpp"
     "camera_controller.hpp"
-    "circle2d.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
     "entity.hpp"
@@ -46,21 +45,14 @@ add_library(core STATIC
     "event_manager.tpp"
     "game.cpp"
     "game.hpp"
-    "line2d.hpp"
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
-    "rectangle2d.hpp"
-    "renderer.cpp"
-    "renderer.hpp"
-    "renderer.tpp"
-    "sprite.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
-    "vertex_array.hpp"
     "window.cpp"
     "window.hpp"
     "components/circular.hpp"
@@ -73,6 +65,14 @@ add_library(core STATIC
     "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
+    "graphics/circle2d.hpp"
+    "graphics/line2d.hpp"
+    "graphics/rectangle2d.hpp"
+    "graphics/renderer.cpp"
+    "graphics/renderer.hpp"
+    "graphics/renderer.tpp"
+    "graphics/sprite.hpp"
+    "graphics/vertex_array.hpp"
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
@@ -105,8 +105,9 @@ target_compile_definitions(core
         APORIA_EXPORT)
 
 source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
-source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
 source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
+source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
+source_group(core\\graphics REGULAR_EXPRESSION "core/graphics/.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 

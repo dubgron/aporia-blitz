@@ -19,11 +19,11 @@
 #include <logger.hpp>
 
 /* Graphics */
-#include <circle2d.hpp>
-#include <line2d.hpp>
-#include <rectangle2d.hpp>
-#include <renderer.hpp>
-#include <sprite.hpp>
+#include <graphics/circle2d.hpp>
+#include <graphics/line2d.hpp>
+#include <graphics/rectangle2d.hpp>
+#include <graphics/renderer.hpp>
+#include <graphics/sprite.hpp>
 
 /* Camera */
 #include <camera.hpp>

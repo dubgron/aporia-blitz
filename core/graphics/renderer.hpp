@@ -10,7 +10,6 @@
 
 #include "camera.hpp"
 #include "logger.hpp"
-#include "vertex_array.hpp"
 #include "window.hpp"
 #include "components/circular.hpp"
 #include "components/color.hpp"
@@ -18,6 +17,7 @@
 #include "components/rectangular.hpp"
 #include "components/texture.hpp"
 #include "components/transform2d.hpp"
+#include "graphics/vertex_array.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia

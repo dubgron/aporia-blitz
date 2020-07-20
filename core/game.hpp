@@ -8,10 +8,10 @@
 #include "event_manager.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
-#include "sprite.hpp"
-#include "renderer.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
+#include "graphics/sprite.hpp"
+#include "graphics/renderer.hpp"
 
 namespace Aporia
 {

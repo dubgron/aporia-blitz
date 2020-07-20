@@ -8,8 +8,8 @@
 #include <SFML/Window/Event.hpp>
 
 #include "logger.hpp"
-#include "vertex_array.hpp"
 #include "configs/window_config.hpp"
+#include "graphics/vertex_array.hpp"
 
 namespace Aporia
 {
