@@ -17,7 +17,7 @@ namespace Aporia
     class APORIA_API Window final
     {
     public:
-        Window(const std::shared_ptr<Logger>& logger, const WindowConfig& config);
+        Window(Logger& logger, const WindowConfig& config);
         ~Window();
 
         void open();
@@ -26,6 +26,7 @@ namespace Aporia
         void show();
         void hide();
 
+        void update(const sf::Time& delta_time);
         void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
         void draw(const VertexArray& vertex_array, sf::RenderStates states);
         void display();
@@ -36,11 +37,11 @@ namespace Aporia
         bool is_visible() const;
 
     private:
+        Logger& _logger;
+
         sf::RenderWindow _window;
         const WindowConfig& _config;
 
         bool _visible = false;
-
-        std::shared_ptr<Logger> _logger;
     };
 }

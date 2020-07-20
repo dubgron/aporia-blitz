@@ -4,7 +4,8 @@ namespace Aporia
 {
     enum class Keyboard : size_t
     {
-        A,            /* The A key */
+        Unknown,      /* Unhandled key */
+        A,            /* The A key */ 
         B,            /* The B key */
         C,            /* The C key */
         D,            /* The D key */

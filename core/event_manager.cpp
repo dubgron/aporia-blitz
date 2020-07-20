@@ -1,13 +1,14 @@
 #include "event_manager.hpp"
 
+#include <imgui-SFML.h>
 #include <SFML/Window/Event.hpp>
 
 #include "event.hpp"
-#include "inputs.hpp"
+#include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {
-    EventManager::EventManager(const std::shared_ptr<Logger>& logger)
+    EventManager::EventManager(Logger& logger)
         : _logger(logger)
     {
 
@@ -15,16 +16,17 @@ namespace Aporia
 
     void EventManager::listen_for_events(Window& window)
     {
-        sf::Event event;
+        call_event<BeginProcessingWindowEvents>();
 
         Keyboard key;
         Mouse button;
         MouseWheel wheel;
 
-        call_event<BeginProcessingWindowEvents>();
-
+        sf::Event event;
         while (window.poll_event(event))
         {
+            ImGui::SFML::ProcessEvent(event);
+
             switch (event.type)
             {
                 case sf::Event::Closed:
@@ -36,12 +38,12 @@ namespace Aporia
                     break;
 
                 case sf::Event::KeyPressed:
-                    key = static_cast<Keyboard>(event.key.code);
+                    key = static_cast<Keyboard>(1 + event.key.code);
                     call_event<KeyPressedEvent>(key);
                     break;
 
                 case sf::Event::KeyReleased:
-                    key = static_cast<Keyboard>(event.key.code);
+                    key = static_cast<Keyboard>(1 + event.key.code);
                     call_event<KeyReleasedEvent>(key);
                     break;
 

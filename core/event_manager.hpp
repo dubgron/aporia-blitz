@@ -25,7 +25,7 @@ namespace Aporia
                                   DrawSpriteEvent>;
 
     public:
-        EventManager(const std::shared_ptr<Logger>& logger);
+        EventManager(Logger& logger);
 
         void listen_for_events(Window& window);
 
@@ -44,18 +44,9 @@ namespace Aporia
         void add_listener(Listener listener);
 
     private:
-        Events _events = std::make_tuple(WindowCloseEvent(),
-                                         WindowResizeEvent(),
-                                         KeyPressedEvent(),
-                                         KeyReleasedEvent(),
-                                         ButtonPressedEvent(),
-                                         ButtonReleasedEvent(),
-                                         MouseWheelScrollEvent(),
-                                         BeginProcessingWindowEvents(),
-                                         EndProcessingWindowEvents(),
-                                         DrawSpriteEvent());
+        Events _events;
 
-        std::shared_ptr<Logger> _logger;
+        Logger& _logger;
     };
 }
 

@@ -13,6 +13,6 @@ namespace Aporia
         sf::Vector2i position;
         unsigned int width;
         unsigned int height;
-        unsigned int framerate;
+        bool vsync;
     };
 }

@@ -2,8 +2,6 @@
 
 #include <cmath>
 
-inline constexpr double ARI_PI = 3.14159265359;
-
 namespace Aporia
 {
     Sprite::Sprite(const std::shared_ptr<Texture>& texture, sf::Vector2f position, Origin origin, double rotation)
@@ -29,8 +27,8 @@ namespace Aporia
 
     void Sprite::rotate(double degree)
     {
-        double radians = _rotation + (degree * ARI_PI / 180.0);
-        _rotation = std::fmod(radians, 2 * ARI_PI);
+        double radians = _rotation + (degree * M_PI / 180.0);
+        _rotation = std::fmod(radians, 2 * M_PI);
     }
 
     void Sprite::set_origin(sf::Vector2f origin)
@@ -74,8 +72,28 @@ namespace Aporia
 
     void Sprite::set_rotation(double degree)
     {
-        double radians = degree * ARI_PI / 180.0;
-        _rotation = std::fmod(radians, 2 * ARI_PI);
+        double radians = degree * M_PI / 180.0;
+        _rotation = std::fmod(radians, 2 * M_PI);
+    }
+
+    void Sprite::set_flip_x(bool flip)
+    {
+        _flip.first = flip;
+    }
+
+    void Sprite::set_flip_y(bool flip)
+    {
+        _flip.second = flip;
+    }
+
+    void Sprite::flip_x()
+    {
+        _flip.first = !_flip.first;
+    }
+
+    void Sprite::flip_y()
+    {
+        _flip.second = !_flip.second;
     }
 
     const sf::Vector2f& Sprite::get_position() const
@@ -96,5 +114,15 @@ namespace Aporia
     double Sprite::get_rotation() const
     {
         return _rotation;
+    }
+
+    bool Sprite::get_flip_x() const
+    {
+        return _flip.first;
+    }
+
+    bool Sprite::get_flip_y() const
+    {
+        return _flip.second;
     }
 }
