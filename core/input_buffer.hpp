@@ -7,32 +7,21 @@
 
 namespace Aporia
 {
-    template<typename T, typename = std::enable_if_t<std::is_enum_v<T>>>
+    template<typename T, size_t Size = magic_enum::enum_count<T>(), typename = std::enable_if_t<std::is_enum_v<T>>>
     class InputBuffer
     {
-        using Buffer = std::bitset<magic_enum::enum_count<T>()>;
+        using Buffer = std::bitset<Size>;
 
     public:
-        InputBuffer() = default;
-
-        ~InputBuffer()
+        void update()
         {
-            delete _incoming_state;
-            delete _current_state;
-            delete _past_state;
+            _past_state = _current_state;
         }
 
-        /* TODO: Add boundary checks */
         void push_state(T code, bool state)
         {
             size_t index = static_cast<size_t>(code);
-            (*_incoming_state)[index] = state;
-        }
-
-        void update()
-        {
-            memcpy(_past_state, _incoming_state, sizeof(Buffer));
-            std::swap(_past_state, _current_state);
+            _current_state[index] = state;
         }
 
         bool is_triggered(T code) const
@@ -55,9 +44,8 @@ namespace Aporia
 
         bool is_any_triggered() const
         {
-            size_t size = _current_state->size();
-            for (size_t i = 0; i < size; ++i)
-                if (_is_triggered(i))
+            for (size_t index = 0; index < Size; ++index)
+                if (_is_triggered(index))
                     return true;
 
             return false;
@@ -65,9 +53,8 @@ namespace Aporia
 
         bool is_any_pressed() const
         {
-            size_t size = _current_state->size();
-            for (size_t i = 0; i < size; ++i)
-                if (_is_pressed(i))
+            for (size_t index = 0; index < Size; ++index)
+                if (_is_pressed(index))
                     return true;
 
             return false;
@@ -75,9 +62,8 @@ namespace Aporia
 
         bool is_any_released() const
         {
-            size_t size = _current_state->size();
-            for (size_t i = 0; i < size; ++i)
-                if (_is_released(i))
+            for (size_t index = 0; index < Size; ++index)
+                if (_is_released(index))
                     return true;
 
             return false;
@@ -86,22 +72,20 @@ namespace Aporia
     private:
         bool _is_triggered(size_t index) const
         {
-            return _current_state->test(index) && !_past_state->test(index);
+            return _current_state.test(index) && !_past_state.test(index);
         }
 
         bool _is_pressed(size_t index) const
         {
-            return _current_state->test(index) && _past_state->test(index);
+            return _current_state.test(index) && _past_state.test(index);
         }
 
         bool _is_released(size_t index) const
         {
-            return !_current_state->test(index) && _past_state->test(index);
+            return !_current_state.test(index) && _past_state.test(index);
         }
 
-
-        Buffer* _incoming_state = new Buffer(false);
-        Buffer* _current_state = new Buffer(false);
-        Buffer* _past_state = new Buffer(false);
+        Buffer _current_state;
+        Buffer _past_state;
     };
 }
