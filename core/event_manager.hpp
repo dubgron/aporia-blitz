@@ -32,7 +32,7 @@ namespace Aporia
                 std::is_invocable_v<typename Ev::event_type, Args&...> &&
                 has_type_v<Events, Ev>
             >>
-        void call_event(Args&... args);
+        void call_event(Args&&... args);
 
         template<typename Ev, typename Listener,
             typename = std::enable_if_t<
