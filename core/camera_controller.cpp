@@ -1,6 +1,6 @@
 #include "camera_controller.hpp"
 
-#include <cmath>
+#include <algorithm>
 
 namespace Aporia
 {

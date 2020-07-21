@@ -2,7 +2,6 @@
 
 #include <string>
 #include <memory>
-#include <tuple>
 
 #include "config_manager.hpp"
 #include "event_manager.hpp"
@@ -10,7 +9,6 @@
 #include "logger.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
-#include "graphics/sprite.hpp"
 #include "graphics/renderer.hpp"
 
 namespace Aporia

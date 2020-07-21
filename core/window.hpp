@@ -1,15 +1,14 @@
 #pragma once
 
-#include <memory>
-#include <string>
-
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 
 #include "logger.hpp"
 #include "configs/window_config.hpp"
-#include "graphics/vertex_array.hpp"
 
 namespace Aporia
 {

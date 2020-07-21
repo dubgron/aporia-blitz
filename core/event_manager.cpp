@@ -3,7 +3,6 @@
 #include <imgui-SFML.h>
 #include <SFML/Window/Event.hpp>
 
-#include "event.hpp"
 #include "inputs/all_inputs.hpp"
 
 namespace Aporia

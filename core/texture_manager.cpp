@@ -1,9 +1,9 @@
 #include "texture_manager.hpp"
 
 #include <filesystem>
+#include <memory>
 
 #include <nlohmann/json.hpp>
-#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
 #include "utils/read_file.hpp"

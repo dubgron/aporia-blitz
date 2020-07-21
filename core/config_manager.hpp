@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
-#include "configs/all_configs.hpp"
 #include "logger.hpp"
+#include "configs/all_configs.hpp"
 
 namespace Aporia
 {

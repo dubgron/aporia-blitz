@@ -1,9 +1,10 @@
 #pragma once
 
+#include <utility>
+
 #include <SFML/System/Vector2.hpp>
 
 #include "entity.hpp"
-#include "logger.hpp"
 #include "components/color.hpp"
 #include "components/rectangular.hpp"
 #include "components/texture.hpp"

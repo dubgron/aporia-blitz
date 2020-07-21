@@ -1,7 +1,9 @@
 #include "window.hpp"
 
 #include <imgui-SFML.h>
-#include <SFML/System/Time.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/View.hpp>
+#include <SFML/Window/VideoMode.hpp>
 
 namespace Aporia
 {

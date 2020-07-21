@@ -1,11 +1,11 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include "camera.hpp"
-#include "configs/camera_config.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
+#include "configs/camera_config.hpp"
 
 namespace Aporia
 {

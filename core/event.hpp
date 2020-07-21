@@ -1,10 +1,10 @@
 #pragma once
 
 #include <functional>
-#include <memory>
+#include <vector>
 
-#include "inputs/all_inputs.hpp"
 #include "window.hpp"
+#include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {

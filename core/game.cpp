@@ -1,8 +1,5 @@
 #include "game.hpp"
 
-#include <imgui.h>
-#include <imgui-SFML.h>
-
 namespace Aporia
 {
     Game::Game(const std::string& config_file)

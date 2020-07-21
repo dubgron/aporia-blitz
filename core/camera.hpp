@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics/Transform.hpp>
+#include <SFML/System/Vector2.hpp>
 
 namespace Aporia
 {

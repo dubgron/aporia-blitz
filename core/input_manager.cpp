@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "event.hpp"
+
 namespace Aporia
 {
     InputManager::InputManager(Logger& logger, EventManager& event_manager)

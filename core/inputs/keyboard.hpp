@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace Aporia
 {
     enum class Keyboard : size_t

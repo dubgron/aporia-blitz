@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <map>
-#include <memory>
 #include <type_traits>
 
 #include <SFML/Graphics/Texture.hpp>

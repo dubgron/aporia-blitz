@@ -1,13 +1,11 @@
 #pragma once 
 
-#include <array>
-#include <memory>
+#include <SFML/System/Vector2.hpp>
 
-#include "event.hpp"
 #include "event_manager.hpp"
 #include "input_buffer.hpp"
-#include "inputs/all_inputs.hpp"
 #include "logger.hpp"
+#include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {

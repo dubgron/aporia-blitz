@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/System/Vector2.hpp>
+
 #include "entity.hpp"
 #include "components/circular.hpp"
 #include "components/color.hpp"

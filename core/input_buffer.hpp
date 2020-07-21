@@ -1,7 +1,8 @@
 #pragma once
 
 #include <bitset>
-#include <algorithm>
+#include <cstddef>
+#include <type_traits>
 
 #include <magic_enum.hpp>
 
