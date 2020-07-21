@@ -31,10 +31,10 @@ namespace Aporia
             if (_textured_queue.find(texture.origin) == _textured_queue.end())
                 _textured_queue.try_emplace(texture.origin);
 
-            _textured_queue[texture.origin].add(vertecies);
+            _textured_queue[texture.origin].add(std::move(vertecies));
         }
         else
-            _quad_queue.add(vertecies);
+            _quad_queue.add(std::move(vertecies));
     }
 
     template<typename T, std::enable_if_t<has_type_v<typename T::Components, Circular>, int>>
@@ -55,7 +55,7 @@ namespace Aporia
         if constexpr (has_type_v<typename T::Components, Transform2D>)
             _apply_transform2d(vertecies, entity.get_component<Transform2D>());
 
-        _circle_queue.add(vertecies);
+        _circle_queue.add(std::move(vertecies));
     }
 
     template<typename T, std::enable_if_t<has_type_v<typename T::Components, Linear2D>, int>>
@@ -73,7 +73,7 @@ namespace Aporia
         if constexpr (has_type_v<typename T::Components, Transform2D>)
             _apply_transform2d(vertecies, entity.get_component<Transform2D>());
 
-        _line_queue.add(vertecies);
+        _line_queue.add(std::move(vertecies));
     }
 
     template<std::size_t N>

@@ -24,10 +24,10 @@ namespace Aporia
         }
 
         template<std::size_t Size>
-        void add(const std::array<sf::Vertex, Size>& vertices)
+        void add(std::array<sf::Vertex, Size>&& vertices)
         {
-            for (const auto& vertex : vertices)
-                _vertices.push_back(std::move(vertex));
+            for (sf::Vertex& vertex : vertices)
+                _vertices.emplace_back(std::move(vertex));
         }
 
         void clear()
