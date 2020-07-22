@@ -15,7 +15,7 @@ if(NOT DEFINED ENV{SPDLOG_BUILD})
     message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
 endif()
 
-find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD})
+find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
 
 if(NOT DEFINED ENV{MAGIC_ENUM_BUILD})
     message(FATAL_ERROR "Environmental variable MAGIC_ENUM_BUILD is not set!")
