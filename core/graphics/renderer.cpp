@@ -7,6 +7,7 @@ namespace Aporia
     Renderer::Renderer(Logger& logger)
         : _logger(logger)
     {
+        _tranformation_stack.emplace();
     }
 
     void Renderer::render(Window& window, const Camera& camera)
@@ -31,5 +32,16 @@ namespace Aporia
 
         window.draw(_line_queue, states);
         _line_queue.clear();
+    }
+
+    void Renderer::push_transform(Transform2D transform)
+    {
+        _tranformation_stack.push(std::move(_tranformation_stack.top() * transform));
+    }
+
+    void Renderer::pop_transform()
+    {
+        if (_tranformation_stack.size() > 1)
+            _tranformation_stack.pop();
     }
 }

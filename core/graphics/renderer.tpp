@@ -90,9 +90,7 @@ namespace Aporia
     void Renderer::_apply_transform2d(std::array<sf::Vertex, N>& vertecies, const Transform2D& transform)
     {
         for (auto& vertex : vertecies)
-        {
-            vertex.position = transform * vertex.position;
-        }
+            vertex.position = _tranformation_stack.top() * transform * vertex.position;
     }
 
     template<std::size_t N>

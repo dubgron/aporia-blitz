@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <map>
+#include <stack>
 #include <type_traits>
 
 #include <SFML/Graphics/Texture.hpp>
@@ -18,6 +19,7 @@
 #include "components/texture.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/vertex_array.hpp"
+#include "utils/math.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
@@ -40,6 +42,9 @@ namespace Aporia
 
         void render(Window& window, const Camera& cam);
 
+        void push_transform(Transform2D transform);
+        void pop_transform();
+
     private:
         template<std::size_t N>
         void _apply_color(std::array<sf::Vertex, N>& vertecies, const Color& color);
@@ -54,6 +59,8 @@ namespace Aporia
         VertexArray<IndexBuffer::Quads, MAX_QUEUE> _quad_queue;
         VertexArray<IndexBuffer::TriangleFan, MAX_QUEUE> _circle_queue;
         VertexArray<IndexBuffer::Lines, MAX_QUEUE> _line_queue;
+
+        std::stack<Transform2D> _tranformation_stack;
 
         Logger& _logger;
     };
