@@ -8,6 +8,7 @@ namespace Aporia
           _textures(_logger),
           _events(_logger),
           _inputs(_logger, _events),
+          _camera(_logger, _configs.camera_config),
           _renderer(_logger),
           _window(_logger, _configs.window_config)
     {
@@ -24,11 +25,6 @@ namespace Aporia
     {
         this->on_init();
 
-        float w = _configs.window_config.width;
-        float h = _configs.window_config.height;
-
-        Camera cam(-w / 2 - 1, -w / 2 + 1, -h / 2 - 1, -h / 2 + 1);
-
         sf::Clock time;
         sf::Time delta_time;
         while (_window.is_open())
@@ -41,7 +37,7 @@ namespace Aporia
             _window.update(delta_time);
             this->on_update();
 
-            _renderer.render(_window, cam);
+            _renderer.render(_window, _camera.get_camera());
 
             _window.display();
         }
