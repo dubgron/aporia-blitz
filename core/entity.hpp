@@ -8,17 +8,16 @@
 
 namespace Aporia
 {
-    template<typename... Comps>
-    struct Entity
+    template<typename... Ts>
+    class Entity
     {
-        using Components = std::tuple<Comps...>;
+    public:
+        using Components = std::tuple<Ts...>;
 
         Entity() = default;
 
-        Entity(Comps&&... args)
-            : components(std::make_tuple<Comps...>(std::forward<Comps>(args)...))
-        {
-        }
+        Entity(Ts&&... args)
+            : components(std::make_tuple<Ts...>(std::forward<Ts>(args)...)) {}
 
         template<typename T, std::enable_if_t<has_type_v<Components, T>, int> = 0>
         T& get_component()
@@ -32,6 +31,7 @@ namespace Aporia
             return std::get<T>(components);
         }
 
+    private:
         Components components;
     };
 }
