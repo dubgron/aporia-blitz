@@ -65,8 +65,8 @@ namespace Aporia
         const Linear2D& linear2d = entity.get_component<Linear2D>();
         std::array<sf::Vertex, 2> vertecies;
 
-        vertecies[0] = linear2d.vertecies.first;
-        vertecies[1] = linear2d.vertecies.second;
+        vertecies[0] = sf::Vector2f();
+        vertecies[1] = linear2d.point;
 
         if constexpr (has_type_v<typename T::Components, Color>)
             _apply_color(vertecies, entity.get_component<Color>());
