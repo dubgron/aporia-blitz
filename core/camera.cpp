@@ -32,6 +32,16 @@ namespace Aporia
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
 
+    void Camera::set_frustum(float left, float right, float bottom, float top)
+    {
+        _left = left;
+        _right = right;
+        _bottom = bottom;
+        _top = top;
+
+        set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom);
+    }
+
     void Camera::set_position(sf::Vector2f pos)
     {
         _position = std::move(pos);

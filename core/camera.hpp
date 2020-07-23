@@ -15,6 +15,8 @@ namespace Aporia
         void set_projection_matrix(float left, float right, float bottom, float top);
         void set_view_matrix(const sf::Vector2f& position, float rotation);
 
+        void set_frustum(float left, float right, float bottom, float top);
+
         void set_position(sf::Vector2f pos);
         void move(const sf::Vector2f& vec);
         const sf::Vector2f& get_position() const;
