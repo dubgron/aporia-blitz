@@ -20,6 +20,7 @@
 
 /* Graphics */
 #include <graphics/circle2d.hpp>
+#include <graphics/group.hpp>
 #include <graphics/line2d.hpp>
 #include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>

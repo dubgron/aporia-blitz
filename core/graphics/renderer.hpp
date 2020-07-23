@@ -18,6 +18,7 @@
 #include "components/rectangular.hpp"
 #include "components/texture.hpp"
 #include "components/transform2d.hpp"
+#include "graphics/group.hpp"
 #include "graphics/vertex_array.hpp"
 #include "utils/math.hpp"
 #include "utils/type_traits.hpp"
@@ -39,6 +40,8 @@ namespace Aporia
 
         template<typename T, std::enable_if_t<has_type_v<typename T::Components, Linear2D>, int> = 0>
         void draw(const T& entity);
+
+        void draw(const Group& group);
 
         void render(Window& window, const Camera& cam);
 

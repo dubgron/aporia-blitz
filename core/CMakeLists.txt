@@ -66,6 +66,7 @@ add_library(core STATIC
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
     "graphics/circle2d.hpp"
+    "graphics/group.hpp"
     "graphics/line2d.hpp"
     "graphics/rectangle2d.hpp"
     "graphics/renderer.cpp"
@@ -110,6 +111,7 @@ source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
 source_group(core\\graphics REGULAR_EXPRESSION "core/graphics/.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
+source_group(core\\scene REGULAR_EXPRESSION "core/scene/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
