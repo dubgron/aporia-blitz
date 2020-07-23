@@ -8,7 +8,7 @@ namespace Aporia
           _textures(_logger),
           _events(_logger),
           _inputs(_logger, _events),
-          _camera(_logger, _configs.camera_config),
+          _camera(_logger, _events, _configs.camera_config),
           _renderer(_logger),
           _window(_logger, _configs.window_config)
     {
