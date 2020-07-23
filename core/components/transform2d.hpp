@@ -9,6 +9,6 @@ namespace Aporia
         sf::Vector2f position;
 
         sf::Vector2f origin;
-        double rotation;
+        double rotation = 0.0;
     };
 }
