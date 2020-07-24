@@ -11,6 +11,8 @@
 #include "texture_manager.hpp"
 #include "window.hpp"
 #include "graphics/renderer.hpp"
+#include "scene/imgui_layer.hpp"
+#include "scene/layer_stack.hpp"
 
 namespace Aporia
 {
@@ -21,7 +23,7 @@ namespace Aporia
 
     public:
         Game(const std::string& config_file);
-        virtual ~Game() = default;
+        virtual ~Game();
 
         virtual void on_init() {};
         virtual void on_update() {};
@@ -40,5 +42,8 @@ namespace Aporia
         CameraController _camera;
         Renderer _renderer;
         Window _window;
+
+        LayerStack _layer_stack;
+        ImGuiLayer _imgui_layer;
     };
 }

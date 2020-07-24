@@ -31,7 +31,9 @@
 #include <camera_controller.hpp>
 
 /* Scene */
+#include <scene/imgui_layer.hpp>
 #include <scene/layer.hpp>
+#include <scene/layer_stack.hpp>
 
 /* Window */
 #include <window.hpp>
