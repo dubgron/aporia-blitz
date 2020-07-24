@@ -112,4 +112,15 @@ namespace Aporia
     {
         return _visible;
     }
+
+    sf::RenderWindow& Window::get_native_window()
+    {
+        return _window;
+    }
+
+    const sf::RenderWindow& Window::get_native_window() const
+    {
+        return _window;
+    }
+
 }

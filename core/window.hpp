@@ -34,6 +34,9 @@ namespace Aporia
         bool is_open() const;
         bool is_visible() const;
 
+        sf::RenderWindow& get_native_window();
+        const sf::RenderWindow& get_native_window() const;
+
     private:
         Logger& _logger;
 
