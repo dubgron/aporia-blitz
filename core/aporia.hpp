@@ -30,6 +30,9 @@
 #include <camera.hpp>
 #include <camera_controller.hpp>
 
+/* Scene */
+#include <scene/layer.hpp>
+
 /* Window */
 #include <window.hpp>
 
