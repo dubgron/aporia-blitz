@@ -82,6 +82,7 @@ add_library(core STATIC
     "scene/layer.hpp"
     "scene/layer_stack.cpp"
     "scene/layer_stack.hpp"
+    "scene/scene.hpp"
     "utils/color_conversion.hpp"
     "utils/math.hpp"
     "utils/random.hpp"
