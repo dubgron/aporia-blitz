@@ -8,6 +8,7 @@ namespace Aporia
           _textures(_logger),
           _events(_logger),
           _inputs(_logger, _events),
+          _scenes(_logger),
           _camera(_logger, _configs.camera_config),
           _renderer(_logger),
           _window(_logger, _configs.window_config),
@@ -45,6 +46,8 @@ namespace Aporia
 
             _imgui_layer.update(delta_time);
             this->on_update();
+
+            _scenes.get_current_scene()->on_draw(_renderer);
 
             _renderer.render(_window, _camera.get_camera());
 

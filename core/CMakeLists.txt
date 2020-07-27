@@ -51,6 +51,8 @@ add_library(core STATIC
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
+    "scene_manager.cpp"
+    "scene_manager.hpp"
     "texture_manager.cpp"
     "texture_manager.hpp"    
     "window.cpp"
