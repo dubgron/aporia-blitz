@@ -95,7 +95,7 @@ target_include_directories(core
     PUBLIC
         "${PROJECT_SOURCE_DIR}/core")
     
-target_compile_features(core PUBLIC cxx_std_17)
+target_compile_features(core PUBLIC cxx_std_20)
 
 target_compile_definitions(core 
     PUBLIC
