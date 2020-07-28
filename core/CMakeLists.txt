@@ -10,7 +10,7 @@ endif()
 
 set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS graphics audio window system)
-    
+
 if(NOT DEFINED ENV{SPDLOG_BUILD})
     message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
 endif()
@@ -52,7 +52,7 @@ add_library(core STATIC
     "logger.cpp"
     "logger.hpp"
     "texture_manager.cpp"
-    "texture_manager.hpp"    
+    "texture_manager.hpp"
     "window.cpp"
     "window.hpp"
     "components/circular.hpp"
@@ -81,7 +81,7 @@ add_library(core STATIC
     "utils/read_file.hpp"
     "utils/type_traits.hpp")
 
-target_link_libraries(core 
+target_link_libraries(core
     sfml-graphics
     sfml-audio
     sfml-window
@@ -91,13 +91,13 @@ target_link_libraries(core
     magic_enum::magic_enum
     ImGui-SFML::ImGui-SFML)
 
-target_include_directories(core 
+target_include_directories(core
     PUBLIC
         "${PROJECT_SOURCE_DIR}/core")
     
 target_compile_features(core PUBLIC cxx_std_20)
 
-target_compile_definitions(core 
+target_compile_definitions(core
     PUBLIC
         SFML_STATIC
         _USE_MATH_DEFINES
