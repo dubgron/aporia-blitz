@@ -2,11 +2,39 @@
 
 #include <SFML/Graphics/RenderStates.hpp>
 
+#include "graphics/line2d.hpp"
+#include "graphics/circle2d.hpp"
+#include "graphics/rectangle2d.hpp"
+#include "graphics/sprite.hpp"
+
 namespace Aporia
 {
     Renderer::Renderer(Logger& logger)
         : _logger(logger)
     {
+        _tranformation_stack.emplace();
+    }
+
+    void Renderer::draw(const Group& group)
+    {
+        push_transform(group.get_component<Transform2D>());
+
+        for (const Line2D& line : group.get_container<Line2D>())
+            draw(line);
+
+        for (const Circle2D& circle : group.get_container<Circle2D>())
+            draw(circle);
+
+        for (const Rectangle2D& rectangle : group.get_container<Rectangle2D>())
+            draw(rectangle);
+
+        for (const Sprite& sprite : group.get_container<Sprite>())
+            draw(sprite);
+
+        for (const Group& group : group.get_container<Group>())
+            draw(group);
+
+        pop_transform();
     }
 
     void Renderer::render(Window& window, const Camera& camera)
@@ -31,5 +59,16 @@ namespace Aporia
 
         window.draw(_line_queue, states);
         _line_queue.clear();
+    }
+
+    void Renderer::push_transform(Transform2D transform)
+    {
+        _tranformation_stack.push(std::move(_tranformation_stack.top() * transform));
+    }
+
+    void Renderer::pop_transform()
+    {
+        if (_tranformation_stack.size() > 1)
+            _tranformation_stack.pop();
     }
 }

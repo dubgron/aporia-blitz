@@ -1,6 +1,5 @@
 #include "window.hpp"
 
-#include <imgui-SFML.h>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -16,7 +15,6 @@ namespace Aporia
     Window::~Window()
     {
         _window.close();
-        ImGui::SFML::Shutdown();
     }
 
     void Window::open()
@@ -33,7 +31,6 @@ namespace Aporia
             _visible = true;
 
             _window.setView(sf::View(sf::FloatRect(-1.0f, 1.0f, 2.0f, -2.0f)));
-            ImGui::SFML::Init(_window);
         }
     }
 
@@ -77,11 +74,6 @@ namespace Aporia
         }
     }
 
-    void Window::update(const sf::Time& delta_time)
-    {
-        ImGui::SFML::Update(_window, delta_time);
-    }
-
     void Window::clear(const sf::Color& color)
     {
         _window.clear(color);
@@ -94,7 +86,6 @@ namespace Aporia
 
     void Window::display()
     {
-        ImGui::SFML::Render(_window);
         _window.display();
     }
 
@@ -112,4 +103,15 @@ namespace Aporia
     {
         return _visible;
     }
+
+    sf::RenderWindow& Window::get_native_window()
+    {
+        return _window;
+    }
+
+    const sf::RenderWindow& Window::get_native_window() const
+    {
+        return _window;
+    }
+
 }

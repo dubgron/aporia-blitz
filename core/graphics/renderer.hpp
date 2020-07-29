@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <map>
+#include <stack>
 #include <type_traits>
 
 #include <SFML/Graphics/Texture.hpp>
@@ -17,7 +18,9 @@
 #include "components/rectangular.hpp"
 #include "components/texture.hpp"
 #include "components/transform2d.hpp"
+#include "graphics/group.hpp"
 #include "graphics/vertex_array.hpp"
+#include "utils/math.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
@@ -38,7 +41,12 @@ namespace Aporia
         template<typename T, std::enable_if_t<has_type_v<typename T::Components, Linear2D>, int> = 0>
         void draw(const T& entity);
 
+        void draw(const Group& group);
+
         void render(Window& window, const Camera& cam);
+
+        void push_transform(Transform2D transform);
+        void pop_transform();
 
     private:
         template<std::size_t N>
@@ -54,6 +62,8 @@ namespace Aporia
         VertexArray<IndexBuffer::Quads, MAX_QUEUE> _quad_queue;
         VertexArray<IndexBuffer::TriangleFan, MAX_QUEUE> _circle_queue;
         VertexArray<IndexBuffer::Lines, MAX_QUEUE> _line_queue;
+
+        std::stack<Transform2D> _tranformation_stack;
 
         Logger& _logger;
     };

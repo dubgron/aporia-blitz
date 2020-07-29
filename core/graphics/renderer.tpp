@@ -5,6 +5,8 @@
 
 #include <SFML/System/Vector2.hpp>
 
+#include "utils/math.hpp"
+
 namespace Aporia
 {
     template<typename T, std::enable_if_t<has_type_v<typename T::Components, Rectangular>, int>>
@@ -87,23 +89,8 @@ namespace Aporia
     template<std::size_t N>
     void Renderer::_apply_transform2d(std::array<sf::Vertex, N>& vertecies, const Transform2D& transform)
     {
-        const sf::Vector2f& position = transform.position;
-        const sf::Vector2f& origin = position + transform.origin;
-        double rotation = transform.rotation;
-
-        double sin = std::sin(rotation);
-        double cos = std::cos(rotation);
-
-        auto rotate = [=](const sf::Vector2f& vec)
-        {
-            return sf::Vector2f(vec.x * cos - vec.y * sin, vec.x * sin + vec.y * cos);
-        };
-
         for (auto& vertex : vertecies)
-        {
-            vertex.position += transform.position;
-            vertex.position = rotate(vertex.position - origin) + origin;
-        }
+            vertex.position = _tranformation_stack.top() * transform * vertex.position;
     }
 
     template<std::size_t N>

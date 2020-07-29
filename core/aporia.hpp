@@ -20,6 +20,7 @@
 
 /* Graphics */
 #include <graphics/circle2d.hpp>
+#include <graphics/group.hpp>
 #include <graphics/line2d.hpp>
 #include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>
@@ -28,6 +29,11 @@
 /* Camera */
 #include <camera.hpp>
 #include <camera_controller.hpp>
+
+/* Scene */
+#include <scene/imgui_layer.hpp>
+#include <scene/layer.hpp>
+#include <scene/layer_stack.hpp>
 
 /* Window */
 #include <window.hpp>
