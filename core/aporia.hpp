@@ -30,10 +30,14 @@
 #include <camera.hpp>
 #include <camera_controller.hpp>
 
-/* Scene */
-#include <scene/imgui_layer.hpp>
-#include <scene/layer.hpp>
-#include <scene/layer_stack.hpp>
+/* Layers */
+#include <layers/imgui_layer.hpp>
+#include <layers/layer.hpp>
+#include <layers/layer_stack.hpp>
+
+/* Scenes */
+#include <scene.hpp>
+#include <scene_manager.hpp>
 
 /* Window */
 #include <window.hpp>

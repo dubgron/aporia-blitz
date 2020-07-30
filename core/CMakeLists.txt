@@ -51,6 +51,7 @@ add_library(core STATIC
     "log_buffer.hpp"
     "logger.cpp"
     "logger.hpp"
+    "scene.hpp"
     "scene_manager.cpp"
     "scene_manager.hpp"
     "texture_manager.cpp"
@@ -79,12 +80,11 @@ add_library(core STATIC
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
-    "scene/imgui_layer.cpp"
-    "scene/imgui_layer.hpp"
-    "scene/layer.hpp"
-    "scene/layer_stack.cpp"
-    "scene/layer_stack.hpp"
-    "scene/scene.hpp"
+    "layers/imgui_layer.cpp"
+    "layers/imgui_layer.hpp"
+    "layers/layer.hpp"
+    "layers/layer_stack.cpp"
+    "layers/layer_stack.hpp"
     "utils/color_conversion.hpp"
     "utils/math.hpp"
     "utils/random.hpp"
@@ -119,7 +119,7 @@ source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
 source_group(core\\graphics REGULAR_EXPRESSION "core/graphics/.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
-source_group(core\\scene REGULAR_EXPRESSION "core/scene/.+\.[cht]pp")
+source_group(core\\layers REGULAR_EXPRESSION "core/layers/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES

@@ -12,8 +12,8 @@
 #include "texture_manager.hpp"
 #include "window.hpp"
 #include "graphics/renderer.hpp"
-#include "scene/imgui_layer.hpp"
-#include "scene/layer_stack.hpp"
+#include "layers/imgui_layer.hpp"
+#include "layers/layer_stack.hpp"
 
 namespace Aporia
 {

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "logger.hpp"
-#include "scene/scene.hpp"
+#include "scene.hpp"
 
 namespace Aporia
 {

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "logger.hpp"
-#include "scene/layer.hpp"
+#include "layers/layer.hpp"
 
 namespace Aporia
 {
