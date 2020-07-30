@@ -65,6 +65,7 @@ add_library(core STATIC
     "components/texture.hpp"
     "components/transform2d.hpp"
     "configs/all_configs.hpp"
+    "configs/animation_config.hpp"
     "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
