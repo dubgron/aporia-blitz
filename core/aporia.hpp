@@ -14,6 +14,7 @@
 #include <utils/color_conversion.hpp>
 #include <utils/random.hpp>
 #include <utils/read_file.hpp>
+#include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
 
 /* Logger */

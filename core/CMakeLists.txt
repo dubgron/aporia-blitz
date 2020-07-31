@@ -90,6 +90,7 @@ add_library(core STATIC
     "utils/math.hpp"
     "utils/random.hpp"
     "utils/read_file.hpp"
+    "utils/timer.hpp"
     "utils/type_traits.hpp")
 
 target_link_libraries(core
