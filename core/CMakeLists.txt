@@ -78,6 +78,8 @@ add_library(core STATIC
     "graphics/renderer.tpp"
     "graphics/sprite.hpp"
     "graphics/vertex_array.hpp"
+    "graphics/animations/animation.cpp"
+    "graphics/animations/animation.hpp"
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
@@ -120,6 +122,7 @@ source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
 source_group(core\\graphics REGULAR_EXPRESSION "core/graphics/.+\.[cht]pp")
+source_group(core\\graphics\\animations REGULAR_EXPRESSION "core/graphics/animations.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
 source_group(core\\layers REGULAR_EXPRESSION "core/layers/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")

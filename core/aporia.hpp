@@ -28,6 +28,9 @@
 #include <graphics/renderer.hpp>
 #include <graphics/sprite.hpp>
 
+/* Animations */
+#include <graphics/animations/animation.hpp>
+
 /* Camera */
 #include <camera.hpp>
 #include <camera_controller.hpp>
