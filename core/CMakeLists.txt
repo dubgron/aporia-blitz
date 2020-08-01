@@ -80,6 +80,8 @@ add_library(core STATIC
     "graphics/vertex_array.hpp"
     "graphics/animations/animation.cpp"
     "graphics/animations/animation.hpp"
+    "graphics/animations/animator.cpp"
+    "graphics/animations/animator.hpp"
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"

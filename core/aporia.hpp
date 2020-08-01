@@ -30,6 +30,7 @@
 
 /* Animations */
 #include <graphics/animations/animation.hpp>
+#include <graphics/animations/animator.hpp>
 
 /* Camera */
 #include <camera.hpp>
