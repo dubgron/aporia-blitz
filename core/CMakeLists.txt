@@ -30,6 +30,8 @@ endif()
 find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 
 add_library(core STATIC
+    "animation_manager.cpp"
+    "animation_manager.hpp"
     "aporia.hpp"
     "camera.cpp"
     "camera.hpp"

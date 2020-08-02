@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 
+#include "animation_manager.hpp"
 #include "camera_controller.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
@@ -40,6 +41,7 @@ namespace Aporia
         InputManager _inputs;
         SceneManager _scenes;
         TextureManager _textures;
+        AnimationManager _animations;
 
         CameraController _camera;
         Renderer _renderer;

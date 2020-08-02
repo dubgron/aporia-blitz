@@ -49,6 +49,7 @@
 #include <window.hpp>
 
 /* Managers */
+#include <animation_manager.hpp>
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <input_manager.hpp>
