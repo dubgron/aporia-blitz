@@ -23,31 +23,51 @@ namespace Aporia
 
     void Animator::play(const std::string& name)
     {
-        if (_animations.contains(name))
+        if (!_animations.contains(name))
+            _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
+        else if (_queue.empty())
         {
             _current_animation = name;
             _animations.at(_current_animation).play();
             _logger.log(LOG_DEBUG) << "Playing '" << name << "'";
         }
-        else
-            _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
     }
 
     void Animator::play_once(const std::string& name)
     {
-        if (_animations.contains(name))
+        if (!_animations.contains(name))
+            _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
+        else if (_queue.empty())
         {
             _current_animation = name;
             _animations.at(_current_animation).play_once();
             _logger.log(LOG_DEBUG) << "Playing '" << name << "' once";
         }
-        else
-            _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
     }
 
     void Animator::update()
     {
+        _update_queue();
+
         _sprite.get_component<Texture>() = _animations.at(_current_animation).update();
+    }
+
+    void Animator::queue(const std::string& name)
+    {
+        if (_animations.contains(name))
+            _queue.push(_animations.at(name).get_name());
+    }
+
+    void Animator::after_queue(const std::string& name)
+    {
+        if (_animations.contains(name))
+            _afterqueue = _animations.at(name).get_name();
+    }
+
+    void Animator::clear_queue()
+    {
+        _queue = {};
+        _afterqueue = "";
     }
 
     const Animation& Animator::get_animation(const std::string& name) const
@@ -59,5 +79,26 @@ namespace Aporia
         }
         else
             return _animations.at(name);
+    }
+
+    void Animator::_update_queue()
+    {
+        if (!_animations.at(_current_animation).is_finished())
+            return;
+
+        if (!_queue.empty())
+        {
+            _current_animation = _queue.front();
+            _animations.at(_current_animation).play_once();
+            _logger.log(LOG_DEBUG) << "Playing '" << _current_animation << "' from a queue (size = " << _queue.size() << ")";
+            _queue.pop();
+        }
+        else if (_afterqueue != "")
+        {
+            _current_animation = _afterqueue;
+            _animations.at(_current_animation).play();
+            _logger.log(LOG_DEBUG) << "Playing '" << _current_animation << "' after a queue";
+            _afterqueue = "";
+        }
     }
 }
