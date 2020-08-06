@@ -1,5 +1,6 @@
 #include "window.hpp"
 
+#include <GL/gl3w.h>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -10,6 +11,9 @@ namespace Aporia
         : _logger(logger), _config(config)
     {
         open();
+
+        if (gl3wInit())
+            _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
     }
 
     Window::~Window()

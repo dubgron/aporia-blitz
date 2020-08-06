@@ -29,6 +29,14 @@ endif()
 
 find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 
+if(NOT DEFINED ENV{GL3W_BUILD})
+    message(FATAL_ERROR "Environmental variable GL3W_BUILD is not set!")
+endif()
+
+find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
+
+find_package(OpenGL REQUIRED)
+
 add_library(core STATIC
     "animation_manager.cpp"
     "animation_manager.hpp"
@@ -100,6 +108,7 @@ add_library(core STATIC
     "utils/type_traits.hpp")
 
 target_link_libraries(core
+    OpenGL::GL
     sfml-graphics
     sfml-audio
     sfml-window
@@ -107,7 +116,8 @@ target_link_libraries(core
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
-    ImGui-SFML::ImGui-SFML)
+    ImGui-SFML::ImGui-SFML
+    gl3w)
 
 target_include_directories(core
     PUBLIC

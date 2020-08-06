@@ -17,3 +17,6 @@
 [submodule "thirdparty/imgui-sfml"]
 	path = thirdparty/imgui-sfml
 	url = https://github.com/eliasdaler/imgui-sfml
+[submodule "thirdparty/gl3w"]
+	path = thirdparty/gl3w
+	url = https://github.com/skaslev/gl3w.git
