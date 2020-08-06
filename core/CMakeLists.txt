@@ -30,6 +30,8 @@ endif()
 find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 
 add_library(core STATIC
+    "animation_manager.cpp"
+    "animation_manager.hpp"
     "aporia.hpp"
     "camera.cpp"
     "camera.hpp"
@@ -65,6 +67,7 @@ add_library(core STATIC
     "components/texture.hpp"
     "components/transform2d.hpp"
     "configs/all_configs.hpp"
+    "configs/animation_config.hpp"
     "configs/camera_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
@@ -77,6 +80,10 @@ add_library(core STATIC
     "graphics/renderer.tpp"
     "graphics/sprite.hpp"
     "graphics/vertex_array.hpp"
+    "graphics/animations/animation.cpp"
+    "graphics/animations/animation.hpp"
+    "graphics/animations/animator.cpp"
+    "graphics/animations/animator.hpp"
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
@@ -89,6 +96,7 @@ add_library(core STATIC
     "utils/math.hpp"
     "utils/random.hpp"
     "utils/read_file.hpp"
+    "utils/timer.hpp"
     "utils/type_traits.hpp")
 
 target_link_libraries(core
@@ -118,6 +126,7 @@ source_group(core REGULAR_EXPRESSION "core/.+\.[cht]pp")
 source_group(core\\components REGULAR_EXPRESSION "core/components/.+\.[cht]pp")
 source_group(core\\configs REGULAR_EXPRESSION "core/configs/.+\.[cht]pp")
 source_group(core\\graphics REGULAR_EXPRESSION "core/graphics/.+\.[cht]pp")
+source_group(core\\graphics\\animations REGULAR_EXPRESSION "core/graphics/animations.+\.[cht]pp")
 source_group(core\\inputs REGULAR_EXPRESSION "core/inputs/.+\.[cht]pp")
 source_group(core\\layers REGULAR_EXPRESSION "core/layers/.+\.[cht]pp")
 source_group(core\\utils REGULAR_EXPRESSION "core/utils/.+\.[cht]pp")

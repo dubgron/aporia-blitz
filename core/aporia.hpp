@@ -1,5 +1,6 @@
 /* Configs */
 #include <configs/all_configs.hpp>
+#include <configs/animation_config.hpp>
 #include <configs/camera_config.hpp>
 #include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
@@ -13,6 +14,7 @@
 #include <utils/color_conversion.hpp>
 #include <utils/random.hpp>
 #include <utils/read_file.hpp>
+#include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
 
 /* Logger */
@@ -25,6 +27,10 @@
 #include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/sprite.hpp>
+
+/* Animations */
+#include <graphics/animations/animation.hpp>
+#include <graphics/animations/animator.hpp>
 
 /* Camera */
 #include <camera.hpp>
@@ -43,6 +49,7 @@
 #include <window.hpp>
 
 /* Managers */
+#include <animation_manager.hpp>
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <input_manager.hpp>

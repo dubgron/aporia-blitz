@@ -12,9 +12,7 @@ namespace Aporia
     class TextureManager final
     {
     public:
-        TextureManager(Logger& logger);
-
-        bool load_textures(const TextureConfig& config);
+        TextureManager::TextureManager(Logger& logger, const TextureConfig& config);
 
         const Texture& get_texture(const std::string& name) const;
 

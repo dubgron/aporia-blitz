@@ -5,10 +5,11 @@ namespace Aporia
     Game::Game(const std::string& config_file)
         : _logger("engine"),
           _configs(_logger, config_file),
-          _textures(_logger),
+          _textures(_logger, _configs.texture_config),
           _events(_logger),
           _inputs(_logger, _events),
           _scenes(_logger),
+          _animations(_logger, _textures, _configs.animation_config),
           _camera(_logger, _events, _configs.camera_config),
           _renderer(_logger),
           _window(_logger, _configs.window_config),
@@ -16,9 +17,6 @@ namespace Aporia
           _imgui_layer(_logger, _window)
     {
         if (!_configs.is_good())
-            return;
-
-        if (!_textures.load_textures(_configs.texture_config))
             return;
 
         _events.add_listener<WindowCloseEvent>([](Window& window) { window.close(); });

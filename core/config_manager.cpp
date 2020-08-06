@@ -1,6 +1,7 @@
 #include "config_manager.hpp"
 
 #include <filesystem>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -59,6 +60,21 @@ namespace Aporia
         camera_config.zoom_key_out = camera["zoom_key_out"];
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
+
+        /* Getting Animation Config */
+        std::string animation_data = read_file(config_json["animation_config"]);
+        json animation_json = json::parse(animation_data);
+
+        for (const auto& animation : animation_json["animations"])
+        {
+            std::vector<AnimationFrameConfig> frames;
+            frames.reserve(animation["frames"].size());
+
+            for (const auto& frame : animation["frames"])
+                frames.push_back(AnimationFrameConfig{ frame["texture"], frame["duration"] });
+
+            animation_config.animations.try_emplace(animation["name"], std::move(frames));
+        }
 
         _good = true;
     }

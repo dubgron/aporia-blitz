@@ -17,7 +17,7 @@ namespace Aporia
         Sprite() = default;
 
         Sprite(const Texture& texture, sf::Vector2f position = { 0.0f, 0.0f }, Color color = Colors::White)
-            : Entity(Transform2D{ position, { position.x + texture.width / 2.0f, position.y + texture.height / 2.0f } },
+            : Entity(Transform2D{ position, { texture.width / 2.0f, texture.height / 2.0f } },
                      Texture{ texture },
                      Rectangular{ texture.width, texture.height },
                      Color{ std::move(color) }) {}
