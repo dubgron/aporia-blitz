@@ -35,6 +35,9 @@ endif()
 
 find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
 
+set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
+find_package(glm REQUIRED)
+
 find_package(OpenGL REQUIRED)
 
 add_library(core STATIC
@@ -117,6 +120,7 @@ target_link_libraries(core
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
     ImGui-SFML::ImGui-SFML
+    glm::glm
     gl3w)
 
 target_include_directories(core
