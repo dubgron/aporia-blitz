@@ -1,38 +1,26 @@
-if(NOT DEFINED ENV{NLOHMANN_JSON_BUILD})
-    message(FATAL_ERROR "Environmental variable NLOHMANN_JSON_BUILD is not set!")
-endif()
+function(validate_env name)
+    if(NOT DEFINED ENV{${name}})
+        message(FATAL_ERROR "Environmental variable ${name} is not set!")
+    endif()
+endfunction()
 
+validate_env("NLOHMANN_JSON_BUILD")
 find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
 
-if(NOT DEFINED ENV{SFML_BUILD})
-    message(FATAL_ERROR "Environmental variable SFML_BUILD is not set!")
-endif()
-
+validate_env("SFML_BUILD")
 set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS graphics audio window system)
 
-if(NOT DEFINED ENV{SPDLOG_BUILD})
-    message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
-endif()
-
+validate_env("SPDLOG_BUILD")
 find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
 
-if(NOT DEFINED ENV{MAGIC_ENUM_BUILD})
-    message(FATAL_ERROR "Environmental variable MAGIC_ENUM_BUILD is not set!")
-endif()
-
+validate_env("MAGIC_ENUM_BUILD")
 find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
-if(NOT DEFINED ENV{IMGUI_SFML_BUILD})
-    message(FATAL_ERROR "Environmental variable IMGUI_SFML_BUILD is not set!")
-endif()
-
+validate_env("IMGUI_SFML_BUILD")
 find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 
-if(NOT DEFINED ENV{GL3W_BUILD})
-    message(FATAL_ERROR "Environmental variable GL3W_BUILD is not set!")
-endif()
-
+validate_env("GL3W_BUILD")
 find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
 
 set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
