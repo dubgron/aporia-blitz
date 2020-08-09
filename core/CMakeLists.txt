@@ -23,6 +23,9 @@ find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
 validate_env("GL3W_BUILD")
 find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
 
+validate_env("GLFW_BUILD")
+find_package(glfw3 REQUIRED PATHS $ENV{GLFW_BUILD})
+
 set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
 find_package(glm REQUIRED)
 
@@ -109,6 +112,7 @@ target_link_libraries(core
     magic_enum::magic_enum
     ImGui-SFML::ImGui-SFML
     glm::glm
+    glfw
     gl3w)
 
 target_include_directories(core
