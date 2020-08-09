@@ -3,15 +3,19 @@
 #include <filesystem>
 #include <memory>
 
+#include <GLFW/glfw3.h>
 #include <nlohmann/json.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
 #include "utils/read_file.hpp"
 
+
 namespace Aporia {
     TextureManager::TextureManager(Logger& logger, const TextureConfig& config)
         : _logger(logger)
     {
+        GLFWwindow* context = glfwGetCurrentContext();
+
         using json = nlohmann::json;
 
         if (!std::filesystem::exists(config.atlas))
@@ -54,6 +58,8 @@ namespace Aporia {
                 logger.log(LOG_INFO) << "All textures from '" << atlas_image << "' loaded successfully";
             }
         }
+
+        glfwMakeContextCurrent(context);
     }
 
     const Texture& TextureManager::get_texture(const std::string& name) const

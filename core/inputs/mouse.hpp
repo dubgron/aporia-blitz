@@ -1,44 +1,38 @@
 #pragma once
 
-#include <cstddef>
+#include <cstdint>
+#include <string_view>
 
 namespace Aporia
 {
-    enum class Mouse : size_t
+    enum class Mouse : int32_t
     {
-        Left,       /* The left mouse button */
-        Right,      /* The right mouse button */
-        Middle,     /* The middle (wheel) mouse button */
-        XButton1,   /* The first extra mouse button */
-        XButton2    /* The second extra mouse button */
+        Button1 = 0,        /* The button no. 1 */
+        Button2 = 1,        /* The button no. 2 */
+        Button3 = 2,        /* The button no. 3 */
+        Button4 = 3,        /* The button no. 4 */
+        Button5 = 4,        /* The button no. 5 */
+        Button6 = 5,        /* The button no. 6 */
+        Button7 = 6,        /* The button no. 7 */
+        Button8 = 7,        /* The button no. 8 */
+        Left = Button1,     /* The left mouse button */
+        Right = Button2,    /* The right mouse button */
+        Middle = Button3    /* The middle (wheel) mouse button */
     };
 
-    enum class MouseWheel : size_t
+    enum class MouseWheel : int32_t
     {
-        VerticalWheel,  /* The vertical mouse wheel */
-        HorizontalWheel /* The horizontal mouse wheel */
+        VerticalWheel = 0,     /* The vertical mouse wheel */
+        HorizontalWheel = 1    /* The horizontal mouse wheel */
     };
 
-    constexpr const char* buttoncode_name(Mouse button)
+    constexpr std::string_view buttoncode_name(Mouse button)
     {
-        switch (button)
-        {
-            case Mouse::Left:       return "Left";
-            case Mouse::Right:      return "Right";
-            case Mouse::Middle:     return "Middle";
-            case Mouse::XButton1:   return "XButton1";
-            case Mouse::XButton2:   return "XButton2";
-            default:                return "None";
-        }
+        return magic_enum::enum_name(button);
     }
 
-    constexpr const char* wheelcode_name(MouseWheel wheel = MouseWheel::VerticalWheel)
+    constexpr std::string_view wheelcode_name(MouseWheel wheel = MouseWheel::VerticalWheel)
     {
-        switch (wheel)
-        {
-            case MouseWheel::VerticalWheel:      return "VerticalWheel";
-            case MouseWheel::HorizontalWheel:    return "HorizontalWheel";
-            default:                             return "None";
-        }
+        return magic_enum::enum_name(wheel);
     }
 }

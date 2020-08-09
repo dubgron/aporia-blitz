@@ -38,6 +38,9 @@ namespace Aporia
 
         ConfigManager _configs;
         EventManager _events;
+
+        Window _window;
+
         InputManager _inputs;
         SceneManager _scenes;
         TextureManager _textures;
@@ -45,7 +48,6 @@ namespace Aporia
 
         CameraController _camera;
         Renderer _renderer;
-        Window _window;
 
         LayerStack _layer_stack;
         ImGuiLayer _imgui_layer;

@@ -21,25 +21,25 @@ namespace Aporia
 
         void push_state(T code, bool state)
         {
-            size_t index = static_cast<size_t>(code);
+            size_t index = _index(code);
             _current_state[index] = state;
         }
 
         bool is_triggered(T code) const
         {
-            size_t index = static_cast<size_t>(code);
+            size_t index = _index(code);
             return _is_triggered(index);
         }
 
         bool is_pressed(T code) const
         {
-            size_t index = static_cast<size_t>(code);
+            size_t index = _index(code);
             return _is_pressed(index);
         }
 
         bool is_released(T code) const
         {
-            size_t index = static_cast<size_t>(code);
+            size_t index = _index(code);
             return _is_released(index);
         }
 
@@ -71,6 +71,11 @@ namespace Aporia
         }
 
     private:
+        size_t _index(T code) const
+        {
+            return magic_enum::enum_index(code).value();
+        }
+
         bool _is_triggered(size_t index) const
         {
             return _current_state.test(index) && !_past_state.test(index);

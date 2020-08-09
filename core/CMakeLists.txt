@@ -17,9 +17,6 @@ find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
 validate_env("MAGIC_ENUM_BUILD")
 find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
-validate_env("IMGUI_SFML_BUILD")
-find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
-
 validate_env("GL3W_BUILD")
 find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
 
@@ -30,6 +27,10 @@ set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
 find_package(glm REQUIRED)
 
 find_package(OpenGL REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(ImGui REQUIRED)
 
 add_library(core STATIC
     "animation_manager.cpp"
@@ -44,7 +45,6 @@ add_library(core STATIC
     "entity.hpp"
     "entry_point.hpp"
     "event.hpp"
-    "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
     "game.cpp"
@@ -110,7 +110,7 @@ target_link_libraries(core
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
-    ImGui-SFML::ImGui-SFML
+    imgui
     glm::glm
     glfw
     gl3w)
@@ -118,13 +118,14 @@ target_link_libraries(core
 target_include_directories(core
     PUBLIC
         "${PROJECT_SOURCE_DIR}/core")
-    
+
 target_compile_features(core PUBLIC cxx_std_20)
 
 target_compile_definitions(core
     PUBLIC
         SFML_STATIC
         _USE_MATH_DEFINES
+        MAGIC_ENUM_RANGE_MAX=512
     PRIVATE
         APORIA_EXPORT)
 

@@ -5,6 +5,8 @@
 
 namespace Aporia
 {
+    using Deltatime = float;
+
     class Timer final
     {
     public:

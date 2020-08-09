@@ -45,19 +45,19 @@ namespace Aporia
         {
             states.texture = texture.get();
 
-            window.draw(vertex_array, states);
+            //window.draw(vertex_array, states);
 
             states.texture = nullptr;
             vertex_array.clear();
         }
 
-        window.draw(_circle_queue, states);
+        //window.draw(_circle_queue, states);
         _circle_queue.clear();
 
-        window.draw(_quad_queue, states);
+        //window.draw(_quad_queue, states);
         _quad_queue.clear();
 
-        window.draw(_line_queue, states);
+        //window.draw(_line_queue, states);
         _line_queue.clear();
     }
 

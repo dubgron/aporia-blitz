@@ -32,8 +32,6 @@ namespace Aporia
 
         float is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
 
-        sf::Vector2i get_mouse_position() const;
-
     private:
         void _on_key_triggered(Keyboard key);
         void _on_key_released(Keyboard key);
