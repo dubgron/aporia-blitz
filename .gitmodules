@@ -14,6 +14,7 @@
 [submodule "thirdparty/imgui"]
 	path = thirdparty/imgui
 	url = https://github.com/ocornut/imgui
+	branch = docking
 [submodule "thirdparty/imgui-sfml"]
 	path = thirdparty/imgui-sfml
 	url = https://github.com/eliasdaler/imgui-sfml
