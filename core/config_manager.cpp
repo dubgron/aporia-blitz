@@ -1,10 +1,13 @@
 #include "config_manager.hpp"
 
 #include <filesystem>
+#include <string_view>
 #include <vector>
 
+#include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -50,14 +53,16 @@ namespace Aporia
         camera_config.movement_speed = camera["movement_speed"];
         camera_config.rotation_speed = camera["rotation_speed"];
         camera_config.zoom_speed = camera["zoom_speed"];
-        camera_config.movement_key_up = camera["movement_key_up"];
-        camera_config.movement_key_down = camera["movement_key_down"];
-        camera_config.movement_key_left = camera["movement_key_left"];
-        camera_config.movement_key_right = camera["movement_key_right"];
-        camera_config.rotation_key_left = camera["rotation_key_left"];
-        camera_config.rotation_key_right = camera["rotation_key_right"];
-        camera_config.zoom_key_in = camera["zoom_key_in"];
-        camera_config.zoom_key_out = camera["zoom_key_out"];
+
+        auto get_key = [&camera](const char* key){ return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value(); };
+
+        camera_config.movement_key_up = get_key("movement_key_up");
+        camera_config.movement_key_down = get_key("movement_key_down");
+        camera_config.movement_key_left = get_key("movement_key_left");
+        camera_config.movement_key_right = get_key("movement_key_right");
+        camera_config.zoom_key_in = get_key("zoom_key_in");
+        camera_config.zoom_key_out = get_key("zoom_key_out");
+
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
 
