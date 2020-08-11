@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec3.hpp>
 
 #include "entity.hpp"
 #include "components/color.hpp"
@@ -13,10 +13,10 @@ namespace Aporia
     {
         Rectangle2D() = default;
 
-        Rectangle2D(sf::Vector2f position, float width, float height, Color color = Colors::Black)
+        Rectangle2D(glm::vec3 position, float width, float height, Color color = Colors::Black)
             : Entity(Transform2D{ position }, Rectangular{ width, height }, Color{ color }) {}
 
         Rectangle2D(float x, float y, float width, float height, Color color = Colors::Black)
-            : Rectangle2D(sf::Vector2f(x, y), width, height, color) {}
+            : Rectangle2D(glm::vec3{ x, y, 0.0f }, width, height, color) {}
     };
 }

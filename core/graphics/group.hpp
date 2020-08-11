@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <glm/vec3.hpp>
+
 #include "entity.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/line2d.hpp"
@@ -32,7 +34,7 @@ namespace Aporia
 
     public:
         Group() = default;
-        Group(sf::Vector2f position)
+        Group(glm::vec3 position)
             : Entity(Transform2D{ std::move(position) }) {}
 
         template<typename T, typename D = std::decay_t<T>, std::enable_if_t<has_type_v<Drawables, Container<D>>, int> = 0>

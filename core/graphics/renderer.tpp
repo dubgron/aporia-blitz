@@ -68,7 +68,7 @@ namespace Aporia
         std::array<sf::Vertex, 2> vertecies;
 
         vertecies[0] = sf::Vector2f();
-        vertecies[1] = linear2d.point;
+        //vertecies[1] = linear2d.point;
 
         if constexpr (has_type_v<typename T::Components, Color>)
             _apply_color(vertecies, entity.get_component<Color>());
@@ -89,8 +89,8 @@ namespace Aporia
     template<std::size_t N>
     void Renderer::_apply_transform2d(std::array<sf::Vertex, N>& vertecies, const Transform2D& transform)
     {
-        for (auto& vertex : vertecies)
-            vertex.position = _tranformation_stack.top() * transform * vertex.position;
+        //for (auto& vertex : vertecies)
+        //    vertex.position = _tranformation_stack.top() * transform * vertex.position;
     }
 
     template<std::size_t N>

@@ -1,16 +1,17 @@
 #pragma once
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 namespace Aporia
 {
     struct Transform2D final
     {
-        sf::Vector2f position;
+        glm::vec3 position{ 0.0f };
 
-        sf::Vector2f origin;
-        double rotation = 0.0;
+        glm::vec2 origin{ 0.0f };
+        float rotation = 0.0f;
 
-        sf::Vector2f scale = { 1.0f, 1.0f };
+        glm::vec2 scale{ 1.0f };
     };
 }

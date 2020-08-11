@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 
+#include <glm/ext/matrix_transform.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 
 #include "graphics/line2d.hpp"
@@ -12,7 +13,7 @@ namespace Aporia
     Renderer::Renderer(Logger& logger)
         : _logger(logger)
     {
-        _tranformation_stack.emplace();
+        _tranformation_stack.emplace(glm::mat4{ 1.0f });
     }
 
     void Renderer::draw(const Group& group)
@@ -39,7 +40,7 @@ namespace Aporia
 
     void Renderer::render(Window& window, const Camera& camera)
     {
-        sf::RenderStates states(camera.get_view_projection_matrix());
+        sf::RenderStates states;
 
         for (auto& [texture, vertex_array] : _textured_queue)
         {
@@ -61,9 +62,9 @@ namespace Aporia
         _line_queue.clear();
     }
 
-    void Renderer::push_transform(Transform2D transform)
+    void Renderer::push_transform(const Transform2D& transform)
     {
-        _tranformation_stack.push(std::move(_tranformation_stack.top() * transform));
+        _tranformation_stack.push(std::move(_tranformation_stack.top() * to_mat4(transform)));
     }
 
     void Renderer::pop_transform()

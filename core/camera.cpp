@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include <glm/gtx/transform.hpp>
+
 namespace Aporia
 {
     Camera::Camera(float left, float right, float bottom, float top)
@@ -12,22 +14,30 @@ namespace Aporia
 
     void Camera::set_projection_matrix(float left, float right, float bottom, float top)
     {
-        _projection_matrix = sf::Transform(2 / (right - left), 0, -(right + left) / (right - left),
-                                           0, 2 / (top - bottom), -(top + bottom) / (top - bottom),
-                                           0, 0, 1);
+        _projection_matrix = glm::ortho(left, right, bottom, top);
 
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
 
-    void Camera::set_view_matrix(const sf::Vector2f& position, float rotation)
+    void Camera::set_view_matrix(const glm::vec2& position, float rotation)
     {
-        float radians = rotation * M_PI / 180.0f;
-        float sin = std::sinf(radians);
-        float cos = std::cosf(radians);
+        float x = position.x;
+        float y = position.y;
+        float sin = std::sinf(rotation);
+        float cos = std::cosf(rotation);
 
-        _view_matrix = sf::Transform(cos, sin, -position.x * cos - position.y * sin,
-                                     -sin, cos, position.x * sin - position.y * cos,
-                                     0, 0, 1);
+        /**
+         *  Precalculated following lines:
+         *
+         *  _view_matrix = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ position, 0.0f });
+         *  _view_matrix = glm::rotate(_view_matrix, rotation, glm::vec3{ 0.0f, 0.0f, 1.0f });
+         *  _view_matrix = glm::inverse(_view_matrix);
+         *
+         */
+        _view_matrix[0] = { cos, -sin, 0, 0 };
+        _view_matrix[1] = { sin, cos, 0, 0 };
+        _view_matrix[2] = { 0, 0, 1, 0 };
+        _view_matrix[3] = { -x * cos - y * sin, x * sin - y * cos, 0, 1 };
 
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
@@ -42,18 +52,18 @@ namespace Aporia
         set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom);
     }
 
-    void Camera::set_position(sf::Vector2f pos)
+    void Camera::set_position(glm::vec2 pos)
     {
         _position = std::move(pos);
         set_view_matrix(_position, _rotation);
     }
 
-    void Camera::move(const sf::Vector2f& vec)
+    void Camera::move(const glm::vec2& vec)
     {
         set_position(_position + vec);
     }
 
-    const sf::Vector2f& Camera::get_position() const
+    const glm::vec2& Camera::get_position() const
     {
         return _position;
     }
@@ -90,17 +100,17 @@ namespace Aporia
         return _zoom;
     }
 
-    const Camera::Matrix3& Camera::get_projection_matrix() const
+    const glm::mat4& Camera::get_projection_matrix() const
     {
         return _projection_matrix;
     }
 
-    const Camera::Matrix3& Camera::get_view_matrix() const
+    const glm::mat4& Camera::get_view_matrix() const
     {
         return _view_matrix;
     }
 
-    const Camera::Matrix3& Camera::get_view_projection_matrix() const
+    const glm::mat4& Camera::get_view_projection_matrix() const
     {
         return _view_projection_matrix;
     }

@@ -1,7 +1,5 @@
 #pragma once 
 
-#include <SFML/System/Vector2.hpp>
-
 #include "event_manager.hpp"
 #include "input_buffer.hpp"
 #include "logger.hpp"

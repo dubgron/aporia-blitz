@@ -45,7 +45,7 @@ namespace Aporia
 
         void render(Window& window, const Camera& cam);
 
-        void push_transform(Transform2D transform);
+        void push_transform(const Transform2D& transform);
         void pop_transform();
 
     private:
@@ -58,12 +58,12 @@ namespace Aporia
         template<std::size_t N>
         void _apply_texture(std::array<sf::Vertex, N>& vertecies, const Texture& texture);
 
+        std::stack<glm::mat4> _tranformation_stack;
+
         std::map<std::shared_ptr<sf::Texture>, VertexArray<IndexBuffer::Quads, MAX_QUEUE>> _textured_queue;
         VertexArray<IndexBuffer::Quads, MAX_QUEUE> _quad_queue;
         VertexArray<IndexBuffer::TriangleFan, MAX_QUEUE> _circle_queue;
         VertexArray<IndexBuffer::Lines, MAX_QUEUE> _line_queue;
-
-        std::stack<Transform2D> _tranformation_stack;
 
         Logger& _logger;
     };
