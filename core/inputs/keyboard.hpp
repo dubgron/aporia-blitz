@@ -25,7 +25,7 @@ namespace Aporia
         Num6 = 54,               /* The 6 key */
         Num7 = 55,               /* The 7 key */
         Num8 = 56,               /* The 8 key */
-        Num9 = 58,               /* The 9 key */
+        Num9 = 57,               /* The 9 key */
         Semicolon = 59,          /* The ; key */
         Equal = 61,              /* The = key */
         A = 65,                  /* The A key */
