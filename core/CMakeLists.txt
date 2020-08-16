@@ -32,6 +32,8 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(ImGui REQUIRED)
 
+find_package(stb REQUIRED)
+
 add_library(core STATIC
     "animation_manager.cpp"
     "animation_manager.hpp"
@@ -113,7 +115,8 @@ target_link_libraries(core
     imgui
     glm::glm
     glfw
-    gl3w)
+    gl3w
+    stb)
 
 target_include_directories(core
     PUBLIC
