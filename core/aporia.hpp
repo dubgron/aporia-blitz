@@ -27,6 +27,7 @@
 #include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/sprite.hpp>
+#include <graphics/vertex.hpp>
 
 /* Animations */
 #include <graphics/animations/animation.hpp>

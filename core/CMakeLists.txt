@@ -83,6 +83,7 @@ add_library(core STATIC
     "graphics/renderer.hpp"
     "graphics/renderer.tpp"
     "graphics/sprite.hpp"
+    "graphics/vertex.hpp"
     "graphics/vertex_array.hpp"
     "graphics/animations/animation.cpp"
     "graphics/animations/animation.hpp"
