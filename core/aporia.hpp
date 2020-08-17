@@ -29,6 +29,7 @@
 #include <graphics/renderer.hpp>
 #include <graphics/sprite.hpp>
 #include <graphics/vertex.hpp>
+#include <graphics/vertex_buffer.hpp>
 
 /* Animations */
 #include <graphics/animations/animation.hpp>
