@@ -3,17 +3,21 @@
 #include <cstdint>
 #include <memory>
 
-#include <SFML/Graphics/Texture.hpp>
+#include <glm/vec2.hpp>
 
 namespace Aporia
 {
     struct Texture final
     {
-        uint32_t x = 0;
-        uint32_t y = 0;
-        float width = 0.0f;
-        float height = 0.0f;
+        glm::vec2 u{ 0.0f };
+        glm::vec2 v{ 0.0f };
 
-        std::shared_ptr<sf::Texture> origin;
+        struct Origin final
+        {
+            uint32_t id = 0u;
+            int32_t width = 0;
+            int32_t height = 0;
+            int32_t channels = 0;
+        } origin;
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "logger.hpp"
@@ -12,12 +12,12 @@ namespace Aporia
     class TextureManager final
     {
     public:
-        TextureManager::TextureManager(Logger& logger, const TextureConfig& config);
+        TextureManager(Logger& logger, const TextureConfig& config);
 
         const Texture& get_texture(const std::string& name) const;
 
     private:
-        std::map<std::string, Texture> _textures;
+        std::unordered_map<std::string, Texture> _textures;
 
         Logger& _logger;
     };

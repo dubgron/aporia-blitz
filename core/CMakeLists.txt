@@ -82,7 +82,6 @@ add_library(core STATIC
     "graphics/rectangle2d.hpp"
     "graphics/renderer.cpp"
     "graphics/renderer.hpp"
-    "graphics/renderer.tpp"
     "graphics/shader.cpp"
     "graphics/shader.hpp"
     "graphics/sprite.hpp"

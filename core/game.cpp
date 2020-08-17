@@ -40,16 +40,17 @@ namespace Aporia
             dt = time.reset();
 
             _window.poll_events();
-            _imgui_layer.begin();
             _window.clear();
 
-            this->on_update();
+            _imgui_layer.begin();
+            _renderer.begin(_camera.get_camera());
 
+            this->on_update();
             _scenes.get_current_scene()->on_draw(_renderer);
 
-            _renderer.render(_window, _camera.get_camera());
-
+            _renderer.end();
             _imgui_layer.end();
+
             _window.display();
         }
 

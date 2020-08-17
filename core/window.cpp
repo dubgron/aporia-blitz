@@ -40,6 +40,7 @@ namespace Aporia
         if (gl3wInit())
             _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
 
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 

@@ -30,6 +30,7 @@
 #include <graphics/shader.hpp>
 #include <graphics/sprite.hpp>
 #include <graphics/vertex.hpp>
+#include <graphics/vertex_array.hpp>
 #include <graphics/vertex_buffer.hpp>
 
 /* Animations */
