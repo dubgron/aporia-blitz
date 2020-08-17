@@ -77,6 +77,7 @@ add_library(core STATIC
     "configs/window_config.hpp"
     "graphics/circle2d.hpp"
     "graphics/group.hpp"
+    "graphics/index_buffer.hpp"
     "graphics/line2d.hpp"
     "graphics/rectangle2d.hpp"
     "graphics/renderer.cpp"

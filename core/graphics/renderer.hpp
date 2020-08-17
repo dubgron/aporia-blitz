@@ -60,10 +60,10 @@ namespace Aporia
 
         std::stack<glm::mat4> _tranformation_stack;
 
-        std::map<std::shared_ptr<sf::Texture>, VertexArray<IndexBuffer::Quads, MAX_QUEUE>> _textured_queue;
-        VertexArray<IndexBuffer::Quads, MAX_QUEUE> _quad_queue;
-        VertexArray<IndexBuffer::TriangleFan, MAX_QUEUE> _circle_queue;
-        VertexArray<IndexBuffer::Lines, MAX_QUEUE> _line_queue;
+        std::map<std::shared_ptr<sf::Texture>, VertexArray<PrimitiveType::Quads, MAX_QUEUE>> _textured_queue;
+        VertexArray<PrimitiveType::Quads, MAX_QUEUE> _quad_queue;
+        VertexArray<PrimitiveType::TriangleFan, MAX_QUEUE> _circle_queue;
+        VertexArray<PrimitiveType::Lines, MAX_QUEUE> _line_queue;
 
         Logger& _logger;
     };

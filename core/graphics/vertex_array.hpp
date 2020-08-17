@@ -13,9 +13,9 @@
 
 namespace Aporia
 {
-    using IndexBuffer = sf::PrimitiveType;
+    using PrimitiveType = sf::PrimitiveType;
 
-    template<IndexBuffer T, std::size_t N>
+    template<PrimitiveType T, std::size_t N>
     class VertexArray final : public sf::Drawable
     {
     public:
