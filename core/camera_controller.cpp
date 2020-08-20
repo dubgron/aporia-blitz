@@ -7,7 +7,7 @@ namespace Aporia
 {
     CameraController::CameraController(Logger& logger, EventManager& event_manager, const CameraConfig& config)
         : _logger(logger),
-          _camera(-config.aspect_ratio * config.size, config.aspect_ratio* config.size, -config.size, config.size),
+          _camera(-config.aspect_ratio * config.size, config.aspect_ratio * config.size, -config.size, config.size),
           _config(config)
     {
         using namespace std::placeholders;

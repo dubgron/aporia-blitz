@@ -29,7 +29,6 @@ namespace Aporia
         {
             _current_animation = name;
             _animations.at(_current_animation).play();
-            _logger.log(LOG_DEBUG) << "Playing '" << name << "'";
         }
     }
 

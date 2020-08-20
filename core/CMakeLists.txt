@@ -30,7 +30,7 @@ find_package(OpenGL REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(ImGui REQUIRED)
+find_package(imgui REQUIRED)
 
 find_package(stb REQUIRED)
 
