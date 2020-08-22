@@ -21,6 +21,8 @@ namespace Aporia
         using Microseconds = std::chrono::microseconds;
         using Nanoseconds = std::chrono::nanoseconds;
 
+        Timer() : _start_time(_clock.now()) {}
+
         template<typename T = Seconds>
         auto reset()
         {
