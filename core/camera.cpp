@@ -6,15 +6,15 @@
 
 namespace Aporia
 {
-    Camera::Camera(float left, float right, float bottom, float top)
-        : _left(left), _right(right), _bottom(bottom), _top(top)
+    Camera::Camera(float left, float right, float bottom, float top, float near, float far)
+        : _left(left), _right(right), _bottom(bottom), _top(top), _near(near), _far(far)
     {
-        set_projection_matrix(_left, _right, _bottom, _top);
+        set_projection_matrix(_left, _right, _bottom, _top, _near, _far);
     }
 
-    void Camera::set_projection_matrix(float left, float right, float bottom, float top)
+    void Camera::set_projection_matrix(float left, float right, float bottom, float top, float near, float far)
     {
-        _projection_matrix = glm::ortho(left, right, bottom, top);
+        _projection_matrix = glm::ortho(left, right, bottom, top, near, far);
 
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
@@ -42,14 +42,16 @@ namespace Aporia
         _view_projection_matrix = _projection_matrix * _view_matrix;
     }
 
-    void Camera::set_frustum(float left, float right, float bottom, float top)
+    void Camera::set_frustum(float left, float right, float bottom, float top, float near, float far)
     {
         _left = left;
         _right = right;
         _bottom = bottom;
         _top = top;
+        _near = near;
+        _far = far;
 
-        set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom);
+        set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom, _near, _far);
     }
 
     void Camera::set_position(glm::vec2 pos)
@@ -87,7 +89,7 @@ namespace Aporia
     void Camera::set_zoom(float zoom)
     {
         _zoom = zoom;
-        set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom);
+        set_projection_matrix(_left * _zoom, _right * _zoom, _bottom * _zoom, _top * _zoom, _near, _far);
     }
 
     void Camera::zoom(float zoom)

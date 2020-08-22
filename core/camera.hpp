@@ -7,12 +7,12 @@ namespace Aporia
     class Camera final
     {
     public:
-        Camera(float left, float right, float bottom, float top);
+        Camera(float left, float right, float bottom, float top, float near = -1.0f, float far = 1.0f);
 
-        void set_projection_matrix(float left, float right, float bottom, float top);
+        void set_projection_matrix(float left, float right, float bottom, float top, float near = -1.0f, float far = 1.0f);
         void set_view_matrix(const glm::vec2& position, float rotation);
 
-        void set_frustum(float left, float right, float bottom, float top);
+        void set_frustum(float left, float right, float bottom, float top, float near = -1.0f, float far = 1.0f);
 
         void set_position(glm::vec2 pos);
         void move(const glm::vec2& vec);
@@ -35,7 +35,7 @@ namespace Aporia
         glm::mat4 _view_matrix = glm::mat4{ 1.0f };
         glm::mat4 _view_projection_matrix = glm::mat4{ 1.0f };
 
-        float _left, _right, _bottom, _top;
+        float _left, _right, _bottom, _top, _near, _far;
         glm::vec2 _position = glm::vec2{ 0.0f };
         float _rotation = 0.0f;
         float _zoom = 1.0f;
