@@ -45,7 +45,7 @@ namespace Aporia
             _imgui_layer.begin();
             _renderer.begin(_camera.get_camera());
 
-            this->on_update();
+            this->on_update(dt);
             _scenes.get_current_scene()->on_draw(_renderer);
 
             _renderer.end();

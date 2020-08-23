@@ -10,7 +10,7 @@ public:
     {
     }
 
-    void on_update() override
+    void on_update(Aporia::Deltatime dt) override
     {
     }
 

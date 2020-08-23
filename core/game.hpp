@@ -15,6 +15,7 @@
 #include "graphics/renderer.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"
+#include "utils/timer.hpp"
 
 namespace Aporia
 {
@@ -28,7 +29,7 @@ namespace Aporia
         virtual ~Game();
 
         virtual void on_init() {};
-        virtual void on_update() {};
+        virtual void on_update(Deltatime dt) {};
         virtual void on_terminate() {};
 
         void run();
