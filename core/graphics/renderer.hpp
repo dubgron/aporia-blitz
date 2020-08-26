@@ -42,6 +42,7 @@ namespace Aporia
         void draw(const Sprite& sprite);
         void draw(const Rectangle2D& rect);
         void draw(const Line2D& line);
+        void draw(const Circle2D& circle);
 
         void push_transform(const Transform2D& transform);
         void pop_transform();

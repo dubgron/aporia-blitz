@@ -100,6 +100,7 @@ namespace Aporia
     {
         _opaque_quads.render();
         _lines.render();
+
         _transpartent_quads.render();
     }
 
@@ -203,6 +204,38 @@ namespace Aporia
         v.position = transformation * glm::vec4{ linear2d.point, 1.0f };
         v.color = color;
         _lines.get_vertex_buffer()->push(v);
+    }
+
+    void Renderer::draw(const Circle2D& circle)
+    {
+        const Transform2D& transform = circle.get_component<Transform2D>();
+        const Circular& circular = circle.get_component<Circular>();
+        const Color& color = circle.get_component<Color>();
+
+        auto& circles = color.a == 255 ? _opaque_quads : _transpartent_quads;
+
+        glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
+
+        Vertex v;
+        v.color = color;
+        v.tex_coord = glm::vec2{ -1.0f, -1.0f };
+        v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
+        circles.get_vertex_buffer()->push(v);
+
+        v.color = color;
+        v.tex_coord = glm::vec2{ 1.0f, -1.0f };
+        v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
+        circles.get_vertex_buffer()->push(v);
+
+        v.color = color;
+        v.tex_coord = glm::vec2{ 1.0f, 1.0f };
+        v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
+        circles.get_vertex_buffer()->push(v);
+
+        v.color = color;
+        v.tex_coord = glm::vec2{ -1.0f, 1.0f };
+        v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
+        circles.get_vertex_buffer()->push(v);
     }
 
     void Renderer::push_transform(const Transform2D& transform)
