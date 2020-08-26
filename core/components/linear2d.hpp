@@ -8,6 +8,6 @@ namespace Aporia
 {
     struct Linear2D final
     {
-        glm::vec3 point{ 0.0f };
+        glm::vec2 point{ 0.0f };
     };
 }

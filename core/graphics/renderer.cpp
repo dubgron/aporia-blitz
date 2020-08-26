@@ -201,7 +201,7 @@ namespace Aporia
         v.color = color;
         _lines.get_vertex_buffer()->push(v);
 
-        v.position = transformation * glm::vec4{ linear2d.point, 1.0f };
+        v.position = transformation * glm::vec4{ linear2d.point, 0.0f, 1.0f };
         v.color = color;
         _lines.get_vertex_buffer()->push(v);
     }
