@@ -1,17 +1,14 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
-#include <map>
 #include <stack>
 #include <type_traits>
 
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include <GL/gl3w.h>
+#include <glm/matrix.hpp>
 
 #include "camera.hpp"
 #include "logger.hpp"
-#include "window.hpp"
 #include "components/circular.hpp"
 #include "components/color.hpp"
 #include "components/linear2d.hpp"
@@ -19,54 +16,48 @@
 #include "components/texture.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/group.hpp"
+#include "graphics/shader.hpp"
+#include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
-#include "utils/math.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
 {
     class Renderer final
     {
+        using Buffer = std::vector<Vertex>;
+        using BufferIter = Buffer::iterator;
+        using BufferRange = std::pair<BufferIter, BufferIter>;
+
         static constexpr std::size_t MAX_QUEUE = 10000;
 
     public:
         Renderer(Logger& logger);
 
-        template<typename T, std::enable_if_t<has_type_v<typename T::Components, Rectangular>, int> = 0>
-        void draw(const T& entity);
-
-        template<typename T, std::enable_if_t<has_type_v<typename T::Components, Circular>, int> = 0>
-        void draw(const T& entity);
-
-        template<typename T, std::enable_if_t<has_type_v<typename T::Components, Linear2D>, int> = 0>
-        void draw(const T& entity);
+        void begin(const Camera& camera);
+        void end();
+        void render();
 
         void draw(const Group& group);
+        void draw(const Sprite& sprite);
+        void draw(const Rectangle2D& rect);
+        void draw(const Line2D& line);
+        void draw(const Circle2D& circle);
 
-        void render(Window& window, const Camera& cam);
-
-        void push_transform(Transform2D transform);
+        void push_transform(const Transform2D& transform);
         void pop_transform();
 
+        Shader& get_default_shader() { return _default_shader; }
+
     private:
-        template<std::size_t N>
-        void _apply_color(std::array<sf::Vertex, N>& vertecies, const Color& color);
-
-        template<std::size_t N>
-        void _apply_transform2d(std::array<sf::Vertex, N>& vertecies, const Transform2D& transform);
-
-        template<std::size_t N>
-        void _apply_texture(std::array<sf::Vertex, N>& vertecies, const Texture& texture);
-
-        std::map<std::shared_ptr<sf::Texture>, VertexArray<IndexBuffer::Quads, MAX_QUEUE>> _textured_queue;
-        VertexArray<IndexBuffer::Quads, MAX_QUEUE> _quad_queue;
-        VertexArray<IndexBuffer::TriangleFan, MAX_QUEUE> _circle_queue;
-        VertexArray<IndexBuffer::Lines, MAX_QUEUE> _line_queue;
-
-        std::stack<Transform2D> _tranformation_stack;
-
         Logger& _logger;
+
+        VertexArray<MAX_QUEUE, 4, 6> _opaque_quads;
+        VertexArray<MAX_QUEUE, 4, 6> _transpartent_quads;
+        VertexArray<MAX_QUEUE, 2, 2> _lines;
+
+        std::stack<glm::mat4> _tranformation_stack;
+
+        Shader _default_shader;
     };
 }
-
-#include "renderer.tpp"

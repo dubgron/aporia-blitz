@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec3.hpp>
 
 #include "entity.hpp"
 #include "components/color.hpp"
@@ -15,7 +15,7 @@ namespace Aporia
     {
         Line2D() = default;
 
-        Line2D(sf::Vector2f p_1, sf::Vector2f p_2, Color color = Colors::Black)
-            : Entity(Transform2D{ p_1, (p_2 - p_1) / 2.0f }, Linear2D{ p_2 - p_1 }, Color{ color }) {}
+        Line2D(glm::vec3 p_1, glm::vec2 p_2, Color color = Colors::Black)
+            : Entity(Transform2D{ p_1, (p_2 - glm::vec2(p_1)) / 2.0f }, Linear2D{ p_2 - glm::vec2(p_1) }, Color{ color }) {}
     };
 }

@@ -1,53 +1,87 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
-#include <utility>
+#include <cstdint>
+#include <memory>
 #include <vector>
 
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include <GL/gl3w.h>
+
+#include "graphics/index_buffer.hpp"
+#include "graphics/vertex_buffer.hpp"
 
 namespace Aporia
 {
-    using IndexBuffer = sf::PrimitiveType;
-
-    template<IndexBuffer T, std::size_t N>
-    class VertexArray final : public sf::Drawable
+    template<size_t Size, size_t VertexCount, size_t IndexCount>
+    class VertexArray final
     {
+        using VertexBuffer = VertexBuffer<Size, VertexCount>;
+        using IndexBuffer = IndexBuffer<Size, IndexCount>;
+
     public:
         VertexArray()
         {
-            _vertices.reserve(N);
+            glGenVertexArrays(1, &_id);
+
+            if (VertexCount == 4 && IndexCount == 6)
+                _mode = GL_TRIANGLES;
+            else if (VertexCount == 2 && IndexCount == 2)
+                _mode = GL_LINES;
         }
 
-        template<std::size_t Size>
-        void add(std::array<sf::Vertex, Size>&& vertices)
+        ~VertexArray()
         {
-            for (sf::Vertex& vertex : vertices)
-                _vertices.emplace_back(std::move(vertex));
+            glDeleteVertexArrays(1, &_id);
         }
 
-        void clear()
+        void bind() const
         {
-            _vertices.clear();
+            glBindVertexArray(_id);
         }
 
-        std::size_t size() const
+        void unbind() const
         {
-            return _vertices.size();
+            glBindVertexArray(0);
         }
+
+        void set_vertex_buffer(std::shared_ptr<VertexBuffer> vbo)
+        {
+            _vbo = std::move(vbo);
+        }
+
+        void set_index_buffer(std::shared_ptr<IndexBuffer> ibo)
+        {
+            _ibo = std::move(ibo);
+        }
+
+        void render()
+        {
+            _vbo->flush();
+
+            this->bind();
+            _ibo->bind();
+
+            glDrawElements(_mode, get_index_count(), GL_UNSIGNED_INT, nullptr);
+
+            _ibo->unbind();
+            this->unbind();
+
+            _vbo->clear();
+        }
+
+        size_t get_index_count() const
+        {
+            return _vbo->size() / VertexCount * IndexCount;
+        }
+
+        std::shared_ptr<VertexBuffer> get_vertex_buffer() const { return _vbo; }
+        std::shared_ptr<IndexBuffer> get_index_buffer() const { return _ibo; }
 
     private:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-        {
-            if (!_vertices.empty())
-                target.draw(&_vertices[0], _vertices.size(), T, states);
-        }
+        uint32_t _id = 0;
+        uint32_t _mode = GL_POINTS;
 
-        std::vector<sf::Vertex> _vertices;
+        std::shared_ptr<VertexBuffer> _vbo;
+        std::shared_ptr<IndexBuffer> _ibo;
     };
 }

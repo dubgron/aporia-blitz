@@ -86,11 +86,6 @@ namespace Aporia
         return _buttons.is_any_released();
     }
 
-    sf::Vector2i InputManager::get_mouse_position() const
-    {
-        return sf::Mouse::getPosition();
-    }
-
     float InputManager::is_wheel_scrolling(MouseWheel wheel) const
     {
         return _wheels.is_triggered(wheel) * _wheel_delta;

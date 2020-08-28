@@ -2,56 +2,38 @@
 
 #include <cmath>
 
-#include <SFML/Graphics/Transform.hpp>
-#include <SFML/System/Vector2.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/glm.hpp>
 
 #include "components/transform2d.hpp"
 
 namespace Aporia
 {
-    inline sf::Vector2f rotate(sf::Vector2f vector, double angle)
+    inline glm::mat4 to_mat4(const Transform2D& transform)
     {
-        double sin = std::sin(angle);
-        double cos = std::cos(angle);
+        glm::mat4 result{ 1.0f };
+        float sin = std::sin(transform.rotation);
+        float cos = std::cos(transform.rotation);
 
-        return sf::Vector2f(vector.x * cos - vector.y * sin, vector.x * sin + vector.y * cos);
-    }
+        glm::vec2 scale_origin = transform.scale * transform.origin;
+        glm::vec2 position_origin = transform.position + glm::vec3{ transform.origin, 0.0f };
 
-    inline sf::Vector2f scale(sf::Vector2f vector, sf::Vector2f scale)
-    {
-        return sf::Vector2f(vector.x * scale.x, vector.y * scale.y);
-    }
+        float t_x = -scale_origin.x * cos + scale_origin.y * sin + position_origin.x;
+        float t_y = -scale_origin.x * sin - scale_origin.y * cos + position_origin.y;
 
-    inline sf::Vector2f operator*(const Transform2D& transform, const sf::Vector2f& vector)
-    {
-        return rotate(scale(vector - transform.origin, transform.scale), transform.rotation) + transform.origin + transform.position;
-    }
-
-    inline Transform2D operator*(const Transform2D& transform_1, const Transform2D& transform_2)
-    {
-        sf::Transform transform;
-        transform.translate(transform_1.position);
-        transform.rotate(transform_1.rotation * 180.0f / M_PI);
-        transform.scale(transform_1.scale);
-        transform.translate(transform_2.position + transform_2.origin);
-        transform.rotate(transform_2.rotation * 180.0f / M_PI);
-        transform.scale(transform_2.scale);
-        transform.translate(-transform_2.origin);
-
-        const float* matrix = transform.getMatrix();
-
-        Transform2D result;
-        result.position = sf::Vector2f(matrix[12], matrix[13]);
-        result.scale = { transform_1.scale.x * transform_2.scale.x, transform_1.scale.y * transform_2.scale.y };
-        result.rotation = std::atan2(matrix[1] / result.scale.x, matrix[0] / result.scale.x);
+       /**
+         *  Precalculated following lines:
+         *
+         *  result = glm::translate(glm::mat4{ 1.0f }, transform.position + glm::vec3{ transform.origin, 0.0f });
+         *  result = glm::rotate(result, transform.rotation, glm::vec3{ 0.0f, 0.0f, 1.0f });
+         *  result = glm::scale(result, glm::vec3{ transform.scale, 1.0f });
+         *  result = glm::translate(result, glm::vec3{ -transform.origin, 0.0f });
+         *
+         */
+        result[0] = transform.scale.x * glm::vec4{ cos, sin, 0, 0 };
+        result[1] = transform.scale.y * glm::vec4{ -sin, cos, 0, 0 };
+        result[3] = glm::vec4{ t_x, t_y, transform.position.z, 1.0f };
 
         return result;
-    }
-
-    inline Transform2D& operator*=(Transform2D& transform_1, const Transform2D& transform_2)
-    {
-        transform_1 = transform_1 * transform_2;
-
-        return transform_1;
     }
 }

@@ -1,7 +1,5 @@
 #pragma once 
 
-#include <SFML/System/Vector2.hpp>
-
 #include "event_manager.hpp"
 #include "input_buffer.hpp"
 #include "logger.hpp"
@@ -31,8 +29,6 @@ namespace Aporia
         bool is_any_button_released() const;
 
         float is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
-
-        sf::Vector2i get_mouse_position() const;
 
     private:
         void _on_key_triggered(Keyboard key);

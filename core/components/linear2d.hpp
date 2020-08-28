@@ -2,12 +2,12 @@
 
 #include <utility>
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec2.hpp>
 
 namespace Aporia
 {
     struct Linear2D final
     {
-        sf::Vector2f point;
+        glm::vec2 point{ 0.0f };
     };
 }

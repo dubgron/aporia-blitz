@@ -40,7 +40,7 @@ namespace Aporia
         size_t _frames_amount = 0;
 
         size_t _current_frame = 0;
-        std::function<size_t()> _increment = [](){ return 0; };;
+        std::function<size_t(size_t, size_t)> _increment = [](size_t, size_t){ return 0; };;
 
         Timer _timer;
     };

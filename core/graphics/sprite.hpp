@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec3.hpp>
 
 #include "entity.hpp"
 #include "components/color.hpp"
@@ -16,10 +16,16 @@ namespace Aporia
     {
         Sprite() = default;
 
-        Sprite(const Texture& texture, sf::Vector2f position = { 0.0f, 0.0f }, Color color = Colors::White)
-            : Entity(Transform2D{ position, { texture.width / 2.0f, texture.height / 2.0f } },
+        Sprite(const Texture& texture, glm::vec3 position, Color color = Colors::White)
+            : Entity(Transform2D{ std::move(position), (texture.v - texture.u) / 2.0f },
                      Texture{ texture },
-                     Rectangular{ texture.width, texture.height },
+                     Rectangular{ texture.v.x - texture.u.x, texture.v.y - texture.u.y },
+                     Color{ std::move(color) }) {}
+
+        Sprite(const Texture& texture, glm::vec3 position, glm::vec2 size, Color color = Colors::White)
+            : Entity(Transform2D{ std::move(position), (texture.v - texture.u) / 2.0f },
+                     Texture{ texture },
+                     Rectangular{ size.x, size.y },
                      Color{ std::move(color) }) {}
     };
 }

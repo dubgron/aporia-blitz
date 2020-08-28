@@ -1,13 +1,15 @@
 #pragma once
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/Window/Event.hpp>
+#include <cstdint>
+#include <memory>
 
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
+
+#include "event_manager.hpp"
 #include "logger.hpp"
+#include "components/color.hpp"
 #include "configs/window_config.hpp"
 
 namespace Aporia
@@ -15,33 +17,33 @@ namespace Aporia
     class Window final
     {
     public:
-        Window(Logger& logger, const WindowConfig& config);
+        Window(Logger& logger, EventManager& events, const WindowConfig& config);
         ~Window();
 
-        void open();
-        void close();
-
-        void show();
-        void hide();
-
-        void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
-        void draw(const sf::Drawable& drawable, sf::RenderStates& states);
+        void clear(const Color& color = Colors::Black);
         void display();
 
-        bool poll_event(sf::Event& event);
+        void poll_events() const;
 
+        void close();
         bool is_open() const;
-        bool is_visible() const;
 
-        sf::RenderWindow& get_native_window();
-        const sf::RenderWindow& get_native_window() const;
+        glm::uvec2 get_size() const;
+        glm::vec2 get_mouse_position() const;
+
+        GLFWwindow* get_native_window();
 
     private:
         Logger& _logger;
+        EventManager& _events;
 
-        sf::RenderWindow _window;
-        const WindowConfig& _config;
+        GLFWwindow* _window;
 
-        bool _visible = false;
+        friend void on_window_close(GLFWwindow* window);
+        friend void on_resize(GLFWwindow* window, int32_t width, int32_t height);
+        friend void on_set_key(GLFWwindow* window, int32_t key_code, int32_t scan_code, int32_t action, int32_t mods);
+        friend void on_set_mouse_button(GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods);
+        friend void on_set_scroll(GLFWwindow* window, double x_offset, double y_offset);
+        friend void on_set_cursor_position(GLFWwindow* window, double x_pos, double y_pos);
     };
 }

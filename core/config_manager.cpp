@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 
+#include <glm/vec2.hpp>
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
@@ -33,7 +34,7 @@ namespace Aporia
         const auto& position = window["position"];
 
         window_config.title = window["title"];
-        window_config.position = sf::Vector2i(position[0], position[1]);
+        window_config.position = glm::ivec2(position[0], position[1]);
         window_config.width = window["width"];
         window_config.height = window["height"];
         window_config.vsync = window["vsync"];

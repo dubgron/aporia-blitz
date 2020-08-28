@@ -5,27 +5,28 @@
 
 #include "event.hpp"
 #include "logger.hpp"
-#include "window.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
 {
+    class Window;
+
     class EventManager final
     {
         using Events = std::tuple<WindowCloseEvent,
-                                  WindowResizeEvent,
-                                  KeyPressedEvent,
-                                  KeyReleasedEvent,
-                                  ButtonPressedEvent,
-                                  ButtonReleasedEvent,
-                                  MouseWheelScrollEvent,
-                                  BeginProcessingWindowEvents,
-                                  EndProcessingWindowEvents>;
+            WindowResizeEvent,
+            KeyPressedEvent,
+            KeyReleasedEvent,
+            ButtonPressedEvent,
+            ButtonReleasedEvent,
+            MouseWheelScrollEvent,
+            MouseMoveEvent,
+            BeginProcessingWindowEvents,
+            EndProcessingWindowEvents>;
 
     public:
-        EventManager(Logger& logger);
-
-        void listen_for_events(Window& window);
+        EventManager(Logger& logger)
+            : _logger(logger) {}
 
         template<typename Ev, typename... Args, 
             typename = std::enable_if_t<
@@ -42,9 +43,9 @@ namespace Aporia
         void add_listener(Listener listener);
 
     private:
-        Events _events;
-
         Logger& _logger;
+
+        Events _events;
     };
 }
 

@@ -1,33 +1,38 @@
-if(NOT DEFINED ENV{NLOHMANN_JSON_BUILD})
-    message(FATAL_ERROR "Environmental variable NLOHMANN_JSON_BUILD is not set!")
-endif()
+function(validate_env name)
+    if(NOT DEFINED ENV{${name}})
+        message(FATAL_ERROR "Environmental variable ${name} is not set!")
+    endif()
+endfunction()
 
+validate_env("NLOHMANN_JSON_BUILD")
 find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
 
-if(NOT DEFINED ENV{SFML_BUILD})
-    message(FATAL_ERROR "Environmental variable SFML_BUILD is not set!")
-endif()
-
+validate_env("SFML_BUILD")
 set(SFML_STATIC_LIBRARIES TRUE)
 find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS graphics audio window system)
 
-if(NOT DEFINED ENV{SPDLOG_BUILD})
-    message(FATAL_ERROR "Environmental variable SPDLOG_BUILD is not set!")
-endif()
-
+validate_env("SPDLOG_BUILD")
 find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
 
-if(NOT DEFINED ENV{MAGIC_ENUM_BUILD})
-    message(FATAL_ERROR "Environmental variable MAGIC_ENUM_BUILD is not set!")
-endif()
-
+validate_env("MAGIC_ENUM_BUILD")
 find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
 
-if(NOT DEFINED ENV{IMGUI_SFML_BUILD})
-    message(FATAL_ERROR "Environmental variable IMGUI_SFML_BUILD is not set!")
-endif()
+validate_env("GL3W_BUILD")
+find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
 
-find_package(ImGui-SFML REQUIRED PATHS $ENV{IMGUI_SFML_BUILD})
+validate_env("GLFW_BUILD")
+find_package(glfw3 REQUIRED PATHS $ENV{GLFW_BUILD})
+
+set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
+find_package(glm REQUIRED)
+
+find_package(OpenGL REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(imgui REQUIRED)
+
+find_package(stb REQUIRED)
 
 add_library(core STATIC
     "animation_manager.cpp"
@@ -42,7 +47,6 @@ add_library(core STATIC
     "entity.hpp"
     "entry_point.hpp"
     "event.hpp"
-    "event_manager.cpp"
     "event_manager.hpp"
     "event_manager.tpp"
     "game.cpp"
@@ -73,13 +77,17 @@ add_library(core STATIC
     "configs/window_config.hpp"
     "graphics/circle2d.hpp"
     "graphics/group.hpp"
+    "graphics/index_buffer.hpp"
     "graphics/line2d.hpp"
     "graphics/rectangle2d.hpp"
     "graphics/renderer.cpp"
     "graphics/renderer.hpp"
-    "graphics/renderer.tpp"
+    "graphics/shader.cpp"
+    "graphics/shader.hpp"
     "graphics/sprite.hpp"
+    "graphics/vertex.hpp"
     "graphics/vertex_array.hpp"
+    "graphics/vertex_buffer.hpp"
     "graphics/animations/animation.cpp"
     "graphics/animations/animation.hpp"
     "graphics/animations/animator.cpp"
@@ -100,6 +108,7 @@ add_library(core STATIC
     "utils/type_traits.hpp")
 
 target_link_libraries(core
+    OpenGL::GL
     sfml-graphics
     sfml-audio
     sfml-window
@@ -107,18 +116,23 @@ target_link_libraries(core
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
-    ImGui-SFML::ImGui-SFML)
+    imgui
+    glm::glm
+    glfw
+    gl3w
+    stb)
 
 target_include_directories(core
     PUBLIC
         "${PROJECT_SOURCE_DIR}/core")
-    
+
 target_compile_features(core PUBLIC cxx_std_20)
 
 target_compile_definitions(core
     PUBLIC
         SFML_STATIC
         _USE_MATH_DEFINES
+        MAGIC_ENUM_RANGE_MAX=512
     PRIVATE
         APORIA_EXPORT)
 

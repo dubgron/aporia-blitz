@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <SFML/System/Vector2.hpp>
+#include <glm/vec2.hpp>
 
 #include "camera.hpp"
 #include "event_manager.hpp"
@@ -21,7 +21,7 @@ namespace Aporia
         void control_movement(const InputManager& input_manager, float delta_time);
         void control_rotation(const InputManager& input_manager, float delta_time);
         void control_zoom(const InputManager& input_manager, float delta_time);
-        void follow(const sf::Vector2f& to_follow, float delta_time);
+        void follow(const glm::vec2& to_follow, float delta_time);
 
         const Camera& get_camera() const;
 

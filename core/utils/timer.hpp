@@ -5,6 +5,8 @@
 
 namespace Aporia
 {
+    using Deltatime = float;
+
     class Timer final
     {
     public:
@@ -18,6 +20,8 @@ namespace Aporia
         using Milliseconds = std::chrono::milliseconds;
         using Microseconds = std::chrono::microseconds;
         using Nanoseconds = std::chrono::nanoseconds;
+
+        Timer() : _start_time(_clock.now()) {}
 
         template<typename T = Seconds>
         auto reset()
