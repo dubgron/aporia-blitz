@@ -4,8 +4,9 @@ function(validate_env name)
     endif()
 endfunction()
 
-validate_env("NLOHMANN_JSON_BUILD")
-find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+find_package(nlohmann_json 3.7.0 REQUIRED)
 
 validate_env("SPDLOG_BUILD")
 find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
@@ -23,8 +24,6 @@ set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
 find_package(glm REQUIRED)
 
 find_package(OpenGL REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(imgui REQUIRED)
 
@@ -106,7 +105,7 @@ add_library(core STATIC
 target_link_libraries(core
     OpenGL::GL
     spdlog::spdlog
-    nlohmann_json::nlohmann_json
+    nlohmann_json
     magic_enum::magic_enum
     imgui
     glm::glm
