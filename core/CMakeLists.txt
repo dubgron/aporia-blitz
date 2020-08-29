@@ -12,8 +12,7 @@ find_package(spdlog REQUIRED)
 
 find_package(magic_enum REQUIRED)
 
-validate_env("GL3W_BUILD")
-find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
+find_package(gl3w REQUIRED)
 
 validate_env("GLFW_BUILD")
 find_package(glfw3 REQUIRED PATHS $ENV{GLFW_BUILD})
