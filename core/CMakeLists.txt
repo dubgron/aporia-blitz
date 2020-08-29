@@ -8,8 +8,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(nlohmann_json 3.7.0 REQUIRED)
 
-validate_env("SPDLOG_BUILD")
-find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
+find_package(spdlog REQUIRED)
 
 validate_env("MAGIC_ENUM_BUILD")
 find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
@@ -104,7 +103,7 @@ add_library(core STATIC
 
 target_link_libraries(core
     OpenGL::GL
-    spdlog::spdlog
+    spdlog
     nlohmann_json
     magic_enum::magic_enum
     imgui
