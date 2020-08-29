@@ -1,21 +1,13 @@
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(nlohmann_json 3.7.0 REQUIRED)
-
-find_package(spdlog REQUIRED)
-
-find_package(magic_enum REQUIRED)
-
-find_package(gl3w REQUIRED)
-
-find_package(glfw3 REQUIRED)
-
 find_package(glm REQUIRED)
-
-find_package(OpenGL REQUIRED)
-
+find_package(glfw3 REQUIRED)
+find_package(gl3w REQUIRED)
 find_package(imgui REQUIRED)
-
+find_package(magic_enum REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(spdlog REQUIRED)
 find_package(stb REQUIRED)
 
 add_library(core STATIC
@@ -92,14 +84,14 @@ add_library(core STATIC
     "utils/type_traits.hpp")
 
 target_link_libraries(core
-    OpenGL::GL
-    spdlog
-    nlohmann_json
-    magic_enum
-    imgui
     glm
     glfw
     gl3w
+    imgui
+    magic_enum
+    nlohmann_json
+    OpenGL::GL
+    spdlog
     stb)
 
 target_include_directories(core
