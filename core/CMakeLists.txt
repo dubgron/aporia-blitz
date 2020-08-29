@@ -1,33 +1,13 @@
-function(validate_env name)
-    if(NOT DEFINED ENV{${name}})
-        message(FATAL_ERROR "Environmental variable ${name} is not set!")
-    endif()
-endfunction()
-
-validate_env("NLOHMANN_JSON_BUILD")
-find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
-
-validate_env("SPDLOG_BUILD")
-find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
-
-validate_env("MAGIC_ENUM_BUILD")
-find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
-
-validate_env("GL3W_BUILD")
-find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
-
-validate_env("GLFW_BUILD")
-find_package(glfw3 REQUIRED PATHS $ENV{GLFW_BUILD})
-
-set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
-find_package(glm REQUIRED)
-
-find_package(OpenGL REQUIRED)
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+find_package(glm REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(gl3w REQUIRED)
 find_package(imgui REQUIRED)
-
+find_package(magic_enum REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(spdlog REQUIRED)
 find_package(stb REQUIRED)
 
 add_library(core STATIC
@@ -104,14 +84,14 @@ add_library(core STATIC
     "utils/type_traits.hpp")
 
 target_link_libraries(core
-    OpenGL::GL
-    spdlog::spdlog
-    nlohmann_json::nlohmann_json
-    magic_enum::magic_enum
-    imgui
-    glm::glm
+    glm
     glfw
     gl3w
+    imgui
+    magic_enum
+    nlohmann_json
+    OpenGL::GL
+    spdlog
     stb)
 
 target_include_directories(core
