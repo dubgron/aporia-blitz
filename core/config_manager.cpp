@@ -8,6 +8,7 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
 
@@ -50,7 +51,7 @@ namespace Aporia
 
         camera_config.aspect_ratio = camera["aspect_ratio"];
         camera_config.size = camera["size"];
-        camera_config.background_color = sf::Color(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
+        camera_config.background_color = Color{ bg_color[0], bg_color[1], bg_color[2], bg_color[3] };
         camera_config.movement_speed = camera["movement_speed"];
         camera_config.rotation_speed = camera["rotation_speed"];
         camera_config.zoom_speed = camera["zoom_speed"];

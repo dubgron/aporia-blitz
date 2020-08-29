@@ -1,7 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/Color.hpp>
-
+#include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 
 namespace Aporia
@@ -10,7 +9,7 @@ namespace Aporia
     {
         float aspect_ratio = 0.0f;
         float size = 0.0f;
-        sf::Color background_color;
+        Color background_color;
 
         float movement_speed = 0.0f;
         float rotation_speed = 0.0f;
