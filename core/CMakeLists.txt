@@ -1,9 +1,3 @@
-function(validate_env name)
-    if(NOT DEFINED ENV{${name}})
-        message(FATAL_ERROR "Environmental variable ${name} is not set!")
-    endif()
-endfunction()
-
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(nlohmann_json 3.7.0 REQUIRED)
@@ -14,8 +8,7 @@ find_package(magic_enum REQUIRED)
 
 find_package(gl3w REQUIRED)
 
-validate_env("GLFW_BUILD")
-find_package(glfw3 REQUIRED PATHS $ENV{GLFW_BUILD})
+find_package(glfw3 REQUIRED)
 
 set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
 find_package(glm REQUIRED)
