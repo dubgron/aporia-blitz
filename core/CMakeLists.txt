@@ -10,7 +10,6 @@ find_package(gl3w REQUIRED)
 
 find_package(glfw3 REQUIRED)
 
-set(glm_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glm/cmake/glm/")
 find_package(glm REQUIRED)
 
 find_package(OpenGL REQUIRED)
@@ -98,7 +97,7 @@ target_link_libraries(core
     nlohmann_json
     magic_enum
     imgui
-    glm::glm
+    glm
     glfw
     gl3w
     stb)
