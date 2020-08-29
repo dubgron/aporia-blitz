@@ -10,8 +10,7 @@ find_package(nlohmann_json 3.7.0 REQUIRED)
 
 find_package(spdlog REQUIRED)
 
-validate_env("MAGIC_ENUM_BUILD")
-find_package(magic_enum REQUIRED PATHS $ENV{MAGIC_ENUM_BUILD})
+find_package(magic_enum REQUIRED)
 
 validate_env("GL3W_BUILD")
 find_package(gl3w REQUIRED PATHS $ENV{GL3W_BUILD})
@@ -105,7 +104,7 @@ target_link_libraries(core
     OpenGL::GL
     spdlog
     nlohmann_json
-    magic_enum::magic_enum
+    magic_enum
     imgui
     glm::glm
     glfw
