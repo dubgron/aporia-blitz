@@ -7,10 +7,6 @@ endfunction()
 validate_env("NLOHMANN_JSON_BUILD")
 find_package(nlohmann_json 3.7.0 REQUIRED PATHS $ENV{NLOHMANN_JSON_BUILD})
 
-validate_env("SFML_BUILD")
-set(SFML_STATIC_LIBRARIES TRUE)
-find_package(SFML 2.5.1 REQUIRED PATHS $ENV{SFML_BUILD} COMPONENTS graphics audio window system)
-
 validate_env("SPDLOG_BUILD")
 find_package(spdlog REQUIRED PATHS $ENV{SPDLOG_BUILD} NO_DEFAULT_PATH)
 
@@ -109,10 +105,6 @@ add_library(core STATIC
 
 target_link_libraries(core
     OpenGL::GL
-    sfml-graphics
-    sfml-audio
-    sfml-window
-    sfml-system
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     magic_enum::magic_enum
@@ -130,9 +122,9 @@ target_compile_features(core PUBLIC cxx_std_20)
 
 target_compile_definitions(core
     PUBLIC
-        SFML_STATIC
         _USE_MATH_DEFINES
         MAGIC_ENUM_RANGE_MAX=512
+        STB_IMAGE_IMPLEMENTATION
     PRIVATE
         APORIA_EXPORT)
 

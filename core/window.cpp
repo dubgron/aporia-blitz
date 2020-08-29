@@ -1,9 +1,5 @@
 #include "window.hpp"
 
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/View.hpp>
-#include <SFML/Window/VideoMode.hpp>
-
 #include "inputs/all_inputs.hpp"
 
 namespace Aporia
