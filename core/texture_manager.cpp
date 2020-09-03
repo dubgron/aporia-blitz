@@ -10,7 +10,8 @@
 #include "components/texture.hpp"
 #include "utils/read_file.hpp"
 
-namespace Aporia {
+namespace Aporia
+{
     TextureManager::TextureManager(Logger& logger, const TextureConfig& config)
         : _logger(logger)
     {
@@ -25,7 +26,7 @@ namespace Aporia {
 
             logger.log(LOG_INFO) << "Opened '" << config.atlas << "' successfully";
 
-            std::string atlas_image = texture_json["meta"]["image"];
+            std::string atlas_image = texture_json["atlas"];
 
             if (!std::filesystem::exists(atlas_image))
                 logger.log(LOG_ERROR) << "File '" << atlas_image << "' does not open!";
@@ -52,21 +53,17 @@ namespace Aporia {
                 stbi_image_free(data);
 
                 Texture::Origin atlas{ id, width, height, channels };
-                for (auto& texture : texture_json["frames"])
+                for (auto& texture : texture_json["textures"])
                 {
-                    std::string name = texture["filename"];
-                    name.erase(name.find_last_of("."));
+                    std::string name = texture["name"];
 
                     if (_textures.find(name) != _textures.end())
                         logger.log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
 
-                    auto tex = texture["frame"];
-                    float x = tex["x"].get<float>() / atlas.width;
-                    float y = tex["y"].get<float>() / atlas.height;
-                    float width = tex["w"].get<float>() / atlas.width;
-                    float height = tex["h"].get<float>() / atlas.height;
+                    glm::vec2 u = { texture["u"][0], texture["u"][1] };
+                    glm::vec2 v = { texture["v"][0], texture["v"][1] };
 
-                    _textures.try_emplace(name, Texture{ { x, y + height }, { x + width, y }, atlas });
+                    _textures.try_emplace(name, Texture{ u, v, atlas });
                 }
 
                 if (_textures.find("default") == _textures.end())
