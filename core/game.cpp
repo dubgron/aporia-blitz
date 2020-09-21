@@ -40,7 +40,7 @@ namespace Aporia
             dt = time.reset();
 
             _window.poll_events();
-            _window.clear();
+            _window.clear(_camera.get_clear_color());
 
             _imgui_layer.begin();
             _renderer.begin(_camera.get_camera());

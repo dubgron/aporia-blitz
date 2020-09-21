@@ -77,6 +77,11 @@ namespace Aporia
         return _camera;
     }
 
+    const Color& CameraController::get_clear_color() const
+    {
+        return _config.background_color;
+    }
+
     void CameraController::_on_resize(Window& window, uint32_t width, uint32_t height)
     {
         float aspect_ratio = static_cast<float>(width) / height;
