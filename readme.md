@@ -1,4 +1,4 @@
-# Aporia Blitz (build LD46)
+# Aporia Blitz (build LD47)
 
 [![Build Status](https://img.shields.io/travis/com/dubgron/aporia-blitz/master?token=3M7zid8xXNCxYNJKxB2L&label=master)](https://travis-ci.com/dubgron/aporia-blitz) 
 [![Build Status](https://img.shields.io/travis/com/dubgron/aporia-blitz/develop?token=3M7zid8xXNCxYNJKxB2L&label=develop)](https://travis-ci.com/dubgron/aporia-blitz)
