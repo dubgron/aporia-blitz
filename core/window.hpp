@@ -38,12 +38,5 @@ namespace Aporia
         EventManager& _events;
 
         GLFWwindow* _window;
-
-        friend void on_window_close(GLFWwindow* window);
-        friend void on_resize(GLFWwindow* window, int32_t width, int32_t height);
-        friend void on_set_key(GLFWwindow* window, int32_t key_code, int32_t scan_code, int32_t action, int32_t mods);
-        friend void on_set_mouse_button(GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods);
-        friend void on_set_scroll(GLFWwindow* window, double x_offset, double y_offset);
-        friend void on_set_cursor_position(GLFWwindow* window, double x_pos, double y_pos);
     };
 }

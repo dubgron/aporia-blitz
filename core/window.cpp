@@ -26,12 +26,52 @@ namespace Aporia
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
 
-        glfwSetWindowCloseCallback(_window, on_window_close);
-        glfwSetKeyCallback(_window, on_set_key);
-        glfwSetMouseButtonCallback(_window, on_set_mouse_button);
-        glfwSetScrollCallback(_window, on_set_scroll);
-        glfwSetCursorPosCallback(_window, on_set_cursor_position);
-        glfwSetFramebufferSizeCallback(_window, on_resize);
+        glfwSetWindowCloseCallback(_window, [](GLFWwindow * window)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                win._events.call_event<WindowCloseEvent>(win);
+            });
+
+        glfwSetKeyCallback(_window, [](GLFWwindow* window, int32_t key_code, int32_t scan_code, int32_t action, int32_t mods)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                Keyboard key = static_cast<Keyboard>(key_code);
+                if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                    win._events.call_event<KeyPressedEvent>(key);
+                else if (action == GLFW_RELEASE)
+                    win._events.call_event<KeyReleasedEvent>(key);
+            });
+
+        glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                Mouse button = static_cast<Mouse>(button_code);
+                if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                    win._events.call_event<ButtonPressedEvent>(button);
+                else if (action == GLFW_RELEASE)
+                    win._events.call_event<ButtonReleasedEvent>(button);
+            });
+
+        glfwSetScrollCallback(_window, [](GLFWwindow* window, double x_offset, double y_offset)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                if (x_offset)
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, x_offset);
+                if (y_offset)
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, y_offset);
+            });
+
+        glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double x_pos, double y_pos)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                win._events.call_event<MouseMoveEvent>(glm::vec2{ x_pos, y_pos });
+            });
+
+        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* window, int32_t width, int32_t height)
+            {
+                Window& win = *(Window*)glfwGetWindowUserPointer(window);
+                win._events.call_event<WindowResizeEvent>(win, width, height);
+            });
 
         if (gl3wInit())
             _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
@@ -109,59 +149,5 @@ namespace Aporia
     GLFWwindow* Window::get_native_window()
     {
         return _window;
-    }
-
-    void on_window_close(GLFWwindow* window)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        win._events.call_event<WindowCloseEvent>(win);
-    }
-
-    void on_resize(GLFWwindow* window, int32_t width, int32_t height)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        win._events.call_event<WindowResizeEvent>(win, width, height);
-    }
-
-    void on_set_key(GLFWwindow* window, int32_t key_code, int32_t scan_code, int32_t action, int32_t mods)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        Keyboard key = static_cast<Keyboard>(key_code);
-        if (action == GLFW_PRESS || action == GLFW_REPEAT)
-            win._events.call_event<KeyPressedEvent>(key);
-        else if (action == GLFW_RELEASE)
-            win._events.call_event<KeyReleasedEvent>(key);
-    }
-
-    void on_set_mouse_button(GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        Mouse button = static_cast<Mouse>(button_code);
-        if (action == GLFW_PRESS || action == GLFW_REPEAT)
-            win._events.call_event<ButtonPressedEvent>(button);
-        else if (action == GLFW_RELEASE)
-            win._events.call_event<ButtonReleasedEvent>(button);
-    }
-
-    void on_set_scroll(GLFWwindow* window, double x_offset, double y_offset)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        if (x_offset)
-            win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, x_offset);
-
-        if (y_offset)
-            win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, y_offset);
-    }
-
-    void on_set_cursor_position(GLFWwindow* window, double x_pos, double y_pos)
-    {
-        Window& win = *(Window*)glfwGetWindowUserPointer(window);
-
-        win._events.call_event<MouseMoveEvent>(glm::vec2{ x_pos, y_pos });
     }
 }
