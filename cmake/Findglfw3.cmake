@@ -14,6 +14,70 @@ add_library(glfw STATIC
 if (APPLE)
     message(STATUS "Using Cocoa for window creation")
     target_compile_definitions(glfw PUBLIC _GLFW_COCOA)
+elseif (WIN32)
+    message(STATUS "Using Win32 for window creation")
+    target_compile_definitions(glfw PUBLIC _GLFW_WIN32)
+elseif (UNIX)
+    message(STATUS "Using X11 for window creation")
+    target_compile_definitions(glfw PUBLIC _GLFW_X11)
+
+    find_package(X11 REQUIRED)
+
+    # Set up library and include paths
+    list(APPEND glfw_INCLUDE_DIRS "${X11_X11_INCLUDE_PATH}")
+
+    # Check for XRandR (modern resolution switching and gamma control)
+    if (NOT X11_Xrandr_INCLUDE_PATH)
+        message(FATAL_ERROR "RandR headers not found; install libxrandr development package")
+    endif()
+
+    # Check for Xinerama (legacy multi-monitor support)
+    if (NOT X11_Xinerama_INCLUDE_PATH)
+        message(FATAL_ERROR "Xinerama headers not found; install libxinerama development package")
+    endif()
+
+    # Check for Xkb (X keyboard extension)
+    if (NOT X11_Xkb_INCLUDE_PATH)
+        message(FATAL_ERROR "XKB headers not found; install X11 development package")
+    endif()
+
+    # Check for Xcursor (cursor creation from RGBA images)
+    if (NOT X11_Xcursor_INCLUDE_PATH)
+        message(FATAL_ERROR "Xcursor headers not found; install libxcursor development package")
+    endif()
+
+    # Check for XInput (modern HID input)
+    if (NOT X11_Xi_INCLUDE_PATH)
+        message(FATAL_ERROR "XInput headers not found; install libxi development package")
+    endif()
+
+    # Check for X Shape (custom window input shape)
+    if (NOT X11_Xshape_INCLUDE_PATH)
+        message(FATAL_ERROR "X Shape headers not found; install libxext development package")
+    endif()
+endif()
+
+if (UNIX AND NOT APPLE)
+    find_library(RT_LIBRARY rt)
+    mark_as_advanced(RT_LIBRARY)
+    if (RT_LIBRARY)
+        target_link_libraries(glfw PUBLIC rt)
+    endif()
+
+    find_library(MATH_LIBRARY m)
+    mark_as_advanced(MATH_LIBRARY)
+    if (MATH_LIBRARY)
+        target_link_libraries(glfw PUBLIC m)
+    endif()
+
+    if (CMAKE_DL_LIBS)
+        target_link_libraries(glfw PUBLIC dl)
+    endif()
+
+    target_link_libraries(glfw PUBLIC pthread)
+endif()
+
+if (APPLE)
     target_sources(glfw PRIVATE
         ${GLFW_SOURCE_DIR}/cocoa_platform.h
         ${GLFW_SOURCE_DIR}/cocoa_joystick.h
@@ -31,8 +95,6 @@ if (APPLE)
         ${GLFW_SOURCE_DIR}/egl_context.c
         ${GLFW_SOURCE_DIR}/osmesa_context.c)
 elseif (WIN32)
-    message(STATUS "Using Win32 for window creation")
-    target_compile_definitions(glfw PUBLIC _GLFW_WIN32)
     target_sources(glfw PRIVATE
         ${GLFW_SOURCE_DIR}/win32_platform.h
         ${GLFW_SOURCE_DIR}/win32_joystick.h
@@ -49,8 +111,6 @@ elseif (WIN32)
         ${GLFW_SOURCE_DIR}/egl_context.c
         ${GLFW_SOURCE_DIR}/osmesa_context.c)
 elseif (UNIX)
-    message(STATUS "Using X11 for window creation")
-    target_compile_definitions(glfw PUBLIC _GLFW_X11)
     target_sources(glfw PRIVATE
         ${GLFW_SOURCE_DIR}/x11_platform.h
         ${GLFW_SOURCE_DIR}/xkb_unicode.h
@@ -74,9 +134,13 @@ endif()
 
 if (UNIX)
     if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-        target_sources(glfw PRIVATE linux_joystick.h linux_joystick.c)
+        target_sources(glfw PRIVATE
+            ${GLFW_SOURCE_DIR}/linux_joystick.h
+            ${GLFW_SOURCE_DIR}/linux_joystick.c)
     else()
-        target_sources(glfw PRIVATE null_joystick.h null_joystick.c)
+        target_sources(glfw PRIVATE
+            ${GLFW_SOURCE_DIR}/null_joystick.h
+            ${GLFW_SOURCE_DIR}/null_joystick.c)
     endif()
 endif()
 
