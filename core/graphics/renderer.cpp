@@ -21,7 +21,7 @@ namespace Aporia
         _opaque_quads.bind();
 
         auto opaque_quads_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
-        opaque_quads_vbo->add_layout<Vertex>();
+        opaque_quads_vbo->add_layout();
         _opaque_quads.set_vertex_buffer(opaque_quads_vbo);
 
         std::vector<uint32_t> quad_indecies(MAX_QUEUE * 6);
@@ -45,7 +45,7 @@ namespace Aporia
         _transpartent_quads.bind();
 
         auto transpartent_quads_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
-        transpartent_quads_vbo->add_layout<Vertex>();
+        transpartent_quads_vbo->add_layout();
         _transpartent_quads.set_vertex_buffer(transpartent_quads_vbo);
 
         auto transpartent_quads_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
@@ -57,7 +57,7 @@ namespace Aporia
         _lines.bind();
 
         auto lines_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 2>>();
-        lines_vbo->add_layout<Vertex>();
+        lines_vbo->add_layout();
         _lines.set_vertex_buffer(lines_vbo);
 
         std::vector<uint32_t> line_indecies(MAX_QUEUE * 2);

@@ -15,8 +15,8 @@ namespace Aporia
     template<size_t Size, size_t VertexCount, size_t IndexCount>
     class VertexArray final
     {
-        using VertexBuffer = VertexBuffer<Size, VertexCount>;
-        using IndexBuffer = IndexBuffer<Size, IndexCount>;
+        using VertexBufferT = VertexBuffer<Size, VertexCount>;
+        using IndexBufferT = IndexBuffer<Size, IndexCount>;
 
     public:
         VertexArray()
@@ -44,12 +44,12 @@ namespace Aporia
             glBindVertexArray(0);
         }
 
-        void set_vertex_buffer(std::shared_ptr<VertexBuffer> vbo)
+        void set_vertex_buffer(std::shared_ptr<VertexBufferT> vbo)
         {
             _vbo = std::move(vbo);
         }
 
-        void set_index_buffer(std::shared_ptr<IndexBuffer> ibo)
+        void set_index_buffer(std::shared_ptr<IndexBufferT> ibo)
         {
             _ibo = std::move(ibo);
         }
@@ -74,14 +74,14 @@ namespace Aporia
             return _vbo->size() / VertexCount * IndexCount;
         }
 
-        std::shared_ptr<VertexBuffer> get_vertex_buffer() const { return _vbo; }
-        std::shared_ptr<IndexBuffer> get_index_buffer() const { return _ibo; }
+        std::shared_ptr<VertexBufferT> get_vertex_buffer() const { return _vbo; }
+        std::shared_ptr<IndexBufferT> get_index_buffer() const { return _ibo; }
 
     private:
         uint32_t _id = 0;
         uint32_t _mode = GL_POINTS;
 
-        std::shared_ptr<VertexBuffer> _vbo;
-        std::shared_ptr<IndexBuffer> _ibo;
+        std::shared_ptr<VertexBufferT> _vbo;
+        std::shared_ptr<IndexBufferT> _ibo;
     };
 }

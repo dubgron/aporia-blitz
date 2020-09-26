@@ -40,14 +40,7 @@ namespace Aporia
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
-        template<typename T>
         void add_layout()
-        {
-            static_assert(false);
-        }
-
-        template<>
-        void add_layout<Vertex>()
         {
             this->bind();
 

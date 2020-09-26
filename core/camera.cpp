@@ -23,8 +23,8 @@ namespace Aporia
     {
         float x = position.x;
         float y = position.y;
-        float sin = std::sinf(rotation);
-        float cos = std::cosf(rotation);
+        float sin = std::sin(rotation);
+        float cos = std::cos(rotation);
 
         /**
          *  Precalculated following lines:
