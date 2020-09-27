@@ -1,0 +1,36 @@
+language: cpp
+
+branches:
+  only:
+    - master
+    - develop
+    - /^release-.*$/
+
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-10
+            - libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+          update: true
+      env: CC=gcc-10 CXX=g++-10
+    - os: osx
+      osx_image: xcode12
+      compiler: clang
+
+before_script:
+  - pushd thirdparty/gl3w && python gl3w_gen.py && popd
+
+script:
+  - mkdir build && cd build
+  - cmake ..
+  - cmake --build .
+
+notifications:
+  email: false
