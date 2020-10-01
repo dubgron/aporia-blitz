@@ -1,18 +1,13 @@
 #pragma once 
 
-#include <array>
-#include <memory>
-
-#include "event.hpp"
 #include "event_manager.hpp"
 #include "input_buffer.hpp"
-#include "inputs/all_inputs.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
+#include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {
-    class APORIA_API InputManager final
+    class InputManager final
     {
     public:
         InputManager(Logger& logger, EventManager& event_manager);
@@ -34,8 +29,6 @@ namespace Aporia
         bool is_any_button_released() const;
 
         float is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
-
-        sf::Vector2i get_mouse_position() const;
 
     private:
         void _on_key_triggered(Keyboard key);

@@ -1,14 +1,13 @@
 #pragma once
 
+#include <memory>
 #include <sstream>
 
 #include <spdlog/common.h>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
-    class APORIA_API LogBuffer final
+    class LogBuffer final
     {
     public:
         LogBuffer(const std::shared_ptr<spdlog::logger>& logger, spdlog::level::level_enum lvl, const char* file, int line, const char* func)

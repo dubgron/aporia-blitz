@@ -1,47 +1,42 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
-#include <string>
 
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Event.hpp>
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
 
+#include "event_manager.hpp"
 #include "logger.hpp"
-#include "platform.hpp"
-#include "vertex_array.hpp"
+#include "components/color.hpp"
 #include "configs/window_config.hpp"
 
 namespace Aporia
 {
-    class APORIA_API Window final
+    class Window final
     {
     public:
-        Window(Logger& logger, const WindowConfig& config);
+        Window(Logger& logger, EventManager& events, const WindowConfig& config);
         ~Window();
 
-        void open();
-        void close();
-
-        void show();
-        void hide();
-
-        void update(const sf::Time& delta_time);
-        void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
-        void draw(const VertexArray& vertex_array, sf::RenderStates states);
+        void clear(const Color& color = Colors::Black);
         void display();
 
-        bool poll_event(sf::Event& event);
+        void poll_events() const;
 
+        void close();
         bool is_open() const;
-        bool is_visible() const;
+
+        glm::uvec2 get_size() const;
+        glm::vec2 get_mouse_position() const;
+
+        GLFWwindow* get_native_window();
 
     private:
         Logger& _logger;
+        EventManager& _events;
 
-        sf::RenderWindow _window;
-        const WindowConfig& _config;
-
-        bool _visible = false;
+        GLFWwindow* _window;
     };
 }

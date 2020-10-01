@@ -1,27 +1,23 @@
 #pragma once
 
-#include <map>
-#include <memory>
+#include <unordered_map>
 #include <string>
 
 #include "logger.hpp"
-#include "platform.hpp"
-#include "texture.hpp"
+#include "components/texture.hpp"
 #include "configs/texture_config.hpp"
 
 namespace Aporia
 {
-    class APORIA_API TextureManager final
+    class TextureManager final
     {
     public:
-        TextureManager(Logger& logger);
+        TextureManager(Logger& logger, const TextureConfig& config);
 
-        bool load_textures(const TextureConfig& config);
-
-        const std::shared_ptr<Texture>& get_texture(const std::string& name) const;
+        const Texture& get_texture(const std::string& name) const;
 
     private:
-        std::map<std::string, std::shared_ptr<Texture>> _textures;
+        std::unordered_map<std::string, Texture> _textures;
 
         Logger& _logger;
     };

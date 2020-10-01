@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "event.hpp"
+
 namespace Aporia
 {
     InputManager::InputManager(Logger& logger, EventManager& event_manager)
@@ -19,9 +21,9 @@ namespace Aporia
 
         event_manager.add_listener<MouseWheelScrollEvent>(std::bind(&InputManager::_on_wheel_scrolled, this, _1, _2));
 
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Keyboard>::update, &_keys));
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<Mouse>::update, &_buttons));
-        event_manager.add_listener<EndProcessingWindowEvents>(std::bind(&InputBuffer<MouseWheel>::update, &_wheels));
+        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<Keyboard>::update, &_keys));
+        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<Mouse>::update, &_buttons));
+        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<MouseWheel>::update, &_wheels));
     }
 
     bool InputManager::is_key_triggered(Keyboard key) const
@@ -82,11 +84,6 @@ namespace Aporia
     bool InputManager::is_any_button_released() const
     {
         return _buttons.is_any_released();
-    }
-
-    sf::Vector2i InputManager::get_mouse_position() const
-    {
-        return sf::Mouse::getPosition();
     }
 
     float InputManager::is_wheel_scrolling(MouseWheel wheel) const

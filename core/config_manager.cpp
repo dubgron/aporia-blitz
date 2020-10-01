@@ -1,9 +1,15 @@
 #include "config_manager.hpp"
 
 #include <filesystem>
+#include <string_view>
+#include <vector>
 
+#include <glm/vec2.hpp>
+#include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "components/color.hpp"
+#include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -29,7 +35,7 @@ namespace Aporia
         const auto& position = window["position"];
 
         window_config.title = window["title"];
-        window_config.position = sf::Vector2i(position[0], position[1]);
+        window_config.position = glm::ivec2(position[0], position[1]);
         window_config.width = window["width"];
         window_config.height = window["height"];
         window_config.vsync = window["vsync"];
@@ -45,20 +51,37 @@ namespace Aporia
 
         camera_config.aspect_ratio = camera["aspect_ratio"];
         camera_config.size = camera["size"];
-        camera_config.background_color = sf::Color(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
+        camera_config.background_color = Color{ bg_color[0], bg_color[1], bg_color[2], bg_color[3] };
         camera_config.movement_speed = camera["movement_speed"];
         camera_config.rotation_speed = camera["rotation_speed"];
         camera_config.zoom_speed = camera["zoom_speed"];
-        camera_config.movement_key_up = camera["movement_key_up"];
-        camera_config.movement_key_down = camera["movement_key_down"];
-        camera_config.movement_key_left = camera["movement_key_left"];
-        camera_config.movement_key_right = camera["movement_key_right"];
-        camera_config.rotation_key_left = camera["rotation_key_left"];
-        camera_config.rotation_key_right = camera["rotation_key_right"];
-        camera_config.zoom_key_in = camera["zoom_key_in"];
-        camera_config.zoom_key_out = camera["zoom_key_out"];
+
+        auto get_key = [&camera](const char* key){ return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value(); };
+
+        camera_config.movement_key_up = get_key("movement_key_up");
+        camera_config.movement_key_down = get_key("movement_key_down");
+        camera_config.movement_key_left = get_key("movement_key_left");
+        camera_config.movement_key_right = get_key("movement_key_right");
+        camera_config.zoom_key_in = get_key("zoom_key_in");
+        camera_config.zoom_key_out = get_key("zoom_key_out");
+
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
+
+        /* Getting Animation Config */
+        std::string animation_data = read_file(config_json["animation_config"]);
+        json animation_json = json::parse(animation_data);
+
+        for (const auto& animation : animation_json["animations"])
+        {
+            std::vector<AnimationFrameConfig> frames;
+            frames.reserve(animation["frames"].size());
+
+            for (const auto& frame : animation["frames"])
+                frames.push_back(AnimationFrameConfig{ frame["texture"], frame["duration"] });
+
+            animation_config.animations.try_emplace(animation["name"], std::move(frames));
+        }
 
         _good = true;
     }

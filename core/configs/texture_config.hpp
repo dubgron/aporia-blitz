@@ -2,11 +2,9 @@
 
 #include <string>
 
-#include "platform.hpp"
-
 namespace Aporia
 {
-	struct APORIA_API TextureConfig final
+	struct TextureConfig final
 	{
 		std::string atlas;
 	};

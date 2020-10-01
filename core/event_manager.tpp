@@ -1,13 +1,15 @@
 #pragma once
 
+#include <utility>
+
 namespace Aporia
 {
     template<typename Ev, typename... Args, typename>
-    void EventManager::call_event(Args&... args)
+    void EventManager::call_event(Args&&... args)
     {
         for (auto& func : std::get<Ev>(_events).listeners)
         {
-            func(args...);
+            func(std::forward<Args>(args)...);
         }
     }
 

@@ -5,7 +5,6 @@
 
 #include <spdlog/logger.h>
 
-#include "platform.hpp"
 #include "log_buffer.hpp"
 
 #define LOG_LEVEL(lvl)  lvl, __FILE__, __LINE__, __func__
@@ -17,7 +16,7 @@
 
 namespace Aporia
 {
-    class APORIA_API Logger final
+    class Logger final
     {
     public:
         Logger(const std::string& name);
