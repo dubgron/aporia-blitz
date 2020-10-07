@@ -25,6 +25,7 @@ namespace Aporia
         void follow(const glm::vec2& to_follow, float delta_time);
 
         const Camera& get_camera() const;
+        Camera& get_camera();
         const Color& get_clear_color() const;
 
     private:

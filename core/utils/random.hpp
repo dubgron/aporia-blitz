@@ -16,4 +16,12 @@ namespace Aporia
         if constexpr (std::is_floating_point_v<T>)
             return std::uniform_real_distribution<T>{min, max}(gen);
     }
+
+    template<typename T>
+    inline T normal(T mean, T stddev)
+    {
+        static std::mt19937 gen{ std::random_device{}() };
+
+        return std::normal_distribution<T>{mean, stddev}(gen);
+    }
 }

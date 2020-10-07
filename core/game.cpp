@@ -42,13 +42,13 @@ namespace Aporia
             _window.poll_events();
             _scenes.get_current_scene()->on_input(_inputs);
 
-            _window.clear(_camera.get_clear_color());
-
             _imgui_layer.begin();
-            _renderer.begin(_camera.get_camera());
 
             this->on_update(dt);
             _scenes.get_current_scene()->on_update(dt);
+
+            _window.clear(_camera.get_clear_color());
+            _renderer.begin(_camera.get_camera());
 
             _scenes.get_current_scene()->on_draw(_renderer);
 

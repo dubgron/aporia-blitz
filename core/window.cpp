@@ -16,6 +16,7 @@ namespace Aporia
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         _window = glfwCreateWindow(config.width, config.height, config.title.c_str(), nullptr, nullptr);
 
@@ -26,7 +27,7 @@ namespace Aporia
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
 
-        glfwSetWindowCloseCallback(_window, [](GLFWwindow * window)
+        glfwSetWindowCloseCallback(_window, [](GLFWwindow* window)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 win._events.call_event<WindowCloseEvent>(win);

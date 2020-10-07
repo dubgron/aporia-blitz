@@ -77,6 +77,11 @@ namespace Aporia
         return _camera;
     }
 
+    Camera& CameraController::get_camera()
+    {
+        return _camera;
+    }
+
     const Color& CameraController::get_clear_color() const
     {
         return _config.background_color;
