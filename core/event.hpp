@@ -42,4 +42,7 @@ namespace Aporia
 
     using BeginProcessingWindowEvents = Event<8>;
     using EndProcessingWindowEvents = Event<9>;
+
+    using BeginFrameEvent = Event<10>;
+    using EndFrameEvent = Event<11>;
 }
