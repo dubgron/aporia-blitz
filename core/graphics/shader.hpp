@@ -25,7 +25,7 @@ namespace Aporia
         void bind() const;
         void unbind() const;
 
-        bool load_shader(std::string path, Type type);
+        bool load_shader(const std::string& path, Type type);
         void compile();
 
         void set_float(const std::string& name, float value);

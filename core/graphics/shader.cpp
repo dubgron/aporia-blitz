@@ -21,7 +21,7 @@ namespace Aporia
         glUseProgram(0);
     }
 
-    bool Shader::load_shader(std::string path, Type type)
+    bool Shader::load_shader(const std::string& path, Type type)
     {
         int32_t shader_type;
         switch (type)
@@ -37,7 +37,7 @@ namespace Aporia
 
         unsigned int shader = glCreateShader(shader_type);
 
-        std::string contents_string = read_file(std::move(path));
+        std::string contents_string = read_file(path);
         auto contents = contents_string.c_str();
 
         glShaderSource(shader, 1, &contents, nullptr);
