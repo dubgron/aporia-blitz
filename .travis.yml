@@ -6,7 +6,7 @@ branches:
     - develop
     - /^release-.*$/
 
-matrix:
+jobs:
   include:
     - os: linux
       dist: bionic
@@ -23,6 +23,19 @@ matrix:
     - os: osx
       osx_image: xcode12
       compiler: clang
+    - os: linux
+      dist: bionic
+      before_script:
+        - git clone https://github.com/emscripten-core/emsdk.git
+        - pushd emsdk
+        - ./emsdk install latest
+        - ./emsdk activate latest
+        - source ./emsdk_env.sh
+        - popd
+      script:
+        - mkdir build && cd build
+        - emcmake cmake .. "-DAPORIA_EMSCRIPTEN=ON" "-DCMAKE_CXX_FLAGS=-std=c++20 -fbracket-depth=1000 -O2" "-DCMAKE_EXE_LINKER_FLAGS=-s MAX_WEBGL_VERSION=2 -s USE_WEBGL2=1 -s FULL_ES3=1 -s USE_GLFW=3 -s WASM=1 -s LLD_REPORT_UNDEFINED -s ALLOW_MEMORY_GROWTH=1 --shell-file ../../emscripten/shell.html"
+        - emmake make
 
 before_script:
   - pushd thirdparty/gl3w && python gl3w_gen.py && popd
