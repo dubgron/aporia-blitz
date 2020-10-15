@@ -4,6 +4,8 @@
 #include <examples/imgui_impl_glfw.h>
 #include <examples/imgui_impl_opengl3.h>
 
+#include "graphics/opengl.hpp"
+
 namespace Aporia
 {
     ImGuiLayer::ImGuiLayer(Logger& logger, Window& window)
@@ -16,8 +18,11 @@ namespace Aporia
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+#       if !defined(APORIA_EMSCRIPTEN)
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#       endif
 
         ImGui::StyleColorsDark();
 
@@ -28,11 +33,10 @@ namespace Aporia
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
 
-        //GLFWwindow* window = _window.get_native_window();
-        GLFWwindow* window = glfwGetCurrentContext();
+        GLFWwindow* window = _window.get_native_window();
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 450");
+        ImGui_ImplOpenGL3_Init(IMGUI_OPENGL_VERSION);
     }
 
     void ImGuiLayer::on_detach()

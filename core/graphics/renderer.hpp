@@ -2,24 +2,18 @@
 
 #include <cstddef>
 #include <stack>
-#include <type_traits>
+#include <utility>
+#include <vector>
 
-#include <GL/gl3w.h>
 #include <glm/matrix.hpp>
 
 #include "camera.hpp"
 #include "logger.hpp"
-#include "components/circular.hpp"
-#include "components/color.hpp"
-#include "components/linear2d.hpp"
-#include "components/rectangular.hpp"
-#include "components/texture.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/group.hpp"
 #include "graphics/shader.hpp"
 #include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
-#include "utils/type_traits.hpp"
 
 namespace Aporia
 {

@@ -22,7 +22,9 @@ namespace Aporia
             MouseWheelScrollEvent,
             MouseMoveEvent,
             BeginProcessingWindowEvents,
-            EndProcessingWindowEvents>;
+            EndProcessingWindowEvents,
+            BeginFrameEvent,
+            EndFrameEvent>;
 
     public:
         EventManager(Logger& logger)

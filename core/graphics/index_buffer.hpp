@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <GL/gl3w.h>
+#include "graphics/opengl.hpp"
 
 namespace Aporia
 {
@@ -17,7 +17,11 @@ namespace Aporia
             glGenBuffers(1, &_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
 
-            glNamedBufferData(_id, Size * Count * sizeof(uint32_t), &indecies[0], GL_STATIC_DRAW);
+#           if defined(APORIA_EMSCRIPTEN)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, Size * Count * sizeof(uint32_t), &indecies[0], GL_STATIC_DRAW);
+#           else
+                glNamedBufferData(_id, Size * Count * sizeof(uint32_t), &indecies[0], GL_STATIC_DRAW);
+#           endif
         }
 
         ~IndexBuffer()

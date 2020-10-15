@@ -8,9 +8,10 @@ add_library(imgui STATIC
     ${IMGUI_INCLUDE_DIR}/examples/imgui_impl_glfw.cpp
     ${IMGUI_INCLUDE_DIR}/examples/imgui_impl_opengl3.cpp)
 
-target_link_libraries(imgui
-    OpenGL::GL
-    glfw
-    gl3w)
+target_link_libraries(imgui glfw)
+
+if (NOT APORIA_EMSCRIPTEN)
+    target_link_libraries(imgui gl3w)
+endif()
 
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})

@@ -24,6 +24,8 @@ namespace Aporia
         /* Defined by Client */
         friend std::unique_ptr<Game> create_game();
 
+        friend void main_loop(void* game_ptr);
+
     public:
         Game(const std::string& config_file);
         virtual ~Game();
@@ -52,5 +54,10 @@ namespace Aporia
 
         LayerStack _layer_stack;
         ImGuiLayer _imgui_layer;
+
+        Deltatime _dt;
+
+    private:
+        Timer _timer;
     };
 }

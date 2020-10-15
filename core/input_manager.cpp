@@ -21,9 +21,11 @@ namespace Aporia
 
         event_manager.add_listener<MouseWheelScrollEvent>(std::bind(&InputManager::_on_wheel_scrolled, this, _1, _2));
 
-        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<Keyboard>::update, &_keys));
-        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<Mouse>::update, &_buttons));
-        event_manager.add_listener<BeginProcessingWindowEvents>(std::bind(&InputBuffer<MouseWheel>::update, &_wheels));
+#       if defined(APORIA_EMSCRIPTEN)
+            event_manager.add_listener<EndFrameEvent>(std::bind(&InputManager::_update, this));
+#       else
+            event_manager.add_listener<BeginFrameEvent>(std::bind(&InputManager::_update, this));
+#       endif
     }
 
     bool InputManager::is_key_triggered(Keyboard key) const
@@ -122,5 +124,12 @@ namespace Aporia
         _wheel_delta = 0.0f;
         _wheels.push_state(MouseWheel::HorizontalWheel, false);
         _wheels.push_state(MouseWheel::VerticalWheel, false);
+    }
+
+    void InputManager::_update()
+    {
+        _keys.update();
+        _buttons.update();
+        _wheels.update();
     }
 }

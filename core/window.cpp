@@ -1,5 +1,7 @@
 #include "window.hpp"
 
+#include <cstdint>
+
 #include "inputs/all_inputs.hpp"
 
 namespace Aporia
@@ -12,8 +14,9 @@ namespace Aporia
         if (!glfwInit())
             _logger.log(LOG_CRITICAL) << "Failed to initialize GLFW!";
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
+
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -73,8 +76,10 @@ namespace Aporia
                 win._events.call_event<WindowResizeEvent>(win, width, height);
             });
 
-        if (gl3wInit())
-            _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
+#       if !defined(APORIA_EMSCRIPTEN)
+            if (gl3wInit())
+                _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
+#       endif
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);

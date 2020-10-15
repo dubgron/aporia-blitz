@@ -34,11 +34,13 @@ namespace Aporia
         void set_float4(const std::string& name, glm::vec4 value);
         void set_float_array(const std::string& name, float* value, int32_t count);
 
-        void set_double(const std::string& name, double value);
-        void set_double2(const std::string& name, glm::dvec2 value);
-        void set_double3(const std::string& name, glm::dvec3 value);
-        void set_double4(const std::string& name, glm::dvec4 value);
-        void set_double_array(const std::string& name, double* value, int32_t count);
+#       if !defined(APORIA_EMSCRIPTEN)
+            void set_double(const std::string& name, double value);
+            void set_double2(const std::string& name, glm::dvec2 value);
+            void set_double3(const std::string& name, glm::dvec3 value);
+            void set_double4(const std::string& name, glm::dvec4 value);
+            void set_double_array(const std::string& name, double* value, int32_t count);
+#       endif
 
         void set_int(const std::string& name, int32_t value);
         void set_int2(const std::string& name, glm::ivec2 value);
