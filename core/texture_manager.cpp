@@ -4,10 +4,10 @@
 #include <memory>
 
 #include <stb_image.h>
-#include <GL/gl3w.h>
 #include <nlohmann/json.hpp>
 
-#include "components/texture.hpp"
+#include "graphics/common.hpp"
+#include "graphics/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -39,20 +39,36 @@ namespace Aporia
 
                 logger.log(LOG_INFO) << "Opened '" << atlas_image << "' successfully";
 
-                glCreateTextures(GL_TEXTURE_2D, 1, &id);
-                glTextureStorage2D(id, 1, GL_RGBA8, width, height);
-                glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#               if defined(APORIA_EMSCRIPTEN)
+                    glGenTextures(1, &id);
+                    glBindTexture(GL_TEXTURE_2D, id);
 
-                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-                glBindTextureUnit(id - 1, id);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+                    glActiveTexture(GL_TEXTURE0 + id);
+#               else
+                    glCreateTextures(GL_TEXTURE_2D, 1, &id);
+
+                    glTextureStorage2D(id, 1, GL_RGBA8, width, height);
+                    glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+                    glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+                    glBindTextureUnit(id, id);
+#               endif
 
                 stbi_image_free(data);
 
-                Texture::Origin atlas{ id, width, height, channels };
+                Texture::Origin atlas{ static_cast<texture_id>(id), width, height, channels };
                 for (auto& texture : texture_json["textures"])
                 {
                     std::string name = texture["name"];

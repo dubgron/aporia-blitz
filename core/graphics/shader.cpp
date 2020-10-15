@@ -1,7 +1,6 @@
 #include "shader.hpp"
 
-#include <GL/gl3w.h>
-
+#include "graphics/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -104,30 +103,32 @@ namespace Aporia
         glUniform1fv(_location(name), count, value);
     }
 
-    void Shader::set_double(const std::string& name, double value)
-    {
-        glUniform1d(_location(name), value);
-    }
+#   if !defined(APORIA_EMSCRIPTEN)
+        void Shader::set_double(const std::string& name, double value)
+        {
+            glUniform1d(_location(name), value);
+        }
 
-    void Shader::set_double2(const std::string& name, glm::dvec2 value)
-    {
-        glUniform2d(_location(name), value.x, value.y);
-    }
+        void Shader::set_double2(const std::string& name, glm::dvec2 value)
+        {
+            glUniform2d(_location(name), value.x, value.y);
+        }
 
-    void Shader::set_double3(const std::string & name, glm::dvec3 value)
-    {
-        glUniform3d(_location(name), value.x, value.y, value.z);
-    }
+        void Shader::set_double3(const std::string & name, glm::dvec3 value)
+        {
+            glUniform3d(_location(name), value.x, value.y, value.z);
+        }
 
-    void Shader::set_double4(const std::string & name, glm::dvec4 value)
-    {
-        glUniform4d(_location(name), value.x, value.y, value.z, value.w);
-    }
+        void Shader::set_double4(const std::string & name, glm::dvec4 value)
+        {
+            glUniform4d(_location(name), value.x, value.y, value.z, value.w);
+        }
 
-    void Shader::set_double_array(const std::string& name, double* value, int32_t count)
-    {
-        glUniform1dv(_location(name), count, value);
-    }
+        void Shader::set_double_array(const std::string& name, double* value, int32_t count)
+        {
+            glUniform1dv(_location(name), count, value);
+        }
+#   endif
 
     void Shader::set_int(const std::string& name, int32_t value)
     {

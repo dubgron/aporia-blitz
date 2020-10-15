@@ -74,11 +74,11 @@ namespace Aporia
         _default_shader.load_shader("shaders/shader.vert", Aporia::Shader::Type::Vertex);
         _default_shader.compile();
 
-        std::array<int32_t, 32> sampler;
+        std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler;
         std::iota(sampler.begin(), sampler.end(), 0);
 
         _default_shader.bind();
-        _default_shader.set_int_array("u_atlas", &sampler[0], 32);
+        _default_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
         _default_shader.unbind();
     }
 

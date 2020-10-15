@@ -5,6 +5,8 @@
 
 #include <glm/vec2.hpp>
 
+#include "graphics/common.hpp"
+
 namespace Aporia
 {
     struct Texture final
@@ -14,7 +16,7 @@ namespace Aporia
 
         struct Origin final
         {
-            uint32_t id = 0u;
+            texture_id id = 0;
             int32_t width = 0;
             int32_t height = 0;
             int32_t channels = 0;

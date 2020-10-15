@@ -5,9 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include <GL/gl3w.h>
-
 #include "graphics/index_buffer.hpp"
+#include "graphics/opengl.hpp"
 #include "graphics/vertex_buffer.hpp"
 
 namespace Aporia

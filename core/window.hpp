@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <memory>
 
-#include <GL/gl3w.h>
+#include "graphics/opengl.hpp"
+
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 

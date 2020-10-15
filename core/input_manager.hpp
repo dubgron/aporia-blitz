@@ -40,6 +40,8 @@ namespace Aporia
         void _on_wheel_scrolled(MouseWheel wheel, float delta);
         void _reset_wheel();
 
+        void _update();
+
         InputBuffer<Keyboard> _keys;
         InputBuffer<Mouse> _buttons;
         InputBuffer<MouseWheel> _wheels;

@@ -5,8 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <GL/gl3w.h>
-
+#include "graphics/opengl.hpp"
 #include "graphics/vertex.hpp"
 
 namespace Aporia
@@ -20,7 +19,11 @@ namespace Aporia
             glGenBuffers(1, &_id);
             glBindBuffer(GL_ARRAY_BUFFER, _id);
 
-            glNamedBufferData(_id, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+#           if defined(APORIA_EMSCRIPTEN)
+                glBufferData(GL_ARRAY_BUFFER, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+#           else
+                glNamedBufferData(_id, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+#           endif
 
             _buffer.reserve(Size * Count);
         }
@@ -51,7 +54,11 @@ namespace Aporia
             glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
             glEnableVertexAttribArray(2);
-            glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
+#           if defined(APORIA_EMSCRIPTEN)
+                glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
+#           else
+                glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
+#           endif
 
             glEnableVertexAttribArray(3);
             glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
@@ -62,7 +69,15 @@ namespace Aporia
         void flush()
         {
             if (!_buffer.empty())
-                glNamedBufferSubData(_id, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
+            {
+#               if defined(APORIA_EMSCRIPTEN)
+                    bind();
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
+                    unbind();
+#               else
+                    glNamedBufferSubData(_id, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
+#               endif
+            }
         }
 
         void push(Vertex vertex)
