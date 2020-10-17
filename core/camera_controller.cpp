@@ -72,6 +72,11 @@ namespace Aporia
         _camera.move(dir * _config.movement_speed * delta_time * _camera.get_zoom() / _config.size);
     }
 
+    Camera& CameraController::get_camera()
+    {
+        return _camera;
+    }
+
     const Camera& CameraController::get_camera() const
     {
         return _camera;
