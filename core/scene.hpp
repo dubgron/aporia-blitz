@@ -10,6 +10,8 @@
 
 namespace Aporia
 {
+    class SceneManager;
+
     class Scene
     {
     public:
@@ -18,6 +20,7 @@ namespace Aporia
 
         virtual void on_load() {};
         virtual void on_input(const InputManager& inputs) {};
+        virtual void on_scene_transition(SceneManager& scenes) {};
         virtual void on_update(Deltatime dt) {};
         virtual void on_draw(Renderer& renderer) {};
         virtual void on_unload() {};

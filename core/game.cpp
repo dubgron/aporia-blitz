@@ -20,6 +20,8 @@ namespace Aporia
 
         game->_window.clear(game->_camera.get_clear_color());
 
+        game->_scenes.get_current_scene()->on_scene_transition(game->_scenes);
+
         game->_imgui_layer.begin();
         game->_renderer.begin(game->_camera.get_camera());
 
