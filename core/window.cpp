@@ -59,9 +59,9 @@ namespace Aporia
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 if (x_offset)
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, x_offset);
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, static_cast<float>(x_offset));
                 if (y_offset)
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, y_offset);
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, static_cast<float>(y_offset));
             });
 
         glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double x_pos, double y_pos)

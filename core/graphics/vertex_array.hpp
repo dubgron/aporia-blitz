@@ -60,17 +60,13 @@ namespace Aporia
             this->bind();
             _ibo->bind();
 
-            glDrawElements(_mode, get_index_count(), GL_UNSIGNED_INT, nullptr);
+            const uint32_t count = static_cast<uint32_t>(_vbo->size() / VertexCount * IndexCount);
+            glDrawElements(_mode, count, GL_UNSIGNED_INT, nullptr);
 
             _ibo->unbind();
             this->unbind();
 
             _vbo->clear();
-        }
-
-        size_t get_index_count() const
-        {
-            return _vbo->size() / VertexCount * IndexCount;
         }
 
         std::shared_ptr<VertexBufferT> get_vertex_buffer() const { return _vbo; }
