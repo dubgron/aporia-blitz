@@ -17,13 +17,13 @@ namespace Aporia
         Sprite() = default;
 
         Sprite(const Texture& texture, glm::vec3 position, Color color = Colors::White)
-            : Entity(Transform2D{ std::move(position), (texture.v - texture.u) / 2.0f },
+            : Entity(Transform2D{ std::move(position), glm::vec2{ texture.origin.width, texture.origin.height } * (texture.v - texture.u) / 2.0f },
                      Texture{ texture },
-                     Rectangular{ texture.v.x - texture.u.x, texture.v.y - texture.u.y },
+                     Rectangular{ texture.origin.width * (texture.v - texture.u).x, texture.origin.height * (texture.v - texture.u).y },
                      Color{ std::move(color) }) {}
 
         Sprite(const Texture& texture, glm::vec3 position, glm::vec2 size, Color color = Colors::White)
-            : Entity(Transform2D{ std::move(position), (texture.v - texture.u) / 2.0f },
+            : Entity(Transform2D{ std::move(position - glm::vec3{ size / 2.0f, 0.0f }), size / 2.0f },
                      Texture{ texture },
                      Rectangular{ size.x, size.y },
                      Color{ std::move(color) }) {}
