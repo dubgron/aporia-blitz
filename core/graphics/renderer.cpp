@@ -138,25 +138,25 @@ namespace Aporia
         Vertex v;
         v.position = transformation * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = texture.u;
+        v.tex_coord = glm::vec2{ texture.u.x, texture.v.y };
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ rectangular.width, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = glm::vec2{ texture.v.x, texture.u.y };
+        v.tex_coord = texture.v;
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ rectangular.width, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = texture.v;
+        v.tex_coord = glm::vec2{ texture.v.x, texture.u.y };
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ 0.0f, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = glm::vec2{ texture.u.x, texture.v.y };
+        v.tex_coord = texture.u;
         v.color = color;
         quads.get_vertex_buffer()->push(v);
     }
