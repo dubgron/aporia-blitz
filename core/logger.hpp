@@ -21,7 +21,7 @@ namespace Aporia
     public:
         Logger(const std::string& name);
 
-        LogBuffer log(spdlog::level::level_enum lvl, const char* file, int line, const char* func);
+        LogBuffer log(spdlog::level::level_enum lvl, const char* file, int line, const char* func) const;
 
     private:
         std::shared_ptr<spdlog::logger> _logger;
