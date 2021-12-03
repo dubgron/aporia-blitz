@@ -24,6 +24,7 @@ namespace Aporia
         void control_zoom(const InputManager& input_manager, float delta_time);
         void follow(const glm::vec2& to_follow, float delta_time);
 
+        Camera& get_camera();
         const Camera& get_camera() const;
         const Color& get_clear_color() const;
 

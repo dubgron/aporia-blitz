@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <numeric>
 
 #include <glm/vec2.hpp>
@@ -25,7 +26,7 @@ namespace Aporia
         _opaque_quads.set_vertex_buffer(opaque_quads_vbo);
 
         std::vector<uint32_t> quad_indecies(MAX_QUEUE * 6);
-        for (size_t i = 0, offset = 0; i < MAX_QUEUE * 6; i += 6, offset += 4)
+        for (uint32_t i = 0, offset = 0; i < MAX_QUEUE * 6; i += 6, offset += 4)
         {
             quad_indecies[  i  ] = offset + 0;
             quad_indecies[i + 1] = offset + 1;
@@ -61,7 +62,7 @@ namespace Aporia
         _lines.set_vertex_buffer(lines_vbo);
 
         std::vector<uint32_t> line_indecies(MAX_QUEUE * 2);
-        for (size_t i = 0; i < MAX_QUEUE * 2; ++i)
+        for (uint32_t i = 0; i < MAX_QUEUE * 2; ++i)
             line_indecies[i] = i;
 
         auto lines_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 2>>(line_indecies);
@@ -137,25 +138,25 @@ namespace Aporia
         Vertex v;
         v.position = transformation * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = texture.u;
+        v.tex_coord = glm::vec2{ texture.u.x, texture.v.y };
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ rectangular.width, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = glm::vec2{ texture.v.x, texture.u.y };
+        v.tex_coord = texture.v;
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ rectangular.width, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = texture.v;
+        v.tex_coord = glm::vec2{ texture.v.x, texture.u.y };
         v.color = color;
         quads.get_vertex_buffer()->push(v);
 
         v.position = transformation * glm::vec4{ 0.0f, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
-        v.tex_coord = glm::vec2{ texture.u.x, texture.v.y };
+        v.tex_coord = texture.u;
         v.color = color;
         quads.get_vertex_buffer()->push(v);
     }

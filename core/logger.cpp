@@ -16,7 +16,7 @@ namespace Aporia
         _logger->flush_on(spdlog::level::debug);
     }
 
-    LogBuffer Logger::log(spdlog::level::level_enum lvl, const char* file, int line, const char* func)
+    LogBuffer Logger::log(spdlog::level::level_enum lvl, const char* file, int line, const char* func) const
     {
         return LogBuffer(_logger, lvl, file, line, func);
     }

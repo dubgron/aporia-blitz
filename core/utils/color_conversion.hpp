@@ -51,9 +51,9 @@ namespace Aporia
             Bs = X;
         }
 
-        uint8_t r = (Rs + m) * 255;
-        uint8_t g = (Gs + m) * 255;
-        uint8_t b = (Bs + m) * 255;
+        uint8_t r = static_cast<uint8_t>(Rs + m) * 255;
+        uint8_t g = static_cast<uint8_t>(Gs + m) * 255;
+        uint8_t b = static_cast<uint8_t>(Bs + m) * 255;
 
         return Color{ r, g, b };
     }

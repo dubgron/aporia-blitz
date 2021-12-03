@@ -9,7 +9,6 @@ namespace Aporia
 {
     struct ConfigManager final
     {
-        ConfigManager() = default;
         ConfigManager(Logger& logger, const std::string& config);
 
         bool is_good() const;
