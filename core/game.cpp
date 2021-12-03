@@ -52,9 +52,6 @@ namespace Aporia
           _layer_stack(_logger),
           _imgui_layer(_logger, _window)
     {
-        if (!_configs.is_good())
-            return;
-
         _layer_stack.push_overlay(_imgui_layer);
     }
 

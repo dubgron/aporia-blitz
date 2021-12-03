@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <nlohmann/json.hpp>
+
 #include "logger.hpp"
 #include "configs/all_configs.hpp"
 
@@ -9,9 +11,7 @@ namespace Aporia
 {
     struct ConfigManager final
     {
-        ConfigManager(Logger& logger, const std::string& config);
-
-        bool is_good() const;
+        ConfigManager(Logger& logger, const std::string& path);
 
         WindowConfig window_config;
         TextureConfig texture_config;
@@ -19,8 +19,15 @@ namespace Aporia
         AnimationConfig animation_config;
 
     private:
-        bool _good = false;
-
         Logger& _logger;
+
+        std::string _path = "";
+
+        using json = nlohmann::json;
+
+        void load_window_config(const json& config);
+        void load_texture_config(const json& config);
+        void load_camera_config(const json& config);
+        void load_animation_config(const json& config);
     };
 }
