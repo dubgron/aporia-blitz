@@ -79,18 +79,6 @@ namespace Aporia
 
     void ConfigManager::load_animation_config(const json& config)
     {
-        std::string animation_data = read_file(config["animation_config"]);
-        json animation_json = nlohmann::json::parse(animation_data);
-
-        for (const auto& animation : animation_json["animations"])
-        {
-            std::vector<AnimationFrameConfig> frames;
-            frames.reserve(animation["frames"].size());
-
-            for (const auto& frame : animation["frames"])
-                frames.push_back(AnimationFrameConfig{ frame["texture"], frame["duration"] });
-
-            animation_config.animations.try_emplace(animation["name"], std::move(frames));
-        }
+        animation_config.animations = config["animation_config"];
     }
 }

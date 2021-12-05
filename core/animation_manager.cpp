@@ -3,6 +3,8 @@
 #include <utility>
 #include <vector>
 
+#include "utils/read_file.hpp"
+
 namespace Aporia
 {
     AnimationManager::AnimationManager(Logger& logger, const TextureManager& textures, const AnimationConfig& config)
@@ -10,20 +12,19 @@ namespace Aporia
     {
         _animations.try_emplace("default", Animation{ "default", { { _textures.get_texture("default"), 0.0f } } });
 
-        for (const auto& animation : config.animations)
+        nlohmann::json animation_json = load_json(_config.animations);
+        for (const auto& animation : animation_json["animations"])
         {
-            const std::string& name = animation.first;
-            const auto& frame_configs = _config.animations.at(name);
-
             std::vector<AnimationFrame> frames;
-            frames.reserve(frame_configs.size());
+            frames.reserve(animation["frames"].size());
 
-            for (const auto& frame_conf : frame_configs)
+            for (const auto& frame : animation["frames"])
             {
-                AnimationFrame animation_frame{ _textures.get_texture(frame_conf.texture_name), frame_conf.duration };
-                frames.push_back(std::move(animation_frame));
+                Texture texture = _textures.get_texture(frame["texture"]);
+                frames.emplace_back(texture, frame["duration"]);
             }
 
+            std::string name = animation["name"];
             _animations.try_emplace(name, Animation{ name, std::move(frames) });
         }
     }
