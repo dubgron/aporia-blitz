@@ -24,7 +24,11 @@ namespace Aporia
             BeginProcessingWindowEvents,
             EndProcessingWindowEvents,
             BeginFrameEvent,
-            EndFrameEvent>;
+            EndFrameEvent,
+            ReloadWindowConfigEvent,
+            ReloadTextureConfigEvent,
+            ReloadCameraConfigEvent,
+            ReloadAnimationConfigEvent>;
 
     public:
         EventManager(Logger& logger)

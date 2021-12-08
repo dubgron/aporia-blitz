@@ -39,8 +39,8 @@ namespace Aporia
     protected:
         Logger _logger;
 
-        ConfigManager _configs;
         EventManager _events;
+        ConfigManager _configs;
 
         Window _window;
 

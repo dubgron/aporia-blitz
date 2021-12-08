@@ -13,8 +13,8 @@
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(Logger& logger, const std::string& path)
-        : _logger(logger), _path(path)
+    ConfigManager::ConfigManager(Logger& logger, EventManager& events, const std::string& path)
+        : _logger(logger), _events(events), _path(path)
     {
         if (!std::filesystem::exists(_path))
         {
@@ -22,15 +22,32 @@ namespace Aporia
             return;
         }
 
+        /* TODO: Handling when json file is not correct */
         using json = nlohmann::json;
         json config_json = load_json(_path);
-
-        /* TODO: Handling when json file is not correct */
 
         load_window_config(config_json);
         load_texture_config(config_json);
         load_camera_config(config_json);
         load_animation_config(config_json);
+    }
+
+    void ConfigManager::reload()
+    {
+        using json = nlohmann::json;
+        json config_json = load_json(_path);
+
+        load_window_config(config_json);
+        _events.call_event<ReloadWindowConfigEvent>();
+
+        load_texture_config(config_json);
+        _events.call_event<ReloadTextureConfigEvent>();
+
+        load_camera_config(config_json);
+        _events.call_event<ReloadCameraConfigEvent>();
+
+        load_animation_config(config_json);
+        _events.call_event<ReloadAnimationConfigEvent>();
     }
 
     void ConfigManager::load_window_config(const json& config)

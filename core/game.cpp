@@ -40,8 +40,8 @@ namespace Aporia
 
     Game::Game(const std::string& config_file)
         : _logger("engine"),
-          _configs(_logger, config_file),
           _events(_logger),
+          _configs(_logger, _events, config_file),
           _window(_logger, _events, _configs.window_config),
           _inputs(_logger, _events),
           _scenes(_logger),
