@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <stack>
 #include <utility>
 #include <vector>
@@ -23,7 +22,7 @@ namespace Aporia
         using BufferIter = Buffer::iterator;
         using BufferRange = std::pair<BufferIter, BufferIter>;
 
-        static constexpr std::size_t MAX_QUEUE = 10000;
+        static constexpr size_t MAX_QUEUE = 10000;
 
     public:
         Renderer(Logger& logger);
