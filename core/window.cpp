@@ -1,13 +1,14 @@
 #include "window.hpp"
 
 #include <cstdint>
+#include <functional>
 
 #include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {
-    Window::Window(Logger& logger, EventManager& events, const WindowConfig& config)
-        : _logger(logger), _events(events)
+    Window::Window(Logger& logger, EventManager& events, WindowConfig& config)
+        : _logger(logger), _events(events), _config(config)
     {
         glfwSetErrorCallback([](int32_t error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
 
@@ -25,6 +26,7 @@ namespace Aporia
         if (!_window)
             glfwTerminate();
 
+        glfwSetWindowPos(_window, _config.position.x, _config.position.y);
         glfwMakeContextCurrent(_window);
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
@@ -116,6 +118,8 @@ namespace Aporia
             {
                 glViewport(0, 0, width, height);
             });
+
+        events.add_listener<ReloadWindowConfigEvent>(std::bind(&Window::_on_config_reload, this));
     }
 
     Window::~Window()
@@ -174,5 +178,13 @@ namespace Aporia
     GLFWwindow* Window::get_native_window()
     {
         return _window;
+    }
+
+    void Window::_on_config_reload()
+    {
+        glfwSetWindowTitle(_window, _config.title.c_str());
+        glfwSetWindowPos(_window, _config.position.x, _config.position.y);
+        glfwSetWindowSize(_window, _config.width, _config.height);
+        glfwSwapInterval(_config.vsync);
     }
 }

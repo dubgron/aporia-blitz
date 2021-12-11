@@ -17,7 +17,7 @@ namespace Aporia
     class Window final
     {
     public:
-        Window(Logger& logger, EventManager& events, const WindowConfig& config);
+        Window(Logger& logger, EventManager& events, WindowConfig& config);
         ~Window();
 
         void clear(const Color& color = Colors::Black);
@@ -37,6 +37,10 @@ namespace Aporia
         Logger& _logger;
         EventManager& _events;
 
+        WindowConfig& _config;
+
         GLFWwindow* _window;
+
+        void _on_config_reload();
     };
 }
