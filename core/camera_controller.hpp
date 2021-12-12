@@ -17,7 +17,7 @@ namespace Aporia
     class CameraController
     {
     public:
-        CameraController(Logger& logger, EventManager& event_manager, const CameraConfig& config);
+        CameraController(Logger& logger, EventManager& event_manager, CameraConfig& config);
 
         void control_movement(const InputManager& input_manager, float delta_time);
         void control_rotation(const InputManager& input_manager, float delta_time);
@@ -29,11 +29,12 @@ namespace Aporia
         const Color& get_clear_color() const;
 
     private:
-        void _on_resize(Window& window, uint32_t width, uint32_t height);
-
         Logger& _logger;
 
         Camera _camera;
-        const CameraConfig& _config;
+        CameraConfig& _config;
+
+        void _on_resize(Window& window, uint32_t width, uint32_t height);
+        void _on_config_reload();
     };
 }
