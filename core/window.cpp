@@ -87,25 +87,27 @@ namespace Aporia
 
         _logger.log(LOG_INFO) << glGetString(GL_VERSION);
 
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-            {
-                const Aporia::Logger* logger = reinterpret_cast<const Aporia::Logger*>(userParam);
-                const auto get_logger = [&logger](GLenum severity)
+#       if !defined(APORIA_EMSCRIPTEN)
+            glEnable(GL_DEBUG_OUTPUT);
+            glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
                 {
-                    switch (severity)
+                    const Aporia::Logger* logger = reinterpret_cast<const Aporia::Logger*>(userParam);
+                    const auto get_logger = [&logger](GLenum severity)
                     {
-                    case GL_DEBUG_SEVERITY_HIGH:            return logger->log(LOG_ERROR);
-                    case GL_DEBUG_SEVERITY_MEDIUM:          return logger->log(LOG_WARNING);
-                    case GL_DEBUG_SEVERITY_LOW:             return logger->log(LOG_WARNING);
-                    case GL_DEBUG_SEVERITY_NOTIFICATION:    return logger->log(LOG_DEBUG);
-                    default:                                return logger->log(LOG_ERROR);
-                    }
-                };
+                        switch (severity)
+                        {
+                        case GL_DEBUG_SEVERITY_HIGH:            return logger->log(LOG_ERROR);
+                        case GL_DEBUG_SEVERITY_MEDIUM:          return logger->log(LOG_WARNING);
+                        case GL_DEBUG_SEVERITY_LOW:             return logger->log(LOG_WARNING);
+                        case GL_DEBUG_SEVERITY_NOTIFICATION:    return logger->log(LOG_DEBUG);
+                        default:                                return logger->log(LOG_ERROR);
+                        }
+                    };
 
-                get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
-            },
-            reinterpret_cast<const void*>(&_logger));
+                    get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
+                },
+                reinterpret_cast<const void*>(&_logger));
+#       endif
 
         events.add_listener<WindowCloseEvent>([](Window& window)
             {
