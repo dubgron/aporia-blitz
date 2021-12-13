@@ -21,5 +21,5 @@ public:
 
 std::unique_ptr<Aporia::Game> create_game()
 {
-    return std::make_unique<Example>("config.json");
+    return std::make_unique<Example>("assets/config.json");
 }
