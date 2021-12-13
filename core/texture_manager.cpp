@@ -41,6 +41,8 @@ namespace Aporia
 
 #               if defined(APORIA_EMSCRIPTEN)
                     glGenTextures(1, &id);
+
+                    glActiveTexture(GL_TEXTURE0 + id);
                     glBindTexture(GL_TEXTURE_2D, id);
 
                     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
@@ -50,8 +52,6 @@ namespace Aporia
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-                    glActiveTexture(GL_TEXTURE0 + id);
 #               else
                     glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
