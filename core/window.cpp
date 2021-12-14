@@ -26,10 +26,12 @@ namespace Aporia
         if (!_window)
             glfwTerminate();
 
-        glfwSetWindowPos(_window, _config.position.x, _config.position.y);
         glfwMakeContextCurrent(_window);
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
+
+        if (_config.position)
+            glfwSetWindowPos(_window, _config.position->x, _config.position->y);
 
         glfwSetWindowCloseCallback(_window, [](GLFWwindow * window)
             {
@@ -183,8 +185,10 @@ namespace Aporia
     void Window::_on_config_reload()
     {
         glfwSetWindowTitle(_window, _config.title.c_str());
-        glfwSetWindowPos(_window, _config.position.x, _config.position.y);
         glfwSetWindowSize(_window, _config.width, _config.height);
         glfwSwapInterval(_config.vsync);
+
+        if (_config.position)
+            glfwSetWindowPos(_window, _config.position->x, _config.position->y);
     }
 }

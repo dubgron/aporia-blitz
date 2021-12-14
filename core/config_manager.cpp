@@ -53,13 +53,16 @@ namespace Aporia
     void ConfigManager::load_window_config(const json& config)
     {
         const auto& window = config["window_config"];
-        const auto& position = window["position"];
 
         window_config.title = window["title"];
-        window_config.position = glm::ivec2(position[0], position[1]);
         window_config.width = window["width"];
         window_config.height = window["height"];
         window_config.vsync = window["vsync"];
+
+        const auto& position = window.find("position");
+        window_config.position = position != window.end()
+            ? std::make_optional<glm::ivec2>(position->at(0), position->at(1))
+            : std::nullopt;
     }
 
     void ConfigManager::load_texture_config(const json& config)
