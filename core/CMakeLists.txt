@@ -73,6 +73,8 @@ add_library(core STATIC
     "graphics/shader.cpp"
     "graphics/shader.hpp"
     "graphics/sprite.hpp"
+    "graphics/text.cpp"
+    "graphics/text.hpp"
     "graphics/vertex.hpp"
     "graphics/vertex_array.hpp"
     "graphics/vertex_buffer.hpp"

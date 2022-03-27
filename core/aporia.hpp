@@ -31,6 +31,7 @@
 #include <graphics/renderer.hpp>
 #include <graphics/shader.hpp>
 #include <graphics/sprite.hpp>
+#include <graphics/text.hpp>
 #include <graphics/vertex.hpp>
 #include <graphics/vertex_array.hpp>
 #include <graphics/vertex_buffer.hpp>
