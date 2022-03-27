@@ -30,6 +30,8 @@ add_library(core STATIC
     "event.hpp"
     "event_manager.hpp"
     "event_manager.tpp"
+    "font_manager.cpp"
+    "font_manager.hpp"
     "game.cpp"
     "game.hpp"
     "input_buffer.hpp"

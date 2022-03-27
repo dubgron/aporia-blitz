@@ -47,6 +47,7 @@ namespace Aporia
           _scenes(_logger),
           _textures(_logger, _configs.texture_config),
           _animations(_logger, _textures, _configs.animation_config),
+          _fonts(_logger),
           _camera(_logger, _events, _configs.camera_config),
           _renderer(_logger),
           _layer_stack(_logger),
