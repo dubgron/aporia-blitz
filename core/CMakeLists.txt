@@ -58,6 +58,7 @@ add_library(core STATIC
     "configs/window_config.hpp"
     "graphics/circle2d.hpp"
     "graphics/common.hpp"
+    "graphics/font.hpp"
     "graphics/group.hpp"
     "graphics/image.cpp"
     "graphics/image.hpp"

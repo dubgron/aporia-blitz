@@ -22,6 +22,7 @@
 
 /* Graphics */
 #include <graphics/circle2d.hpp>
+#include <graphics/font.hpp>
 #include <graphics/group.hpp>
 #include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
