@@ -53,15 +53,19 @@ namespace Aporia
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
-            glEnableVertexAttribArray(2);
 #           if defined(APORIA_EMSCRIPTEN)
+                glEnableVertexAttribArray(2);
                 glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
 #           else
+                glEnableVertexAttribArray(2);
                 glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
 #           endif
 
             glEnableVertexAttribArray(3);
             glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
+
+            glEnableVertexAttribArray(4);
+            glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, additional));
 
             this->unbind();
         }

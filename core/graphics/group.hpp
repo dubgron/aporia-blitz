@@ -15,6 +15,7 @@
 #include "graphics/circle2d.hpp"
 #include "graphics/rectangle2d.hpp"
 #include "graphics/sprite.hpp"
+#include "graphics/text.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
@@ -28,9 +29,10 @@ namespace Aporia
         using Circles2D = Container<Circle2D>;
         using Rectangles2D = Container<Rectangle2D>;
         using Sprites = Container<Sprite>;
+        using Texts = Container<Text>;
         using Groups = Container<Group>;
 
-        using Drawables = std::tuple<Lines2D, Circles2D, Rectangles2D, Sprites, Groups>;
+        using Drawables = std::tuple<Lines2D, Circles2D, Rectangles2D, Sprites, Texts, Groups>;
 
     public:
         Group() = default;

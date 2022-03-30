@@ -22,13 +22,16 @@
 
 /* Graphics */
 #include <graphics/circle2d.hpp>
+#include <graphics/font.hpp>
 #include <graphics/group.hpp>
+#include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
 #include <graphics/line2d.hpp>
 #include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/shader.hpp>
 #include <graphics/sprite.hpp>
+#include <graphics/text.hpp>
 #include <graphics/vertex.hpp>
 #include <graphics/vertex_array.hpp>
 #include <graphics/vertex_buffer.hpp>
@@ -57,6 +60,7 @@
 #include <animation_manager.hpp>
 #include <config_manager.hpp>
 #include <event_manager.hpp>
+#include <font_manager.hpp>
 #include <input_manager.hpp>
 #include <texture_manager.hpp>
 

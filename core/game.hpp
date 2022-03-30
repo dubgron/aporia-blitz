@@ -7,6 +7,7 @@
 #include "camera_controller.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
+#include "font_manager.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
 #include "scene_manager.hpp"
@@ -48,6 +49,7 @@ namespace Aporia
         SceneManager _scenes;
         TextureManager _textures;
         AnimationManager _animations;
+        FontManager _fonts;
 
         CameraController _camera;
         Renderer _renderer;
