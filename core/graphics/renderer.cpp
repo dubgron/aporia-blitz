@@ -14,7 +14,7 @@
 namespace Aporia
 {
     Renderer::Renderer(Logger& logger)
-        : _logger(logger), _default_shader(_logger)
+        : _logger(logger), _default_shader(_logger), _font_shader(_logger)
     {
         _tranformation_stack.emplace(glm::mat4{ 1.0f });
 
@@ -70,6 +70,18 @@ namespace Aporia
 
         _lines.unbind();
 
+        /* Set VertexArray for Glyphs */
+        _glyphs.bind();
+
+        auto glyphs_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
+        glyphs_vbo->add_layout();
+        _glyphs.set_vertex_buffer(glyphs_vbo);
+
+        auto glyphs_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
+        _glyphs.set_index_buffer(glyphs_ibo);
+
+        _glyphs.unbind();
+
         /* Setup default shaders */
         _default_shader.load_shader("assets/shaders/shader.frag", Aporia::Shader::Type::Fragment);
         _default_shader.load_shader("assets/shaders/shader.vert", Aporia::Shader::Type::Vertex);
@@ -81,12 +93,25 @@ namespace Aporia
         _default_shader.bind();
         _default_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
         _default_shader.unbind();
+
+        /* Setup font shaders */
+        _font_shader.load_shader("assets/shaders/font.frag", Aporia::Shader::Type::Fragment);
+        _font_shader.load_shader("assets/shaders/font.vert", Aporia::Shader::Type::Vertex);
+        _font_shader.compile();
+
+        _font_shader.bind();
+        _font_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+        _font_shader.unbind();
     }
 
     void Renderer::begin(const Camera& camera)
     {
         _default_shader.bind();
         _default_shader.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+
+        _font_shader.bind();
+        _font_shader.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        _font_shader.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
     }
 
     void Renderer::end()
@@ -99,10 +124,13 @@ namespace Aporia
 
     void Renderer::render()
     {
+        _default_shader.bind();
         _opaque_quads.render();
         _lines.render();
-
         _transpartent_quads.render();
+
+        _font_shader.bind();
+        _glyphs.render();
     }
 
     void Renderer::draw(const Group& group)
@@ -117,6 +145,9 @@ namespace Aporia
 
         for (const Sprite& sprite : group.get_container<Sprite>())
             draw(sprite);
+
+        for (const Text& text : group.get_container<Text>())
+            draw(text);
 
         for (const Group& group : group.get_container<Group>())
             draw(group);
@@ -237,6 +268,107 @@ namespace Aporia
         v.tex_coord = glm::vec2{ -1.0f, 1.0f };
         v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
         circles.get_vertex_buffer()->push(v);
+    }
+
+    void Renderer::draw(const Text& text)
+    {
+        const Transform2D& transform = text.get_component<Transform2D>();
+        const Color& color = text.get_component<Color>();
+
+        const Font& font = text.font;
+        const Font::Atlas& atlas = font.atlas;
+
+        glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
+
+        /* Adjust text scaling by the predefined atlas font size */
+        transformation[0][0] /= atlas.font_size;
+        transformation[1][1] /= atlas.font_size;
+
+        const glm::vec2 uv_length = glm::vec2{ atlas.origin.width, atlas.origin.height };
+
+        const float text_scale = glm::length(transform.scale);
+        const float screen_px_range = text_scale * font.atlas.distance_range / font.atlas.font_size;
+
+        glm::vec2 advance{ 0.0f };
+        const size_t length = text.caption.size();
+        for (size_t i = 0; i < length; ++i)
+        {
+            const unicode_t character = text.caption[i];
+
+            if (i > 0)
+            {
+                const unicode_t prev_character = text.caption[i - 1];
+
+                const std::pair<unicode_t, unicode_t> key = std::make_pair(prev_character, character);
+                if (font.kerning.contains(key))
+                {
+                    advance.x += font.kerning.at(key) * atlas.font_size;
+                }
+
+                if (font.glyphs.contains(prev_character))
+                {
+                    advance.x += font.glyphs.at(prev_character).advance * atlas.font_size;
+                }
+            }
+
+            if (character == ' ')
+            {
+                advance.x += font.metrics.em_size * atlas.font_size / 4.0f;
+            }
+            else if (character == '\t')
+            {
+                advance.x += font.metrics.em_size * atlas.font_size * 2.0f;
+            }
+            else if (character == '\n')
+            {
+                advance.x = 0.0f;
+                advance.y -= font.metrics.line_height * atlas.font_size;
+            }
+            else if (font.glyphs.contains(character))
+            {
+                const Font::GlyphData& glyph = font.glyphs.at(character);
+
+                const Font::GlyphData::Bounds& atlas_bounds = glyph.atlas_bounds;
+                const Font::GlyphData::Bounds& plane_bounds = glyph.plane_bounds;
+
+                const glm::vec2 position = advance - glm::vec2{ plane_bounds.left, plane_bounds.bottom } * atlas.font_size;
+
+                const glm::vec2 u_vector = glm::vec2{ atlas_bounds.left, atlas_bounds.bottom } / uv_length;
+                const glm::vec2 v_vector = glm::vec2{ atlas_bounds.right, atlas_bounds.top } / uv_length;
+
+                const float width = atlas_bounds.right - atlas_bounds.left;
+                const float height = atlas_bounds.top - atlas_bounds.bottom;
+
+                Vertex v;
+                v.position = transformation * glm::vec4{ position, 0.0, 1.0f };
+                v.tex_id = atlas.origin.id;
+                v.tex_coord = glm::vec2{ u_vector.x, v_vector.y };
+                v.color = color;
+                v.additional = screen_px_range;
+                _glyphs.get_vertex_buffer()->push(v);
+
+                v.position = transformation * glm::vec4{ position.x + width, position.y, 0.0f, 1.0f };
+                v.tex_id = atlas.origin.id;
+                v.tex_coord = v_vector;
+                v.color = color;
+                v.additional = screen_px_range;
+                _glyphs.get_vertex_buffer()->push(v);
+
+                v.position = transformation * glm::vec4{ position.x + width, position.y + height, 0.0f, 1.0f };
+                v.tex_id = atlas.origin.id;
+                v.tex_coord = glm::vec2{ v_vector.x, u_vector.y };
+                v.color = color;
+                v.additional = screen_px_range;
+                _glyphs.get_vertex_buffer()->push(v);
+
+                v.position = transformation * glm::vec4{ position.x, position.y + height, 0.0f, 1.0f };
+                v.tex_id = atlas.origin.id;
+                v.tex_coord = u_vector;
+                v.color = color;
+                v.additional = screen_px_range;
+                _glyphs.get_vertex_buffer()->push(v);
+            }
+        }
     }
 
     void Renderer::push_transform(const Transform2D& transform)
