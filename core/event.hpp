@@ -45,4 +45,9 @@ namespace Aporia
 
     using BeginFrameEvent = Event<10>;
     using EndFrameEvent = Event<11>;
+
+    using ReloadWindowConfigEvent = Event<12>;
+    using ReloadTextureConfigEvent = Event<13>;
+    using ReloadCameraConfigEvent = Event<14>;
+    using ReloadAnimationConfigEvent = Event<15>;
 }

@@ -6,7 +6,6 @@
 
 #include <glm/vec2.hpp>
 #include <magic_enum.hpp>
-#include <nlohmann/json.hpp>
 
 #include "components/color.hpp"
 #include "inputs/keyboard.hpp"
@@ -14,39 +13,68 @@
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(Logger& logger, const std::string& config)
-        : _logger(logger)
+    ConfigManager::ConfigManager(Logger& logger, EventManager& events, const std::string& path)
+        : _logger(logger), _events(events), _path(path)
     {
-        if (!std::filesystem::exists(config))
+        if (!std::filesystem::exists(_path))
         {
-            _logger.log(LOG_CRITICAL) << "Config file '" << config << "' doesn't exist!";
+            _logger.log(LOG_CRITICAL) << "Config file '" << _path << "' doesn't exist!";
             return;
         }
 
-        using json = nlohmann::json;
-        
-        std::string data = read_file(config);
-        json config_json = json::parse(data);
-
         /* TODO: Handling when json file is not correct */
+        using json = nlohmann::json;
+        json config_json = load_json(_path);
 
-        /* Getting Window Config */
-        const auto& window = config_json["window_config"];
-        const auto& position = window["position"];
+        load_window_config(config_json);
+        load_texture_config(config_json);
+        load_camera_config(config_json);
+        load_animation_config(config_json);
+    }
+
+    void ConfigManager::reload()
+    {
+        using json = nlohmann::json;
+        json config_json = load_json(_path);
+
+        load_window_config(config_json);
+        _events.call_event<ReloadWindowConfigEvent>();
+
+        load_texture_config(config_json);
+        _events.call_event<ReloadTextureConfigEvent>();
+
+        load_camera_config(config_json);
+        _events.call_event<ReloadCameraConfigEvent>();
+
+        load_animation_config(config_json);
+        _events.call_event<ReloadAnimationConfigEvent>();
+    }
+
+    void ConfigManager::load_window_config(const json& config)
+    {
+        const auto& window = config["window_config"];
 
         window_config.title = window["title"];
-        window_config.position = glm::ivec2(position[0], position[1]);
         window_config.width = window["width"];
         window_config.height = window["height"];
         window_config.vsync = window["vsync"];
 
-        /* Getting Texture Config */
-        const auto& texture = config_json["texture_config"];
+        const auto& position = window.find("position");
+        window_config.position = position != window.end()
+            ? std::make_optional<glm::ivec2>(position->at(0), position->at(1))
+            : std::nullopt;
+    }
+
+    void ConfigManager::load_texture_config(const json& config)
+    {
+        const auto& texture = config["texture_config"];
 
         texture_config.atlas = texture["src"];
+    }
 
-        /* Getting Camera Config */
-        const auto& camera = config_json["camera_config"];
+    void ConfigManager::load_camera_config(const json& config)
+    {
+        const auto& camera = config["camera_config"];
         const auto& bg_color = camera["background_color"];
 
         camera_config.aspect_ratio = camera["aspect_ratio"];
@@ -56,7 +84,7 @@ namespace Aporia
         camera_config.rotation_speed = camera["rotation_speed"];
         camera_config.zoom_speed = camera["zoom_speed"];
 
-        auto get_key = [&camera](const char* key){ return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value(); };
+        auto get_key = [&camera](const char* key) { return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value(); };
 
         camera_config.movement_key_up = get_key("movement_key_up");
         camera_config.movement_key_down = get_key("movement_key_down");
@@ -67,27 +95,10 @@ namespace Aporia
 
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
-
-        /* Getting Animation Config */
-        std::string animation_data = read_file(config_json["animation_config"]);
-        json animation_json = json::parse(animation_data);
-
-        for (const auto& animation : animation_json["animations"])
-        {
-            std::vector<AnimationFrameConfig> frames;
-            frames.reserve(animation["frames"].size());
-
-            for (const auto& frame : animation["frames"])
-                frames.push_back(AnimationFrameConfig{ frame["texture"], frame["duration"] });
-
-            animation_config.animations.try_emplace(animation["name"], std::move(frames));
-        }
-
-        _good = true;
     }
 
-    bool ConfigManager::is_good() const
+    void ConfigManager::load_animation_config(const json& config)
     {
-        return _good;
+        animation_config.animations = config["animation_config"];
     }
 }

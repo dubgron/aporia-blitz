@@ -12,32 +12,52 @@
 
 namespace Aporia
 {
-    TextureManager::TextureManager(Logger& logger, const TextureConfig& config)
-        : _logger(logger)
+    TextureManager::TextureManager(Logger& logger, EventManager& event_manager, const TextureConfig& config)
+        : _logger(logger), _config(config)
+    {
+        _load();
+
+        event_manager.add_listener<ReloadTextureConfigEvent>(std::bind(&TextureManager::_load, this));
+    }
+
+    const Texture& TextureManager::get_texture(const std::string& name) const
+    {
+        auto texture = _textures.find(name);
+        if (texture == _textures.end())
+        {
+            _logger.log(LOG_WARNING) << "There is no texture named " << name << "!";
+            return _textures.at("default");
+        }
+        else
+            return texture->second;
+    }
+
+    void TextureManager::_load()
     {
         using json = nlohmann::json;
 
-        if (!std::filesystem::exists(config.atlas))
-            logger.log(LOG_ERROR) << "File '" << config.atlas << "' does not open!";
+        if (!std::filesystem::exists(_config.atlas))
+            _logger.log(LOG_ERROR) << "File '" << _config.atlas << "' does not open!";
         else
         {
-            std::string data = read_file(config.atlas);
+            std::string data = read_file(_config.atlas);
             json texture_json = json::parse(data);
 
-            logger.log(LOG_INFO) << "Opened '" << config.atlas << "' successfully";
+            _logger.log(LOG_INFO) << "Opened '" << _config.atlas << "' successfully";
 
             std::string filepath = texture_json["atlas"];
 
             if (!std::filesystem::exists(filepath))
-                logger.log(LOG_ERROR) << "File '" << filepath << "' does not open!";
+                _logger.log(LOG_ERROR) << "File '" << filepath << "' does not open!";
             else
             {
-                uint32_t id;
+                static uint32_t id = 0u;
+                glDeleteTextures(1, &id);
 
                 Image atlas_image{ filepath };
                 auto [pixels, width, height, channels] = atlas_image.get_data();
 
-                logger.log(LOG_INFO) << "Opened '" << filepath << "' successfully";
+                _logger.log(LOG_INFO) << "Opened '" << filepath << "' successfully";
 
 #               if defined(APORIA_EMSCRIPTEN)
                     glGenTextures(1, &id);
@@ -66,13 +86,15 @@ namespace Aporia
                     glBindTextureUnit(id, id);
 #               endif
 
+                _textures.clear();
+
                 Texture::Origin atlas{ static_cast<texture_id>(id), width, height, channels };
                 for (auto& texture : texture_json["textures"])
                 {
                     std::string name = texture["name"];
 
                     if (_textures.find(name) != _textures.end())
-                        logger.log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
+                        _logger.log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
 
                     glm::vec2 u = { texture["u"][0], texture["u"][1] };
                     glm::vec2 v = { texture["v"][0], texture["v"][1] };
@@ -82,24 +104,12 @@ namespace Aporia
 
                 if (_textures.find("default") == _textures.end())
                 {
-                    logger.log(LOG_WARNING) << "There is no default texture in '" << filepath << "'!";
+                    _logger.log(LOG_WARNING) << "There is no default texture in '" << filepath << "'!";
                     _textures.try_emplace("default", Texture{ { 0.0f, atlas.height }, { atlas.width, 0.0f }, atlas });
                 }
 
-                logger.log(LOG_INFO) << "All textures from '" << filepath << "' loaded successfully";
+                _logger.log(LOG_INFO) << "All textures from '" << filepath << "' loaded successfully";
             }
         }
-    }
-
-    const Texture& TextureManager::get_texture(const std::string& name) const
-    {
-        auto texture = _textures.find(name);
-        if (texture == _textures.end())
-        {
-            _logger.log(LOG_WARNING) << "There is no texture named " << name << "!";
-            return _textures.at("default");
-        }
-        else
-            return texture->second;
     }
 }

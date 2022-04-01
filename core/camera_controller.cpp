@@ -5,7 +5,7 @@
 
 namespace Aporia
 {
-    CameraController::CameraController(Logger& logger, EventManager& event_manager, const CameraConfig& config)
+    CameraController::CameraController(Logger& logger, EventManager& event_manager, CameraConfig& config)
         : _logger(logger),
           _camera(-config.aspect_ratio * config.size, config.aspect_ratio * config.size, -config.size, config.size),
           _config(config)
@@ -13,6 +13,7 @@ namespace Aporia
         using namespace std::placeholders;
 
         event_manager.add_listener<WindowResizeEvent>(std::bind(&CameraController::_on_resize, this, _1, _2, _3));
+        event_manager.add_listener<ReloadCameraConfigEvent>(std::bind(&CameraController::_on_config_reload, this));
     }
 
     void CameraController::control_movement(const InputManager& input_manager, float delta_time)
@@ -89,8 +90,13 @@ namespace Aporia
 
     void CameraController::_on_resize(Window& window, uint32_t width, uint32_t height)
     {
-        float aspect_ratio = static_cast<float>(width) / height;
+        _config.aspect_ratio = static_cast<float>(width) / height;
 
-        _camera.set_frustum(-aspect_ratio * _config.size, aspect_ratio * _config.size, -_config.size, _config.size);
+        _camera.set_frustum(-_config.aspect_ratio * _config.size, _config.aspect_ratio * _config.size, -_config.size, _config.size);
+    }
+
+    void CameraController::_on_config_reload()
+    {
+        _camera.set_frustum(-_config.aspect_ratio * _config.size, _config.aspect_ratio * _config.size, -_config.size, _config.size);
     }
 }

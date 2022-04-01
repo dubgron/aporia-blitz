@@ -40,22 +40,19 @@ namespace Aporia
 
     Game::Game(const std::string& config_file)
         : _logger("engine"),
-          _configs(_logger, config_file),
           _events(_logger),
+          _configs(_logger, _events, config_file),
           _window(_logger, _events, _configs.window_config),
           _inputs(_logger, _events),
           _scenes(_logger),
-          _textures(_logger, _configs.texture_config),
-          _animations(_logger, _textures, _configs.animation_config),
+          _textures(_logger, _events, _configs.texture_config),
+          _animations(_logger, _events, _textures, _configs.animation_config),
           _fonts(_logger),
           _camera(_logger, _events, _configs.camera_config),
           _renderer(_logger),
           _layer_stack(_logger),
           _imgui_layer(_logger, _window)
     {
-        if (!_configs.is_good())
-            return;
-
         _layer_stack.push_overlay(_imgui_layer);
     }
 
