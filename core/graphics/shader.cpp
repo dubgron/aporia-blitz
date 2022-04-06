@@ -21,46 +21,78 @@ namespace Aporia
         glUseProgram(0);
     }
 
-    bool Shader::load_shader(const std::string& path, Type type)
+    void Shader::create_program(const std::string& path)
+    {
+        constexpr std::string_view type_token = "#type";
+        std::string contents = read_file(path);
+
+        size_t next = contents.find(type_token);
+        while (next != std::string::npos)
+        {
+            const size_t type_begin = next + type_token.size() + 1;
+            const size_t type_end = contents.find('\n', type_begin) - 1;
+            const size_t type_length = type_end - type_begin;
+
+            next = contents.find(type_token, type_end);
+
+            const std::string type = contents.substr(type_begin, type_length);
+            const std::string shader = contents.substr(type_end, next - type_end);
+
+            if (type == "vertex")
+            {
+                load_shader(shader, Type::Vertex);
+            }
+            else if (type == "fragment")
+            {
+                load_shader(shader, Type::Fragment);
+            }
+            else
+            {
+                _logger.log(LOG_ERROR) << "Program '" << path << "' includes the unknown shader type: '" << type << "'!";
+            }
+        }
+
+        compile();
+    }
+
+    void Shader::load_shader(const std::string& contents, Type type)
     {
         int32_t shader_type;
         switch (type)
         {
-            case Type::Fragment:
-                shader_type = GL_FRAGMENT_SHADER; break;
-            case Type::Vertex:
-                shader_type = GL_VERTEX_SHADER; break;
-            default:
-                _logger.log(LOG_ERROR) << "Unsupported type of shaders!";
-                return false;
+        case Type::Fragment:
+            shader_type = GL_FRAGMENT_SHADER; break;
+        case Type::Vertex:
+            shader_type = GL_VERTEX_SHADER; break;
+        default:
+            _logger.log(LOG_ERROR) << "Unsupported type of shaders!";
+            return;
         }
 
-        unsigned int shader = glCreateShader(shader_type);
+        unsigned int shader_id = glCreateShader(shader_type);
+        const char* shader = contents.c_str();
 
-        std::string contents_string = read_file(path);
-        auto contents = contents_string.c_str();
-
-        glShaderSource(shader, 1, &contents, nullptr);
-        glCompileShader(shader);
+        glShaderSource(shader_id, 1, &shader, nullptr);
+        glCompileShader(shader_id);
 
         int32_t results;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &results);
+        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &results);
         if (results == GL_FALSE)
         {
             int32_t length;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+            glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
 
             std::vector<GLchar> msg(length);
-            glGetShaderInfoLog(shader, length, &length, &msg[0]);
+            glGetShaderInfoLog(shader_id, length, &length, &msg[0]);
+
+            glDeleteProgram(shader_id);
 
             _logger.log(LOG_ERROR) << std::string{ &msg[0] };
-
-            glDeleteProgram(shader);
         }
-
-        _shaders.push_back(shader);
-
-        return true;
+        else
+        {
+            _shaders.push_back(shader_id);
+        }
     }
 
     void Shader::compile()

@@ -83,9 +83,7 @@ namespace Aporia
         _glyphs.unbind();
 
         /* Setup default shaders */
-        _default_shader.load_shader("assets/shaders/shader.frag", Aporia::Shader::Type::Fragment);
-        _default_shader.load_shader("assets/shaders/shader.vert", Aporia::Shader::Type::Vertex);
-        _default_shader.compile();
+        _default_shader.create_program("assets/shaders/default.shader");
 
         std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler;
         std::iota(sampler.begin(), sampler.end(), 0);
@@ -95,9 +93,7 @@ namespace Aporia
         _default_shader.unbind();
 
         /* Setup font shaders */
-        _font_shader.load_shader("assets/shaders/font.frag", Aporia::Shader::Type::Fragment);
-        _font_shader.load_shader("assets/shaders/font.vert", Aporia::Shader::Type::Vertex);
-        _font_shader.compile();
+        _font_shader.create_program("assets/shaders/font.shader");
 
         _font_shader.bind();
         _font_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
