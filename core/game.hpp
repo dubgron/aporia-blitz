@@ -11,6 +11,7 @@
 #include "input_manager.hpp"
 #include "logger.hpp"
 #include "scene_manager.hpp"
+#include "shader_manager.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
 #include "graphics/renderer.hpp"
@@ -50,6 +51,7 @@ namespace Aporia
         TextureManager _textures;
         AnimationManager _animations;
         FontManager _fonts;
+        ShaderManager _shaders;
 
         CameraController _camera;
         Renderer _renderer;

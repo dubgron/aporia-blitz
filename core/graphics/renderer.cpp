@@ -13,8 +13,8 @@
 
 namespace Aporia
 {
-    Renderer::Renderer(Logger& logger)
-        : _logger(logger), _default_shader(_logger), _font_shader(_logger)
+    Renderer::Renderer(Logger& logger, ShaderManager& shaders)
+        : _logger(logger), _shaders(shaders)
     {
         _tranformation_stack.emplace(glm::mat4{ 1.0f });
 
@@ -83,31 +83,31 @@ namespace Aporia
         _glyphs.unbind();
 
         /* Setup default shaders */
-        _default_shader.create_program("assets/shaders/default.shader");
+        Shader default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
 
-        std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler;
+        std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler{};
         std::iota(sampler.begin(), sampler.end(), 0);
 
-        _default_shader.bind();
-        _default_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
-        _default_shader.unbind();
+        _shaders.bind(default_shader);
+        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup font shaders */
-        _font_shader.create_program("assets/shaders/font.shader");
+        Shader font_shader = _shaders.create_program("font", "assets/shaders/font.shader");
 
-        _font_shader.bind();
-        _font_shader.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
-        _font_shader.unbind();
+        _shaders.bind(font_shader);
+        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+
+        _shaders.unbind();
     }
 
     void Renderer::begin(const Camera& camera)
     {
-        _default_shader.bind();
-        _default_shader.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        _shaders.bind("default");
+        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
 
-        _font_shader.bind();
-        _font_shader.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        _font_shader.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+        _shaders.bind("font");
+        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
     }
 
     void Renderer::end()
@@ -120,12 +120,12 @@ namespace Aporia
 
     void Renderer::render()
     {
-        _default_shader.bind();
+        _shaders.bind("default");
         _opaque_quads.render();
         _lines.render();
         _transpartent_quads.render();
 
-        _font_shader.bind();
+        _shaders.bind("font");
         _glyphs.render();
     }
 

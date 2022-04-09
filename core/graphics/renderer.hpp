@@ -8,9 +8,9 @@
 
 #include "camera.hpp"
 #include "logger.hpp"
+#include "shader_manager.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/group.hpp"
-#include "graphics/shader.hpp"
 #include "graphics/text.hpp"
 #include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
@@ -22,7 +22,7 @@ namespace Aporia
         static constexpr size_t MAX_QUEUE = 10000;
 
     public:
-        Renderer(Logger& logger);
+        Renderer(Logger& logger, ShaderManager& shaders);
 
         void begin(const Camera& camera);
         void end();
@@ -38,11 +38,9 @@ namespace Aporia
         void push_transform(const Transform2D& transform);
         void pop_transform();
 
-        Shader& get_default_shader() { return _default_shader; }
-        Shader& get_font_shader() { return _font_shader; }
-
     private:
         Logger& _logger;
+        ShaderManager& _shaders;
 
         VertexArray<MAX_QUEUE, 4, 6> _opaque_quads;
         VertexArray<MAX_QUEUE, 4, 6> _transpartent_quads;
@@ -50,8 +48,5 @@ namespace Aporia
         VertexArray<MAX_QUEUE, 4, 6> _glyphs;
 
         std::stack<glm::mat4> _tranformation_stack;
-
-        Shader _default_shader;
-        Shader _font_shader;
     };
 }
