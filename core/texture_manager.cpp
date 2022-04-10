@@ -109,7 +109,7 @@ namespace Aporia
                 if (_textures.find("default") == _textures.end())
                 {
                     _logger.log(LOG_WARNING) << "There is no default texture in '" << filepath << "'!";
-                    _textures.try_emplace("default", Texture{ { 0.0f, atlas.height }, { atlas.width, 0.0f }, atlas });
+                    _textures.try_emplace("default", Texture{ { 0.0f, 1.0f }, { 1.0f, 0.0f }, atlas });
                 }
 
                 _logger.log(LOG_INFO) << "All textures from '" << filepath << "' loaded successfully";
