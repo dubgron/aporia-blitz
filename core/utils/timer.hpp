@@ -14,9 +14,9 @@ namespace Aporia
         using TimePoint = Clock::time_point;
         using Duration = Clock::duration;
 
-        using Hours = std::chrono::duration<float, std::ratio<3600>>;
-        using Minutes = std::chrono::duration<float, std::ratio<60>>;
-        using Seconds = std::chrono::duration<float>;
+        using Hours = std::chrono::duration<Deltatime, std::ratio<3600>>;
+        using Minutes = std::chrono::duration<Deltatime, std::ratio<60>>;
+        using Seconds = std::chrono::duration<Deltatime>;
         using Milliseconds = std::chrono::milliseconds;
         using Microseconds = std::chrono::microseconds;
         using Nanoseconds = std::chrono::nanoseconds;
@@ -24,16 +24,16 @@ namespace Aporia
         Timer() : _start_time(_clock.now()) {}
 
         template<typename T = Seconds>
-        auto reset()
+        Deltatime reset()
         {
-            auto elapsed = get_elapsed_time<T>();
+            Deltatime elapsed = get_elapsed_time<T>();
             _start_time = _clock.now();
 
             return elapsed;
         }
 
         template<typename T = Seconds>
-        auto get_elapsed_time()
+        Deltatime get_elapsed_time() const
         {
             return std::chrono::duration_cast<T>(_clock.now() - _start_time).count();
         }

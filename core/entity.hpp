@@ -14,19 +14,22 @@ namespace Aporia
     public:
         using Components = std::tuple<Ts...>;
 
+        template<typename T>
+        static constexpr bool IsComponent = has_type_v<Components, T>;
+
         Entity() = default;
 
         Entity(Ts&&... args)
             : components(std::make_tuple<Ts...>(std::forward<Ts>(args)...)) {}
 
-        template<typename T, std::enable_if_t<has_type_v<Components, T>, int> = 0>
+        template<typename T> requires IsComponent<T>
         T& get_component()
         {
             return std::get<T>(components);
         }
 
-        template<typename T, std::enable_if_t<has_type_v<Components, T>, int> = 0>
-        const T& get_component() const
+        template<typename T>
+        const T& get_component() const requires IsComponent<T>
         {
             return std::get<T>(components);
         }

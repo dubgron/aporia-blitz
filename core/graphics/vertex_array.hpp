@@ -22,10 +22,14 @@ namespace Aporia
         {
             glGenVertexArrays(1, &_id);
 
-            if (VertexCount == 4 && IndexCount == 6)
+            if constexpr (VertexCount == 4 && IndexCount == 6)
+            {
                 _mode = GL_TRIANGLES;
-            else if (VertexCount == 2 && IndexCount == 2)
+            }
+            else if constexpr (VertexCount == 2 && IndexCount == 2)
+            {
                 _mode = GL_LINES;
+            }
         }
 
         ~VertexArray()

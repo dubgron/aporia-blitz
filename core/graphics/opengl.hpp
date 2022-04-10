@@ -15,7 +15,7 @@
 
     namespace Aporia
     {
-        constexpr const char* get_debug_source(GLenum source)
+        static constexpr const char* get_debug_source(GLenum source)
         {
             switch (source)
             {
@@ -29,7 +29,7 @@
             }
         }
 
-        constexpr const char* get_debug_type(GLenum type)
+        static constexpr const char* get_debug_type(GLenum type)
         {
             switch (type)
             {

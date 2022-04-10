@@ -21,7 +21,7 @@ namespace Aporia
 {
     class Renderer final
     {
-        static constexpr size_t MAX_QUEUE = 10000;
+        static constexpr size_t MAX_QUEUE = 1000u;
 
     public:
         Renderer(Logger& logger, ShaderManager& shaders);

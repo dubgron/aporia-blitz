@@ -67,9 +67,7 @@ namespace Aporia
 
     void ConfigManager::load_texture_config(const json& config)
     {
-        const auto& texture = config["texture_config"];
-
-        texture_config.atlas = texture["src"];
+        texture_config.atlas = config["texture_config"];
     }
 
     void ConfigManager::load_camera_config(const json& config)
