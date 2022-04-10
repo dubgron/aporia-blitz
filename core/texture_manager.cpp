@@ -72,8 +72,12 @@ namespace Aporia
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+                    glGenerateMipmap(GL_TEXTURE_2D);
 #               else
                     glCreateTextures(GL_TEXTURE_2D, 1, &id);
+
+                    glBindTextureUnit(id, id);
 
                     glTextureStorage2D(id, 1, GL_RGBA8, width, height);
                     glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -83,7 +87,7 @@ namespace Aporia
                     glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-                    glBindTextureUnit(id, id);
+                    glGenerateTextureMipmap(id);
 #               endif
 
                 _textures.clear();
