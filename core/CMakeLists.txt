@@ -113,7 +113,7 @@ if (NOT APORIA_EMSCRIPTEN)
         gl3w
         OpenGL::GL)
 
-    target_compile_features(core PUBLIC cxx_std_20)
+    target_compile_features(core PUBLIC cxx_std_23)
 endif()
 
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")

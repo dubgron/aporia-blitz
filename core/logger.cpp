@@ -1,5 +1,9 @@
 #include "logger.hpp"
 
+#include <chrono>
+#include <format>
+#include <string>
+
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -7,8 +11,10 @@ namespace Aporia
 {
     Logger::Logger(const std::string& name)
     {
+        std::string logfile = std::format("logs/{0:%Y-%m-%d_%H-%M-%OS}.log", std::chrono::system_clock::now());
+
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/multisink.txt");
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
 
         _logger = std::make_shared<spdlog::logger>(spdlog::logger(name, { std::move(console_sink), std::move(file_sink) }));
         _logger->set_pattern("[%Y-%m-%d %H:%M:%S] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
