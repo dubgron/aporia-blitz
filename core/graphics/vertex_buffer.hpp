@@ -89,6 +89,11 @@ namespace Aporia
             _buffer.push_back(std::move(vertex));
         }
 
+        void emplace(Vertex&& vertex)
+        {
+            _buffer.push_back(std::move(vertex));
+        }
+
         void clear()
         {
             _buffer.clear();

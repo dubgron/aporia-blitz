@@ -19,11 +19,11 @@ namespace Aporia
         _tranformation_stack.emplace(glm::mat4{ 1.0f });
 
         /* Set VertexArray for opaque Quads */
-        _opaque_quads.bind();
+        _quads.bind();
 
-        auto opaque_quads_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
-        opaque_quads_vbo->add_layout();
-        _opaque_quads.set_vertex_buffer(opaque_quads_vbo);
+        auto quads_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
+        quads_vbo->add_layout();
+        _quads.set_vertex_buffer(quads_vbo);
 
         std::vector<uint32_t> quad_indecies(MAX_QUEUE * 6);
         for (uint32_t i = 0, offset = 0; i < MAX_QUEUE * 6; i += 6, offset += 4)
@@ -37,22 +37,10 @@ namespace Aporia
             quad_indecies[i + 5] = offset + 0;
         }
 
-        auto opaque_quads_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
-        _opaque_quads.set_index_buffer(opaque_quads_ibo);
+        auto quads_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
+        _quads.set_index_buffer(quads_ibo);
 
-        _opaque_quads.unbind();
-
-        /* Set VertexArray for transparent Quads */
-        _transpartent_quads.bind();
-
-        auto transpartent_quads_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
-        transpartent_quads_vbo->add_layout();
-        _transpartent_quads.set_vertex_buffer(transpartent_quads_vbo);
-
-        auto transpartent_quads_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
-        _transpartent_quads.set_index_buffer(transpartent_quads_ibo);
-
-        _transpartent_quads.unbind();
+        _quads.unbind();
 
         /* Set VertexArray for Lines */
         _lines.bind();
@@ -69,18 +57,6 @@ namespace Aporia
         _lines.set_index_buffer(lines_ibo);
 
         _lines.unbind();
-
-        /* Set VertexArray for Glyphs */
-        _glyphs.bind();
-
-        auto glyphs_vbo = std::make_shared<VertexBuffer<MAX_QUEUE, 4>>();
-        glyphs_vbo->add_layout();
-        _glyphs.set_vertex_buffer(glyphs_vbo);
-
-        auto glyphs_ibo = std::make_shared<IndexBuffer<MAX_QUEUE, 6>>(quad_indecies);
-        _glyphs.set_index_buffer(glyphs_ibo);
-
-        _glyphs.unbind();
 
         /* Setup default shaders */
         Shader default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
@@ -112,21 +88,47 @@ namespace Aporia
 
     void Renderer::end()
     {
-        auto transparent_buffer = _transpartent_quads.get_vertex_buffer();
-        std::stable_sort(transparent_buffer->begin(), transparent_buffer->end(), [](const Vertex& v_1, const Vertex& v_2){ return v_1.position.z < v_2.position.z; });
-
         render();
+    }
+
+    void Renderer::flush(Shader program_id, BufferType buffer)
+    {
+        _shaders.bind(program_id);
+
+        switch (buffer)
+        {
+            case BufferType::Quads:     _quads.render();    break;
+            case BufferType::Lines:     _lines.render();    break;
+        }
     }
 
     void Renderer::render()
     {
-        _shaders.bind("default");
-        _opaque_quads.render();
-        _lines.render();
-        _transpartent_quads.render();
+        RenderQueueKey prev_key;
 
-        _shaders.bind("font");
-        _glyphs.render();
+        for (auto& [key, vertex] : _render_queue)
+        {
+            if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
+            {
+                flush(prev_key.program_id, prev_key.buffer);
+            }
+
+            if (key.buffer == BufferType::Quads)
+            {
+                _quads.get_vertex_buffer()->emplace(std::move(vertex));
+            }
+            else if (key.buffer == BufferType::Lines)
+            {
+                _lines.get_vertex_buffer()->emplace(std::move(vertex));
+            }
+
+            prev_key = key;
+        }
+
+        flush(prev_key.program_id, prev_key.buffer);
+
+        _shaders.unbind();
+        _render_queue.clear();
     }
 
     void Renderer::draw(const Group& group)
@@ -151,72 +153,86 @@ namespace Aporia
         pop_transform();
     }
 
-    void Renderer::draw(const Sprite& sprite)
+    void Renderer::draw(const Sprite& sprite, Shader program_id /* = 0 */)
     {
         const Transform2D& transform = sprite.get_component<Transform2D>();
         const Rectangular& rectangular = sprite.get_component<Rectangular>();
         const Texture& texture = sprite.get_component<Texture>();
         const Color& color = sprite.get_component<Color>();
 
-        auto& quads = color.a == 255 && texture.origin.channels % 2 ? _opaque_quads : _transpartent_quads;
-
         glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
+
+        RenderQueueKey key;
+        key.buffer = BufferType::Quads;
+        key.program_id = program_id ? program_id : _shaders.get("default");
+        key.transparent = color.a != 255 || texture.origin.channels % 2 == 0;
 
         Vertex v;
         v.position = transformation * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
         v.tex_coord = glm::vec2{ texture.u.x, texture.v.y };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ rectangular.width, 0.0f, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
         v.tex_coord = texture.v;
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ rectangular.width, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
         v.tex_coord = glm::vec2{ texture.v.x, texture.u.y };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ 0.0f, rectangular.height, 0.0f, 1.0f };
         v.tex_id = texture.origin.id;
         v.tex_coord = texture.u;
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
     }
 
-    void Renderer::draw(const Rectangle2D& rect)
+    void Renderer::draw(const Rectangle2D& rect, Shader program_id /* = 0 */)
     {
         const Transform2D& transform = rect.get_component<Transform2D>();
         const Rectangular& rectangular = rect.get_component<Rectangular>();
         const Color& color = rect.get_component<Color>();
 
-        auto& quads = color.a == 255 ? _opaque_quads : _transpartent_quads;
-
         glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
+
+        RenderQueueKey key;
+        key.buffer = BufferType::Quads;
+        key.program_id = program_id ? program_id : _shaders.get("default");
+        key.transparent = color.a != 255;
 
         Vertex v;
         v.position = transformation * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ rectangular.width, 0.0f, 0.0f, 1.0f };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ rectangular.width, rectangular.height, 0.0f, 1.0f };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ 0.0f, rectangular.height, 0.0f, 1.0f };
         v.color = color;
-        quads.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
     }
 
-    void Renderer::draw(const Line2D& line2d)
+    void Renderer::draw(const Line2D& line2d, Shader program_id /* = 0 */)
     {
         const Transform2D& transform = line2d.get_component<Transform2D>();
         const Linear2D& linear2d = line2d.get_component<Linear2D>();
@@ -224,49 +240,63 @@ namespace Aporia
 
         glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
 
+        RenderQueueKey key;
+        key.buffer = BufferType::Lines;
+        key.program_id = program_id ? program_id : _shaders.get("default");
+        key.transparent = color.a != 255;
+
         Vertex v;
         v.position = transformation * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
         v.color = color;
-        _lines.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.position = transformation * glm::vec4{ linear2d.point, 0.0f, 1.0f };
         v.color = color;
-        _lines.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
     }
 
-    void Renderer::draw(const Circle2D& circle)
+    void Renderer::draw(const Circle2D& circle, Shader program_id /* = 0 */)
     {
         const Transform2D& transform = circle.get_component<Transform2D>();
         const Circular& circular = circle.get_component<Circular>();
         const Color& color = circle.get_component<Color>();
 
-        auto& circles = color.a == 255 ? _opaque_quads : _transpartent_quads;
-
         glm::mat4 transformation = _tranformation_stack.top() != glm::mat4{ 1.0f } ? _tranformation_stack.top() * to_mat4(transform) : to_mat4(transform);
+
+        RenderQueueKey key;
+        key.buffer = BufferType::Quads;
+        key.program_id = program_id ? program_id : _shaders.get("default");
+        key.transparent = true;
 
         Vertex v;
         v.color = color;
         v.tex_coord = glm::vec2{ -1.0f, -1.0f };
         v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
-        circles.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.color = color;
         v.tex_coord = glm::vec2{ 1.0f, -1.0f };
         v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
-        circles.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.color = color;
         v.tex_coord = glm::vec2{ 1.0f, 1.0f };
         v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
-        circles.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
 
         v.color = color;
         v.tex_coord = glm::vec2{ -1.0f, 1.0f };
         v.position = transformation * glm::vec4{ circular.radius * v.tex_coord, 0.0f, 1.0f };
-        circles.get_vertex_buffer()->push(v);
+        key.depth = v.position.z;
+        _render_queue.emplace(key, v);
     }
 
-    void Renderer::draw(const Text& text)
+    void Renderer::draw(const Text& text, Shader program_id /* = 0 */)
     {
         const Transform2D& transform = text.get_component<Transform2D>();
         const Color& color = text.get_component<Color>();
@@ -279,6 +309,11 @@ namespace Aporia
         /* Adjust text scaling by the predefined atlas font size */
         transformation[0][0] /= atlas.font_size;
         transformation[1][1] /= atlas.font_size;
+
+        RenderQueueKey key;
+        key.buffer = BufferType::Quads;
+        key.program_id = program_id ? program_id : _shaders.get("font");
+        key.transparent = true;
 
         const glm::vec2 uv_length = glm::vec2{ atlas.origin.width, atlas.origin.height };
 
@@ -341,28 +376,32 @@ namespace Aporia
                 v.tex_coord = glm::vec2{ u_vector.x, v_vector.y };
                 v.color = color;
                 v.additional = screen_px_range;
-                _glyphs.get_vertex_buffer()->push(v);
+                key.depth = v.position.z;
+                _render_queue.emplace(key, v);
 
                 v.position = transformation * glm::vec4{ position.x + width, position.y, 0.0f, 1.0f };
                 v.tex_id = atlas.origin.id;
                 v.tex_coord = v_vector;
                 v.color = color;
                 v.additional = screen_px_range;
-                _glyphs.get_vertex_buffer()->push(v);
+                key.depth = v.position.z;
+                _render_queue.emplace(key, v);
 
                 v.position = transformation * glm::vec4{ position.x + width, position.y + height, 0.0f, 1.0f };
                 v.tex_id = atlas.origin.id;
                 v.tex_coord = glm::vec2{ v_vector.x, u_vector.y };
                 v.color = color;
                 v.additional = screen_px_range;
-                _glyphs.get_vertex_buffer()->push(v);
+                key.depth = v.position.z;
+                _render_queue.emplace(key, v);
 
                 v.position = transformation * glm::vec4{ position.x, position.y + height, 0.0f, 1.0f };
                 v.tex_id = atlas.origin.id;
                 v.tex_coord = u_vector;
                 v.color = color;
                 v.additional = screen_px_range;
-                _glyphs.get_vertex_buffer()->push(v);
+                key.depth = v.position.z;
+                _render_queue.emplace(key, v);
             }
         }
     }
