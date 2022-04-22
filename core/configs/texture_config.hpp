@@ -4,8 +4,8 @@
 
 namespace Aporia
 {
-	struct TextureConfig final
-	{
-		std::string atlas;
-	};
+    struct TextureConfig final
+    {
+        std::string atlas;
+    };
 }
