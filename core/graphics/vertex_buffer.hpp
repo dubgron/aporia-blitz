@@ -10,11 +10,13 @@
 
 namespace Aporia
 {
-    template<size_t Size, size_t Count>
     class VertexBuffer final
     {
     public:
-        VertexBuffer()
+        VertexBuffer() = default;
+
+        VertexBuffer(size_t max_objects, size_t vertex_count)
+            : _vertex_count(vertex_count)
         {
             glGenBuffers(1, &_id);
             glBindBuffer(GL_ARRAY_BUFFER, _id);
@@ -22,10 +24,25 @@ namespace Aporia
 #           if defined(APORIA_EMSCRIPTEN)
                 glBufferData(GL_ARRAY_BUFFER, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #           else
-                glNamedBufferData(_id, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+                glNamedBufferData(_id, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #           endif
 
-            _buffer.reserve(Size * Count);
+            _buffer.reserve(max_objects * vertex_count);
+        }
+
+        VertexBuffer(const VertexBuffer&) = delete;
+        VertexBuffer& operator=(const VertexBuffer&) = delete;
+
+        VertexBuffer(VertexBuffer&&) = default;
+        VertexBuffer& operator=(VertexBuffer&& other) noexcept
+        {
+            this->_id           = other._id;
+            this->_buffer       = std::move(other._buffer);
+            this->_vertex_count = other._vertex_count;
+
+            other._id = 0;
+
+            return *this;
         }
 
         ~VertexBuffer()
@@ -110,10 +127,12 @@ namespace Aporia
         std::vector<Vertex>::const_reverse_iterator rend() const      { return _buffer.rend(); }
 
         size_t size() const { return _buffer.size(); }
+        size_t vertex_count() const { return _vertex_count; }
 
     private:
         uint32_t _id = 0;
 
         std::vector<Vertex> _buffer;
+        size_t _vertex_count = 0;
     };
 }

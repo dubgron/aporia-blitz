@@ -8,28 +8,27 @@
 
 namespace Aporia
 {
+    /* Index for VertexArray in Renderer */
     enum class BufferType : uint8_t
     {
-        None,
-        Quads,
+        Quads = 0,
         Lines
     };
 
     struct RenderQueueKey final
     {
-        float depth = 0.0f;
+        BufferType buffer = BufferType::Quads;
         ShaderRef program_id = 0;
-        BufferType buffer = BufferType::None;
-        bool transparent = false;
+
+        Vertex vertex[4];
     };
 
     static bool operator<(const RenderQueueKey& key1, const RenderQueueKey& key2) noexcept
     {
-        return key1.transparent < key2.transparent ||
-            (key1.transparent == key2.transparent && key1.depth < key2.depth) ||
-            (key1.transparent == key2.transparent && key1.depth == key2.depth && key1.buffer < key2.buffer) ||
-            (key1.transparent == key2.transparent && key1.depth == key2.depth && key1.buffer == key2.buffer && key1.program_id < key2.program_id);
+        return key1.vertex[0].position.z < key2.vertex[0].position.z ||
+            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer < key2.buffer) ||
+            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer == key2.buffer && key1.program_id < key2.program_id);
     }
 
-    using RenderQueue = std::multimap<RenderQueueKey, Vertex>;
+    using RenderQueue = std::vector<RenderQueueKey>;
 }

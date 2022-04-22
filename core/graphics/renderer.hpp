@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <stack>
 #include <utility>
 #include <vector>
 
@@ -21,7 +20,7 @@ namespace Aporia
 {
     class Renderer final
     {
-        static constexpr size_t MAX_QUEUE = 1000u;
+        static constexpr size_t MAX_QUEUE = 100000u;
 
     public:
         Renderer(Logger& logger, ShaderManager& shaders);
@@ -30,14 +29,13 @@ namespace Aporia
         void end();
 
         void flush(Shader program_id, BufferType buffer);
-        void render();
 
         void draw(const Group& group);
-        void draw(const Sprite& sprite, Shader program_id = 0);
-        void draw(const Rectangle2D& rect, Shader program_id = 0);
-        void draw(const Line2D& line, Shader program_id = 0);
-        void draw(const Circle2D& circle, Shader program_id = 0);
-        void draw(const Text& text, Shader program_id = 0);
+        void draw(const Sprite& sprite,     Shader program_id = default_shader);
+        void draw(const Rectangle2D& rect,  Shader program_id = default_shader);
+        void draw(const Line2D& line,       Shader program_id = default_shader);
+        void draw(const Circle2D& circle,   Shader program_id = default_shader);
+        void draw(const Text& text,         Shader program_id = font_shader);
 
         void push_transform(const Transform2D& transform);
         void pop_transform();
@@ -48,9 +46,12 @@ namespace Aporia
 
         RenderQueue _render_queue;
 
-        VertexArray<MAX_QUEUE, 4, 6> _quads;
-        VertexArray<MAX_QUEUE, 2, 2> _lines;
+        std::vector<VertexArray> _vertex_arrays;
 
-        std::stack<glm::mat4> _tranformation_stack;
+        std::vector<Transform2D> _transformation_stack;
+
+        /* Predefined shaders */
+        static ShaderRef default_shader;
+        static ShaderRef font_shader;
     };
 }
