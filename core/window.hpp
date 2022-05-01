@@ -7,11 +7,11 @@
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 
-#include "camera.hpp"
 #include "event_manager.hpp"
 #include "logger.hpp"
 #include "components/color.hpp"
 #include "configs/window_config.hpp"
+#include "graphics/camera.hpp"
 
 namespace Aporia
 {

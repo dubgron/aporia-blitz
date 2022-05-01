@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "animation_manager.hpp"
-#include "camera_controller.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
 #include "font_manager.hpp"
@@ -14,6 +13,7 @@
 #include "shader_manager.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
+#include "graphics/camera_controller.hpp"
 #include "graphics/renderer.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"

@@ -6,10 +6,10 @@
 
 #include <glm/matrix.hpp>
 
-#include "camera.hpp"
 #include "logger.hpp"
 #include "shader_manager.hpp"
 #include "components/transform2d.hpp"
+#include "graphics/camera.hpp"
 #include "graphics/group.hpp"
 #include "graphics/render_queue.hpp"
 #include "graphics/text.hpp"

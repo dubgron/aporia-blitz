@@ -4,13 +4,13 @@
 
 #include <glm/vec2.hpp>
 
-#include "camera.hpp"
 #include "event_manager.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
 #include "window.hpp"
 #include "components/color.hpp"
 #include "configs/camera_config.hpp"
+#include "graphics/camera.hpp"
 
 namespace Aporia
 {

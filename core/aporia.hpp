@@ -41,8 +41,8 @@
 #include <graphics/animations/animator.hpp>
 
 /* Camera */
-#include <camera.hpp>
-#include <camera_controller.hpp>
+#include <graphics/camera.hpp>
+#include <graphics/camera_controller.hpp>
 
 /* Layers */
 #include <layers/imgui_layer.hpp>
