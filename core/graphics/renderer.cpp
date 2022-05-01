@@ -88,7 +88,7 @@ namespace Aporia
         _shaders.unbind();
     }
 
-    void Renderer::begin(const Camera& camera)
+    void Renderer::begin(Camera& camera)
     {
         _shaders.bind(default_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());

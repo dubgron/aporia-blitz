@@ -175,9 +175,9 @@ namespace Aporia
         return size;
     }
 
-    glm::vec2 Window::get_mouse_position(const Camera& camera) const
+    glm::vec2 Window::get_mouse_position(Camera& camera) const
     {
-        glm::dvec2 screen_position;
+        glm::dvec2 screen_position{ 0.0 };
         glfwGetCursorPos(_window, &screen_position.x, &screen_position.y);
 
         const glm::vec2 window_size = get_size();

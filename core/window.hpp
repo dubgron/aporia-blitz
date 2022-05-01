@@ -30,7 +30,7 @@ namespace Aporia
         bool is_open() const;
 
         glm::uvec2 get_size() const;
-        glm::vec2 get_mouse_position(const Camera& camera) const;
+        glm::vec2 get_mouse_position(Camera& camera) const;
 
         GLFWwindow* get_native_window();
 

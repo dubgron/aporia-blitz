@@ -7,8 +7,8 @@ namespace Aporia
 {
     struct CameraConfig final
     {
-        float aspect_ratio = 0.0f;
-        float size = 0.0f;
+        float fov = 1.0f;
+        float aspect_ratio = 1.0f;
         Color background_color;
 
         float movement_speed = 0.0f;
@@ -26,7 +26,7 @@ namespace Aporia
         Keyboard zoom_key_in = Keyboard::Space;
         Keyboard zoom_key_out = Keyboard::LShift;
 
-        float zoom_max = 0.0f;
-        float zoom_min = 0.0f;
+        float zoom_max = 1.0f;
+        float zoom_min = 1.0f;
     };
 }

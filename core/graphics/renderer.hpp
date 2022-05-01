@@ -25,7 +25,7 @@ namespace Aporia
     public:
         Renderer(Logger& logger, ShaderManager& shaders);
 
-        void begin(const Camera& camera);
+        void begin(Camera& camera);
         void end();
 
         void flush(Shader program_id, BufferType buffer);

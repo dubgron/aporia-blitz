@@ -75,8 +75,8 @@ namespace Aporia
         const auto& camera = config["camera_config"];
         const auto& bg_color = camera["background_color"];
 
+        camera_config.fov = camera["fov"];
         camera_config.aspect_ratio = camera["aspect_ratio"];
-        camera_config.size = camera["size"];
         camera_config.background_color = Color{ bg_color[0], bg_color[1], bg_color[2], bg_color[3] };
         camera_config.movement_speed = camera["movement_speed"];
         camera_config.rotation_speed = camera["rotation_speed"];
