@@ -100,6 +100,11 @@ namespace Aporia
 
     void Renderer::end()
     {
+        if (_render_queue.empty())
+        {
+            return;
+        }
+
         std::sort(_render_queue.begin(), _render_queue.end());
 
         RenderQueueKey prev_key = _render_queue[0];
