@@ -37,6 +37,7 @@ namespace Aporia
         virtual void on_terminate() {};
 
         void run();
+        void main_loop();
 
     protected:
         Logger _logger;

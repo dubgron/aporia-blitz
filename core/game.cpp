@@ -10,32 +10,7 @@ namespace Aporia
 {
     void main_loop(void* game_ptr)
     {
-        Aporia::Game* game = (Aporia::Game*)game_ptr;
-
-        game->_dt = game->_timer.reset();
-        game->_events.call_event<BeginFrameEvent>();
-
-        game->_window.poll_events();
-        game->_scenes.get_current_scene()->on_input(game->_inputs);
-
-        game->_window.clear(game->_camera.get_clear_color());
-
-        game->_scenes.get_current_scene()->on_scene_transition(game->_scenes);
-
-        game->_imgui_layer.begin();
-        game->_renderer.begin(game->_camera.get_camera());
-
-        game->on_update(game->_dt);
-        game->_scenes.get_current_scene()->on_update(game->_dt);
-
-        game->_scenes.get_current_scene()->on_draw(game->_renderer);
-
-        game->_renderer.end();
-        game->_imgui_layer.end();
-
-        game->_window.display();
-
-        game->_events.call_event<EndFrameEvent>();
+        reinterpret_cast<Aporia::Game*>(game_ptr)->main_loop();
     }
 
     Game::Game(const std::string& config_file)
@@ -67,12 +42,42 @@ namespace Aporia
         this->on_init();
 
 #       if defined(APORIA_EMSCRIPTEN)
-            emscripten_set_main_loop_arg(main_loop, this, 0, true);
+            emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
 #       else
             while (_window.is_open())
-                main_loop(this);
+            {
+                Aporia::main_loop(this);
+            }
 #       endif
 
         this->on_terminate();
+    }
+
+    void Game::main_loop()
+    {
+        _dt = _timer.reset();
+        _events.call_event<BeginFrameEvent>();
+
+        _window.poll_events();
+        _scenes.get_current_scene()->on_input(_inputs);
+
+        _window.clear(_camera.get_clear_color());
+
+        _scenes.get_current_scene()->on_scene_transition(_scenes);
+
+        _imgui_layer.begin();
+        _renderer.begin(_camera.get_camera());
+
+        on_update(_dt);
+        _scenes.get_current_scene()->on_update(_dt);
+
+        _scenes.get_current_scene()->on_draw(_renderer);
+
+        _renderer.end();
+        _imgui_layer.end();
+
+        _window.display();
+
+        _events.call_event<EndFrameEvent>();
     }
 }
