@@ -25,7 +25,7 @@ namespace Aporia
           _fonts(_logger),
           _shaders(_logger),
           _camera(_logger, _events, _configs.camera_config),
-          _renderer(_logger, _shaders),
+          _renderer(_logger, _shaders, _events, _configs.window_config),
           _layer_stack(_logger),
           _imgui_layer(_logger, _window)
     {
@@ -61,12 +61,12 @@ namespace Aporia
         _window.poll_events();
         _scenes.get_current_scene()->on_input(_inputs);
 
-        _window.clear(_camera.get_clear_color());
-
         _scenes.get_current_scene()->on_scene_transition(_scenes);
 
         _imgui_layer.begin();
         _renderer.begin(_camera.get_camera());
+
+        _window.clear(_camera.get_clear_color());
 
         on_update(_dt);
         _scenes.get_current_scene()->on_update(_dt);

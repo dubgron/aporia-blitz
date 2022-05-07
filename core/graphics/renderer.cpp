@@ -2,7 +2,9 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <numeric>
 
 #include <glm/vec2.hpp>
@@ -15,8 +17,9 @@ namespace Aporia
 {
     ShaderRef Renderer::default_shader = 0u;
     ShaderRef Renderer::font_shader = 0u;
+    ShaderRef Renderer::postprocessing_shader = 0u;
 
-    Renderer::Renderer(Logger& logger, ShaderManager& shaders)
+    Renderer::Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config)
         : _logger(logger), _shaders(shaders)
     {
         _transformation_stack.reserve(10);
@@ -70,11 +73,15 @@ namespace Aporia
 
         lines.unbind();
 
-        /* Setup default shaders */
-        default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
+        /* Setup Framebuffer */
+        _framebuffer.create_framebuffer(config.width, config.height);
 
+        /* Initialize texture sampler */
         std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler{};
         std::iota(sampler.begin(), sampler.end(), 0);
+
+        /* Setup default shaders */
+        default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
 
         _shaders.bind(default_shader);
         _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
@@ -85,7 +92,18 @@ namespace Aporia
         _shaders.bind(font_shader);
         _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
 
+        /* Setup post-processing shaders */
+        postprocessing_shader = _shaders.create_program("post-processing", "assets/shaders/postprocessing.shader");
+
+        _shaders.bind(postprocessing_shader);
+        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+
         _shaders.unbind();
+
+        /* Bind to events */
+        using namespace std::placeholders;
+
+        events.add_listener<WindowResizeEvent>( std::bind(&Renderer::_on_resize, this, _1, _2, _3) );
     }
 
     void Renderer::begin(Camera& camera)
@@ -96,39 +114,53 @@ namespace Aporia
         _shaders.bind(font_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
         _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+
+        /* Bind Framebuffer */
+        _framebuffer.bind();
     }
 
     void Renderer::end()
     {
-        if (_render_queue.empty())
+        if (!_render_queue.empty())
         {
-            return;
-        }
+            std::sort(_render_queue.begin(), _render_queue.end());
 
-        std::sort(_render_queue.begin(), _render_queue.end());
-
-        RenderQueueKey prev_key = _render_queue[0];
-        for (RenderQueueKey& key : _render_queue)
-        {
-            if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
+            RenderQueueKey prev_key = _render_queue[0];
+            for (RenderQueueKey& key : _render_queue)
             {
-                flush(prev_key.program_id, prev_key.buffer);
+                if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
+                {
+                    flush(prev_key.program_id, prev_key.buffer);
+                }
+
+                const uint8_t buffer_index = std::to_underlying(key.buffer);
+                VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
+                for (size_t i = 0; i < vertex_buffer.vertex_count(); ++i)
+                {
+                    vertex_buffer.emplace( std::move(key.vertex[i]) );
+                }
+
+                prev_key = std::move(key);
             }
 
-            const uint8_t buffer_index = std::to_underlying(key.buffer);
-            VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
-            for (int i = 0; i < vertex_buffer.vertex_count(); ++i)
-            {
-                vertex_buffer.emplace( std::move(key.vertex[i]) );;
-            }
+            flush(prev_key.program_id, prev_key.buffer);
 
-            prev_key = std::move(key);
+            _render_queue.clear();
         }
 
-        flush(prev_key.program_id, prev_key.buffer);
+        /* Flush Framebuffer */
+        _framebuffer.unbind();
+
+        constexpr uint8_t buffer_index = std::to_underlying(BufferType::Quads);
+        VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
+        for (Vertex vertex : _framebuffer.get_vertices())
+        {
+            vertex_buffer.emplace( std::move(vertex) );
+        }
+
+        flush(postprocessing_shader, BufferType::Quads);
 
         _shaders.unbind();
-        _render_queue.clear();
     }
 
     void Renderer::flush(Shader program_id, BufferType buffer)
@@ -403,5 +435,10 @@ namespace Aporia
         {
             _transformation_stack.pop_back();
         }
+    }
+
+    void Renderer::_on_resize(Window& window, uint32_t width, uint32_t height)
+    {
+        _framebuffer.create_framebuffer(width, height);
     }
 }

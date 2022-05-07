@@ -63,6 +63,8 @@ add_library(core STATIC
     "graphics/circle2d.hpp"
     "graphics/common.hpp"
     "graphics/font.hpp"
+    "graphics/framebuffer.cpp"
+    "graphics/framebuffer.hpp"
     "graphics/group.hpp"
     "graphics/image.cpp"
     "graphics/image.hpp"
