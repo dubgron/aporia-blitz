@@ -11,47 +11,46 @@ namespace Aporia
 {
     class Window;
 
+    using EventsContainer = std::tuple<
+        WindowCloseEvent,
+        WindowResizeEvent,
+        KeyPressedEvent,
+        KeyReleasedEvent,
+        ButtonPressedEvent,
+        ButtonReleasedEvent,
+        MouseWheelScrollEvent,
+        MouseMoveEvent,
+        BeginProcessingWindowEvents,
+        EndProcessingWindowEvents,
+        BeginFrameEvent,
+        EndFrameEvent,
+        ReloadWindowConfigEvent,
+        ReloadTextureConfigEvent,
+        ReloadCameraConfigEvent,
+        ReloadAnimationConfigEvent>;
+
+    template<typename T>
+    concept EventType = has_type_v<EventsContainer, T>;
+
+    template<typename T, typename Event>
+    concept ListenerOf = std::is_constructible_v<typename Event::event_type, T>;
+
     class EventManager final
     {
-        using Events = std::tuple<WindowCloseEvent,
-            WindowResizeEvent,
-            KeyPressedEvent,
-            KeyReleasedEvent,
-            ButtonPressedEvent,
-            ButtonReleasedEvent,
-            MouseWheelScrollEvent,
-            MouseMoveEvent,
-            BeginProcessingWindowEvents,
-            EndProcessingWindowEvents,
-            BeginFrameEvent,
-            EndFrameEvent,
-            ReloadWindowConfigEvent,
-            ReloadTextureConfigEvent,
-            ReloadCameraConfigEvent,
-            ReloadAnimationConfigEvent>;
-
     public:
         EventManager(Logger& logger)
             : _logger(logger) {}
 
-        template<typename Ev, typename... Args, 
-            typename = std::enable_if_t<
-                std::is_invocable_v<typename Ev::event_type, Args&...> &&
-                has_type_v<Events, Ev>
-            >>
+        template<EventType Event, typename... Args>
         void call_event(Args&&... args);
 
-        template<typename Ev, typename Listener,
-            typename = std::enable_if_t<
-                std::is_constructible_v<typename Ev::event_type, Listener> &&
-                has_type_v<Events, Ev>
-            >>
+        template<EventType Event, ListenerOf<Event> Listener>
         void add_listener(Listener listener);
 
     private:
         Logger& _logger;
 
-        Events _events;
+        EventsContainer _events;
     };
 }
 

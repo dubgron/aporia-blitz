@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <vector>
@@ -12,16 +13,12 @@ namespace Aporia
 {
     class Window;
 
-    template<unsigned int ID, typename... Ts>
-    class Event final
+    template<size_t ID, typename... Ts>
+    struct Event final
     {
-    public:
         using event_type = std::function<void(Ts...)>;
 
         std::vector<event_type> listeners;
-
-    private:
-        uint32_t id = ID;
     };
 
     template<unsigned int ID, typename... Ts>
