@@ -22,7 +22,7 @@ namespace Aporia
         _shaders.clear();
     }
 
-    Shader ShaderManager::create_program(std::string name, const std::string& path)
+    Shader ShaderManager::create_program(const std::string& name, const std::string& path)
     {
         if (_shaders.contains(name))
         {
@@ -75,7 +75,9 @@ namespace Aporia
         }
 
         _link(program_id, loaded_shaders);
-        _shaders[std::move(name)] = program_id;
+
+        _shaders[name] = program_id;
+        _sources[program_id] = path;
 
         return program_id;
     }
@@ -91,6 +93,19 @@ namespace Aporia
         else
         {
             return shader->second;
+        }
+    }
+
+    void ShaderManager::reload(const std::string& name)
+    {
+        if (Shader program_id = ShaderManager::get(name))
+        {
+            _shaders.erase(name);
+            _locations.erase(program_id);
+
+            glDeleteProgram(program_id);
+
+            ShaderManager::create_program(name, _sources.at(program_id));
         }
     }
 

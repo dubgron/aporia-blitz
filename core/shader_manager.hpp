@@ -18,8 +18,10 @@ namespace Aporia
         ShaderManager(Logger& logger);
         ~ShaderManager();
 
-        Shader create_program(std::string name, const std::string& path);
+        Shader create_program(const std::string& name, const std::string& path);
         Shader get(const std::string& name) const;
+
+        void reload(const std::string& name);
 
         void bind(Shader shader_id);
         void bind(const std::string& name);
@@ -68,6 +70,7 @@ namespace Aporia
 
         std::unordered_map<std::string, ShaderRef> _shaders;
         std::map<ShaderRef, std::unordered_map<std::string, int32_t>> _locations;
+        std::map<ShaderRef, std::string> _sources;
 
         ShaderRef _active_id = 0;
     };
