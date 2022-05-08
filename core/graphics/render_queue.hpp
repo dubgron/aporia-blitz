@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <map>
 
@@ -18,9 +19,9 @@ namespace Aporia
     struct RenderQueueKey final
     {
         BufferType buffer = BufferType::Quads;
-        ShaderRef program_id = 0;
+        ShaderRef program_id = 0u;
 
-        Vertex vertex[4];
+        std::array<Vertex, 4> vertex;
     };
 
     static bool operator<(const RenderQueueKey& key1, const RenderQueueKey& key2) noexcept
