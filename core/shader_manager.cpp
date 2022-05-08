@@ -31,25 +31,28 @@ namespace Aporia
         }
 
         Shader program_id = glCreateProgram();
+        std::vector<ShaderRef> loaded_shaders;
 
         constexpr std::string_view type_token = "#type";
-        std::string contents = read_file(path);
+        constexpr std::string_view version_token = "#version";
 
-        std::vector<ShaderRef> loaded_shaders;
+        std::string contents = read_file(path);
 
         size_t next = contents.find(type_token);
         while (next != std::string::npos)
         {
             const size_t type_begin = next + type_token.size() + 1;
-            const size_t type_end = contents.find('\n', type_begin) - 1;
+            const size_t type_end = contents.find('\n', type_begin);
             const size_t type_length = type_end - type_begin;
+
+            const size_t version_begin = contents.find(version_token, type_end);
 
             next = contents.find(type_token, type_end);
 
             const std::string type = contents.substr(type_begin, type_length);
-            const std::string shader = contents.substr(type_end, next - type_end);
+            const std::string shader = contents.substr(version_begin, next - version_begin);
 
-            constexpr static auto string_to_shadertype = [](const std::string& type) constexpr
+            constexpr static auto string_to_shadertype = [](const std::string& type)
             {
                 if (type == "fragment")         return ShaderType::Fragment;
                 else if (type == "vertex")      return ShaderType::Vertex;

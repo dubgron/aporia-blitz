@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -10,8 +11,8 @@ namespace Aporia
 {
     inline std::string read_file(std::string_view path)
     {
-        std::ifstream file(path.data(), std::ios::binary);
-        return std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        std::ifstream file{ path.data(), std::ios::in };
+        return std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
     }
 
     inline nlohmann::json load_json(std::string_view path)
