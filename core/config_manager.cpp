@@ -28,6 +28,7 @@ namespace Aporia
 
         load_window_config(config_json);
         load_texture_config(config_json);
+        load_shader_config(config_json);
         load_camera_config(config_json);
         load_animation_config(config_json);
     }
@@ -42,6 +43,9 @@ namespace Aporia
 
         load_texture_config(config_json);
         _events.call_event<ReloadTextureConfigEvent>();
+
+        load_shader_config(config_json);
+        _events.call_event<ReloadShaderConfigEvent>();
 
         load_camera_config(config_json);
         _events.call_event<ReloadCameraConfigEvent>();
@@ -68,6 +72,18 @@ namespace Aporia
     void ConfigManager::load_texture_config(const json& config)
     {
         texture_config.atlas = config["texture_config"];
+    }
+
+    void ConfigManager::load_shader_config(const json& config)
+    {
+        const auto& shader = config["shader_config"];
+        const auto& default_properties = shader["default_properties"];
+
+        shader_config.default_properties.blend[0] = string_to<ShaderBlend>(default_properties["blend"][0]);
+        shader_config.default_properties.blend[1] = string_to<ShaderBlend>(default_properties["blend"][1]);
+        shader_config.default_properties.blend_op = string_to<ShaderBlendOp>(default_properties["blend_op"]);
+        shader_config.default_properties.depth_test = string_to<ShaderDepthTest>(default_properties["depth_test"]);
+        shader_config.default_properties.depth_write = string_to<ShaderDepthWrite>(default_properties["depth_write"]);
     }
 
     void ConfigManager::load_camera_config(const json& config)

@@ -7,8 +7,8 @@
 
 namespace Aporia
 {
-    ShaderManager::ShaderManager(Logger& logger)
-        : _logger(logger)
+    ShaderManager::ShaderManager(Logger& logger, const ShaderConfig& config)
+        : _logger(logger), _config(config)
     {
     }
 
@@ -56,7 +56,7 @@ namespace Aporia
             {
                 if (type == "fragment")         return ShaderType::Fragment;
                 else if (type == "vertex")      return ShaderType::Vertex;
-                else                            return ShaderType::None;
+                else                            return ShaderType::Invalid;
             };
 
             ShaderType shader_type = string_to_shadertype(type);

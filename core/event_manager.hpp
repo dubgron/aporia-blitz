@@ -26,6 +26,7 @@ namespace Aporia
         EndFrameEvent,
         ReloadWindowConfigEvent,
         ReloadTextureConfigEvent,
+        ReloadShaderConfigEvent,
         ReloadCameraConfigEvent,
         ReloadAnimationConfigEvent>;
 

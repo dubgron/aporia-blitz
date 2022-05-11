@@ -8,6 +8,7 @@
 #include "glm/glm.hpp"
 
 #include "logger.hpp"
+#include "configs/shader_config.hpp"
 #include "graphics/shader.hpp"
 
 namespace Aporia
@@ -15,7 +16,7 @@ namespace Aporia
     class ShaderManager final
     {
     public:
-        ShaderManager(Logger& logger);
+        ShaderManager(Logger& logger, const ShaderConfig& config);
         ~ShaderManager();
 
         Shader create_program(const std::string& name, const std::string& path);
@@ -67,6 +68,7 @@ namespace Aporia
 
     private:
         Logger& _logger;
+        const ShaderConfig& _config;
 
         std::unordered_map<std::string, ShaderRef> _shaders;
         std::map<ShaderRef, std::unordered_map<std::string, int32_t>> _locations;

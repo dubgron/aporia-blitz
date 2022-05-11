@@ -18,6 +18,7 @@ namespace Aporia
 
         WindowConfig window_config;
         TextureConfig texture_config;
+        ShaderConfig shader_config;
         CameraConfig camera_config;
         AnimationConfig animation_config;
 
@@ -30,6 +31,7 @@ namespace Aporia
         using json = nlohmann::json;
         void load_window_config(const json& config);
         void load_texture_config(const json& config);
+        void load_shader_config(const json& config);
         void load_camera_config(const json& config);
         void load_animation_config(const json& config);
     };
