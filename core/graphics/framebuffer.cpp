@@ -41,6 +41,11 @@ namespace Aporia
 
     void Framebuffer::create_framebuffer(int32_t width, int32_t height)
     {
+        if (width <= 0 || height <= 0)
+        {
+            return;
+        }
+
         /* Delete potential previous buffers and textures */
         uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
         glDeleteFramebuffers(1, &_fbo);
