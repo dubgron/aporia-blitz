@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "graphics/opengl.hpp"
-#include "utils/read_file.hpp"
+#include "utils/shader_parser.hpp"
 
 namespace Aporia
 {
@@ -22,7 +22,7 @@ namespace Aporia
         _shaders.clear();
     }
 
-    Shader ShaderManager::create_program(const std::string& name, const std::string& path)
+    Shader ShaderManager::create_program(const std::string& name, const std::string& filepath)
     {
         if (_shaders.contains(name))
         {
@@ -31,38 +31,14 @@ namespace Aporia
         }
 
         Shader program_id = glCreateProgram();
+
         std::vector<ShaderRef> loaded_shaders;
+        loaded_shaders.reserve(2);
 
-        constexpr std::string_view type_token = "#type";
-        constexpr std::string_view version_token = "#version";
-
-        std::string contents = read_file(path);
-
-        size_t next = contents.find(type_token);
-        while (next != std::string::npos)
+        ShaderData shader_data = parse_shader(filepath);
+        for (const SubShaderData& data : shader_data.subshaders)
         {
-            const size_t type_begin = next + type_token.size() + 1;
-            const size_t type_end = contents.find('\n', type_begin);
-            const size_t type_length = type_end - type_begin;
-
-            const size_t version_begin = contents.find(version_token, type_end);
-
-            next = contents.find(type_token, type_end);
-
-            const std::string type = contents.substr(type_begin, type_length);
-            const std::string shader = contents.substr(version_begin, next - version_begin);
-
-            constexpr static auto string_to_shadertype = [](const std::string& type)
-            {
-                if (type == "fragment")         return ShaderType::Fragment;
-                else if (type == "vertex")      return ShaderType::Vertex;
-                else                            return ShaderType::Invalid;
-            };
-
-            ShaderType shader_type = string_to_shadertype(type);
-            Shader shader_id = _load(shader, shader_type);
-
-            if (shader_id)
+            if (Shader shader_id = _load(data.contents, data.type))
             {
                 loaded_shaders.push_back(shader_id);
             }
@@ -77,7 +53,10 @@ namespace Aporia
         _link(program_id, loaded_shaders);
 
         _shaders[name] = program_id;
-        _sources[program_id] = path;
+        _sources[program_id] = filepath;
+
+        _default_invalids(shader_data.properties);
+        _properties[program_id] = std::move(shader_data.properties);
 
         return program_id;
     }
@@ -111,8 +90,10 @@ namespace Aporia
 
     void ShaderManager::bind(Shader program_id)
     {
-        glUseProgram(program_id);
+        assert(program_id > 0);
+        _apply_properties(program_id);
 
+        glUseProgram(program_id);
         _active_id = program_id;
     }
 
@@ -124,20 +105,13 @@ namespace Aporia
 
     void ShaderManager::unbind()
     {
-        ShaderManager::bind(0);
+        glUseProgram(0);
+        _active_id = 0;
     }
 
     Shader ShaderManager::_load(const std::string& contents, ShaderType type)
     {
-        int32_t shader_type;
-        switch (type)
-        {
-        case ShaderType::Fragment:      shader_type = GL_FRAGMENT_SHADER;   break;
-        case ShaderType::Vertex:        shader_type = GL_VERTEX_SHADER;     break;
-        default:
-            _logger.log(LOG_ERROR) << "Unsupported type of shader!";
-            return 0;
-        }
+        const uint32_t shader_type = to_opengl_type(type);
 
         Shader shader_id = glCreateShader(shader_type);
         const char* shader = contents.c_str();
@@ -180,6 +154,58 @@ namespace Aporia
             glDetachShader(program_id, shader_id);
             glDeleteShader(shader_id);
         }
+    }
+
+    void ShaderManager::_default_invalids(ShaderProperties& properties)
+    {
+        if (properties.blend[0] == ShaderBlend::Default)
+        {
+            properties.blend[0] = _config.default_properties.blend[0];
+            properties.blend[1] = _config.default_properties.blend[1];
+        }
+
+        if (properties.blend_op == ShaderBlendOp::Default)
+        {
+            properties.blend_op = _config.default_properties.blend_op;
+        }
+
+        if (properties.depth_test == ShaderDepthTest::Default)
+        {
+            properties.depth_test = _config.default_properties.depth_test;
+        }
+
+        if (properties.depth_write == ShaderDepthWrite::Default)
+        {
+            properties.depth_write = _config.default_properties.depth_write;
+        }
+    }
+
+    void ShaderManager::_apply_properties(Shader program_id)
+    {
+        const ShaderProperties& properties = _properties.at(program_id);
+
+        if (properties.blend[0] != ShaderBlend::Off)
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(to_opengl_type(properties.blend[0]), to_opengl_type(properties.blend[1]));
+            glBlendEquation(to_opengl_type(properties.blend_op));
+        }
+        else
+        {
+            glDisable(GL_BLEND);
+        }
+
+        if (properties.depth_test != ShaderDepthTest::Off)
+        {
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(to_opengl_type(properties.depth_test));
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        glDepthMask(to_opengl_type(properties.depth_write));
     }
 
     void ShaderManager::set_float(const std::string& name, float value)

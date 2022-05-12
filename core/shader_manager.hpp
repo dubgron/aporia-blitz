@@ -10,6 +10,7 @@
 #include "logger.hpp"
 #include "configs/shader_config.hpp"
 #include "graphics/shader.hpp"
+#include "graphics/shader_properties.hpp"
 
 namespace Aporia
 {
@@ -19,18 +20,21 @@ namespace Aporia
         ShaderManager(Logger& logger, const ShaderConfig& config);
         ~ShaderManager();
 
-        Shader create_program(const std::string& name, const std::string& path);
+        Shader create_program(const std::string& name, const std::string& filepath);
         Shader get(const std::string& name) const;
 
         void reload(const std::string& name);
 
-        void bind(Shader shader_id);
+        void bind(Shader program_id);
         void bind(const std::string& name);
         void unbind();
 
     private:
         Shader _load(const std::string& contents, ShaderType type);
-        void _link(Shader shader_id, const std::vector<ShaderRef>& loaded_shaders);
+        void _link(Shader program_id, const std::vector<ShaderRef>& loaded_shaders);
+
+        void _default_invalids(ShaderProperties& properties);
+        void _apply_properties(Shader program_id);
 
     public:
         void set_float(const std::string& name, float value);
@@ -73,6 +77,7 @@ namespace Aporia
         std::unordered_map<std::string, ShaderRef> _shaders;
         std::map<ShaderRef, std::unordered_map<std::string, int32_t>> _locations;
         std::map<ShaderRef, std::string> _sources;
+        std::map<ShaderRef, ShaderProperties> _properties;
 
         ShaderRef _active_id = 0;
     };
