@@ -251,15 +251,19 @@ namespace Aporia
 
         key.vertex[0].position  = base_offset;
         key.vertex[0].color     = color;
+        key.vertex[0].tex_coord = glm::vec2{ 0.0f, 0.0f };
 
         key.vertex[1].position  = base_offset + right_offset;
         key.vertex[1].color     = color;
+        key.vertex[1].tex_coord = glm::vec2{ 1.0f, 0.0f };
 
         key.vertex[2].position  = base_offset + right_offset + up_offset;
         key.vertex[2].color     = color;
+        key.vertex[2].tex_coord = glm::vec2{ 1.0f, 1.0f };
 
         key.vertex[3].position  = base_offset + up_offset;
         key.vertex[3].color     = color;
+        key.vertex[3].tex_coord = glm::vec2{ 0.0f, 1.0f };
 
         _render_queue.push_back( std::move(key) );
     }
