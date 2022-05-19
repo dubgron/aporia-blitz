@@ -198,14 +198,15 @@ namespace Aporia
         if (properties.depth_test != ShaderDepthTest::Off)
         {
             glEnable(GL_DEPTH_TEST);
+
             glDepthFunc(to_opengl_type(properties.depth_test));
+            glDepthMask(to_opengl_type(properties.depth_write));
         }
         else
         {
             glDisable(GL_DEPTH_TEST);
         }
 
-        glDepthMask(to_opengl_type(properties.depth_write));
     }
 
     void ShaderManager::set_float(const std::string& name, float value)
