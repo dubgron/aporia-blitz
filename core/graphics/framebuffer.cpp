@@ -24,6 +24,9 @@ namespace Aporia
 
     Framebuffer::~Framebuffer()
     {
+        uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
+        glDeleteTextures(1, &color_buffer_id);
+        glDeleteRenderbuffers(1, &_rbo);
         glDeleteFramebuffers(1, &_fbo);
     }
 
