@@ -9,17 +9,17 @@ namespace Aporia
     Framebuffer::Framebuffer()
     {
         /* Setup vertices */
-        _vertex[0].position = glm::vec3{ 1.0f, -1.0f, 0.0f };
-        _vertex[0].tex_coord = glm::vec2{ 1.0f, 0.0f };
+        _vertex[0].position = glm::vec3{ -1.0f, -1.0f, 0.0f };
+        _vertex[0].tex_coord = glm::vec2{ 0.0f, 0.0f };
 
-        _vertex[1].position = glm::vec3{ 1.0f, 1.0f, 0.0f };
-        _vertex[1].tex_coord = glm::vec2{ 1.0f, 1.0f };
+        _vertex[1].position = glm::vec3{ 1.0f, -1.0f, 0.0f };
+        _vertex[1].tex_coord = glm::vec2{ 1.0f, 0.0f };
 
-        _vertex[2].position = glm::vec3{ -1.0f, 1.0f, 0.0f };
-        _vertex[2].tex_coord = glm::vec2{ 0.0f, 1.0f };
+        _vertex[2].position = glm::vec3{ 1.0f, 1.0f, 0.0f };
+        _vertex[2].tex_coord = glm::vec2{ 1.0f, 1.0f };
 
-        _vertex[3].position = glm::vec3{ -1.0f, -1.0f, 0.0f };
-        _vertex[3].tex_coord = glm::vec2{ 0.0f, 0.0f };
+        _vertex[3].position = glm::vec3{ -1.0f, 1.0f, 0.0f };
+        _vertex[3].tex_coord = glm::vec2{ 0.0f, 1.0f };
     }
 
     Framebuffer::~Framebuffer()
@@ -51,9 +51,9 @@ namespace Aporia
 
         /* Delete potential previous buffers and textures */
         uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
-        glDeleteFramebuffers(1, &_fbo);
         glDeleteTextures(1, &color_buffer_id);
         glDeleteRenderbuffers(1, &_rbo);
+        glDeleteFramebuffers(1, &_fbo);
 
         /* Create new buffers and textures */
         glGenFramebuffers(1, &_fbo);
@@ -90,6 +90,7 @@ namespace Aporia
     {
         return _color_buffer;
     }
+
     const std::array<Vertex, 4>& Framebuffer::get_vertices() const
     {
         return _vertex;
