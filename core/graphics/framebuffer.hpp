@@ -17,6 +17,7 @@ namespace Aporia
         void bind() const;
         void unbind() const;
 
+        /* TODO: Make crate_framebuffer more customizable */
         void create_framebuffer(int32_t width, int32_t height);
 
         const Texture::Origin& get_color_buffer() const;
