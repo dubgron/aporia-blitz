@@ -81,6 +81,7 @@ add_library(core STATIC
     "graphics/sprite.hpp"
     "graphics/text.cpp"
     "graphics/text.hpp"
+    "graphics/uniform_buffer.hpp"
     "graphics/vertex.hpp"
     "graphics/vertex_array.hpp"
     "graphics/vertex_buffer.hpp"
