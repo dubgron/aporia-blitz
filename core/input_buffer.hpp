@@ -8,7 +8,7 @@
 
 namespace Aporia
 {
-    template<typename T, size_t Size = magic_enum::enum_count<T>(), typename = std::enable_if_t<std::is_enum_v<T>>>
+    template<typename T, size_t Size = magic_enum::enum_count<T>()> requires std::is_enum_v<T>
     class InputBuffer
     {
         using Buffer = std::bitset<Size>;

@@ -28,8 +28,8 @@ namespace Aporia
             return std::get<T>(components);
         }
 
-        template<typename T>
-        const T& get_component() const requires IsComponent<T>
+        template<typename T> requires IsComponent<T>
+        const T& get_component() const
         {
             return std::get<T>(components);
         }
