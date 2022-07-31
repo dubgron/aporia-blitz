@@ -11,11 +11,11 @@
 
 #include "entity.hpp"
 #include "components/transform2d.hpp"
-#include "graphics/line2d.hpp"
-#include "graphics/circle2d.hpp"
-#include "graphics/rectangle2d.hpp"
-#include "graphics/sprite.hpp"
-#include "graphics/text.hpp"
+#include "graphics/drawables/line2d.hpp"
+#include "graphics/drawables/circle2d.hpp"
+#include "graphics/drawables/rectangle2d.hpp"
+#include "graphics/drawables/sprite.hpp"
+#include "graphics/drawables/text.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
@@ -39,25 +39,27 @@ namespace Aporia
         Group(glm::vec3 position)
             : Entity(Transform2D{ std::move(position) }) {}
 
-        template<typename T, typename D = std::decay_t<T>, std::enable_if_t<has_type_v<Drawables, Container<D>>, int> = 0>
+        template<typename T, typename D = std::decay_t<T>> requires has_type_v<Drawables, Container<D>>
         void add(T&& drawable)
         {
-            auto& vec = std::get<Container<D>>(_drawables);
+            Container<D>& vec = std::get<Container<D>>(_drawables);
             vec.emplace_back(std::forward<T>(drawable));
         }
 
-        template<typename T, std::enable_if_t<has_type_v<Drawables, Container<T>>, int> = 0>
+        template<typename T> requires has_type_v<Drawables, Container<T>>
         void remove(const T& drawable)
         {
-            auto& vec = std::get<Container<T>>(_drawables);
-            auto find = [&drawable](const auto& ref){ return std::addressof(ref.get()) == std::addressof(drawable); };
-            auto remove = std::remove_if(vec.begin(), vec.end(), find);
+            Container<T>& vec = std::get<Container<T>>(_drawables);
+            const auto pred = [&drawable](const auto& ref){ return std::addressof(ref.get()) == std::addressof(drawable); };
+            const auto remove = std::remove_if(vec.begin(), vec.end(), pred);
 
             if (remove != vec.end())
+            {
                 vec.erase(remove);
+            }
         }
 
-        template<typename T, std::enable_if_t<has_type_v<Drawables, Container<T>>, int> = 0>
+        template<typename T> requires has_type_v<Drawables, Container<T>>
         const Container<T>& get_container() const
         {
             return std::get<Container<T>>(_drawables);

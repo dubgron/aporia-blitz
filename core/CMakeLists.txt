@@ -61,25 +61,19 @@ add_library(core STATIC
     "graphics/camera.hpp"
     "graphics/camera_controller.cpp"
     "graphics/camera_controller.hpp"
-    "graphics/circle2d.hpp"
     "graphics/common.hpp"
     "graphics/font.hpp"
     "graphics/framebuffer.cpp"
     "graphics/framebuffer.hpp"
-    "graphics/group.hpp"
     "graphics/image.cpp"
     "graphics/image.hpp"
     "graphics/index_buffer.hpp"
-    "graphics/line2d.hpp"
     "graphics/opengl.hpp"
-    "graphics/rectangle2d.hpp"
     "graphics/renderer.cpp"
     "graphics/renderer.hpp"
     "graphics/render_queue.hpp"
     "graphics/shader.hpp"
     "graphics/shader_properties.hpp"
-    "graphics/sprite.hpp"
-    "graphics/text.hpp"
     "graphics/uniform_buffer.hpp"
     "graphics/vertex.hpp"
     "graphics/vertex_array.hpp"
@@ -88,6 +82,17 @@ add_library(core STATIC
     "graphics/animations/animation.hpp"
     "graphics/animations/animator.cpp"
     "graphics/animations/animator.hpp"
+    "graphics/drawables/line2d.cpp"
+    "graphics/drawables/line2d.hpp"
+    "graphics/drawables/circle2d.cpp"
+    "graphics/drawables/circle2d.hpp"
+    "graphics/drawables/group.hpp"
+    "graphics/drawables/rectangle2d.cpp"
+    "graphics/drawables/rectangle2d.hpp"
+    "graphics/drawables/sprite.cpp"
+    "graphics/drawables/sprite.hpp"
+    "graphics/drawables/text.cpp"
+    "graphics/drawables/text.hpp"
     "inputs/all_inputs.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
@@ -140,6 +145,7 @@ source_group(core\\components               "core/components/.+\.[cht]pp")
 source_group(core\\configs                  "core/configs/.+\.[cht]pp")
 source_group(core\\graphics                 "core/graphics/.+\.[cht]pp")
 source_group(core\\graphics\\animations     "core/graphics/animations.+\.[cht]pp")
+source_group(core\\graphics\\drawables      "core/graphics/drawables.+\.[cht]pp")
 source_group(core\\inputs                   "core/inputs/.+\.[cht]pp")
 source_group(core\\layers                   "core/layers/.+\.[cht]pp")
 source_group(core\\utils                    "core/utils/.+\.[cht]pp")

@@ -193,12 +193,13 @@ namespace Aporia
         pop_transform();
     }
 
-    void Renderer::draw(const Sprite& sprite, Shader program_id /* = default_shader */)
+    void Renderer::draw(const Sprite& sprite)
     {
         const Transform2D& transform = sprite.get_component<Transform2D>();
         const Rectangular& rectangular = sprite.get_component<Rectangular>();
         const Texture& texture = sprite.get_component<Texture>();
         const Color& color = sprite.get_component<Color>();
+        const ShaderRef& program_id = sprite.get_component<ShaderRef>();
 
         const glm::mat4 transformation = to_mat4(_transformation_stack.back() * transform);
 
@@ -233,11 +234,12 @@ namespace Aporia
         _render_queue.push_back( std::move(key) );
     }
 
-    void Renderer::draw(const Rectangle2D& rect, Shader program_id /* = default_shader */)
+    void Renderer::draw(const Rectangle2D& rect)
     {
         const Transform2D& transform = rect.get_component<Transform2D>();
         const Rectangular& rectangular = rect.get_component<Rectangular>();
         const Color& color = rect.get_component<Color>();
+        const ShaderRef& program_id = rect.get_component<ShaderRef>();
 
         const glm::mat4 transformation = to_mat4(_transformation_stack.back() * transform);
 
@@ -268,11 +270,12 @@ namespace Aporia
         _render_queue.push_back( std::move(key) );
     }
 
-    void Renderer::draw(const Line2D& line2d, Shader program_id /* = default_shader */)
+    void Renderer::draw(const Line2D& line2d)
     {
         const Transform2D& transform = line2d.get_component<Transform2D>();
         const Linear2D& linear2d = line2d.get_component<Linear2D>();
         const Color& color = line2d.get_component<Color>();
+        const ShaderRef& program_id = line2d.get_component<ShaderRef>();
 
         const glm::mat4 transformation = to_mat4(_transformation_stack.back() * transform);
 
@@ -292,11 +295,12 @@ namespace Aporia
         _render_queue.push_back( std::move(key) );
     }
 
-    void Renderer::draw(const Circle2D& circle, Shader program_id /* = default_shader */)
+    void Renderer::draw(const Circle2D& circle)
     {
         const Transform2D& transform = circle.get_component<Transform2D>();
         const Circular& circular = circle.get_component<Circular>();
         const Color& color = circle.get_component<Color>();
+        const ShaderRef& program_id = circle.get_component<ShaderRef>();
 
         const glm::mat4 transformation = to_mat4(_transformation_stack.back() * transform);
 
@@ -327,10 +331,11 @@ namespace Aporia
         _render_queue.push_back( std::move(key) );
     }
 
-    void Renderer::draw(const Text& text, Shader program_id /* = font_shader */)
+    void Renderer::draw(const Text& text)
     {
         const Transform2D& transform = text.get_component<Transform2D>();
         const Color& color = text.get_component<Color>();
+        const ShaderRef& program_id = text.get_component<ShaderRef>();
 
         const Font& font = text.font;
         const Font::Atlas& atlas = font.atlas;

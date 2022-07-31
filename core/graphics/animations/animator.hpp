@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "logger.hpp"
-#include "graphics/sprite.hpp"
 #include "graphics/animations/animation.hpp"
+#include "graphics/drawables/sprite.hpp"
 
 namespace Aporia
 {

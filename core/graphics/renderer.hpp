@@ -14,11 +14,10 @@
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/framebuffer.hpp"
-#include "graphics/group.hpp"
 #include "graphics/render_queue.hpp"
-#include "graphics/text.hpp"
 #include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
+#include "graphics/drawables/group.hpp"
 
 namespace Aporia
 {
@@ -35,11 +34,11 @@ namespace Aporia
         void flush(Shader program_id, BufferType buffer);
 
         void draw(const Group& group);
-        void draw(const Sprite& sprite,     Shader program_id = default_shader);
-        void draw(const Rectangle2D& rect,  Shader program_id = default_shader);
-        void draw(const Line2D& line,       Shader program_id = default_shader);
-        void draw(const Circle2D& circle,   Shader program_id = default_shader);
-        void draw(const Text& text,         Shader program_id = font_shader);
+        void draw(const Sprite& sprite);
+        void draw(const Rectangle2D& rect);
+        void draw(const Line2D& line);
+        void draw(const Circle2D& circle);
+        void draw(const Text& text);
 
         void push_transform(const Transform2D& transform);
         void pop_transform();

@@ -21,24 +21,27 @@
 #include <logger.hpp>
 
 /* Graphics */
-#include <graphics/circle2d.hpp>
 #include <graphics/font.hpp>
-#include <graphics/group.hpp>
 #include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
-#include <graphics/line2d.hpp>
-#include <graphics/rectangle2d.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/shader.hpp>
-#include <graphics/sprite.hpp>
-#include <graphics/text.hpp>
 #include <graphics/vertex.hpp>
 #include <graphics/vertex_array.hpp>
+#include <graphics/uniform_buffer.hpp>
 #include <graphics/vertex_buffer.hpp>
 
 /* Animations */
 #include <graphics/animations/animation.hpp>
 #include <graphics/animations/animator.hpp>
+
+/* Drawables */
+#include <graphics/drawables/circle2d.hpp>
+#include <graphics/drawables/group.hpp>
+#include <graphics/drawables/line2d.hpp>
+#include <graphics/drawables/rectangle2d.hpp>
+#include <graphics/drawables/sprite.hpp>
+#include <graphics/drawables/text.hpp>
 
 /* Camera */
 #include <graphics/camera.hpp>
