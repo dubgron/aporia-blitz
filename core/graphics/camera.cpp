@@ -11,7 +11,7 @@ namespace Aporia
     {
     }
 
-    const glm::mat4& Camera::get_view_projection_matrix()
+    const glm::mat4& Camera::get_view_projection_matrix() const
     {
         if (is_marked_dirty(DIRTYFLAG_VIEW))
         {
@@ -112,7 +112,7 @@ namespace Aporia
         return _projection.zoom;
     }
 
-    void Camera::recalculate_view()
+    void Camera::recalculate_view() const
     {
         const float x = _view.position.x;
         const float y = _view.position.y;
@@ -142,7 +142,7 @@ namespace Aporia
         _view.matrix[3][1] = x * sin - y * cos;
     }
 
-    void Camera::recalculate_projection()
+    void Camera::recalculate_projection() const
     {
         const float half_height = _projection.fov * _projection.zoom;
         const float half_width = half_height * _projection.aspect_ratio;

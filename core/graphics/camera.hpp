@@ -12,10 +12,10 @@ namespace Aporia
         float rotation = 0.0f;
 
         /* Cached Values */
-        glm::mat4 matrix{ 1.0f };
+        mutable glm::mat4 matrix{ 1.0f };
 
-        glm::vec2 up_vector{ 0.0f, 1.0f };
-        glm::vec2 right_vector{ 1.0f, 0.0f };
+        mutable glm::vec2 up_vector{ 0.0f, 1.0f };
+        mutable glm::vec2 right_vector{ 1.0f, 0.0f };
     };
 
     struct CameraProjection final
@@ -25,7 +25,7 @@ namespace Aporia
         float zoom = 1.0f;
 
         /* Cached Values */
-        glm::mat4 matrix{ 1.0f };
+        mutable glm::mat4 matrix{ 1.0f };
     };
 
     class Camera final
@@ -33,7 +33,7 @@ namespace Aporia
     public:
         Camera(float fov, float aspect_ratio);
 
-        const glm::mat4& get_view_projection_matrix();
+        const glm::mat4& get_view_projection_matrix() const;
 
         void set_position(glm::vec2 new_position);
         void move(const glm::vec2& vector);
@@ -57,23 +57,23 @@ namespace Aporia
         float get_zoom() const;
 
     private:
-        void recalculate_view();
-        void recalculate_projection();
+        void recalculate_view() const;
+        void recalculate_projection() const;
 
         CameraView _view;
         CameraProjection _projection;
 
-        glm::mat4 _vp_matrix{ 1.0f };
+        mutable glm::mat4 _vp_matrix{ 1.0f };
 
         /* Dirty Flags for Matrices */
         using DirtyFlag = uint8_t;
 
-        void mark_as_dirty(DirtyFlag flag)          { _dirty_flags |= flag; }
-        bool is_marked_dirty(DirtyFlag flag) const  { return _dirty_flags & flag; }
+        void mark_as_dirty(DirtyFlag flag) const     { _dirty_flags |= flag; }
+        bool is_marked_dirty(DirtyFlag flag) const   { return _dirty_flags & flag; }
 
         static constexpr DirtyFlag DIRTYFLAG_VIEW       = 1 << 0;
         static constexpr DirtyFlag DIRTYFLAG_PROJECTION = 1 << 1;
 
-        DirtyFlag _dirty_flags = DIRTYFLAG_VIEW | DIRTYFLAG_PROJECTION;
+        mutable DirtyFlag _dirty_flags = DIRTYFLAG_VIEW | DIRTYFLAG_PROJECTION;
     };
 }
