@@ -42,6 +42,12 @@ namespace Aporia
         glDisable(GL_DEPTH_TEST);
     }
 
+    void Framebuffer::clear(Color color /* = Colors::Black */)
+    {
+        glClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     void Framebuffer::create_framebuffer(int32_t width, int32_t height)
     {
         if (width <= 0 || height <= 0)

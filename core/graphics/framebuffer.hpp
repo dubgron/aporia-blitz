@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 
+#include "components/color.hpp"
 #include "components/texture.hpp"
 #include "graphics/vertex.hpp"
 
@@ -16,6 +17,9 @@ namespace Aporia
 
         void bind() const;
         void unbind() const;
+
+        /* TODO: Make clear more customizable */
+        void clear(Color color = Colors::Black);
 
         /* TODO: Make crate_framebuffer more customizable */
         void create_framebuffer(int32_t width, int32_t height);
