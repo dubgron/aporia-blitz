@@ -21,7 +21,6 @@ namespace Aporia
         Window(Logger& logger, EventManager& events, WindowConfig& config);
         ~Window();
 
-        void clear(const Color& color = Colors::Black);
         void display();
 
         void poll_events() const;

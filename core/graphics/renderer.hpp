@@ -28,10 +28,9 @@ namespace Aporia
     public:
         Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config);
 
-        void begin(Camera& camera);
-        void end();
 
-        void flush(Shader program_id, BufferType buffer);
+        void begin(const Window& window, const Camera& camera);
+        void end(Color color = Colors::Black);
 
         void draw(const Group& group);
         void draw(const Sprite& sprite);
@@ -49,6 +48,13 @@ namespace Aporia
         static ShaderRef postprocessing_shader;
 
     private:
+        void _flush_queue();
+        void _flush_framebuffer(const Framebuffer& framebuffer, Shader program_id);
+        void _flush_buffer(BufferType buffer, Shader program_id);
+
+        void _on_resize(Window& window, uint32_t width, uint32_t height);
+
+    private:
         Logger& _logger;
         ShaderManager& _shaders;
 
@@ -58,7 +64,5 @@ namespace Aporia
         Framebuffer _framebuffer;
 
         std::vector<Transform2D> _transformation_stack;
-
-        void _on_resize(Window& window, uint32_t width, uint32_t height);
     };
 }

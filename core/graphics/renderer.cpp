@@ -7,11 +7,22 @@
 #include <functional>
 #include <numeric>
 
+
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 #include "utils/math.hpp"
+
+#ifdef _DEBUG
+#include <imgui.h>
+#define DEBUG_TEXTURE(texture) \
+    ImGui::Begin("DEBUG : Textures");\
+    ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f }); \
+    ImGui::End();
+#else
+#define DEBUG_TEXTURE(framebuffer)
+#endif
 
 namespace Aporia
 {
@@ -106,7 +117,7 @@ namespace Aporia
         events.add_listener<WindowResizeEvent>( std::bind(&Renderer::_on_resize, this, _1, _2, _3) );
     }
 
-    void Renderer::begin(Camera& camera)
+    void Renderer::begin(const Window& window, const Camera& camera)
     {
         _shaders.bind(default_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
@@ -115,60 +126,23 @@ namespace Aporia
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
         _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
 
-        /* Bind Framebuffer */
-        _framebuffer.bind();
-    }
-
-    void Renderer::end()
-    {
-        if (!_render_queue.empty())
-        {
-            std::sort(_render_queue.begin(), _render_queue.end());
-
-            RenderQueueKey prev_key = _render_queue[0];
-            for (RenderQueueKey& key : _render_queue)
-            {
-                if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
-                {
-                    flush(prev_key.program_id, prev_key.buffer);
-                }
-
-                const uint8_t buffer_index = std::to_underlying(key.buffer);
-                VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
-                for (size_t i = 0; i < vertex_buffer.vertex_count(); ++i)
-                {
-                    vertex_buffer.emplace( std::move(key.vertex[i]) );
-                }
-
-                prev_key = std::move(key);
-            }
-
-            flush(prev_key.program_id, prev_key.buffer);
-
-            _render_queue.clear();
-        }
-
-        /* Flush Framebuffer */
-        _framebuffer.unbind();
-
-        constexpr uint8_t buffer_index = std::to_underlying(BufferType::Quads);
-        VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
-        for (Vertex vertex : _framebuffer.get_vertices())
-        {
-            vertex_buffer.emplace( std::move(vertex) );
-        }
-
-        flush(postprocessing_shader, BufferType::Quads);
-
         _shaders.unbind();
     }
 
-    void Renderer::flush(Shader program_id, BufferType buffer)
+    void Renderer::end(Color color /* = Colors::Black */)
     {
-        _shaders.bind(program_id);
+        _framebuffer.bind();
+        _framebuffer.clear(color);
 
-        const uint8_t buffer_index = std::to_underlying(buffer);
-        _vertex_arrays[buffer_index].render();
+        _flush_queue();
+
+        _framebuffer.unbind();
+
+        DEBUG_TEXTURE(_framebuffer.get_color_buffer());
+
+        _flush_framebuffer(_framebuffer, postprocessing_shader);
+
+        _shaders.unbind();
     }
 
     void Renderer::draw(const Group& group)
@@ -444,6 +418,56 @@ namespace Aporia
         {
             _transformation_stack.pop_back();
         }
+    }
+
+    void Renderer::_flush_queue()
+    {
+        if (!_render_queue.empty())
+        {
+            std::sort(_render_queue.begin(), _render_queue.end());
+
+            RenderQueueKey prev_key = _render_queue[0];
+            for (RenderQueueKey& key : _render_queue)
+            {
+                if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
+                {
+                    _flush_buffer(prev_key.buffer, prev_key.program_id);
+                }
+
+                const uint8_t buffer_index = std::to_underlying(key.buffer);
+                VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
+                for (size_t i = 0; i < vertex_buffer.vertex_count(); ++i)
+                {
+                    vertex_buffer.emplace(std::move(key.vertex[i]));
+                }
+
+                prev_key = std::move(key);
+            }
+
+            _flush_buffer(prev_key.buffer, prev_key.program_id);
+
+            _render_queue.clear();
+        }
+    }
+
+    void Renderer::_flush_framebuffer(const Framebuffer& framebuffer, Shader program_id)
+    {
+        constexpr uint8_t buffer_index = std::to_underlying(BufferType::Quads);
+        VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
+        for (Vertex vertex : framebuffer.get_vertices())
+        {
+            vertex_buffer.emplace(std::move(vertex));
+        }
+
+        _flush_buffer(BufferType::Quads, program_id);
+    }
+
+    void Renderer::_flush_buffer(BufferType buffer, Shader program_id)
+    {
+        _shaders.bind(program_id);
+
+        const uint8_t buffer_index = std::to_underlying(buffer);
+        _vertex_arrays[buffer_index].render();
     }
 
     void Renderer::_on_resize(Window& window, uint32_t width, uint32_t height)

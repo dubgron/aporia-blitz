@@ -39,18 +39,18 @@ namespace Aporia
 
     void Game::run()
     {
-        this->on_init();
+        on_init();
 
 #       if defined(APORIA_EMSCRIPTEN)
             emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
 #       else
             while (_window.is_open())
             {
-                Aporia::main_loop(this);
+                main_loop();
             }
 #       endif
 
-        this->on_terminate();
+        on_terminate();
     }
 
     void Game::main_loop()
@@ -64,16 +64,14 @@ namespace Aporia
         _scenes.get_current_scene()->on_scene_transition(_scenes);
 
         _imgui_layer.begin();
-        _renderer.begin(_camera.get_camera());
-
-        _window.clear(_camera.get_clear_color());
+        _renderer.begin(_window, _camera.get_camera());
 
         on_update(_dt);
         _scenes.get_current_scene()->on_update(_dt);
 
         _scenes.get_current_scene()->on_draw(_renderer);
 
-        _renderer.end();
+        _renderer.end(_camera.get_clear_color());
         _imgui_layer.end();
 
         _window.display();
