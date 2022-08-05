@@ -68,6 +68,7 @@ add_library(core STATIC
     "graphics/image.cpp"
     "graphics/image.hpp"
     "graphics/index_buffer.hpp"
+    "graphics/light.hpp"
     "graphics/opengl.hpp"
     "graphics/renderer.cpp"
     "graphics/renderer.hpp"

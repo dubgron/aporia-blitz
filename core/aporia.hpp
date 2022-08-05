@@ -24,6 +24,7 @@
 #include <graphics/font.hpp>
 #include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
+#include <graphics/light.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/shader.hpp>
 #include <graphics/vertex.hpp>

@@ -86,6 +86,8 @@ namespace Aporia
 
         /* Setup Framebuffer */
         _framebuffer.create_framebuffer(config.width, config.height);
+        lights.masking.create_framebuffer(config.width, config.height);
+        lights.raymarching.create_framebuffer(config.width, config.height);
 
         /* Initialize texture sampler */
         std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler{};
@@ -109,7 +111,15 @@ namespace Aporia
         _shaders.bind(postprocessing_shader);
         _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
 
+        /* Setup lighting shaders */
+        lights.raymarching_shader = _shaders.create_program("raymarching", "assets/shaders/raymarching.shader");
+        lights.shadowcasting_shader = _shaders.create_program("shadowcasting", "assets/shaders/shadowcasting.shader");
+
         _shaders.unbind();
+
+        /* Bind Light's Uniform Buffer to shaders */
+        lights.uniform_buffer.bind_to_shader(lights.raymarching_shader);
+        lights.uniform_buffer.bind_to_shader(lights.shadowcasting_shader);
 
         /* Bind to events */
         using namespace std::placeholders;
@@ -119,12 +129,26 @@ namespace Aporia
 
     void Renderer::begin(const Window& window, const Camera& camera)
     {
+        lights.begin();
+
         _shaders.bind(default_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
 
         _shaders.bind(font_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
         _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+
+        _shaders.bind(lights.raymarching_shader);
+        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        _shaders.set_int("u_masking", lights.masking.get_color_buffer().id);
+        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+        _shaders.set_float2("u_window_size", glm::vec2{ window.get_size() });
+
+        _shaders.bind(lights.shadowcasting_shader);
+        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        _shaders.set_int("u_raymarching", lights.raymarching.get_color_buffer().id);
+        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+        _shaders.set_float2("u_window_size", glm::vec2{ window.get_size() });
 
         _shaders.unbind();
     }
@@ -141,6 +165,40 @@ namespace Aporia
         DEBUG_TEXTURE(_framebuffer.get_color_buffer());
 
         _flush_framebuffer(_framebuffer, postprocessing_shader);
+
+        if (lights.enabled)
+        {
+            lights.end();
+
+            const uint32_t num_lights = static_cast<uint32_t>(lights.sources.size());
+
+            _shaders.bind(lights.raymarching_shader);
+            _shaders.set_uint("u_num_lights", num_lights);
+
+            _shaders.bind(lights.shadowcasting_shader);
+            _shaders.set_uint("u_num_lights", num_lights);
+
+            lights.masking.bind();
+            lights.masking.clear(Colors::Transparent);
+
+            draw(lights.blockers);
+            _flush_queue();
+
+            lights.masking.unbind();
+
+            DEBUG_TEXTURE(lights.masking.get_color_buffer());
+
+            lights.raymarching.bind();
+            lights.raymarching.clear(Colors::Black);
+
+            _flush_framebuffer(lights.masking, lights.raymarching_shader);
+
+            lights.raymarching.unbind();
+
+            DEBUG_TEXTURE(lights.raymarching.get_color_buffer());
+
+            _flush_framebuffer(lights.raymarching, lights.shadowcasting_shader);
+        }
 
         _shaders.unbind();
     }
@@ -473,5 +531,7 @@ namespace Aporia
     void Renderer::_on_resize(Window& window, uint32_t width, uint32_t height)
     {
         _framebuffer.create_framebuffer(width, height);
+        lights.masking.create_framebuffer(width, height);
+        lights.raymarching.create_framebuffer(width, height);
     }
 }

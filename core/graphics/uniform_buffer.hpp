@@ -11,14 +11,17 @@
 namespace Aporia
 {
     template<typename T>
-    concept PODType = std::is_standard_layout_v<T>;
+    concept BufferData = requires (T data)
+    {
+        reinterpret_cast<const void*>(data);
+    };
 
-    template<PODType T, size_t Binding>
+    template<BufferData T, size_t Binding>
     class UniformBuffer final
     {
     public:
         UniformBuffer(std::string name)
-            : _name( std::move(name) )
+            : _name(std::move(name))
         {
             glGenBuffers(1, &_ubo);
 
@@ -40,7 +43,8 @@ namespace Aporia
             glUniformBlockBinding(program_id, buffer_index, Binding);
         }
 
-        void set_data(const T& data)
+        template<BufferData U>
+        void set_data(U data)
         {
             glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
             glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), reinterpret_cast<const void*>(data));

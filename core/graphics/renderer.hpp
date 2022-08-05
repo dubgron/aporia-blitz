@@ -14,6 +14,7 @@
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/framebuffer.hpp"
+#include "graphics/light.hpp"
 #include "graphics/render_queue.hpp"
 #include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
@@ -27,7 +28,6 @@ namespace Aporia
 
     public:
         Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config);
-
 
         void begin(const Window& window, const Camera& camera);
         void end(Color color = Colors::Black);
@@ -46,6 +46,8 @@ namespace Aporia
         static ShaderRef default_shader;
         static ShaderRef font_shader;
         static ShaderRef postprocessing_shader;
+
+        LightRenderer lights;
 
     private:
         void _flush_queue();
