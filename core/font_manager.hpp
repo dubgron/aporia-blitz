@@ -14,7 +14,9 @@ namespace Aporia
         FontManager(Logger& logger);
 
         void load_font(std::string name, std::filesystem::path filepath);
-        const Font& get(const std::string& name);
+        const Font& get(const std::string& name) const;
+
+        static const Font default_font;
 
     private:
         Logger& _logger;

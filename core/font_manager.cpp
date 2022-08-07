@@ -11,10 +11,11 @@
 
 namespace Aporia
 {
+    const Font FontManager::default_font{};
+
     FontManager::FontManager(Logger& logger)
         : _logger(logger)
     {
-        _fonts.try_emplace("default", Font{});
     }
 
     void FontManager::load_font(std::string name, std::filesystem::path filepath)
@@ -111,13 +112,13 @@ namespace Aporia
         }
     }
 
-    const Font& FontManager::get(const std::string& name)
+    const Font& FontManager::get(const std::string& name) const
     {
         auto font = _fonts.find(name);
         if (font == _fonts.end())
         {
             _logger.log(LOG_WARNING) << "There is no font named " << name << "!";
-            return _fonts.at("default");
+            return default_font;
         }
         else
             return font->second;

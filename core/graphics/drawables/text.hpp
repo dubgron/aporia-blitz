@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include <glm/vec3.hpp>
 
@@ -15,10 +16,10 @@ namespace Aporia
 {
     struct Text final : public Entity<Transform2D, Color, ShaderRef>
     {
-        Text() = default;
+        Text();
         Text(glm::vec3 position, std::string caption, float size, const Font& font, Color color = Aporia::Colors::White, ShaderRef shader = 0u);
 
         std::string caption;
-        const Font& font;
+        std::reference_wrapper<const Font> font;
     };
 }
