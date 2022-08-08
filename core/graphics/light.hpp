@@ -25,8 +25,8 @@ namespace Aporia
     {
         static constexpr size_t MAX_LIGHTS = 1000;
 
-        ShaderRef raymarching_shader = 0u;
-        ShaderRef shadowcasting_shader = 0u;
+        ShaderRef raymarching_shader = 0;
+        ShaderRef shadowcasting_shader = 0;
 
         Framebuffer masking;
         Framebuffer raymarching;

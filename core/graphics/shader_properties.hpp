@@ -34,7 +34,7 @@ namespace Aporia
         {
         case ShaderType::Fragment:  return GL_FRAGMENT_SHADER;
         case ShaderType::Vertex:    return GL_VERTEX_SHADER;
-        default:                    assert("Invalid ShaderType" && 0); return 0u;
+        default:                    assert("Invalid ShaderType" && 0); return 0;
         }
     }
 
@@ -112,7 +112,7 @@ namespace Aporia
         case ShaderBlend::OneMinusSrc1Color:        return GL_ONE_MINUS_SRC1_COLOR;
         case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
         case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
-        default:                                    assert("Invalid ShaderBlend" && 0); return 0u;
+        default:                                    assert("Invalid ShaderBlend" && 0); return 0;
         }
     }
 
@@ -146,7 +146,7 @@ namespace Aporia
         case ShaderBlendOp::ReverseSubtract:    return GL_FUNC_REVERSE_SUBTRACT;
         case ShaderBlendOp::Min:                return GL_MIN;
         case ShaderBlendOp::Max:                return GL_MAX;
-        default:                                assert("Invalid ShaderBlendOp" && 0); return 0u;
+        default:                                assert("Invalid ShaderBlendOp" && 0); return 0;
         }
     }
 
@@ -191,7 +191,7 @@ namespace Aporia
         case ShaderDepthTest::GEqual:   return GL_GEQUAL;
         case ShaderDepthTest::Equal:    return GL_EQUAL;
         case ShaderDepthTest::NotEqual: return GL_NOTEQUAL;
-        default:                        assert("Invalid ShaderDepthTest" && 0); return 0u;
+        default:                        assert("Invalid ShaderDepthTest" && 0); return 0;
         }
     }
 
@@ -216,7 +216,7 @@ namespace Aporia
         {
         case ShaderDepthWrite::On:  return GL_TRUE;
         case ShaderDepthWrite::Off: return GL_FALSE;
-        default:                    assert("Invalid ShaderDepthWrite" && 0); return 0u;
+        default:                    assert("Invalid ShaderDepthWrite" && 0); return 0;
         }
     }
 

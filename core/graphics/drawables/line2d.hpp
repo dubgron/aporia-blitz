@@ -15,6 +15,6 @@ namespace Aporia
     struct Line2D final : public Entity<Transform2D, Linear2D, Color, ShaderRef>
     {
         Line2D() = default;
-        Line2D(glm::vec3 p_1, glm::vec2 p_2, Color color = Colors::Black, ShaderRef shader = 0u);
+        Line2D(glm::vec3 p_1, glm::vec2 p_2, Color color = Colors::Black, ShaderRef shader = 0);
     };
 }

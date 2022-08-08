@@ -34,13 +34,14 @@ namespace Aporia
         GLFWwindow* get_native_window();
 
     private:
+        void _on_config_reload();
+
+    private:
         Logger& _logger;
         EventManager& _events;
 
         WindowConfig& _config;
 
         GLFWwindow* _window;
-
-        void _on_config_reload();
     };
 }

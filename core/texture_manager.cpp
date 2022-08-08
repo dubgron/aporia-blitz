@@ -51,7 +51,7 @@ namespace Aporia
                 _logger.log(LOG_ERROR) << "File '" << filepath << "' does not open!";
             else
             {
-                static uint32_t id = 0u;
+                static uint32_t id = 0;
                 glDeleteTextures(1, &id);
 
                 Image atlas_image{ filepath };

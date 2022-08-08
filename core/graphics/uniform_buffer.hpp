@@ -21,20 +21,20 @@ namespace Aporia
     {
     public:
         UniformBuffer(std::string name)
-            : _name(std::move(name))
+            : _name( std::move(name) )
         {
-            glGenBuffers(1, &_ubo);
+            glGenBuffers(1, &_id);
 
-            glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, _id);
             glBufferData(GL_UNIFORM_BUFFER, sizeof(T), NULL, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-            glBindBufferBase(GL_UNIFORM_BUFFER, Binding, _ubo);
+            glBindBufferBase(GL_UNIFORM_BUFFER, Binding, _id);
         }
 
         ~UniformBuffer()
         {
-            glDeleteBuffers(1, &_ubo);
+            glDeleteBuffers(1, &_id);
         }
 
         void bind_to_shader(Shader program_id)
@@ -46,13 +46,13 @@ namespace Aporia
         template<BufferData U>
         void set_data(U data)
         {
-            glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, _id);
             glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), reinterpret_cast<const void*>(data));
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
 
     private:
-        uint32_t _ubo = 0u;
+        uint32_t _id = 0;
         std::string _name;
     };
 }

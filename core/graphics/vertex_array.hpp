@@ -34,10 +34,10 @@ namespace Aporia
         VertexArray(VertexArray&&) = default;
         VertexArray& operator=(VertexArray&& other) noexcept
         {
-            this->_id   = other._id;
-            this->_mode = other._mode;
-            this->_vbo  = std::move(other._vbo);
-            this->_ibo  = std::move(other._ibo);
+            this->_id               = other._id;
+            this->_mode             = other._mode;
+            this->_vertex_buffer    = std::move(other._vertex_buffer);
+            this->_index_buffer     = std::move(other._index_buffer);
 
             other._id = 0;
 
@@ -59,40 +59,40 @@ namespace Aporia
             glBindVertexArray(0);
         }
 
-        void set_vertex_buffer(VertexBuffer&& vbo)
+        void set_vertex_buffer(VertexBuffer&& vertex_buffer)
         {
-            _vbo = std::move(vbo);
+            _vertex_buffer = std::move(vertex_buffer);
         }
 
-        void set_index_buffer(IndexBuffer&& ibo)
+        void set_index_buffer(IndexBuffer&& index_buffer)
         {
-            _ibo = std::move(ibo);
+            _index_buffer = std::move(index_buffer);
         }
 
         void render()
         {
-            _vbo.flush();
+            _vertex_buffer.flush();
 
             this->bind();
-            _ibo.bind();
+            _index_buffer.bind();
 
-            const uint32_t count = static_cast<uint32_t>(_vbo.size() / _vbo.vertex_count() * _ibo.index_count());
+            const uint32_t count = static_cast<uint32_t>(_vertex_buffer.size() / _vertex_buffer.count() * _index_buffer.count());
             glDrawElements(_mode, count, GL_UNSIGNED_INT, nullptr);
 
-            _ibo.unbind();
+            _index_buffer.unbind();
             this->unbind();
 
-            _vbo.clear();
+            _vertex_buffer.clear();
         }
 
-        VertexBuffer& get_vertex_buffer() { return _vbo; }
-        IndexBuffer& get_index_buffer() { return _ibo; }
+        VertexBuffer& get_vertex_buffer() { return _vertex_buffer; }
+        IndexBuffer& get_index_buffer() { return _index_buffer; }
 
     private:
         uint32_t _id = 0;
         uint32_t _mode = GL_POINTS;
 
-        VertexBuffer _vbo;
-        IndexBuffer _ibo;
+        VertexBuffer _vertex_buffer;
+        IndexBuffer _index_buffer;
     };
 }

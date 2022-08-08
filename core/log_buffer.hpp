@@ -10,8 +10,8 @@ namespace Aporia
     class LogBuffer final
     {
     public:
-        LogBuffer(const std::shared_ptr<spdlog::logger>& logger, spdlog::level::level_enum lvl, const char* file, int line, const char* func)
-            : _logger(logger), _lvl(lvl), _source(file, line, func) {}
+        LogBuffer(std::shared_ptr<spdlog::logger> logger, spdlog::level::level_enum lvl, const char* file, int line, const char* func)
+            : _logger( std::move(logger) ), _lvl(lvl), _source(file, line, func) {}
 
         ~LogBuffer()
         {

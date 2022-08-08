@@ -14,7 +14,7 @@ namespace Aporia
         IndexBuffer() = default;
 
         IndexBuffer(size_t max_objects, size_t index_count, const std::vector<uint32_t>& indecies)
-            : _index_count(index_count)
+            : _count(index_count)
         {
             glGenBuffers(1, &_id);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
@@ -32,8 +32,8 @@ namespace Aporia
         IndexBuffer(IndexBuffer&&) = default;
         IndexBuffer& operator=(IndexBuffer&& other) noexcept
         {
-            this->_id           = other._id;
-            this->_index_count  = other._index_count;
+            this->_id       = other._id;
+            this->_count    = other._count;
 
             other._id = 0;
 
@@ -55,11 +55,10 @@ namespace Aporia
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        size_t index_count() const { return _index_count; }
+        size_t count() const { return _count; }
 
     private:
         uint32_t _id = 0;
-
-        size_t _index_count = 0;
+        size_t _count = 0;
     };
 }

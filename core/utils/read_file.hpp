@@ -21,6 +21,6 @@ namespace Aporia
     inline nlohmann::json load_json(std::string_view filepath)
     {
         std::string data = read_file(filepath);
-        return nlohmann::json::parse(std::move(data));
+        return nlohmann::json::parse( std::move(data) );
     }
 }

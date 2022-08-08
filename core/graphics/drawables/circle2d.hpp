@@ -13,7 +13,7 @@ namespace Aporia
     struct Circle2D final : public Entity<Transform2D, Circular, Color, ShaderRef>
     {
         Circle2D() = default;
-        Circle2D(float x, float y, float radius, Color color = Colors::Black, ShaderRef shader = 0u);
-        Circle2D(glm::vec3 position, float radius, Color color = Colors::Black, ShaderRef shader = 0u);
+        Circle2D(float x, float y, float radius, Color color = Colors::Black, ShaderRef shader = 0);
+        Circle2D(glm::vec3 position, float radius, Color color = Colors::Black, ShaderRef shader = 0);
     };
 }

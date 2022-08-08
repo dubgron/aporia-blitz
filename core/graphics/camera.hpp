@@ -60,20 +60,24 @@ namespace Aporia
         void recalculate_view() const;
         void recalculate_projection() const;
 
+    private:
         CameraView _view;
         CameraProjection _projection;
 
         mutable glm::mat4 _vp_matrix{ 1.0f };
 
+    private:
         /* Dirty Flags for Matrices */
         using DirtyFlag = uint8_t;
-
-        void mark_as_dirty(DirtyFlag flag) const     { _dirty_flags |= flag; }
-        bool is_marked_dirty(DirtyFlag flag) const   { return _dirty_flags & flag; }
 
         static constexpr DirtyFlag DIRTYFLAG_VIEW       = 1 << 0;
         static constexpr DirtyFlag DIRTYFLAG_PROJECTION = 1 << 1;
 
+    private:
+        void mark_as_dirty(DirtyFlag flag) const     { _dirty_flags |= flag; }
+        bool is_marked_dirty(DirtyFlag flag) const   { return _dirty_flags & flag; }
+
+    private:
         mutable DirtyFlag _dirty_flags = DIRTYFLAG_VIEW | DIRTYFLAG_PROJECTION;
     };
 }

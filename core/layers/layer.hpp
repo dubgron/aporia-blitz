@@ -11,7 +11,7 @@ namespace Aporia
     {
     public:
         Layer(Logger& logger, std::string name)
-            : _logger(logger), _name(std::move(name)) {}
+            : _logger(logger), _name( std::move(name) ) {}
 
         virtual void on_attach() {};
         virtual void on_detach() {};

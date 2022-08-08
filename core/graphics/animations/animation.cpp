@@ -6,10 +6,12 @@
 namespace Aporia
 {
     Animation::Animation(std::string name, std::vector<AnimationFrame>&& frames)
-        : _name(std::move(name)), _frames(std::move(frames)), _frames_amount(_frames.size())
+        : _name( std::move(name) ), _frames( std::move(frames) ), _frames_amount(_frames.size())
     {
         for (const auto& frame : _frames)
+        {
             _length += frame.duration;
+        }
     }
 
     void Animation::play()

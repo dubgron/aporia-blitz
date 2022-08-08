@@ -28,8 +28,8 @@ namespace Aporia
         const std::array<Vertex, 4>& get_vertices() const;
 
     private:
-        uint32_t _fbo = 0u;
-        uint32_t _rbo = 0u;
+        uint32_t _framebuffer_id = 0;
+        uint32_t _renderbuffer_id = 0;
 
         Texture::Origin _color_buffer;
         std::array<Vertex, 4> _vertex;

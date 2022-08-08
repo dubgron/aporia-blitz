@@ -52,7 +52,6 @@ namespace Aporia
             Container<T>& vec = std::get<Container<T>>(_drawables);
             const auto pred = [&drawable](const auto& ref){ return std::addressof(ref.get()) == std::addressof(drawable); };
             const auto remove = std::remove_if(vec.begin(), vec.end(), pred);
-
             if (remove != vec.end())
             {
                 vec.erase(remove);

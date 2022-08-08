@@ -26,13 +26,13 @@ namespace Aporia
     {
         uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
         glDeleteTextures(1, &color_buffer_id);
-        glDeleteRenderbuffers(1, &_rbo);
-        glDeleteFramebuffers(1, &_fbo);
+        glDeleteRenderbuffers(1, &_renderbuffer_id);
+        glDeleteFramebuffers(1, &_framebuffer_id);
     }
 
     void Framebuffer::bind() const
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_id);
         glEnable(GL_DEPTH_TEST);
     }
 
@@ -58,12 +58,12 @@ namespace Aporia
         /* Delete potential previous buffers and textures */
         uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
         glDeleteTextures(1, &color_buffer_id);
-        glDeleteRenderbuffers(1, &_rbo);
-        glDeleteFramebuffers(1, &_fbo);
+        glDeleteRenderbuffers(1, &_renderbuffer_id);
+        glDeleteFramebuffers(1, &_framebuffer_id);
 
         /* Create new buffers and textures */
-        glGenFramebuffers(1, &_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        glGenFramebuffers(1, &_framebuffer_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer_id);
 
         glGenTextures(1, &color_buffer_id);
         glActiveTexture(GL_TEXTURE0 + color_buffer_id);
@@ -75,10 +75,10 @@ namespace Aporia
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer_id, 0);
 
-        glGenRenderbuffers(1, &_rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
+        glGenRenderbuffers(1, &_renderbuffer_id);
+        glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer_id);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _renderbuffer_id);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

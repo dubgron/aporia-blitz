@@ -8,9 +8,10 @@
 
 namespace Aporia
 {
-    template<typename T, size_t Size = magic_enum::enum_count<T>()> requires std::is_enum_v<T>
+    template<typename T> requires std::is_enum_v<T>
     class InputBuffer
     {
+        static constexpr size_t Size = magic_enum::enum_count<T>();
         using Buffer = std::bitset<Size>;
 
     public:
@@ -46,8 +47,12 @@ namespace Aporia
         bool is_any_triggered() const
         {
             for (size_t index = 0; index < Size; ++index)
+            {
                 if (_is_triggered(index))
+                {
                     return true;
+                }
+            }
 
             return false;
         }
@@ -55,8 +60,12 @@ namespace Aporia
         bool is_any_pressed() const
         {
             for (size_t index = 0; index < Size; ++index)
+            {
                 if (_is_pressed(index))
+                {
                     return true;
+                }
+            }
 
             return false;
         }
@@ -64,8 +73,12 @@ namespace Aporia
         bool is_any_released() const
         {
             for (size_t index = 0; index < Size; ++index)
+            {
                 if (_is_released(index))
+                {
                     return true;
+                }
+            }
 
             return false;
         }

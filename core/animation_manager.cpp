@@ -23,7 +23,9 @@ namespace Aporia
             return _animations.at("default");
         }
         else
+        {
             return _animations.at(name);
+        }
     }
 
     void AnimationManager::_load()
@@ -40,7 +42,7 @@ namespace Aporia
             for (const auto& frame : animation["frames"])
             {
                 AnimationFrame animation_frame{ _textures.get_texture(frame["texture"]), frame["duration"] };
-                frames.push_back(std::move(animation_frame));
+                frames.push_back( std::move(animation_frame) );
             }
 
             std::string name = animation["name"];

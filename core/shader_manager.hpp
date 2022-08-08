@@ -29,14 +29,6 @@ namespace Aporia
         void bind(const std::string& name);
         void unbind();
 
-    private:
-        Shader _load(const std::string& contents, ShaderType type);
-        void _link(Shader program_id, const std::vector<ShaderRef>& loaded_shaders);
-
-        void _default_invalids(ShaderProperties& properties);
-        void _apply_properties(Shader program_id);
-
-    public:
         void set_float(const std::string& name, float value);
         void set_float2(const std::string& name, glm::vec2 value);
         void set_float3(const std::string& name, glm::vec3 value);
@@ -68,6 +60,12 @@ namespace Aporia
         void set_mat4(const std::string& name, glm::mat4 value, bool transpose = false, int32_t count = 1);
 
     private:
+        Shader _load(const std::string& contents, ShaderType type);
+        void _link(Shader program_id, const std::vector<ShaderRef>& loaded_shaders);
+
+        void _default_invalids(ShaderProperties& properties);
+        void _apply_properties(Shader program_id);
+
         int32_t _location(const std::string& name);
 
     private:

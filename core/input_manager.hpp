@@ -42,11 +42,12 @@ namespace Aporia
 
         void _update();
 
+    private:
+        Logger& _logger;
+
         InputBuffer<Keyboard> _keys;
         InputBuffer<Mouse> _buttons;
         InputBuffer<MouseWheel> _wheels;
         float _wheel_delta = 0.0f;
-
-        Logger& _logger;
     };
 }

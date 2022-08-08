@@ -8,9 +8,7 @@
 namespace Aporia
 {
     ShaderManager::ShaderManager(Logger& logger, const ShaderConfig& config)
-        : _logger(logger), _config(config)
-    {
-    }
+        : _logger(logger), _config(config) {}
 
     ShaderManager::~ShaderManager()
     {
@@ -107,106 +105,6 @@ namespace Aporia
     {
         glUseProgram(0);
         _active_id = 0;
-    }
-
-    Shader ShaderManager::_load(const std::string& contents, ShaderType type)
-    {
-        const uint32_t shader_type = to_opengl_type(type);
-
-        Shader shader_id = glCreateShader(shader_type);
-        const char* shader = contents.c_str();
-
-        glShaderSource(shader_id, 1, &shader, nullptr);
-        glCompileShader(shader_id);
-
-        int32_t results;
-        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &results);
-        if (results == GL_FALSE)
-        {
-            int32_t length;
-            glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
-
-            std::vector<GLchar> msg(length);
-            glGetShaderInfoLog(shader_id, length, &length, &msg[0]);
-
-            glDeleteProgram(shader_id);
-
-            _logger.log(LOG_ERROR) << std::string{ &msg[0] };
-
-            return 0;
-        }
-
-        return shader_id;
-    }
-
-    void ShaderManager::_link(Shader program_id, const std::vector<ShaderRef>& loaded_shaders)
-    {
-        for (Shader shader_id : loaded_shaders)
-        {
-            glAttachShader(program_id, shader_id);
-        }
-
-        glLinkProgram(program_id);
-        glValidateProgram(program_id);
-
-        for (Shader shader_id : loaded_shaders)
-        {
-            glDetachShader(program_id, shader_id);
-            glDeleteShader(shader_id);
-        }
-    }
-
-    void ShaderManager::_default_invalids(ShaderProperties& properties)
-    {
-        if (properties.blend[0] == ShaderBlend::Default)
-        {
-            properties.blend[0] = _config.default_properties.blend[0];
-            properties.blend[1] = _config.default_properties.blend[1];
-        }
-
-        if (properties.blend_op == ShaderBlendOp::Default)
-        {
-            properties.blend_op = _config.default_properties.blend_op;
-        }
-
-        if (properties.depth_test == ShaderDepthTest::Default)
-        {
-            properties.depth_test = _config.default_properties.depth_test;
-        }
-
-        if (properties.depth_write == ShaderDepthWrite::Default)
-        {
-            properties.depth_write = _config.default_properties.depth_write;
-        }
-    }
-
-    void ShaderManager::_apply_properties(Shader program_id)
-    {
-        const ShaderProperties& properties = _properties.at(program_id);
-
-        if (properties.blend[0] != ShaderBlend::Off)
-        {
-            glEnable(GL_BLEND);
-            glBlendFunc(to_opengl_type(properties.blend[0]), to_opengl_type(properties.blend[1]));
-            glBlendEquation(to_opengl_type(properties.blend_op));
-        }
-        else
-        {
-            glDisable(GL_BLEND);
-        }
-
-        if (properties.depth_test != ShaderDepthTest::Off)
-        {
-            glEnable(GL_DEPTH_TEST);
-
-            glDepthFunc(to_opengl_type(properties.depth_test));
-            glDepthMask(to_opengl_type(properties.depth_write));
-        }
-        else
-        {
-            glDisable(GL_DEPTH_TEST);
-        }
-
     }
 
     void ShaderManager::set_float(const std::string& name, float value)
@@ -311,19 +209,119 @@ namespace Aporia
         glUniform1uiv(_location(name), count, value);
     }
 
-    void ShaderManager::set_mat2(const std::string& name, glm::mat2 value, bool transpose, int32_t count)
+    void ShaderManager::set_mat2(const std::string& name, glm::mat2 value, bool transpose /* = false */, int32_t count /* = 1 */)
     {
         glUniformMatrix2fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat3(const std::string& name, glm::mat3 value, bool transpose, int32_t count)
+    void ShaderManager::set_mat3(const std::string& name, glm::mat3 value, bool transpose /* = false */, int32_t count /* = 1 */)
     {
         glUniformMatrix3fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat4(const std::string& name, glm::mat4 value, bool transpose, int32_t count)
+    void ShaderManager::set_mat4(const std::string& name, glm::mat4 value, bool transpose /* = false */, int32_t count /* = 1 */)
     {
         glUniformMatrix4fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
+    }
+
+    Shader ShaderManager::_load(const std::string& contents, ShaderType type)
+    {
+        const uint32_t shader_type = to_opengl_type(type);
+
+        Shader shader_id = glCreateShader(shader_type);
+        const char* shader = contents.c_str();
+
+        glShaderSource(shader_id, 1, &shader, nullptr);
+        glCompileShader(shader_id);
+
+        int32_t results;
+        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &results);
+        if (results == GL_FALSE)
+        {
+            int32_t length;
+            glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
+
+            std::vector<GLchar> msg(length);
+            glGetShaderInfoLog(shader_id, length, &length, &msg[0]);
+
+            glDeleteProgram(shader_id);
+
+            _logger.log(LOG_ERROR) << std::string{ &msg[0] };
+
+            return 0;
+        }
+
+        return shader_id;
+    }
+
+    void ShaderManager::_link(Shader program_id, const std::vector<ShaderRef>& loaded_shaders)
+    {
+        for (Shader shader_id : loaded_shaders)
+        {
+            glAttachShader(program_id, shader_id);
+        }
+
+        glLinkProgram(program_id);
+        glValidateProgram(program_id);
+
+        for (Shader shader_id : loaded_shaders)
+        {
+            glDetachShader(program_id, shader_id);
+            glDeleteShader(shader_id);
+        }
+    }
+
+    void ShaderManager::_default_invalids(ShaderProperties& properties)
+    {
+        if (properties.blend[0] == ShaderBlend::Default)
+        {
+            properties.blend[0] = _config.default_properties.blend[0];
+            properties.blend[1] = _config.default_properties.blend[1];
+        }
+
+        if (properties.blend_op == ShaderBlendOp::Default)
+        {
+            properties.blend_op = _config.default_properties.blend_op;
+        }
+
+        if (properties.depth_test == ShaderDepthTest::Default)
+        {
+            properties.depth_test = _config.default_properties.depth_test;
+        }
+
+        if (properties.depth_write == ShaderDepthWrite::Default)
+        {
+            properties.depth_write = _config.default_properties.depth_write;
+        }
+    }
+
+    void ShaderManager::_apply_properties(Shader program_id)
+    {
+        const ShaderProperties& properties = _properties.at(program_id);
+
+        if (properties.blend[0] != ShaderBlend::Off)
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(to_opengl_type(properties.blend[0]), to_opengl_type(properties.blend[1]));
+            glBlendEquation(to_opengl_type(properties.blend_op));
+        }
+        else
+        {
+            glDisable(GL_BLEND);
+        }
+
+        if (properties.depth_test != ShaderDepthTest::Off)
+        {
+            glEnable(GL_DEPTH_TEST);
+
+            glDepthFunc(to_opengl_type(properties.depth_test));
+            glDepthMask(to_opengl_type(properties.depth_write));
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
+
     }
 
     int32_t ShaderManager::_location(const std::string& name)

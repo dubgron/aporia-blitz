@@ -17,7 +17,7 @@ namespace Aporia
     struct Text final : public Entity<Transform2D, Color, ShaderRef>
     {
         Text();
-        Text(glm::vec3 position, std::string caption, float size, const Font& font, Color color = Aporia::Colors::White, ShaderRef shader = 0u);
+        Text(glm::vec3 position, std::string caption, float size, const Font& font, Color color = Colors::White, ShaderRef shader = 0);
 
         std::string caption;
         std::reference_wrapper<const Font> font;

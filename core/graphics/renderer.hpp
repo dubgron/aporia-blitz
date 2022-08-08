@@ -24,7 +24,7 @@ namespace Aporia
 {
     class Renderer final
     {
-        static constexpr size_t MAX_QUEUE = 100000u;
+        static constexpr size_t MAX_QUEUE = 100000;
 
     public:
         Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config);
@@ -42,6 +42,7 @@ namespace Aporia
         void push_transform(const Transform2D& transform);
         void pop_transform();
 
+    public:
         /* Predefined shaders */
         static ShaderRef default_shader;
         static ShaderRef font_shader;

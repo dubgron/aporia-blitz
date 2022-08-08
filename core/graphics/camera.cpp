@@ -7,9 +7,7 @@
 namespace Aporia
 {
     Camera::Camera(float fov, float aspect_ratio)
-        : _projection{ .fov = fov, .aspect_ratio = aspect_ratio }
-    {
-    }
+        : _projection{ .fov = fov, .aspect_ratio = aspect_ratio } {}
 
     const glm::mat4& Camera::get_view_projection_matrix() const
     {

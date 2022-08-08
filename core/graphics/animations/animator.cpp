@@ -6,7 +6,7 @@
 namespace Aporia
 {
     Animator::Animator(Logger& logger, std::string name, Sprite& sprite)
-        : _logger(logger), _name(std::move(name)), _sprite(sprite)
+        : _logger(logger), _name( std::move(name) ), _sprite(sprite)
     {
         _animations.try_emplace("default", Animation{ "default", { { sprite.get_component<Texture>(), 0.0f } } });
     }
@@ -16,15 +16,21 @@ namespace Aporia
         std::string name = animation.get_name();
 
         if (!_animations.contains(name))
+        {
             _animations.try_emplace(std::move(name), std::move(animation));
+        }
         else
+        {
             _logger.log(LOG_WARNING) << "Animation '" << name << "' has already been added!";
+        }
     }
 
     void Animator::play(const std::string& name)
     {
         if (!_animations.contains(name))
+        {
             _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
+        }
         else if (_queue.empty())
         {
             _current_animation = name;
@@ -35,7 +41,9 @@ namespace Aporia
     void Animator::play_once(const std::string& name)
     {
         if (!_animations.contains(name))
+        {
             _logger.log(LOG_WARNING) << "No animation named '" << name << "'!";
+        }
         else if (_queue.empty())
         {
             _current_animation = name;
@@ -54,13 +62,17 @@ namespace Aporia
     void Animator::queue(const std::string& name)
     {
         if (_animations.contains(name))
+        {
             _queue.push(_animations.at(name).get_name());
+        }
     }
 
     void Animator::after_queue(const std::string& name)
     {
         if (_animations.contains(name))
+        {
             _afterqueue = _animations.at(name).get_name();
+        }
     }
 
     void Animator::clear_queue()
@@ -77,13 +89,17 @@ namespace Aporia
             return _animations.at("default");
         }
         else
+        {
             return _animations.at(name);
+        }
     }
 
     void Animator::_update_queue()
     {
         if (!_animations.at(_current_animation).is_finished())
+        {
             return;
+        }
 
         if (!_queue.empty())
         {

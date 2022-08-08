@@ -18,11 +18,12 @@ namespace Aporia
         const Texture& get_texture(const std::string& name) const;
 
     private:
-        std::unordered_map<std::string, Texture> _textures;
+        void _load();
 
+    private:
         Logger& _logger;
         const TextureConfig& _config;
 
-        void _load();
+        std::unordered_map<std::string, Texture> _textures;
     };
 }

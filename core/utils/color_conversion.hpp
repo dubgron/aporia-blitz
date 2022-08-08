@@ -9,9 +9,9 @@ namespace Aporia
 {
     inline Color hsv_to_rgb(int h, double s, double v)
     {
-        double C = s * v;
-        double X = C * (1 - std::abs(std::fmod(h / 60.0, 2) - 1));
-        double m = v - C;
+        const double C = s * v;
+        const double X = C * (1.0 - std::abs(std::fmod(h / 60.0, 2.0) - 1.0));
+        const double m = v - C;
         double Rs, Gs, Bs;
 
         if (h >= 0 && h < 60)
@@ -51,9 +51,9 @@ namespace Aporia
             Bs = X;
         }
 
-        uint8_t r = static_cast<uint8_t>(Rs + m) * 255;
-        uint8_t g = static_cast<uint8_t>(Gs + m) * 255;
-        uint8_t b = static_cast<uint8_t>(Bs + m) * 255;
+        const uint8_t r = static_cast<uint8_t>(Rs + m) * 255;
+        const uint8_t g = static_cast<uint8_t>(Gs + m) * 255;
+        const uint8_t b = static_cast<uint8_t>(Bs + m) * 255;
 
         return Color{ r, g, b };
     }

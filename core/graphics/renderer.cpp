@@ -26,9 +26,9 @@
 
 namespace Aporia
 {
-    ShaderRef Renderer::default_shader = 0u;
-    ShaderRef Renderer::font_shader = 0u;
-    ShaderRef Renderer::postprocessing_shader = 0u;
+    ShaderRef Renderer::default_shader = 0;
+    ShaderRef Renderer::font_shader = 0;
+    ShaderRef Renderer::postprocessing_shader = 0;
 
     Renderer::Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config)
         : _logger(logger), _shaders(shaders)
@@ -494,9 +494,9 @@ namespace Aporia
 
                 const uint8_t buffer_index = std::to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
-                for (size_t i = 0; i < vertex_buffer.vertex_count(); ++i)
+                for (size_t i = 0; i < vertex_buffer.count(); ++i)
                 {
-                    vertex_buffer.emplace(std::move(key.vertex[i]));
+                    vertex_buffer.emplace( std::move(key.vertex[i]) );
                 }
 
                 prev_key = std::move(key);
@@ -514,7 +514,7 @@ namespace Aporia
         VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
         for (Vertex vertex : framebuffer.get_vertices())
         {
-            vertex_buffer.emplace(std::move(vertex));
+            vertex_buffer.emplace( std::move(vertex) );
         }
 
         _flush_buffer(BufferType::Quads, program_id);

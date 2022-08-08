@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
+#include <cstdint>
 #include <optional>
+#include <string>
 
 #include <glm/vec2.hpp>
 
@@ -10,9 +11,12 @@ namespace Aporia
     struct WindowConfig final
     {
         std::string title;
-        unsigned int width = 0u;
-        unsigned int height = 0u;
+
+        uint32_t width = 0;
+        uint32_t height = 0;
+
         bool vsync = true;
+
         std::optional<glm::ivec2> position = std::nullopt;
     };
 }

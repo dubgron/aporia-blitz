@@ -15,7 +15,9 @@ namespace Aporia
         glfwSetErrorCallback([](int32_t error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
 
         if (!glfwInit())
+        {
             _logger.log(LOG_CRITICAL) << "Failed to initialize GLFW!";
+        }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
@@ -26,14 +28,18 @@ namespace Aporia
         _window = glfwCreateWindow(config.width, config.height, config.title.c_str(), nullptr, nullptr);
 
         if (!_window)
+        {
             glfwTerminate();
+        }
 
         glfwMakeContextCurrent(_window);
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
 
         if (_config.position)
+        {
             glfwSetWindowPos(_window, _config.position->x, _config.position->y);
+        }
 
         glfwSetWindowCloseCallback(_window, [](GLFWwindow * window)
             {
@@ -84,7 +90,9 @@ namespace Aporia
 
 #       if !defined(APORIA_EMSCRIPTEN)
             if (gl3wInit())
+            {
                 _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
+            }
 #       endif
 
         glEnable(GL_DEPTH_TEST);
@@ -207,6 +215,8 @@ namespace Aporia
         glfwSwapInterval(_config.vsync);
 
         if (_config.position)
+        {
             glfwSetWindowPos(_window, _config.position->x, _config.position->y);
+        }
     }
 }

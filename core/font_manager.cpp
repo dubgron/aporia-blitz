@@ -14,9 +14,7 @@ namespace Aporia
     const Font FontManager::default_font{};
 
     FontManager::FontManager(Logger& logger)
-        : _logger(logger)
-    {
-    }
+        : _logger(logger) {}
 
     void FontManager::load_font(std::string name, std::filesystem::path filepath)
     {
@@ -121,6 +119,8 @@ namespace Aporia
             return default_font;
         }
         else
+        {
             return font->second;
+        }
     }
 }

@@ -13,13 +13,13 @@ namespace Aporia
     enum class BufferType : uint8_t
     {
         Quads = 0,
-        Lines
+        Lines = 1
     };
 
     struct RenderQueueKey final
     {
         BufferType buffer = BufferType::Quads;
-        ShaderRef program_id = 0u;
+        ShaderRef program_id = 0;
 
         std::array<Vertex, 4> vertex;
     };

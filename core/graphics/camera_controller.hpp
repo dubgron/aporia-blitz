@@ -29,12 +29,13 @@ namespace Aporia
         const Color& get_clear_color() const;
 
     private:
+        void _on_resize(Window& window, uint32_t width, uint32_t height);
+        void _on_config_reload();
+
+    private:
         Logger& _logger;
 
         Camera _camera;
         CameraConfig& _config;
-
-        void _on_resize(Window& window, uint32_t width, uint32_t height);
-        void _on_config_reload();
     };
 }

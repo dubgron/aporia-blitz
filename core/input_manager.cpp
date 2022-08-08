@@ -88,7 +88,7 @@ namespace Aporia
         return _buttons.is_any_released();
     }
 
-    float InputManager::is_wheel_scrolling(MouseWheel wheel) const
+    float InputManager::is_wheel_scrolling(MouseWheel wheel /* = MouseWheel::VerticalWheel */) const
     {
         return _wheels.is_triggered(wheel) * _wheel_delta;
     }

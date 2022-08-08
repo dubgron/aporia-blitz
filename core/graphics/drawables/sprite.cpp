@@ -4,21 +4,17 @@
 
 namespace Aporia
 {
-    Sprite::Sprite(const Texture& texture, glm::vec3 position, Color color /* = Colors::White */, ShaderRef shader /* = 0u */)
+    Sprite::Sprite(const Texture& texture, glm::vec3 position, Color color /* = Colors::White */, ShaderRef shader /* = 0 */)
         : Sprite(texture,
             std::move(position),
-            glm::vec2{ texture.origin.width, texture.origin.height } * (texture.v - texture.u),
+            glm::vec2{ texture.origin.width, texture.origin.height } *(texture.v - texture.u),
             std::move(color),
-            shader)
-    {
-    }
+            shader) {}
 
-    Sprite::Sprite(const Texture& texture, glm::vec3 position, glm::vec2 size, Color color /* = Colors::White */, ShaderRef shader /* = 0u */)
+    Sprite::Sprite(const Texture& texture, glm::vec3 position, glm::vec2 size, Color color /* = Colors::White */, ShaderRef shader /* = 0 */)
         : Entity(Transform2D{ std::move(position), size / 2.0f },
             Texture{ texture },
             Rectangular{ size.x, size.y },
             Color{ std::move(color) },
-            ShaderRef{ shader ? shader : Renderer::default_shader })
-    {
-    }
+            ShaderRef{ shader ? shader : Renderer::default_shader }) {}
 }

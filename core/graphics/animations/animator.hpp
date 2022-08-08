@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <functional>
 #include <queue>
 #include <string>
@@ -33,6 +32,7 @@ namespace Aporia
     private:
         void _update_queue();
 
+    private:
         Logger& _logger;
 
         std::string _name;

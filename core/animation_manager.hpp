@@ -19,13 +19,14 @@ namespace Aporia
         Animation get_animation(const std::string& name) const;
 
     private:
+        void _load();
+
+    private:
         Logger& _logger;
 
         std::unordered_map<std::string, Animation> _animations;
 
         const TextureManager& _textures;
         const AnimationConfig& _config;
-
-        void _load();
     };
 }

@@ -14,7 +14,7 @@ namespace Aporia
     {
         size_t index = _index(scene);
         if (index == _scenes.size())
-            _scenes.emplace_back(std::move(scene));
+            _scenes.emplace_back( std::move(scene) );
         else
             _logger.log(LOG_WARNING) << "Scene '" << scene->get_name() << "' has already been added!";
 
