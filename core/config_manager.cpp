@@ -6,6 +6,7 @@
 
 #include <glm/vec2.hpp>
 #include <magic_enum.hpp>
+#include <nlohmann/json.hpp>
 
 #include "event_manager.hpp"
 #include "logger.hpp"

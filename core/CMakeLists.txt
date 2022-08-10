@@ -139,8 +139,7 @@ target_compile_definitions(core
     PUBLIC
         _USE_MATH_DEFINES
         MAGIC_ENUM_RANGE_MAX=512
-    PRIVATE
-        APORIA_EXPORT)
+        NOMINMAX)
 
 if (APORIA_EMSCRIPTEN)
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)

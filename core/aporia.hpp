@@ -2,6 +2,7 @@
 #include <configs/all_configs.hpp>
 #include <configs/animation_config.hpp>
 #include <configs/camera_config.hpp>
+#include <configs/shader_config.hpp>
 #include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
 
@@ -12,24 +13,30 @@
 
 /* Utils */
 #include <utils/color_conversion.hpp>
+#include <utils/math.hpp>
 #include <utils/random.hpp>
 #include <utils/read_file.hpp>
+#include <utils/shader_parser.hpp>
 #include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
 
 /* Logger */
+#include <log_buffer.hpp>
 #include <logger.hpp>
 
 /* Graphics */
 #include <graphics/font.hpp>
+#include <graphics/framebuffer.hpp>
 #include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
 #include <graphics/light.hpp>
+#include <graphics/render_queue.hpp>
 #include <graphics/renderer.hpp>
 #include <graphics/shader.hpp>
+#include <graphics/shader_properties.hpp>
+#include <graphics/uniform_buffer.hpp>
 #include <graphics/vertex.hpp>
 #include <graphics/vertex_array.hpp>
-#include <graphics/uniform_buffer.hpp>
 #include <graphics/vertex_buffer.hpp>
 
 /* Animations */
@@ -55,7 +62,6 @@
 
 /* Scenes */
 #include <scene.hpp>
-#include <scene_manager.hpp>
 
 /* Window */
 #include <window.hpp>
@@ -66,6 +72,7 @@
 #include <event_manager.hpp>
 #include <font_manager.hpp>
 #include <input_manager.hpp>
+#include <scene_manager.hpp>
 #include <shader_manager.hpp>
 #include <texture_manager.hpp>
 
@@ -76,6 +83,10 @@
 #include <components/rectangular.hpp>
 #include <components/texture.hpp>
 #include <components/transform2d.hpp>
+
+/* Platform */
+#include <platform/opengl.hpp>
+#include <platform/opengl_common.hpp>
 
 /* Game */
 #include <game.hpp>

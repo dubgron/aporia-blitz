@@ -9,6 +9,7 @@
 #include "font_manager.hpp"
 #include "input_manager.hpp"
 #include "logger.hpp"
+#include "scene.hpp"
 #include "scene_manager.hpp"
 #include "shader_manager.hpp"
 #include "texture_manager.hpp"

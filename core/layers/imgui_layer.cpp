@@ -6,7 +6,7 @@
 
 #include "logger.hpp"
 #include "window.hpp"
-#include "platform/opengl_common.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {

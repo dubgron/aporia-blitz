@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <cassert>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "platform/opengl.hpp"

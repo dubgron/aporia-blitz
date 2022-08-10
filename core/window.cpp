@@ -125,7 +125,7 @@ namespace Aporia
                         }
                     };
 
-                    //get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
+                    get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
                 },
                 reinterpret_cast<const void*>(&_logger));
 #       endif

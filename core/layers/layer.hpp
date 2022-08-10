@@ -5,6 +5,8 @@
 
 namespace Aporia
 {
+    class Logger;
+
     class Layer
     {
     public:

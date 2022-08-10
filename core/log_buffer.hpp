@@ -3,7 +3,7 @@
 #include <memory>
 #include <sstream>
 
-#include <spdlog/common.h>
+#include <spdlog/logger.h>
 
 namespace Aporia
 {

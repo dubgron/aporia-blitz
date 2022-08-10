@@ -1,7 +1,5 @@
 #pragma once
 
-#define NOMINMAX
-
 /* Standard Library */
 #include <algorithm>
 #include <array>
