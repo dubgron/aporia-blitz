@@ -4,11 +4,12 @@
 #include <functional>
 #include <vector>
 
-#include "logger.hpp"
 #include "layers/layer.hpp"
 
 namespace Aporia
 {
+    class Logger;
+
     class LayerStack final
     {
         using Container = std::vector<std::reference_wrapper<Layer>>;

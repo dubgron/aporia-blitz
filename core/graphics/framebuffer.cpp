@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "graphics/opengl.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {

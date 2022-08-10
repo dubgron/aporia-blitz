@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "logger.hpp"
+#include "graphics/animations/animation.hpp"
+#include "graphics/drawables/sprite.hpp"
+
 namespace Aporia
 {
     Animator::Animator(Logger& logger, std::string name, Sprite& sprite)

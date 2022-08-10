@@ -1,19 +1,20 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
-#include <set>
 #include <string>
 #include <unordered_map>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
-#include "logger.hpp"
-#include "configs/shader_config.hpp"
 #include "graphics/shader.hpp"
 #include "graphics/shader_properties.hpp"
 
 namespace Aporia
 {
+    class Logger;
+    struct ShaderConfig;
+
     class ShaderManager final
     {
     public:

@@ -1,13 +1,16 @@
 #include "texture_manager.hpp"
 
 #include <filesystem>
-#include <memory>
+#include <functional>
 
 #include <nlohmann/json.hpp>
 
-#include "graphics/common.hpp"
+#include "event_manager.hpp"
+#include "logger.hpp"
+#include "components/texture.hpp"
+#include "configs/texture_config.hpp"
 #include "graphics/image.hpp"
-#include "graphics/opengl.hpp"
+#include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -29,7 +32,9 @@ namespace Aporia
             return _textures.at("default");
         }
         else
+        {
             return texture->second;
+        }
     }
 
     void TextureManager::_load()
@@ -37,7 +42,9 @@ namespace Aporia
         using json = nlohmann::json;
 
         if (!std::filesystem::exists(_config.atlas))
+        {
             _logger.log(LOG_ERROR) << "File '" << _config.atlas << "' does not open!";
+        }
         else
         {
             std::string data = read_file(_config.atlas);
@@ -48,7 +55,9 @@ namespace Aporia
             std::string filepath = texture_json["atlas"];
 
             if (!std::filesystem::exists(filepath))
+            {
                 _logger.log(LOG_ERROR) << "File '" << filepath << "' does not open!";
+            }
             else
             {
                 static uint32_t id = 0;
@@ -98,7 +107,9 @@ namespace Aporia
                     std::string name = texture["name"];
 
                     if (_textures.find(name) != _textures.end())
+                    {
                         _logger.log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
+                    }
 
                     glm::vec2 u = { texture["u"][0], texture["u"][1] };
                     glm::vec2 v = { texture["v"][0], texture["v"][1] };

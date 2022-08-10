@@ -3,11 +3,12 @@
 #include <filesystem>
 #include <string>
 
-#include "logger.hpp"
 #include "graphics/font.hpp"
 
 namespace Aporia
 {
+    class Logger;
+
     class FontManager final
     {
     public:

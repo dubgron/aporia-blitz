@@ -7,6 +7,8 @@
 #include <glm/vec2.hpp>
 #include <magic_enum.hpp>
 
+#include "event_manager.hpp"
+#include "logger.hpp"
 #include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"

@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+#include "logger.hpp"
+#include "scene.hpp"
+
 namespace Aporia
 {
     SceneManager::SceneManager(Logger& logger)
@@ -14,9 +17,13 @@ namespace Aporia
     {
         size_t index = _index(scene);
         if (index == _scenes.size())
+        {
             _scenes.emplace_back( std::move(scene) );
+        }
         else
+        {
             _logger.log(LOG_WARNING) << "Scene '" << scene->get_name() << "' has already been added!";
+        }
 
         return index;
     }
@@ -27,25 +34,35 @@ namespace Aporia
         {
             auto remove = std::remove(_scenes.begin(), _scenes.end(), scene);
             if (remove != _scenes.end())
+            {
                 _scenes.erase(remove);
+            }
             else
+            {
                 _logger.log(LOG_WARNING) << "No scene named '" << scene->get_name() << "'!";
+            }
         }
         else
+        {
             _logger.log(LOG_ERROR) << "Scene '" << scene->get_name() << "' is currently in use!";
+        }
     }
 
     void SceneManager::load_scene(size_t id)
     {
         if (!_load(id))
+        {
             _logger.log(LOG_ERROR) << "No scene with id = " << id << "!";
+        }
     }
 
     void SceneManager::load_scene(Ref scene)
     {
         size_t id = _index(scene);
         if (!_load(id))
+        {
             _logger.log(LOG_WARNING) << "No scene named '" << scene->get_name() << "'!";
+        }
     }
 
     size_t SceneManager::_index(Ref scene)

@@ -1,8 +1,15 @@
 #include "animation_manager.hpp"
 
+#include <functional>
 #include <utility>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
+#include "event_manager.hpp"
+#include "logger.hpp"
+#include "texture_manager.hpp"
+#include "configs/animation_config.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia

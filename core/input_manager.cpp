@@ -2,7 +2,8 @@
 
 #include <functional>
 
-#include "event.hpp"
+#include "event_manager.hpp"
+#include "logger.hpp"
 
 namespace Aporia
 {

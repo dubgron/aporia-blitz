@@ -3,8 +3,6 @@
 #include <string>
 #include <utility>
 
-#include "logger.hpp"
-
 namespace Aporia
 {
     class Layer

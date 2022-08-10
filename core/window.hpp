@@ -1,20 +1,16 @@
 #pragma once
 
-#include <memory>
+#include <glm/glm.hpp>
 
-#include "graphics/opengl.hpp"
-
-#include <GLFW/glfw3.h>
-#include <glm/vec2.hpp>
-
-#include "event_manager.hpp"
-#include "logger.hpp"
-#include "components/color.hpp"
-#include "configs/window_config.hpp"
-#include "graphics/camera.hpp"
+struct GLFWwindow;
 
 namespace Aporia
 {
+    class Camera;
+    class EventManager;
+    class Logger;
+    struct WindowConfig;
+
     class Window final
     {
     public:

@@ -1,15 +1,14 @@
 #pragma once
 
-#include <cstdint>
-#include <functional>
+#include <cstddef>
 #include <memory>
 #include <vector>
 
-#include "logger.hpp"
-#include "scene.hpp"
-
 namespace Aporia
 {
+    class Logger;
+    class Scene;
+
     class SceneManager final
     {
         using Ref = std::shared_ptr<Scene>;

@@ -4,16 +4,18 @@
 
 #include <glm/vec2.hpp>
 
-#include "event_manager.hpp"
-#include "input_manager.hpp"
-#include "logger.hpp"
-#include "window.hpp"
-#include "components/color.hpp"
-#include "configs/camera_config.hpp"
 #include "graphics/camera.hpp"
 
 namespace Aporia
 {
+    class Camera;
+    class EventManager;
+    class InputManager;
+    class Logger;
+    class Window;
+    struct CameraConfig;
+    struct Color;
+
     class CameraController
     {
     public:

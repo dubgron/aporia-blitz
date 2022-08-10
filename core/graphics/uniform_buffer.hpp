@@ -5,8 +5,8 @@
 #include <string>
 #include <type_traits>
 
-#include "graphics/opengl.hpp"
 #include "graphics/shader.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {

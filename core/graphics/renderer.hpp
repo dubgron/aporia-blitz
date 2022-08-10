@@ -6,22 +6,27 @@
 
 #include <glm/matrix.hpp>
 
-#include "event_manager.hpp"
-#include "logger.hpp"
-#include "shader_manager.hpp"
-#include "window.hpp"
 #include "components/transform2d.hpp"
-#include "configs/window_config.hpp"
-#include "graphics/camera.hpp"
 #include "graphics/framebuffer.hpp"
 #include "graphics/light.hpp"
 #include "graphics/render_queue.hpp"
-#include "graphics/vertex.hpp"
 #include "graphics/vertex_array.hpp"
-#include "graphics/drawables/group.hpp"
 
 namespace Aporia
 {
+    class Camera;
+    class EventManager;
+    class Group;
+    class Logger;
+    class ShaderManager;
+    class Window;
+    struct Circle2D;
+    struct Line2D;
+    struct Rectangle2D;
+    struct Sprite;
+    struct Text;
+    struct WindowConfig;
+
     class Renderer final
     {
         static constexpr size_t MAX_QUEUE = 100000;

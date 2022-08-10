@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <format>
-#include <string>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

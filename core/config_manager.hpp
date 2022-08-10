@@ -4,12 +4,13 @@
 
 #include <nlohmann/json.hpp>
 
-#include "event_manager.hpp"
-#include "logger.hpp"
 #include "configs/all_configs.hpp"
 
 namespace Aporia
 {
+    class EventManager;
+    class Logger;
+
     struct ConfigManager final
     {
         ConfigManager(Logger& logger, EventManager& events, const std::string& path);

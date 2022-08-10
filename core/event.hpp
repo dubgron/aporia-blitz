@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include <glm/vec2.hpp>

@@ -5,7 +5,7 @@
 
 #include <glm/vec2.hpp>
 
-#include "graphics/common.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {

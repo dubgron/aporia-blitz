@@ -3,14 +3,14 @@
 #include <string>
 #include <utility>
 
-#include "input_manager.hpp"
-#include "logger.hpp"
-#include "graphics/renderer.hpp"
 #include "utils/timer.hpp"
 
 namespace Aporia
 {
+    class Logger;
+    class InputManager;
     class SceneManager;
+    class Renderer;
 
     class Scene
     {

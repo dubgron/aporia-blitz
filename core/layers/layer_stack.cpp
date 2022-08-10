@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <memory>
 
+#include "logger.hpp"
+
 namespace Aporia
 {
     LayerStack::LayerStack(Logger& logger)

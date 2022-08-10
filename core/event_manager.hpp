@@ -4,12 +4,11 @@
 #include <type_traits>
 
 #include "event.hpp"
-#include "logger.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia
 {
-    class Window;
+    class Logger;
 
     using EventsContainer = std::tuple<
         WindowCloseEvent,

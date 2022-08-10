@@ -61,23 +61,25 @@ add_library(core STATIC
     "graphics/camera.hpp"
     "graphics/camera_controller.cpp"
     "graphics/camera_controller.hpp"
-    "graphics/common.hpp"
     "graphics/font.hpp"
     "graphics/framebuffer.cpp"
     "graphics/framebuffer.hpp"
     "graphics/image.cpp"
     "graphics/image.hpp"
+    "graphics/index_buffer.cpp"
     "graphics/index_buffer.hpp"
     "graphics/light.hpp"
-    "graphics/opengl.hpp"
     "graphics/renderer.cpp"
     "graphics/renderer.hpp"
     "graphics/render_queue.hpp"
     "graphics/shader.hpp"
+    "graphics/shader_properties.cpp"
     "graphics/shader_properties.hpp"
     "graphics/uniform_buffer.hpp"
     "graphics/vertex.hpp"
+    "graphics/vertex_array.cpp"
     "graphics/vertex_array.hpp"
+    "graphics/vertex_buffer.cpp"
     "graphics/vertex_buffer.hpp"
     "graphics/animations/animation.cpp"
     "graphics/animations/animation.hpp"
@@ -102,6 +104,8 @@ add_library(core STATIC
     "layers/layer.hpp"
     "layers/layer_stack.cpp"
     "layers/layer_stack.hpp"
+    "platform/opengl.hpp"
+    "platform/opengl_common.hpp"
     "utils/color_conversion.hpp"
     "utils/math.hpp"
     "utils/random.hpp"
@@ -109,6 +113,8 @@ add_library(core STATIC
     "utils/shader_parser.hpp"
     "utils/timer.hpp"
     "utils/type_traits.hpp")
+
+target_precompile_headers(core PRIVATE "aporia_pch.hpp")
 
 target_link_libraries(core
     glfw
@@ -133,7 +139,6 @@ target_compile_definitions(core
     PUBLIC
         _USE_MATH_DEFINES
         MAGIC_ENUM_RANGE_MAX=512
-        STB_IMAGE_IMPLEMENTATION
     PRIVATE
         APORIA_EXPORT)
 
@@ -149,6 +154,7 @@ source_group(core\\graphics\\animations     "core/graphics/animations.+\.[cht]pp
 source_group(core\\graphics\\drawables      "core/graphics/drawables.+\.[cht]pp")
 source_group(core\\inputs                   "core/inputs/.+\.[cht]pp")
 source_group(core\\layers                   "core/layers/.+\.[cht]pp")
+source_group(core\\platform                 "core/platform/.+\.[cht]pp")
 source_group(core\\utils                    "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES

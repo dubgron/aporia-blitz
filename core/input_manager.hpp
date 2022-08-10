@@ -1,12 +1,13 @@
 #pragma once 
 
-#include "event_manager.hpp"
 #include "input_buffer.hpp"
-#include "logger.hpp"
 #include "inputs/all_inputs.hpp"
 
 namespace Aporia
 {
+    class EventManager;
+    class Logger;
+
     class InputManager final
     {
     public:

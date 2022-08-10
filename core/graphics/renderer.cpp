@@ -2,16 +2,20 @@
 
 #include <array>
 #include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
 #include <numeric>
-
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+#include "event_manager.hpp"
+#include "logger.hpp"
+#include "shader_manager.hpp"
+#include "window.hpp"
+#include "configs/window_config.hpp"
+#include "graphics/camera.hpp"
+#include "graphics/drawables/group.hpp"
+#include "platform/opengl.hpp"
 #include "utils/math.hpp"
 
 #ifdef _DEBUG

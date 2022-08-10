@@ -3,13 +3,14 @@
 #include <unordered_map>
 #include <string>
 
-#include "event_manager.hpp"
-#include "logger.hpp"
 #include "components/texture.hpp"
-#include "configs/texture_config.hpp"
 
 namespace Aporia
 {
+    class EventManager;
+    class Logger;
+    struct TextureConfig;
+
     class TextureManager final
     {
     public:

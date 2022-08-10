@@ -5,8 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include "logger.hpp"
 #include "graphics/image.hpp"
-#include "graphics/opengl.hpp"
+#include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia

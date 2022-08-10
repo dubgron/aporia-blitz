@@ -4,7 +4,9 @@
 #include <examples/imgui_impl_glfw.h>
 #include <examples/imgui_impl_opengl3.h>
 
-#include "graphics/opengl.hpp"
+#include "logger.hpp"
+#include "window.hpp"
+#include "platform/opengl_common.hpp"
 
 namespace Aporia
 {
@@ -36,7 +38,7 @@ namespace Aporia
         GLFWwindow* window = _window.get_native_window();
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init(IMGUI_OPENGL_VERSION);
+        ImGui_ImplOpenGL3_Init(OPENGL_SHADER_VERSION);
     }
 
     void ImGuiLayer::on_detach()

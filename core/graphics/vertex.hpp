@@ -6,7 +6,7 @@
 #include <glm/vec3.hpp>
 
 #include "components/color.hpp"
-#include "graphics/common.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {

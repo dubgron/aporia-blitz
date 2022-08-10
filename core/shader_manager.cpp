@@ -2,7 +2,8 @@
 
 #include <functional>
 
-#include "graphics/opengl.hpp"
+#include "logger.hpp"
+#include "configs/shader_config.hpp"
 #include "utils/shader_parser.hpp"
 
 namespace Aporia
@@ -321,7 +322,6 @@ namespace Aporia
         {
             glDisable(GL_DEPTH_TEST);
         }
-
     }
 
     int32_t ShaderManager::_location(const std::string& name)

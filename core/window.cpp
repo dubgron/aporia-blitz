@@ -5,7 +5,12 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "event_manager.hpp"
+#include "logger.hpp"
+#include "configs/window_config.hpp"
+#include "graphics/camera.hpp"
 #include "inputs/all_inputs.hpp"
+#include "platform/opengl.hpp"
 
 namespace Aporia
 {
@@ -120,7 +125,7 @@ namespace Aporia
                         }
                     };
 
-                    get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
+                    //get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
                 },
                 reinterpret_cast<const void*>(&_logger));
 #       endif

@@ -3,14 +3,15 @@
 #include <string>
 #include <unordered_map>
 
-#include "event_manager.hpp"
-#include "logger.hpp"
-#include "texture_manager.hpp"
-#include "configs/animation_config.hpp"
 #include "graphics/animations/animation.hpp"
 
 namespace Aporia
 {
+    class EventManager;
+    class Logger;
+    class TextureManager;
+    struct AnimationConfig;
+
     class AnimationManager final
     {
     public:

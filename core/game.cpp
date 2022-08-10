@@ -1,10 +1,10 @@
 #include "game.hpp"
 
-#include <imgui.h>
-
 #if defined(APORIA_EMSCRIPTEN)
-#   include <emscripten.h>
+    #include <emscripten.h>
 #endif
+
+#include "scene.hpp"
 
 namespace Aporia
 {
