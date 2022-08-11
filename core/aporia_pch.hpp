@@ -30,7 +30,6 @@
 #include <utility>
 #include <vector>
 
-
 /* Third-Party Libraries */
 #include <spdlog/spdlog.h>
 
@@ -52,6 +51,7 @@
 
 #include "platform/opengl.hpp"
 
-
 /* Aporia Blitz */
 #include "logger.hpp"
+#include "inputs/all_inputs.hpp"
+#include "input_manager.hpp"
