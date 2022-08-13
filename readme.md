@@ -12,20 +12,14 @@ A **cross-platform**, **lightweight** yet **powerful 2D engine** to **make games
     git clone --recursive https://github.com/dubgron/aporia-blitz.git
     ```
 
-2. Generate **gl3w** files
-    ```sh
-    # aporia-blitz/thirdparty/gl3w
-    python -B gl3w_gen.py
-    ```
-
-3. Build with **CMake**
+2. Build with **CMake**
     ```sh
     # aporia-blitz
     mkdir build && cd build
     cmake -A x64 ..
     ```
 
-4. Compile
+3. Compile
     ```sh
     # aporia-blitz/build
     cmake --build .
