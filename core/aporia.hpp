@@ -1,3 +1,6 @@
+/* Common */
+#include <common.hpp>
+
 /* Configs */
 #include <configs/all_configs.hpp>
 #include <configs/animation_config.hpp>
@@ -19,10 +22,6 @@
 #include <utils/shader_parser.hpp>
 #include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
-
-/* Logger */
-#include <log_buffer.hpp>
-#include <logger.hpp>
 
 /* Graphics */
 #include <graphics/font.hpp>

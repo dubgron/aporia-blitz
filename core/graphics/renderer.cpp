@@ -8,8 +8,8 @@
 #include <glm/vec4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+#include "common.hpp"
 #include "event_manager.hpp"
-#include "logger.hpp"
 #include "shader_manager.hpp"
 #include "window.hpp"
 #include "configs/window_config.hpp"
@@ -18,14 +18,15 @@
 #include "platform/opengl.hpp"
 #include "utils/math.hpp"
 
-#ifdef _DEBUG
-#include <imgui.h>
-#define DEBUG_TEXTURE(texture) \
-    ImGui::Begin("DEBUG : Textures");\
-    ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f }); \
-    ImGui::End();
+#if defined(APORIA_DEBUG)
+    #include <imgui.h>
+    #define DEBUG_TEXTURE(texture) \
+        ImGui::Begin("DEBUG | Textures");\
+        ImGui::Text("ID: %d, Size: %d x %d", texture.id, texture.width, texture.height); \
+        ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f }); \
+        ImGui::End();
 #else
-#define DEBUG_TEXTURE(framebuffer)
+    #define DEBUG_TEXTURE
 #endif
 
 namespace Aporia

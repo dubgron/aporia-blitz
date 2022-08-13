@@ -4,9 +4,9 @@
 #include <cmath>
 #include <functional>
 
+#include "common.hpp"
 #include "event_manager.hpp"
 #include "input_manager.hpp"
-#include "logger.hpp"
 #include "window.hpp"
 #include "components/color.hpp"
 #include "configs/camera_config.hpp"

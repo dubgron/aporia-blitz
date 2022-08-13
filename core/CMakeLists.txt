@@ -1,6 +1,7 @@
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-option(APORIA_EMSCRIPTEN "Compile with Emscripten" OFF)
+option(APORIA_DEBUGTOOLS    "Compile with debug tools"  ON)
+option(APORIA_EMSCRIPTEN    "Compile with Emscripten"   OFF)
 
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
@@ -19,13 +20,13 @@ add_library(core STATIC
     "animation_manager.cpp"
     "animation_manager.hpp"
     "aporia.hpp"
+    "common.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
     "entity.hpp"
     "entry_point.hpp"
     "event.hpp"
     "event_manager.hpp"
-    "event_manager.tpp"
     "font_manager.cpp"
     "font_manager.hpp"
     "game.cpp"
@@ -33,9 +34,6 @@ add_library(core STATIC
     "input_buffer.hpp"
     "input_manager.cpp"
     "input_manager.hpp"
-    "log_buffer.hpp"
-    "logger.cpp"
-    "logger.hpp"
     "scene.hpp"
     "scene_manager.cpp"
     "scene_manager.hpp"
@@ -57,6 +55,8 @@ add_library(core STATIC
     "configs/shader_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
+    "debug/logger.cpp"
+    "debug/logger.hpp"
     "graphics/camera.cpp"
     "graphics/camera.hpp"
     "graphics/camera_controller.cpp"
@@ -141,6 +141,10 @@ target_compile_definitions(core
         MAGIC_ENUM_RANGE_MAX=512
         NOMINMAX)
 
+if (APORIA_DEBUGTOOLS)
+    target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
+endif()
+
 if (APORIA_EMSCRIPTEN)
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)
 endif()
@@ -148,6 +152,7 @@ endif()
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/components            "core/components/.+\.[cht]pp")
 source_group(core/configs               "core/configs/.+\.[cht]pp")
+source_group(core/debug                 "core/debug/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/animations   "core/graphics/animations.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")

@@ -8,8 +8,8 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "common.hpp"
 #include "event_manager.hpp"
-#include "logger.hpp"
 #include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
@@ -21,7 +21,7 @@ namespace Aporia
     {
         if (!std::filesystem::exists(_path))
         {
-            _logger.log(LOG_CRITICAL) << "Config file '" << _path << "' doesn't exist!";
+            APORIA_LOG(_logger, Critical, "Config file '{}' doesn't exist!", _path);
             return;
         }
 

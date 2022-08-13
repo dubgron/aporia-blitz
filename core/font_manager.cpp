@@ -5,7 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "logger.hpp"
+#include "common.hpp"
 #include "graphics/image.hpp"
 #include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
@@ -24,15 +24,15 @@ namespace Aporia
 
         if (_fonts.contains(name))
         {
-            _logger.log(LOG_WARNING) << "Already loaded font named " << name << "!";
+            APORIA_LOG(_logger, Warning, "Already loaded font named '{}'!", name);
         }
         else if (!std::filesystem::exists(png_filepath))
         {
-            _logger.log(LOG_ERROR) << "Can't open " << png_filepath.relative_path() << " file!";
+            APORIA_LOG(_logger, Error, "Can't open '{}' file!", png_filepath.relative_path().string());
         }
         else if (!std::filesystem::exists(json_filepath))
         {
-            _logger.log(LOG_ERROR) << "Can't open " << json_filepath.relative_path() << " file!";
+            APORIA_LOG(_logger, Error, "Can't open '{}' file!", json_filepath.relative_path().string());
         }
         else
         {
@@ -116,7 +116,7 @@ namespace Aporia
         auto font = _fonts.find(name);
         if (font == _fonts.end())
         {
-            _logger.log(LOG_WARNING) << "There is no font named " << name << "!";
+            APORIA_LOG(_logger, Warning, "There is no font named '{}'!", name);
             return default_font;
         }
         else

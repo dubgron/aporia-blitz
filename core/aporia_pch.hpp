@@ -52,6 +52,6 @@
 #include "platform/opengl.hpp"
 
 /* Aporia Blitz */
-#include "logger.hpp"
+#include "common.hpp"
 #include "inputs/all_inputs.hpp"
 #include "input_manager.hpp"

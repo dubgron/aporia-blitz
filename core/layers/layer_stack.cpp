@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "logger.hpp"
+#include "common.hpp"
 
 namespace Aporia
 {
@@ -21,7 +21,9 @@ namespace Aporia
             _layers.emplace(_layers.begin() + _overlay_index++, layer);
         }
         else
-            _logger.log(LOG_WARNING) << "Layer '" << layer.get_name() << "' has already been pushed!";
+        {
+            APORIA_LOG(_logger, Warning, "Layer '{}' has already been pushed!", layer.get_name());
+        }
     }
 
     void LayerStack::push_overlay(Layer& overlay)
@@ -35,7 +37,9 @@ namespace Aporia
             _layers.emplace_back(overlay);
         }
         else
-            _logger.log(LOG_WARNING) << "Overlay '" << overlay.get_name() << "' has already been pushed!";
+        {
+            APORIA_LOG(_logger, Warning, "Overlay '{}' has already been pushed!", overlay.get_name());
+        }
     }
 
     void LayerStack::pop_layer(Layer& layer)
@@ -52,7 +56,9 @@ namespace Aporia
             --_overlay_index;
         }
         else
-            _logger.log(LOG_WARNING) << "No layer named '" << layer.get_name() << "'!";
+        {
+            APORIA_LOG(_logger, Warning, "No layer named '{}'!", layer.get_name());
+        }
     }
 
     void LayerStack::pop_overlay(Layer& overlay)
@@ -68,6 +74,8 @@ namespace Aporia
             _layers.erase(remove);
         }
         else
-            _logger.log(LOG_WARNING) << "No overlay named '" << overlay.get_name() << "'!";
+        {
+            APORIA_LOG(_logger, Warning, "No overlay named '{}'!", overlay.get_name());
+        }
     }
 }

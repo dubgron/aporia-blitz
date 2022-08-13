@@ -6,8 +6,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "common.hpp"
 #include "event_manager.hpp"
-#include "logger.hpp"
 #include "texture_manager.hpp"
 #include "configs/animation_config.hpp"
 #include "utils/read_file.hpp"
@@ -26,7 +26,7 @@ namespace Aporia
     {
         if (!_animations.contains(name))
         {
-            _logger.log(LOG_ERROR) << "No animation named '" << name << "'!";
+            APORIA_LOG(_logger, Error, "No animation named {}!", name);
             return _animations.at("default");
         }
         else

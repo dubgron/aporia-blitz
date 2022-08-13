@@ -4,7 +4,7 @@
 #include <examples/imgui_impl_glfw.h>
 #include <examples/imgui_impl_opengl3.h>
 
-#include "logger.hpp"
+#include "common.hpp"
 #include "window.hpp"
 #include "platform/opengl.hpp"
 

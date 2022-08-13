@@ -5,8 +5,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "common.hpp"
 #include "event_manager.hpp"
-#include "logger.hpp"
 #include "components/texture.hpp"
 #include "configs/texture_config.hpp"
 #include "graphics/image.hpp"
@@ -28,7 +28,7 @@ namespace Aporia
         auto texture = _textures.find(name);
         if (texture == _textures.end())
         {
-            _logger.log(LOG_WARNING) << "There is no texture named " << name << "!";
+            APORIA_LOG(_logger, Warning, "There is no texture named '{}'!", name);
             return _textures.at("default");
         }
         else
@@ -43,20 +43,20 @@ namespace Aporia
 
         if (!std::filesystem::exists(_config.atlas))
         {
-            _logger.log(LOG_ERROR) << "File '" << _config.atlas << "' does not open!";
+            APORIA_LOG(_logger, Error, "File '{}' does not open!", _config.atlas);
         }
         else
         {
             std::string data = read_file(_config.atlas);
             json texture_json = json::parse(data);
 
-            _logger.log(LOG_INFO) << "Opened '" << _config.atlas << "' successfully";
+            APORIA_LOG(_logger, Info, "Opened '{}' successfully!", _config.atlas);
 
             std::string filepath = texture_json["atlas"];
 
             if (!std::filesystem::exists(filepath))
             {
-                _logger.log(LOG_ERROR) << "File '" << filepath << "' does not open!";
+                APORIA_LOG(_logger, Error, "File '{}' does not open!", filepath);
             }
             else
             {
@@ -66,7 +66,7 @@ namespace Aporia
                 Image atlas_image{ filepath };
                 auto [pixels, width, height, channels] = atlas_image.get_data();
 
-                _logger.log(LOG_INFO) << "Opened '" << filepath << "' successfully";
+                APORIA_LOG(_logger, Info, "Opened '{}' successfully!", filepath);
 
 #               if defined(APORIA_EMSCRIPTEN)
                     glGenTextures(1, &id);
@@ -108,7 +108,7 @@ namespace Aporia
 
                     if (_textures.find(name) != _textures.end())
                     {
-                        _logger.log(LOG_WARNING) << "There are two textures named '" << name << "'! One of them will be overwritten!";
+                        APORIA_LOG(_logger, Warning, "There are two textures named '{}'! One of them will be overwritten!", name);
                     }
 
                     glm::vec2 u = { texture["u"][0], texture["u"][1] };
@@ -119,11 +119,11 @@ namespace Aporia
 
                 if (_textures.find("default") == _textures.end())
                 {
-                    _logger.log(LOG_WARNING) << "There is no default texture in '" << filepath << "'!";
+                    APORIA_LOG(_logger, Warning, "There is no default texture in '{}'!", filepath);
                     _textures.try_emplace("default", Texture{ { 0.0f, 1.0f }, { 1.0f, 0.0f }, atlas });
                 }
 
-                _logger.log(LOG_INFO) << "All textures from '" << filepath << "' loaded successfully";
+                APORIA_LOG(_logger, Info, "All textures from '{}' loaded successfully", filepath);
             }
         }
     }

@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "logger.hpp"
+#include "common.hpp"
 #include "scene.hpp"
 
 namespace Aporia
@@ -22,7 +22,7 @@ namespace Aporia
         }
         else
         {
-            _logger.log(LOG_WARNING) << "Scene '" << scene->get_name() << "' has already been added!";
+            APORIA_LOG(_logger, Warning, "Scene '{}' has already been added!", scene->get_name());
         }
 
         return index;
@@ -39,12 +39,12 @@ namespace Aporia
             }
             else
             {
-                _logger.log(LOG_WARNING) << "No scene named '" << scene->get_name() << "'!";
+                APORIA_LOG(_logger, Warning, "No scene named '{}'!", scene->get_name());
             }
         }
         else
         {
-            _logger.log(LOG_ERROR) << "Scene '" << scene->get_name() << "' is currently in use!";
+            APORIA_LOG(_logger, Error, "Scene '{}' is currently in use!", scene->get_name());
         }
     }
 
@@ -52,7 +52,7 @@ namespace Aporia
     {
         if (!_load(id))
         {
-            _logger.log(LOG_ERROR) << "No scene with id = " << id << "!";
+            APORIA_LOG(_logger, Error, "No scene with id = '{}'!", id);
         }
     }
 
@@ -61,7 +61,7 @@ namespace Aporia
         size_t id = _index(scene);
         if (!_load(id))
         {
-            _logger.log(LOG_WARNING) << "No scene named '" << scene->get_name() << "'!";
+            APORIA_LOG(_logger, Warning, "No scene named '{}'!", scene->get_name());
         }
     }
 
@@ -75,10 +75,10 @@ namespace Aporia
     {
         if (id < _scenes.size())
         {
-            _logger.log(LOG_INFO) << "Unloading '" << _scenes[_current_scene]->get_name() << "' scene";
+            APORIA_LOG(_logger, Info, "Unloading '{}' scene", _scenes[_current_scene]->get_name());
             _scenes[_current_scene]->on_unload();
 
-            _logger.log(LOG_INFO) << "Loading '" << _scenes[id]->get_name() << "' scene";
+            APORIA_LOG(_logger, Info, "Loading '{}' scene", _scenes[id]->get_name());
             _scenes[id]->on_load();
 
             _current_scene = id;

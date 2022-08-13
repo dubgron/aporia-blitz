@@ -5,8 +5,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "common.hpp"
 #include "event_manager.hpp"
-#include "logger.hpp"
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "inputs/all_inputs.hpp"
@@ -21,7 +21,7 @@ namespace Aporia
 
         if (!glfwInit())
         {
-            _logger.log(LOG_CRITICAL) << "Failed to initialize GLFW!";
+            APORIA_LOG(_logger, Critical, "Failed to initialize GLFW!");
         }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
@@ -57,9 +57,13 @@ namespace Aporia
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 Keyboard key = static_cast<Keyboard>(key_code);
                 if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                {
                     win._events.call_event<KeyPressedEvent>(key);
+                }
                 else if (action == GLFW_RELEASE)
+                {
                     win._events.call_event<KeyReleasedEvent>(key);
+                }
             });
 
         glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods)
@@ -67,18 +71,26 @@ namespace Aporia
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 Mouse button = static_cast<Mouse>(button_code);
                 if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                {
                     win._events.call_event<ButtonPressedEvent>(button);
+                }
                 else if (action == GLFW_RELEASE)
+                {
                     win._events.call_event<ButtonReleasedEvent>(button);
+                }
             });
 
         glfwSetScrollCallback(_window, [](GLFWwindow* window, double x_offset, double y_offset)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 if (x_offset)
+                {
                     win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, static_cast<float>(x_offset));
+                }
                 if (y_offset)
+                {
                     win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, static_cast<float>(y_offset));
+                }
             });
 
         glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double x_pos, double y_pos)
@@ -96,7 +108,7 @@ namespace Aporia
 #       if !defined(APORIA_EMSCRIPTEN)
             if (gl3wInit())
             {
-                _logger.log(LOG_CRITICAL) << "Failed to initialize OpenGL!";
+                APORIA_LOG(_logger, Critical, "Failed to initialize OpenGL!");
             }
 #       endif
 
@@ -106,28 +118,58 @@ namespace Aporia
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        _logger.log(LOG_INFO) << glGetString(GL_VERSION);
+        APORIA_LOG(_logger, Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
 #       if !defined(APORIA_EMSCRIPTEN)
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
                 {
-                    const Aporia::Logger* logger = reinterpret_cast<const Aporia::Logger*>(userParam);
-                    const auto get_logger = [&logger](GLenum severity)
+                    constexpr auto log_level = [](GLenum severity)
                     {
                         switch (severity)
                         {
-                        case GL_DEBUG_SEVERITY_HIGH:            return logger->log(LOG_ERROR);
-                        case GL_DEBUG_SEVERITY_MEDIUM:          return logger->log(LOG_WARNING);
-                        case GL_DEBUG_SEVERITY_LOW:             return logger->log(LOG_WARNING);
-                        case GL_DEBUG_SEVERITY_NOTIFICATION:    return logger->log(LOG_DEBUG);
-                        default:                                return logger->log(LOG_ERROR);
+                        case GL_DEBUG_SEVERITY_HIGH:            return LogLevel::Error;
+                        case GL_DEBUG_SEVERITY_MEDIUM:          return LogLevel::Warning;
+                        case GL_DEBUG_SEVERITY_LOW:             return LogLevel::Info;
+                        case GL_DEBUG_SEVERITY_NOTIFICATION:    return LogLevel::Debug;
+                        default:                                return LogLevel::Critical;
                         }
                     };
 
-                    get_logger(severity) << get_debug_source(source) << " " << get_debug_type(type) << " [ID=" << id << "] \"" << message << "\"";
-                },
-                reinterpret_cast<const void*>(&_logger));
+                    constexpr auto debug_source = [](GLenum source)
+                    {
+                        switch (source)
+                        {
+                        case GL_DEBUG_SOURCE_API:                   return "OPENGL_API";
+                        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:         return "WINDOW_SYSTEM";
+                        case GL_DEBUG_SOURCE_SHADER_COMPILER:       return "SHADER_COMPILER";
+                        case GL_DEBUG_SOURCE_THIRD_PARTY:           return "THIRD_PARTY";
+                        case GL_DEBUG_SOURCE_APPLICATION:           return "APPLICATION";
+                        case GL_DEBUG_SOURCE_OTHER:                 return "OTHER";
+                        default:                                    return "INVALID_SOURCE";
+                        }
+                    };
+
+                    constexpr auto debug_type = [](GLenum type)
+                    {
+                        switch (type)
+                        {
+                        case GL_DEBUG_TYPE_ERROR:                   return "ERROR";
+                        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:     return "DEPRECATED_BEHAVIOR";
+                        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:      return "UNDEFINED_BEHAVIOR";
+                        case GL_DEBUG_TYPE_PORTABILITY:             return "PORTABILITY";
+                        case GL_DEBUG_TYPE_PERFORMANCE:             return "PERFORMANCE";
+                        case GL_DEBUG_TYPE_MARKER:                  return "MARKER";
+                        case GL_DEBUG_TYPE_PUSH_GROUP:              return "PUSH_GROUP";
+                        case GL_DEBUG_TYPE_POP_GROUP:               return "POP_GROUP";
+                        case GL_DEBUG_TYPE_OTHER:                   return "OTHER";
+                        default:                                    return "INVALID_TYPE";
+                        }
+                    };
+
+                    static Logger logger{ "OpenGL" };
+                    APORIA_LOG(logger, log_level(severity), "{} {} [ID = {}] '{}'", debug_source(source), debug_type(type), id, message);
+                }, nullptr);
 #       endif
 
         events.add_listener<WindowCloseEvent>([](Window& window)
