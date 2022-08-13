@@ -49,8 +49,11 @@ namespace Aporia
             movement.x += movement_speed;
         }
 
-        const glm::vec2 to_move = _camera.get_right_vector() * movement.x + _camera.get_up_vector() * movement.y;
-        _camera.move(to_move);
+        if (movement.x || movement.y)
+        {
+            const glm::vec2 to_move = _camera.get_right_vector() * movement.x + _camera.get_up_vector() * movement.y;
+            _camera.move(to_move);
+        }
     }
 
     void CameraController::control_rotation(const InputManager& input_manager, float delta_time)
@@ -68,7 +71,10 @@ namespace Aporia
             rotation -= rotation_speed;
         }
 
-        _camera.rotate(rotation);
+        if (rotation)
+        {
+            _camera.rotate(rotation);
+        }
     }
 
     void CameraController::control_zoom(const InputManager& input_manager, float delta_time)
