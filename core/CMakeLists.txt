@@ -55,6 +55,8 @@ add_library(core STATIC
     "configs/shader_config.hpp"
     "configs/texture_config.hpp"
     "configs/window_config.hpp"
+    "debug/asserts.hpp"
+    "debug/break.hpp"
     "debug/logger.cpp"
     "debug/logger.hpp"
     "graphics/camera.cpp"
