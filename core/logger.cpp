@@ -10,7 +10,8 @@ namespace Aporia
 {
     Logger::Logger(const std::string& name)
     {
-        std::string logfile = std::format("logs/{0:%Y-%m-%d_%H-%M-%OS}.log", std::chrono::system_clock::now());
+        const std::chrono::zoned_time timestamp{ std::chrono::current_zone(), std::chrono::system_clock::now() };
+        const std::string logfile = std::format("logs/{0:%Y-%m-%d_%H-%M-%OS}.log", timestamp);
 
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
