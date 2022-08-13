@@ -42,10 +42,19 @@ namespace Aporia
             : _logger(logger) {}
 
         template<EventType Event, typename... Args>
-        void call_event(Args&&... args);
+        void call_event(Args&&... args)
+        {
+            for (auto& func : std::get<Event>(_events).listeners)
+            {
+                func( std::forward<Args>(args)... );
+            }
+        }
 
         template<EventType Event, ListenerOf<Event> Listener>
-        void add_listener(Listener listener);
+        void add_listener(Listener listener)
+        {
+            std::get<Event>(_events).listeners.push_back( std::move(listener) );
+        }
 
     private:
         Logger& _logger;
@@ -53,5 +62,3 @@ namespace Aporia
         EventsContainer _events;
     };
 }
-
-#include "event_manager.tpp"
