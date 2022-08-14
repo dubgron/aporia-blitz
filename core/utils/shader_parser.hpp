@@ -62,7 +62,7 @@ namespace Aporia
                 ShaderType type = string_to<ShaderType>(params);
                 std::string shader = contents.substr(shader_begin, shader_end - shader_begin);
 
-                results.subshaders.emplace_back( std::move(type), std::move(shader) );
+                results.subshaders.emplace_back(SubShaderData{ std::move(type), std::move(shader) });
 
                 line_end = shader_end - 1;
             }
