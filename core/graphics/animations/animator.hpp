@@ -7,10 +7,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "graphics/animations/animation.hpp"
+
 namespace Aporia
 {
     class Logger;
-    class Animation;
     struct Sprite;
 
     class Animator final
