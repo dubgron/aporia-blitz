@@ -131,9 +131,9 @@ if (NOT APORIA_EMSCRIPTEN)
     target_link_libraries(core
         gl3w
         OpenGL::GL)
-
-    target_compile_features(core PUBLIC cxx_std_23)
 endif()
+
+target_compile_features(core PUBLIC cxx_std_23)
 
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
 
@@ -148,6 +148,24 @@ if (APORIA_DEBUGTOOLS)
 endif()
 
 if (APORIA_EMSCRIPTEN)
+    target_compile_options(core
+        PUBLIC
+            -fbracket-depth=1000
+            -O2)
+
+    target_link_options(core
+        PUBLIC
+            -sFULL_ES3
+            -sUSE_GLFW=3
+            -sWASM=1
+            -sUSE_WEBGL2=1
+            -sMIN_WEBGL_VERSION=2
+            -sMAX_WEBGL_VERSION=2
+            -sALLOW_MEMORY_GROWTH=1
+            -sASYNCIFY=1
+            -sASSERTIONS=1
+            -sLLD_REPORT_UNDEFINED)
+
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)
 endif()
 
