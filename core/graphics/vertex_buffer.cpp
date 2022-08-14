@@ -4,19 +4,19 @@
 
 namespace Aporia
 {
-    VertexBuffer::VertexBuffer(size_t max_objects, size_t count)
-        : _count(count)
+    VertexBuffer::VertexBuffer(size_t max_objects, size_t vertex_count)
+        : _count(vertex_count)
     {
         glGenBuffers(1, &_id);
         glBindBuffer(GL_ARRAY_BUFFER, _id);
 
 #       if defined(APORIA_EMSCRIPTEN)
-            glBufferData(GL_ARRAY_BUFFER, Size * Count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #       else
-            glNamedBufferData(_id, max_objects * count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+            glNamedBufferData(_id, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #       endif
 
-        _buffer.reserve(max_objects * count);
+        _buffer.reserve(max_objects * vertex_count);
     }
 
     VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
