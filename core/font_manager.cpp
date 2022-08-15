@@ -46,10 +46,12 @@ namespace Aporia
             result.atlas.origin.height = atlas_data.height;
             result.atlas.origin.channels = atlas_data.channels;
 
-            glGenTextures(1, &result.atlas.origin.id);
+            /* TODO: Move the OpenGL part of creatng texture to a separate function */
+            uint32_t id = 0;
+            glGenTextures(1, &id);
 
-            glActiveTexture(GL_TEXTURE0 + result.atlas.origin.id);
-            glBindTexture(GL_TEXTURE_2D, result.atlas.origin.id);
+            glActiveTexture(GL_TEXTURE0 + id);
+            glBindTexture(GL_TEXTURE_2D, id);
 
             glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, atlas_data.width, atlas_data.height);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas_data.width, atlas_data.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas_data.pixels);
@@ -60,6 +62,8 @@ namespace Aporia
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             glGenerateMipmap(GL_TEXTURE_2D);
+
+            result.atlas.origin.id = id;
 
             using json = nlohmann::json;
 

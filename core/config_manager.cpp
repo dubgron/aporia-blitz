@@ -82,11 +82,11 @@ namespace Aporia
         const auto& shader = config["shader_config"];
         const auto& default_properties = shader["default_properties"];
 
-        shader_config.default_properties.blend[0] = string_to<ShaderBlend>(default_properties["blend"][0]);
-        shader_config.default_properties.blend[1] = string_to<ShaderBlend>(default_properties["blend"][1]);
-        shader_config.default_properties.blend_op = string_to<ShaderBlendOp>(default_properties["blend_op"]);
-        shader_config.default_properties.depth_test = string_to<ShaderDepthTest>(default_properties["depth_test"]);
-        shader_config.default_properties.depth_write = string_to<ShaderDepthWrite>(default_properties["depth_write"]);
+        shader_config.default_properties.blend[0] = string_to<ShaderBlend>(default_properties["blend"][0].get<std::string_view>());
+        shader_config.default_properties.blend[1] = string_to<ShaderBlend>(default_properties["blend"][1].get<std::string_view>());
+        shader_config.default_properties.blend_op = string_to<ShaderBlendOp>(default_properties["blend_op"].get<std::string_view>());
+        shader_config.default_properties.depth_test = string_to<ShaderDepthTest>(default_properties["depth_test"].get<std::string_view>());
+        shader_config.default_properties.depth_write = string_to<ShaderDepthWrite>(default_properties["depth_write"].get<std::string_view>());
     }
 
     void ConfigManager::load_camera_config(const json& config)

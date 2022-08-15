@@ -11,7 +11,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <functional>
 #include <map>
@@ -29,6 +28,12 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#if defined(__cpp_lib_format)
+    #include <format>
+#else
+    #include <ctime>
+#endif
 
 /* Third-Party Libraries */
 #include <spdlog/spdlog.h>
