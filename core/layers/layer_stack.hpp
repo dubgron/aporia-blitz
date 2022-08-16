@@ -8,14 +8,12 @@
 
 namespace Aporia
 {
-    class Logger;
-
     class LayerStack final
     {
         using Container = std::vector<std::reference_wrapper<Layer>>;
 
     public:
-        LayerStack(Logger& logger);
+        LayerStack() = default;
 
         void push_layer(Layer& layer);
         void pop_layer(Layer& layer);
@@ -34,8 +32,6 @@ namespace Aporia
         Container::const_reverse_iterator rend() const      { return _layers.rend(); }
 
     private:
-        Logger& _logger;
-
         Container _layers;
         uint32_t _overlay_index = 0;
     };

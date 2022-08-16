@@ -11,7 +11,6 @@ namespace Aporia
     class Camera;
     class EventManager;
     class InputManager;
-    class Logger;
     class Window;
     struct CameraConfig;
     struct Color;
@@ -19,7 +18,7 @@ namespace Aporia
     class CameraController
     {
     public:
-        CameraController(Logger& logger, EventManager& event_manager, CameraConfig& config);
+        CameraController(EventManager& event_manager, CameraConfig& config);
 
         void control_movement(const InputManager& input_manager, float delta_time);
         void control_rotation(const InputManager& input_manager, float delta_time);
@@ -35,8 +34,6 @@ namespace Aporia
         void _on_config_reload();
 
     private:
-        Logger& _logger;
-
         Camera _camera;
         CameraConfig& _config;
     };

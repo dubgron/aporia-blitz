@@ -14,9 +14,6 @@ namespace Aporia
 {
     const Font FontManager::default_font{};
 
-    FontManager::FontManager(Logger& logger)
-        : _logger(logger) {}
-
     void FontManager::load_font(std::string name, std::filesystem::path filepath)
     {
         std::filesystem::path png_filepath = filepath.replace_extension("png");
@@ -24,15 +21,15 @@ namespace Aporia
 
         if (_fonts.contains(name))
         {
-            APORIA_LOG(_logger, Warning, "Already loaded font named '{}'!", name);
+            APORIA_LOG(Warning, "Already loaded font named '{}'!", name);
         }
         else if (!std::filesystem::exists(png_filepath))
         {
-            APORIA_LOG(_logger, Error, "Can't open '{}' file!", png_filepath.relative_path().string());
+            APORIA_LOG(Error, "Can't open '{}' file!", png_filepath.relative_path().string());
         }
         else if (!std::filesystem::exists(json_filepath))
         {
-            APORIA_LOG(_logger, Error, "Can't open '{}' file!", json_filepath.relative_path().string());
+            APORIA_LOG(Error, "Can't open '{}' file!", json_filepath.relative_path().string());
         }
         else
         {
@@ -120,7 +117,7 @@ namespace Aporia
         auto font = _fonts.find(name);
         if (font == _fonts.end())
         {
-            APORIA_LOG(_logger, Warning, "There is no font named '{}'!", name);
+            APORIA_LOG(Warning, "There is no font named '{}'!", name);
             return default_font;
         }
         else

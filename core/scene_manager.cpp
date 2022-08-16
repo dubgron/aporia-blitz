@@ -7,10 +7,9 @@
 
 namespace Aporia
 {
-    SceneManager::SceneManager(Logger& logger)
-        : _logger(logger)
+    SceneManager::SceneManager()
     {
-        _scenes.emplace_back(std::make_shared<Scene>(logger, "Default Scene"));
+        _scenes.emplace_back(std::make_shared<Scene>("Default Scene"));
     }
 
     size_t SceneManager::add(Ref scene)
@@ -22,7 +21,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "Scene '{}' has already been added!", scene->get_name());
+            APORIA_LOG(Warning, "Scene '{}' has already been added!", scene->get_name());
         }
 
         return index;
@@ -39,12 +38,12 @@ namespace Aporia
             }
             else
             {
-                APORIA_LOG(_logger, Warning, "No scene named '{}'!", scene->get_name());
+                APORIA_LOG(Warning, "No scene named '{}'!", scene->get_name());
             }
         }
         else
         {
-            APORIA_LOG(_logger, Error, "Scene '{}' is currently in use!", scene->get_name());
+            APORIA_LOG(Error, "Scene '{}' is currently in use!", scene->get_name());
         }
     }
 
@@ -52,7 +51,7 @@ namespace Aporia
     {
         if (!_load(id))
         {
-            APORIA_LOG(_logger, Error, "No scene with id = '{}'!", id);
+            APORIA_LOG(Error, "No scene with id = '{}'!", id);
         }
     }
 
@@ -61,7 +60,7 @@ namespace Aporia
         size_t id = _index(scene);
         if (!_load(id))
         {
-            APORIA_LOG(_logger, Warning, "No scene named '{}'!", scene->get_name());
+            APORIA_LOG(Warning, "No scene named '{}'!", scene->get_name());
         }
     }
 
@@ -75,10 +74,10 @@ namespace Aporia
     {
         if (id < _scenes.size())
         {
-            APORIA_LOG(_logger, Info, "Unloading '{}' scene", _scenes[_current_scene]->get_name());
+            APORIA_LOG(Info, "Unloading '{}' scene", _scenes[_current_scene]->get_name());
             _scenes[_current_scene]->on_unload();
 
-            APORIA_LOG(_logger, Info, "Loading '{}' scene", _scenes[id]->get_name());
+            APORIA_LOG(Info, "Loading '{}' scene", _scenes[id]->get_name());
             _scenes[id]->on_load();
 
             _current_scene = id;

@@ -8,13 +8,12 @@
 namespace Aporia
 {
     class EventManager;
-    class Logger;
     struct TextureConfig;
 
     class TextureManager final
     {
     public:
-        TextureManager(Logger& logger, EventManager& event_manager, const TextureConfig& config);
+        TextureManager(EventManager& event_manager, const TextureConfig& config);
 
         const Texture& get_texture(const std::string& name) const;
 
@@ -22,7 +21,6 @@ namespace Aporia
         void _load();
 
     private:
-        Logger& _logger;
         const TextureConfig& _config;
 
         std::unordered_map<std::string, Texture> _textures;

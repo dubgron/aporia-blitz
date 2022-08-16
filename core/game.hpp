@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "animation_manager.hpp"
-#include "common.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
 #include "font_manager.hpp"
@@ -41,8 +40,6 @@ namespace Aporia
         void main_loop();
 
     protected:
-        Logger _logger;
-
         EventManager _events;
         ConfigManager _configs;
 

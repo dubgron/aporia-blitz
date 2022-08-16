@@ -9,11 +9,10 @@
 namespace Aporia
 {
     class EventManager;
-    class Logger;
 
     struct ConfigManager final
     {
-        ConfigManager(Logger& logger, EventManager& events, const std::string& path);
+        ConfigManager(EventManager& events, const std::string& path);
 
         void reload();
 
@@ -24,7 +23,6 @@ namespace Aporia
         AnimationConfig animation_config;
 
     private:
-        Logger& _logger;
         EventManager& _events;
 
         std::string _path = "";

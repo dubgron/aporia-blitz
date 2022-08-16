@@ -8,8 +8,8 @@
 
 namespace Aporia
 {
-    Animator::Animator(Logger& logger, std::string name, Sprite& sprite)
-        : _logger(logger), _name( std::move(name) ), _sprite(sprite)
+    Animator::Animator(std::string name, Sprite& sprite)
+        : _name( std::move(name) ), _sprite(sprite)
     {
         _animations.try_emplace("default", Animation{ "default", { { sprite.get_component<Texture>(), 0.0f } } });
     }
@@ -24,7 +24,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "Animation '{}' has already been added!", name);
+            APORIA_LOG(Warning, "Animation '{}' has already been added!", name);
         }
     }
 
@@ -32,7 +32,7 @@ namespace Aporia
     {
         if (!_animations.contains(name))
         {
-            APORIA_LOG(_logger, Warning, "No animation named '{}'!", name);
+            APORIA_LOG(Warning, "No animation named '{}'!", name);
         }
         else if (_queue.empty())
         {
@@ -45,13 +45,13 @@ namespace Aporia
     {
         if (!_animations.contains(name))
         {
-            APORIA_LOG(_logger, Warning, "No animation named '{}'!", name);
+            APORIA_LOG(Warning, "No animation named '{}'!", name);
         }
         else if (_queue.empty())
         {
             _current_animation = name;
             _animations.at(_current_animation).play_once();
-            APORIA_LOG(_logger, Debug, "Playing '{}' once!", name);
+            APORIA_LOG(Debug, "Playing '{}' once!", name);
         }
     }
 
@@ -88,7 +88,7 @@ namespace Aporia
     {
         if (!_animations.contains(name))
         {
-            APORIA_LOG(_logger, Warning, "No animation named '{}'!", name);
+            APORIA_LOG(Warning, "No animation named '{}'!", name);
             return _animations.at("default");
         }
         else
@@ -108,14 +108,14 @@ namespace Aporia
         {
             _current_animation = _queue.front();
             _animations.at(_current_animation).play_once();
-            APORIA_LOG(_logger, Debug, "Playing '{}' from a queue (size = {})", _current_animation, _queue.size());
+            APORIA_LOG(Debug, "Playing '{}' from a queue (size = {})", _current_animation, _queue.size());
             _queue.pop();
         }
         else if (_afterqueue != "")
         {
             _current_animation = _afterqueue;
             _animations.at(_current_animation).play();
-            APORIA_LOG(_logger, Debug, "Playing '{}' after a queue", _current_animation);
+            APORIA_LOG(Debug, "Playing '{}' after a queue", _current_animation);
             _afterqueue = "";
         }
     }

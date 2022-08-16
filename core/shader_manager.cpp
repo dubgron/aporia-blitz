@@ -8,8 +8,8 @@
 
 namespace Aporia
 {
-    ShaderManager::ShaderManager(Logger& logger, const ShaderConfig& config)
-        : _logger(logger), _config(config) {}
+    ShaderManager::ShaderManager(const ShaderConfig& config)
+        : _config(config) {}
 
     ShaderManager::~ShaderManager()
     {
@@ -25,7 +25,7 @@ namespace Aporia
     {
         if (_shaders.contains(name))
         {
-            APORIA_LOG(_logger, Error, "Shader named '{}' already exits! Aborting creating a new shader program!", name);
+            APORIA_LOG(Error, "Shader named '{}' already exits! Aborting creating a new shader program!", name);
             return 0;
         }
 
@@ -65,7 +65,7 @@ namespace Aporia
         auto shader = _shaders.find(name);
         if (shader == _shaders.end())
         {
-            APORIA_LOG(_logger, Warning, "There is no shader named '{}'!", name);
+            APORIA_LOG(Warning, "There is no shader named '{}'!", name);
             return 0;
         }
         else
@@ -247,7 +247,7 @@ namespace Aporia
 
             glDeleteProgram(shader_id);
 
-            APORIA_LOG(_logger, Error, std::string{ &msg[0] });
+            APORIA_LOG(Error, std::string{ &msg[0] });
 
             return 0;
         }
@@ -334,7 +334,7 @@ namespace Aporia
             location = glGetUniformLocation(_active_id, name.c_str());
             if (location == -1)
             {
-                APORIA_LOG(_logger, Error, "'{}' does not correspond to an active uniform variable in program {}!", name, _active_id);
+                APORIA_LOG(Error, "'{}' does not correspond to an active uniform variable in program {}!", name, _active_id);
             }
             else
             {

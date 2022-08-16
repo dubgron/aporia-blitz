@@ -8,13 +8,12 @@ namespace Aporia
 {
     class Camera;
     class EventManager;
-    class Logger;
     struct WindowConfig;
 
     class Window final
     {
     public:
-        Window(Logger& logger, EventManager& events, WindowConfig& config);
+        Window(EventManager& events, WindowConfig& config);
         ~Window();
 
         void display();
@@ -33,7 +32,6 @@ namespace Aporia
         void _on_config_reload();
 
     private:
-        Logger& _logger;
         EventManager& _events;
 
         WindowConfig& _config;

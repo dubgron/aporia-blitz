@@ -14,8 +14,8 @@
 
 namespace Aporia
 {
-    AnimationManager::AnimationManager(Logger& logger, EventManager& event_manager, const TextureManager& textures, const AnimationConfig& config)
-        : _logger(logger), _textures(textures), _config(config)
+    AnimationManager::AnimationManager(EventManager& event_manager, const TextureManager& textures, const AnimationConfig& config)
+        : _textures(textures), _config(config)
     {
         _load();
 
@@ -26,7 +26,7 @@ namespace Aporia
     {
         if (!_animations.contains(name))
         {
-            APORIA_LOG(_logger, Error, "No animation named {}!", name);
+            APORIA_LOG(Error, "No animation named {}!", name);
             return _animations.at("default");
         }
         else

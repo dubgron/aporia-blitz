@@ -13,13 +13,12 @@
 
 namespace Aporia
 {
-    class Logger;
     struct ShaderConfig;
 
     class ShaderManager final
     {
     public:
-        ShaderManager(Logger& logger, const ShaderConfig& config);
+        ShaderManager(const ShaderConfig& config);
         ~ShaderManager();
 
         Shader create_program(const std::string& name, const std::string& filepath);
@@ -71,7 +70,6 @@ namespace Aporia
         int32_t _location(const std::string& name);
 
     private:
-        Logger& _logger;
         const ShaderConfig& _config;
 
         std::unordered_map<std::string, ShaderRef> _shaders;

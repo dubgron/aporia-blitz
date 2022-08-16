@@ -8,12 +8,10 @@
 
 namespace Aporia
 {
-    class Logger;
-
     class FontManager final
     {
     public:
-        FontManager(Logger& logger);
+        FontManager() = default;
 
         void load_font(std::string name, std::filesystem::path filepath);
         const Font& get(const std::string& name) const;
@@ -21,8 +19,6 @@ namespace Aporia
         static const Font default_font;
 
     private:
-        Logger& _logger;
-
         std::unordered_map<std::string, Font> _fonts;
     };
 }

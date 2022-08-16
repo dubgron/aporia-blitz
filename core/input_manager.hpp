@@ -6,12 +6,11 @@
 namespace Aporia
 {
     class EventManager;
-    class Logger;
 
     class InputManager final
     {
     public:
-        InputManager(Logger& logger, EventManager& event_manager);
+        InputManager(EventManager& event_manager);
 
         bool is_key_triggered(Keyboard key) const;
         bool is_key_pressed(Keyboard key) const;
@@ -44,8 +43,6 @@ namespace Aporia
         void _update();
 
     private:
-        Logger& _logger;
-
         InputBuffer<Keyboard> _keys;
         InputBuffer<Mouse> _buttons;
         InputBuffer<MouseWheel> _wheels;

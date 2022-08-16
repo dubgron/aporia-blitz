@@ -7,9 +7,6 @@
 
 namespace Aporia
 {
-    LayerStack::LayerStack(Logger& logger)
-        : _logger(logger) {}
-
     void LayerStack::push_layer(Layer& layer)
     {
         const auto end = _layers.begin() + _overlay_index;
@@ -22,7 +19,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "Layer '{}' has already been pushed!", layer.get_name());
+            APORIA_LOG(Warning, "Layer '{}' has already been pushed!", layer.get_name());
         }
     }
 
@@ -38,7 +35,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "Overlay '{}' has already been pushed!", overlay.get_name());
+            APORIA_LOG(Warning, "Overlay '{}' has already been pushed!", overlay.get_name());
         }
     }
 
@@ -57,7 +54,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "No layer named '{}'!", layer.get_name());
+            APORIA_LOG(Warning, "No layer named '{}'!", layer.get_name());
         }
     }
 
@@ -75,7 +72,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(_logger, Warning, "No overlay named '{}'!", overlay.get_name());
+            APORIA_LOG(Warning, "No overlay named '{}'!", overlay.get_name());
         }
     }
 }

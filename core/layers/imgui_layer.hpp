@@ -4,13 +4,12 @@
 
 namespace Aporia
 {
-    class Logger;
     class Window;
 
     class ImGuiLayer final : public Layer
     {
     public:
-        ImGuiLayer(Logger& logger, Window& window);
+        ImGuiLayer(Window& window);
 
         void on_attach() override;
         void on_detach() override;

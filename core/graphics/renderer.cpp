@@ -35,8 +35,8 @@ namespace Aporia
     ShaderRef Renderer::font_shader = 0;
     ShaderRef Renderer::postprocessing_shader = 0;
 
-    Renderer::Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config)
-        : _logger(logger), _shaders(shaders)
+    Renderer::Renderer(ShaderManager& shaders, EventManager& events, WindowConfig& config)
+        : _shaders(shaders)
     {
         _transformation_stack.reserve(10);
         _transformation_stack.emplace_back();

@@ -24,7 +24,9 @@
 
 namespace Aporia
 {
-    Logger::Logger(const std::string& name)
+    std::shared_ptr<spdlog::logger> Logger::_logger{};
+
+    void Logger::Init(const std::string& name)
     {
         #if defined(__cpp_lib_format)
             static const std::chrono::zoned_time timestamp{ std::chrono::current_zone(), std::chrono::system_clock::now() };
@@ -38,11 +40,11 @@ namespace Aporia
 
         _logger = std::make_shared<spdlog::logger>(name, spdlog::sinks_init_list{ std::move(console_sink), std::move(file_sink) });
         _logger->set_pattern("[%Y-%m-%d %H:%M:%S] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
-        _logger->set_level(spdlog::level::debug);
+        _logger->set_level(spdlog::level::trace);
         _logger->flush_on(spdlog::level::debug);
     }
 
-    void Logger::log(const char* file, int line, const char* func, LogLevel lvl, std::string_view msg) const
+    void Logger::Log(const char* file, int line, const char* func, LogLevel lvl, std::string_view msg)
     {
         _logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), msg);
     }

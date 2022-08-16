@@ -8,8 +8,6 @@
 
 namespace Aporia
 {
-    class Logger;
-
     using EventsContainer = std::tuple<
         WindowCloseEvent,
         WindowResizeEvent,
@@ -38,8 +36,7 @@ namespace Aporia
     class EventManager final
     {
     public:
-        EventManager(Logger& logger)
-            : _logger(logger) {}
+        EventManager() = default;
 
         template<EventType Event, typename... Args>
         void call_event(Args&&... args)
@@ -57,8 +54,6 @@ namespace Aporia
         }
 
     private:
-        Logger& _logger;
-
         EventsContainer _events;
     };
 }

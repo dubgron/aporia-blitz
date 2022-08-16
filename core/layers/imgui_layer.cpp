@@ -10,8 +10,8 @@
 
 namespace Aporia
 {
-    ImGuiLayer::ImGuiLayer(Logger& logger, Window& window)
-        : Layer(logger, "ImGui Layer"), _window(window) {}
+    ImGuiLayer::ImGuiLayer(Window& window)
+        : Layer("ImGui Layer"), _window(window) {}
 
     void ImGuiLayer::on_attach()
     {

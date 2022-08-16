@@ -17,7 +17,6 @@ namespace Aporia
     class Camera;
     class EventManager;
     class Group;
-    class Logger;
     class ShaderManager;
     class Window;
     struct Circle2D;
@@ -32,7 +31,7 @@ namespace Aporia
         static constexpr size_t MAX_QUEUE = 100000;
 
     public:
-        Renderer(Logger& logger, ShaderManager& shaders, EventManager& events, WindowConfig& config);
+        Renderer(ShaderManager& shaders, EventManager& events, WindowConfig& config);
 
         void begin(const Window& window, const Camera& camera);
         void end(Color color = Colors::Black);
@@ -63,7 +62,6 @@ namespace Aporia
         void _on_resize(Window& window, uint32_t width, uint32_t height);
 
     private:
-        Logger& _logger;
         ShaderManager& _shaders;
 
         RenderQueue _render_queue;

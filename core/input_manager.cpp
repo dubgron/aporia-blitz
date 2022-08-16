@@ -7,8 +7,7 @@
 
 namespace Aporia
 {
-    InputManager::InputManager(Logger& logger, EventManager& event_manager)
-        : _logger(logger)
+    InputManager::InputManager(EventManager& event_manager)
     {
         using namespace std::placeholders;
 

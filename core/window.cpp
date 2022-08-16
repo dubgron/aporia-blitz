@@ -14,14 +14,14 @@
 
 namespace Aporia
 {
-    Window::Window(Logger& logger, EventManager& events, WindowConfig& config)
-        : _logger(logger), _events(events), _config(config)
+    Window::Window(EventManager& events, WindowConfig& config)
+        : _events(events), _config(config)
     {
         glfwSetErrorCallback([](int32_t error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
 
         if (!glfwInit())
         {
-            APORIA_LOG(_logger, Critical, "Failed to initialize GLFW!");
+            APORIA_LOG(Critical, "Failed to initialize GLFW!");
         }
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
@@ -108,7 +108,7 @@ namespace Aporia
 #       if !defined(APORIA_EMSCRIPTEN)
             if (gl3wInit())
             {
-                APORIA_LOG(_logger, Critical, "Failed to initialize OpenGL!");
+                APORIA_LOG(Critical, "Failed to initialize OpenGL!");
             }
 #       endif
 
@@ -118,7 +118,7 @@ namespace Aporia
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        APORIA_LOG(_logger, Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+        APORIA_LOG(Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
 #       if !defined(APORIA_EMSCRIPTEN)
             glEnable(GL_DEBUG_OUTPUT);
@@ -167,8 +167,7 @@ namespace Aporia
                         }
                     };
 
-                    static Logger logger{ "OpenGL" };
-                    APORIA_LOG(logger, log_level(severity), "{} {} [ID = {}] '{}'", debug_source(source), debug_type(type), id, message);
+                    APORIA_LOG(log_level(severity), "{} {} [ID = {}] '{}'", debug_source(source), debug_type(type), id, message);
                 }, nullptr);
 #       endif
 

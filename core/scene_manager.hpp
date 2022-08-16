@@ -6,7 +6,6 @@
 
 namespace Aporia
 {
-    class Logger;
     class Scene;
 
     class SceneManager final
@@ -15,7 +14,7 @@ namespace Aporia
         using Container = std::vector<Ref>;
 
     public:
-        SceneManager(Logger& logger);
+        SceneManager();
 
         size_t add(Ref scene);
         void remove(Ref scene);
@@ -30,8 +29,6 @@ namespace Aporia
         bool _load(size_t id);
 
     private:
-        Logger& _logger;
-
         Container _scenes;
         size_t _current_scene = 0;
     };

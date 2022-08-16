@@ -13,10 +13,8 @@
 
 namespace Aporia
 {
-    CameraController::CameraController(Logger& logger, EventManager& event_manager, CameraConfig& config)
-        : _logger(logger),
-          _camera(config.fov, config.aspect_ratio),
-          _config(config)
+    CameraController::CameraController(EventManager& event_manager, CameraConfig& config)
+        : _camera(config.fov, config.aspect_ratio), _config(config)
     {
         using namespace std::placeholders;
 

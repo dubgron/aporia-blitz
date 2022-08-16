@@ -7,7 +7,6 @@
 
 namespace Aporia
 {
-    class Logger;
     class InputManager;
     class SceneManager;
     class Renderer;
@@ -15,8 +14,8 @@ namespace Aporia
     class Scene
     {
     public:
-        Scene(Logger& logger, std::string name)
-            : _logger(logger), _name( std::move(name) ) {}
+        Scene(std::string name)
+            : _name( std::move(name) ) {}
 
         virtual void on_load() {};
         virtual void on_input(const InputManager& inputs) {};
@@ -28,7 +27,6 @@ namespace Aporia
         const std::string& get_name() const { return _name; }
 
     protected:
-        Logger& _logger;
         std::string _name;
     };
 }

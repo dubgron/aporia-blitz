@@ -11,13 +11,12 @@
 
 namespace Aporia
 {
-    class Logger;
     struct Sprite;
 
     class Animator final
     {
     public:
-        Animator(Logger& logger, std::string name, Sprite& sprite);
+        Animator(std::string name, Sprite& sprite);
 
         void add_animation(Animation&& animation);
         void play(const std::string& name);
@@ -34,8 +33,6 @@ namespace Aporia
         void _update_queue();
 
     private:
-        Logger& _logger;
-
         std::string _name;
         std::unordered_map<std::string, Animation> _animations;
         std::string _current_animation = "default";

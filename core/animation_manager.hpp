@@ -8,14 +8,13 @@
 namespace Aporia
 {
     class EventManager;
-    class Logger;
     class TextureManager;
     struct AnimationConfig;
 
     class AnimationManager final
     {
     public:
-        AnimationManager(Logger& logger, EventManager& event_manager, const TextureManager& textures, const AnimationConfig& config);
+        AnimationManager(EventManager& event_manager, const TextureManager& textures, const AnimationConfig& config);
 
         Animation get_animation(const std::string& name) const;
 
@@ -23,8 +22,6 @@ namespace Aporia
         void _load();
 
     private:
-        Logger& _logger;
-
         std::unordered_map<std::string, Animation> _animations;
 
         const TextureManager& _textures;

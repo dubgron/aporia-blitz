@@ -16,12 +16,12 @@
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(Logger& logger, EventManager& events, const std::string& path)
-        : _logger(logger), _events(events), _path(path)
+    ConfigManager::ConfigManager(EventManager& events, const std::string& path)
+        : _events(events), _path(path)
     {
         if (!std::filesystem::exists(_path))
         {
-            APORIA_LOG(_logger, Critical, "Config file '{}' doesn't exist!", _path);
+            APORIA_LOG(Critical, "Config file '{}' doesn't exist!", _path);
             return;
         }
 
