@@ -1,10 +1,6 @@
 #pragma once
 
-#include <functional>
-#include <utility>
 #include <vector>
-
-#include <glm/matrix.hpp>
 
 #include "components/transform2d.hpp"
 #include "graphics/framebuffer.hpp"
@@ -16,7 +12,6 @@ namespace Aporia
 {
     class Camera;
     class EventManager;
-    class Group;
     class ShaderManager;
     class Window;
     struct Circle2D;

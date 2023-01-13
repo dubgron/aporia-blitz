@@ -7,9 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include <glm/vec3.hpp>
-
-#include "entity.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/drawables/line2d.hpp"
 #include "graphics/drawables/circle2d.hpp"
@@ -20,7 +17,7 @@
 
 namespace Aporia
 {
-    class Group final : public Entity<Transform2D>
+    class Group final
     {
         template<typename T>
         using Container = std::vector<std::reference_wrapper<T>>;
@@ -35,10 +32,6 @@ namespace Aporia
         using Drawables = std::tuple<Lines2D, Circles2D, Rectangles2D, Sprites, Texts, Groups>;
 
     public:
-        Group() = default;
-        Group(glm::vec3 position)
-            : Entity(Transform2D{ std::move(position) }) {}
-
         template<typename T, typename D = std::decay_t<T>> requires has_type_v<Drawables, Container<D>>
         void add(T& drawable)
         {
@@ -63,6 +56,8 @@ namespace Aporia
         {
             return std::get<Container<T>>(_drawables);
         }
+
+        Transform2D transform;
 
     private:
         Drawables _drawables;

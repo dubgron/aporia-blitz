@@ -11,7 +11,7 @@ namespace Aporia
     Animator::Animator(std::string name, Sprite& sprite)
         : _name( std::move(name) ), _sprite(sprite)
     {
-        _animations.try_emplace("default", Animation{ "default", { { sprite.get_component<Texture>(), 0.0f } } });
+        _animations.try_emplace("default", Animation{ "default", { { sprite.texture, 0.0f } } });
     }
 
     void Animator::add_animation(Animation&& animation)
@@ -59,7 +59,7 @@ namespace Aporia
     {
         _update_queue();
 
-        _sprite.get_component<Texture>() = _animations.at(_current_animation).update();
+        _sprite.texture = _animations.at(_current_animation).update();
     }
 
     void Animator::queue(const std::string& name)
