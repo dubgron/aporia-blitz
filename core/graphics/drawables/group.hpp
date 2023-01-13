@@ -23,7 +23,7 @@ namespace Aporia
     class Group final : public Entity<Transform2D>
     {
         template<typename T>
-        using Container = std::vector<std::reference_wrapper<const T>>;
+        using Container = std::vector<std::reference_wrapper<T>>;
 
         using Lines2D = Container<Line2D>;
         using Circles2D = Container<Circle2D>;
@@ -40,10 +40,10 @@ namespace Aporia
             : Entity(Transform2D{ std::move(position) }) {}
 
         template<typename T, typename D = std::decay_t<T>> requires has_type_v<Drawables, Container<D>>
-        void add(T&& drawable)
+        void add(T& drawable)
         {
             Container<D>& vec = std::get<Container<D>>(_drawables);
-            vec.emplace_back(std::forward<T>(drawable));
+            vec.push_back(drawable);
         }
 
         template<typename T> requires has_type_v<Drawables, Container<T>>
