@@ -28,7 +28,7 @@
     #define DEBUG_TEXTURE(texture) \
         ImGui::Begin("DEBUG | Textures");\
         ImGui::Text("ID: %d, Size: %d x %d", texture.id, texture.width, texture.height); \
-        ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 1.0f }, ImVec2{ 1.0f, 0.0f }); \
+        ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 0.0f }, ImVec2{ 1.0f, 1.0f }); \
         ImGui::End();
 #else
     #define DEBUG_TEXTURE
