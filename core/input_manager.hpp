@@ -1,17 +1,28 @@
-#pragma once 
+#pragma once
 
 #include "input_buffer.hpp"
-#include "inputs/all_inputs.hpp"
+#include "inputs/gamepad.hpp"
+#include "inputs/keyboard.hpp"
+#include "inputs/mouse.hpp"
 
 namespace Aporia
 {
     class EventManager;
+
+    struct GamepadInput final
+    {
+        static constexpr size_t AxisNum = magic_enum::enum_count<GamepadAxis>();
+
+        InputBuffer<Gamepad> buttons;
+        std::array<float, AxisNum> axes = { 0.0f };
+    };
 
     class InputManager final
     {
     public:
         InputManager(EventManager& event_manager);
 
+        /* Keyboard */
         bool is_key_triggered(Keyboard key) const;
         bool is_key_pressed(Keyboard key) const;
         bool is_key_released(Keyboard key) const;
@@ -20,6 +31,18 @@ namespace Aporia
         bool is_any_key_pressed() const;
         bool is_any_key_released() const;
 
+        /* Gamepad */
+        bool is_gamepad_button_triggered(Gamepad gamepad_button) const;
+        bool is_gamepad_button_pressed(Gamepad gamepad_button) const;
+        bool is_gamepad_button_released(Gamepad gamepad_button) const;
+
+        bool is_any_gamepad_button_triggered() const;
+        bool is_any_gamepad_button_pressed() const;
+        bool is_any_gamepad_button_released() const;
+
+        float get_gamepad_axis(GamepadAxis gamepad_axis) const;
+
+        /* Mouse */
         bool is_button_triggered(Mouse button) const;
         bool is_button_pressed(Mouse button) const;
         bool is_button_released(Mouse button) const;
@@ -44,6 +67,7 @@ namespace Aporia
 
     private:
         InputBuffer<Keyboard> _keys;
+        GamepadInput _gamepad;
         InputBuffer<Mouse> _buttons;
         InputBuffer<MouseWheel> _wheels;
         float _wheel_delta = 0.0f;

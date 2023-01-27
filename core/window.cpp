@@ -9,7 +9,8 @@
 #include "event_manager.hpp"
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
-#include "inputs/all_inputs.hpp"
+#include "inputs/keyboard.hpp"
+#include "inputs/mouse.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia

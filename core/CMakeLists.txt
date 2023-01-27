@@ -91,7 +91,7 @@ add_library(core STATIC
     "graphics/drawables/rectangle2d.hpp"
     "graphics/drawables/sprite.hpp"
     "graphics/drawables/text.hpp"
-    "inputs/all_inputs.hpp"
+    "inputs/gamepad.hpp"
     "inputs/keyboard.hpp"
     "inputs/mouse.hpp"
     "layers/imgui_layer.cpp"

@@ -1,3 +1,5 @@
+#pragma once
+
 /* Common */
 #include <common.hpp>
 
@@ -10,7 +12,7 @@
 #include <configs/window_config.hpp>
 
 /* Inputs */
-#include <inputs/all_inputs.hpp>
+#include <inputs/gamepad.hpp>
 #include <inputs/keyboard.hpp>
 #include <inputs/mouse.hpp>
 

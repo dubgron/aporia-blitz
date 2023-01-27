@@ -6,7 +6,8 @@
 
 #include <glm/vec2.hpp>
 
-#include "inputs/all_inputs.hpp"
+#include "inputs/keyboard.hpp"
+#include "inputs/mouse.hpp"
 
 namespace Aporia
 {

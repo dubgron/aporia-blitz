@@ -58,6 +58,42 @@ namespace Aporia
         return _keys.is_any_released();
     }
 
+    bool InputManager::is_gamepad_button_triggered(Gamepad gamepad_button) const
+    {
+        return _gamepad.buttons.is_triggered(gamepad_button);
+    }
+
+    bool InputManager::is_gamepad_button_pressed(Gamepad gamepad_button) const
+    {
+        return _gamepad.buttons.is_pressed(gamepad_button);
+    }
+
+    bool InputManager::is_gamepad_button_released(Gamepad gamepad_button) const
+    {
+        return _gamepad.buttons.is_released(gamepad_button);
+    }
+
+    bool InputManager::is_any_gamepad_button_triggered() const
+    {
+        return _gamepad.buttons.is_any_triggered();
+    }
+
+    bool InputManager::is_any_gamepad_button_pressed() const
+    {
+        return _gamepad.buttons.is_any_pressed();
+    }
+
+    bool InputManager::is_any_gamepad_button_released() const
+    {
+        return _gamepad.buttons.is_any_released();
+    }
+
+    float InputManager::get_gamepad_axis(GamepadAxis gamepad_axis) const
+    {
+        const int32_t gamepad_axis_index = magic_enum::enum_index(gamepad_axis).value();
+        return _gamepad.axes[gamepad_axis_index];
+    }
+
     bool InputManager::is_button_triggered(Mouse button) const
     {
         return _buttons.is_triggered(button);
@@ -131,5 +167,21 @@ namespace Aporia
         _keys.update();
         _buttons.update();
         _wheels.update();
+
+        GLFWgamepadstate gamepad_state;
+        if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
+        {
+            for (int32_t gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
+            {
+                const Gamepad gamepad_code = static_cast<Gamepad>(gamepad_idx);
+                const bool new_state = gamepad_state.buttons[gamepad_idx] == GLFW_PRESS;
+                _gamepad.buttons.push_state(gamepad_code, new_state);
+            }
+
+            for (int32_t axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
+            {
+                _gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
+            }
+        }
     }
 }
