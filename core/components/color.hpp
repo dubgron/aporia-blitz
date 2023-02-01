@@ -2,18 +2,20 @@
 
 #include <cstdint>
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
     struct Color final
     {
-        uint8_t r = 255;
-        uint8_t g = 255;
-        uint8_t b = 255;
-        uint8_t a = 255;
+        u8 r = 255;
+        u8 g = 255;
+        u8 b = 255;
+        u8 a = 255;
     };
 
     namespace Colors
-    { 
+    {
         inline constexpr Color Black       = Color{  0,   0,   0,  255 };
         inline constexpr Color White       = Color{ 255, 255, 255, 255 };
         inline constexpr Color Red         = Color{ 255,  0,   0,  255 };

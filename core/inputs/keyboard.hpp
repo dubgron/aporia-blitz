@@ -1,13 +1,14 @@
 #pragma once
 
-#include <cstdint>
 #include <string_view>
 
 #include <magic_enum.hpp>
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
-    enum class Keyboard : int32_t
+    enum class Keyboard : i32
     {
         Unknown = -1,            /* Unhandled key */
         Space = 32,              /* The Space key */

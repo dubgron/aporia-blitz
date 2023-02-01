@@ -12,9 +12,9 @@ namespace Aporia
         _scenes.emplace_back(std::make_shared<Scene>("Default Scene"));
     }
 
-    size_t SceneManager::add(Ref scene)
+    u64 SceneManager::add(Ref scene)
     {
-        size_t index = _index(scene);
+        u64 index = _index(scene);
         if (index == _scenes.size())
         {
             _scenes.emplace_back( std::move(scene) );
@@ -47,7 +47,7 @@ namespace Aporia
         }
     }
 
-    void SceneManager::load_scene(size_t id)
+    void SceneManager::load_scene(u64 id)
     {
         if (!_load(id))
         {
@@ -57,20 +57,20 @@ namespace Aporia
 
     void SceneManager::load_scene(Ref scene)
     {
-        size_t id = _index(scene);
+        u64 id = _index(scene);
         if (!_load(id))
         {
             APORIA_LOG(Warning, "No scene named '{}'!", scene->get_name());
         }
     }
 
-    size_t SceneManager::_index(Ref scene)
+    u64 SceneManager::_index(Ref scene)
     {
         auto find = std::find(_scenes.begin(), _scenes.end(), scene);
         return find - _scenes.begin();
     }
 
-    bool SceneManager::_load(size_t id)
+    bool SceneManager::_load(u64 id)
     {
         if (id < _scenes.size())
         {

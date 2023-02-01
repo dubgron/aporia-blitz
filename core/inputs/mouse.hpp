@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstdint>
 #include <string_view>
+
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
-    enum class Mouse : int32_t
+    enum class Mouse : i32
     {
         Button1 = 0,        /* The button no. 1 */
         Button2 = 1,        /* The button no. 2 */
@@ -20,7 +21,7 @@ namespace Aporia
         Middle = Button3    /* The middle (wheel) mouse button */
     };
 
-    enum class MouseWheel : int32_t
+    enum class MouseWheel : i32
     {
         VerticalWheel = 0,     /* The vertical mouse wheel */
         HorizontalWheel = 1    /* The horizontal mouse wheel */

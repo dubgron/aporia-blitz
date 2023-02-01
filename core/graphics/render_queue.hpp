@@ -1,16 +1,16 @@
 #pragma once
 
 #include <array>
-#include <cstdint>
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "shader.hpp"
 #include "vertex.hpp"
 
 namespace Aporia
 {
     /* Index for VertexArray in Renderer */
-    enum class BufferType : uint8_t
+    enum class BufferType : u8
     {
         Quads = 0,
         Lines = 1

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 
@@ -7,13 +8,13 @@ namespace Aporia
 {
     struct CameraConfig final
     {
-        float fov = 1.0f;
-        float aspect_ratio = 1.0f;
+        f32 fov = 1.f;
+        f32 aspect_ratio = 1.f;
         Color background_color;
 
-        float movement_speed = 0.0f;
-        float rotation_speed = 0.0f;
-        float zoom_speed = 0.0f;
+        f32 movement_speed = 0.f;
+        f32 rotation_speed = 0.f;
+        f32 zoom_speed = 0.f;
 
         Keyboard movement_key_up = Keyboard::W;
         Keyboard movement_key_down = Keyboard::S;
@@ -26,7 +27,7 @@ namespace Aporia
         Keyboard zoom_key_in = Keyboard::Space;
         Keyboard zoom_key_out = Keyboard::LShift;
 
-        float zoom_max = 1.0f;
-        float zoom_min = 1.0f;
+        f32 zoom_max = 1.f;
+        f32 zoom_min = 1.f;
     };
 }

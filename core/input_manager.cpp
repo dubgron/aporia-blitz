@@ -88,9 +88,9 @@ namespace Aporia
         return _gamepad.buttons.is_any_released();
     }
 
-    float InputManager::get_gamepad_axis(GamepadAxis gamepad_axis) const
+    f32 InputManager::get_gamepad_axis(GamepadAxis gamepad_axis) const
     {
-        const int32_t gamepad_axis_index = magic_enum::enum_index(gamepad_axis).value();
+        const i32 gamepad_axis_index = magic_enum::enum_index(gamepad_axis).value();
         return _gamepad.axes[gamepad_axis_index];
     }
 
@@ -124,7 +124,7 @@ namespace Aporia
         return _buttons.is_any_released();
     }
 
-    float InputManager::is_wheel_scrolling(MouseWheel wheel /* = MouseWheel::VerticalWheel */) const
+    f32 InputManager::is_wheel_scrolling(MouseWheel wheel /* = MouseWheel::VerticalWheel */) const
     {
         return _wheels.is_triggered(wheel) * _wheel_delta;
     }
@@ -149,7 +149,7 @@ namespace Aporia
         _buttons.push_state(button, false);
     }
 
-    void InputManager::_on_wheel_scrolled(MouseWheel wheel, float delta)
+    void InputManager::_on_wheel_scrolled(MouseWheel wheel, f32 delta)
     {
         _wheel_delta = delta;
         _wheels.push_state(wheel, true);
@@ -157,7 +157,7 @@ namespace Aporia
 
     void InputManager::_reset_wheel()
     {
-        _wheel_delta = 0.0f;
+        _wheel_delta = 0.f;
         _wheels.push_state(MouseWheel::HorizontalWheel, false);
         _wheels.push_state(MouseWheel::VerticalWheel, false);
     }
@@ -171,14 +171,14 @@ namespace Aporia
         GLFWgamepadstate gamepad_state;
         if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
         {
-            for (int32_t gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
+            for (i32 gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
             {
                 const Gamepad gamepad_code = static_cast<Gamepad>(gamepad_idx);
                 const bool new_state = gamepad_state.buttons[gamepad_idx] == GLFW_PRESS;
                 _gamepad.buttons.push_state(gamepad_code, new_state);
             }
 
-            for (int32_t axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
+            for (i32 axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
             {
                 _gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
             }

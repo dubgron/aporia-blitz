@@ -7,7 +7,7 @@
     #define APORIA_LIKELY(condition) (!!(condition))
     #define APORIA_UNLIKELY(condition) (!APORIA_LIKELY(condition))
 
-    #define APORIA_ENSURE(condition) (APORIA_LIKELY(condition) || ( APORIA_DEBUGBREAK(), 0 ))
+    #define APORIA_ENSURE(condition) (APORIA_LIKELY(condition) || (APORIA_DEBUGBREAK(), 0))
     #define APORIA_ENSUREF(condition, fmt, ...) (APORIA_LIKELY(condition) || (APORIA_LOG(Aporia::Error, fmt, __VA_ARGS__), APORIA_DEBUGBREAK(), 0))
 
     #define APORIA_CHECK(condition) if (APORIA_UNLIKELY(condition)) { assert(condition); }

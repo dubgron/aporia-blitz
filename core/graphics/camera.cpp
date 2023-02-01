@@ -6,7 +6,7 @@
 
 namespace Aporia
 {
-    Camera::Camera(float fov, float aspect_ratio)
+    Camera::Camera(f32 fov, f32 aspect_ratio)
         : _projection{ .fov = fov, .aspect_ratio = aspect_ratio } {}
 
     const glm::mat4& Camera::get_view_projection_matrix() const
@@ -30,93 +30,93 @@ namespace Aporia
         return _vp_matrix;
     }
 
-    void Camera::set_position(glm::vec2 new_position)
+    void Camera::set_position(v2 new_position)
     {
         mark_as_dirty(DIRTYFLAG_VIEW);
         _view.position = new_position;
     }
 
-    void Camera::move(const glm::vec2& vector)
+    void Camera::move(const v2& vector)
     {
         set_position(_view.position + vector);
     }
 
-    const glm::vec2& Camera::get_position() const
+    const v2& Camera::get_position() const
     {
         return _view.position;
     }
 
-    void Camera::set_rotation(float new_rotation)
+    void Camera::set_rotation(f32 new_rotation)
     {
         mark_as_dirty(DIRTYFLAG_VIEW);
         _view.rotation = new_rotation;
     }
 
-    void Camera::rotate(float rotation)
+    void Camera::rotate(f32 rotation)
     {
         set_rotation(_view.rotation + rotation);
     }
 
-    float Camera::get_rotation() const
+    f32 Camera::get_rotation() const
     {
         return _view.rotation;
     }
 
-    const glm::vec2& Camera::get_up_vector() const
+    const v2& Camera::get_up_vector() const
     {
         return _view.up_vector;
     }
 
-    const glm::vec2& Camera::get_right_vector() const
+    const v2& Camera::get_right_vector() const
     {
         return _view.right_vector;
     }
 
-    void Camera::set_fov(float new_fov)
+    void Camera::set_fov(f32 new_fov)
     {
         mark_as_dirty(DIRTYFLAG_PROJECTION);
         _projection.fov = new_fov;
     }
 
-    float Camera::get_fov() const
+    f32 Camera::get_fov() const
     {
         return _projection.fov;
     }
 
-    void Camera::set_aspect_ratio(float new_aspect_ratio)
+    void Camera::set_aspect_ratio(f32 new_aspect_ratio)
     {
         mark_as_dirty(DIRTYFLAG_PROJECTION);
         _projection.aspect_ratio = new_aspect_ratio;
     }
 
-    float Camera::get_aspect_ratio() const
+    f32 Camera::get_aspect_ratio() const
     {
         return _projection.aspect_ratio;
     }
 
-    void Camera::set_zoom(float new_zoom)
+    void Camera::set_zoom(f32 new_zoom)
     {
         mark_as_dirty(DIRTYFLAG_PROJECTION);
         _projection.zoom = new_zoom;
     }
 
-    void Camera::zoom(float zoom)
+    void Camera::zoom(f32 zoom)
     {
         set_zoom(_projection.zoom + zoom);
     }
 
-    float Camera::get_zoom() const
+    f32 Camera::get_zoom() const
     {
         return _projection.zoom;
     }
 
     void Camera::recalculate_view() const
     {
-        const float x = _view.position.x;
-        const float y = _view.position.y;
+        const f32 x = _view.position.x;
+        const f32 y = _view.position.y;
 
-        const float sin = std::sin(_view.rotation);
-        const float cos = std::cos(_view.rotation);
+        const f32 sin = std::sin(_view.rotation);
+        const f32 cos = std::cos(_view.rotation);
 
         _view.right_vector.x = cos;
         _view.right_vector.y = sin;
@@ -127,8 +127,8 @@ namespace Aporia
         /**
          *  Precalculated the following lines:
          *
-         *  _view.matrix = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ position, 0.0f });
-         *  _view.matrix = glm::rotate(_view.matrix, rotation, glm::vec3{ 0.0f, 0.0f, 1.0f });
+         *  _view.matrix = glm::translate(glm::mat4{ 1.f }, glm::vec3{ position, 0.f });
+         *  _view.matrix = glm::rotate(_view.matrix, rotation, glm::vec3{ 0.f, 0.f, 1.f });
          *  _view.matrix = glm::inverse(_view.matrix);
          *
          */
@@ -142,9 +142,9 @@ namespace Aporia
 
     void Camera::recalculate_projection() const
     {
-        const float half_height = _projection.fov * _projection.zoom;
-        const float half_width = half_height * _projection.aspect_ratio;
+        const f32 half_height = _projection.fov * _projection.zoom;
+        const f32 half_width = half_height * _projection.aspect_ratio;
 
-        _projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height, -1.0f, 1.0f);
+        _projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height, -1.f, 1.f);
     }
 }

@@ -4,8 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include <glm/vec2.hpp>
-
+#include "aporia_types.hpp"
 #include "inputs/keyboard.hpp"
 #include "inputs/mouse.hpp"
 
@@ -13,7 +12,7 @@ namespace Aporia
 {
     class Window;
 
-    template<size_t ID, typename... Ts>
+    template<u64 ID, typename... Ts>
     struct Event final
     {
         using event_type = std::function<void(Ts...)>;
@@ -21,11 +20,11 @@ namespace Aporia
         std::vector<event_type> listeners;
     };
 
-    template<unsigned int ID, typename... Ts>
+    template<u64 ID, typename... Ts>
     using WindowEvent = Event<ID, Window&, Ts...>;
 
     using WindowCloseEvent = WindowEvent<0>;
-    using WindowResizeEvent = WindowEvent<1, uint32_t, uint32_t>;
+    using WindowResizeEvent = WindowEvent<1, u32, u32>;
 
     using KeyPressedEvent = Event<2, Keyboard>;
     using KeyReleasedEvent = Event<3, Keyboard>;
@@ -33,9 +32,9 @@ namespace Aporia
     using ButtonPressedEvent = Event<4, Mouse>;
     using ButtonReleasedEvent = Event<5, Mouse>;
 
-    using MouseWheelScrollEvent = Event<6, MouseWheel, float>;
+    using MouseWheelScrollEvent = Event<6, MouseWheel, f32>;
 
-    using MouseMoveEvent = Event<7, glm::vec2>;
+    using MouseMoveEvent = Event<7, v2>;
 
     using BeginProcessingWindowEvents = Event<8>;
     using EndProcessingWindowEvents = Event<9>;

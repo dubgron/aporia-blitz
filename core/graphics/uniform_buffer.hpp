@@ -1,10 +1,10 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
 #include <string>
 #include <type_traits>
 
+#include "aporia_types.hpp"
 #include "graphics/shader.hpp"
 #include "platform/opengl.hpp"
 
@@ -16,7 +16,7 @@ namespace Aporia
         reinterpret_cast<const void*>(data);
     };
 
-    template<BufferData T, size_t Binding>
+    template<BufferData T, u64 Binding>
     class UniformBuffer final
     {
     public:
@@ -26,7 +26,7 @@ namespace Aporia
             glGenBuffers(1, &_id);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _id);
-            glBufferData(GL_UNIFORM_BUFFER, sizeof(T), NULL, GL_STATIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, sizeof(T), nullptr, GL_STATIC_DRAW);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             glBindBufferBase(GL_UNIFORM_BUFFER, Binding, _id);
@@ -39,7 +39,7 @@ namespace Aporia
 
         void bind_to_shader(Shader program_id)
         {
-            const uint32_t buffer_index = glGetUniformBlockIndex(program_id, _name.c_str());
+            const u32 buffer_index = glGetUniformBlockIndex(program_id, _name.c_str());
             glUniformBlockBinding(program_id, buffer_index, Binding);
         }
 
@@ -52,7 +52,7 @@ namespace Aporia
         }
 
     private:
-        uint32_t _id = 0;
+        u32 _id = 0;
         std::string _name;
     };
 }

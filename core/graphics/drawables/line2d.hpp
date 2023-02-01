@@ -2,6 +2,7 @@
 
 #include <glm/vec2.hpp>
 
+#include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/shader.hpp"
@@ -13,7 +14,7 @@ namespace Aporia
         Line2D();
 
         Transform2D transform;
-        glm::vec2 offset{ 0.0f };
+        v2 offset{ 0.f };
 
         Color color = Colors::White;
         ShaderRef shader = 0;

@@ -1,17 +1,16 @@
 #pragma once
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
     struct Transform2D final
     {
-        glm::vec3 position{ 0.0f };
+        v3 position{ 0.f };
 
-        glm::vec2 origin{ 0.0f };
-        float rotation = 0.0f;
+        v2 origin{ 0.f };
+        f32 rotation = 0.f;
 
-        glm::vec2 scale{ 1.0f };
+        v2 scale{ 1.f };
     };
 }

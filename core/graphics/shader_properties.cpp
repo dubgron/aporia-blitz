@@ -2,7 +2,7 @@
 
 namespace Aporia
 {
-    uint32_t to_opengl_type(ShaderType type)
+    u32 to_opengl_type(ShaderType type)
     {
         switch (type)
         {
@@ -12,7 +12,7 @@ namespace Aporia
         }
     }
 
-    uint32_t to_opengl_type(ShaderBlend blend)
+    u32 to_opengl_type(ShaderBlend blend)
     {
         switch (blend)
         {
@@ -39,7 +39,7 @@ namespace Aporia
         }
     }
 
-    uint32_t to_opengl_type(ShaderBlendOp blend_op)
+    u32 to_opengl_type(ShaderBlendOp blend_op)
     {
         switch (blend_op)
         {
@@ -52,7 +52,7 @@ namespace Aporia
         }
     }
 
-    uint32_t to_opengl_type(ShaderDepthTest depth_test)
+    u32 to_opengl_type(ShaderDepthTest depth_test)
     {
         switch (depth_test)
         {
@@ -68,7 +68,7 @@ namespace Aporia
         }
     }
 
-    uint32_t to_opengl_type(ShaderDepthWrite depth_write)
+    u32 to_opengl_type(ShaderDepthWrite depth_write)
     {
         switch (depth_write)
         {

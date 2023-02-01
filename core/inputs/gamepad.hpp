@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstdint>
 #include <string_view>
+
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
-    enum class Gamepad : int32_t
+    enum class Gamepad : i32
     {
         ButtonA = 0,                /* The A button */
         ButtonB = 1,                /* The B button */
@@ -29,7 +30,7 @@ namespace Aporia
         ButtonTriangle = ButtonY    /* The triangle button */
     };
 
-    enum class GamepadAxis : int32_t
+    enum class GamepadAxis : i32
     {
         LeftStickX = 0,             /* The X component of the left stick */
         LeftStickY = 1,             /* The Y component of the left stick */

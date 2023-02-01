@@ -11,7 +11,7 @@ namespace Aporia
     Animator::Animator(std::string name, Sprite& sprite)
         : _name( std::move(name) ), _sprite(sprite)
     {
-        _animations.try_emplace("default", Animation{ "default", { { sprite.texture, 0.0f } } });
+        _animations.try_emplace("default", Animation{ "default", { { sprite.texture, 0.f } } });
     }
 
     void Animator::add_animation(Animation&& animation)

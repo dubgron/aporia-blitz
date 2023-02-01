@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <vector>
 
-#include <glm/glm.hpp>
-
+#include "aporia_types.hpp"
 #include "graphics/framebuffer.hpp"
 #include "graphics/uniform_buffer.hpp"
 #include "graphics/drawables/group.hpp"
@@ -13,17 +11,17 @@ namespace Aporia
 {
     struct LightSource final
     {
-        glm::vec2 origin{ 0.0f };
-        float range = 1.0f;
-        float falloff = 2.0f;
+        v2 origin{ 0.f };
+        f32 range = 1.f;
+        f32 falloff = 2.f;
 
-        glm::vec3 color{ 1.0f };
-        float intensity = 1.0f;
+        v3 color{ 1.f };
+        f32 intensity = 1.f;
     };
 
     struct LightRenderer final
     {
-        static constexpr size_t MAX_LIGHTS = 1000;
+        static constexpr u64 MAX_LIGHTS = 1000;
 
         ShaderRef raymarching_shader = 0;
         ShaderRef shadowcasting_shader = 0;

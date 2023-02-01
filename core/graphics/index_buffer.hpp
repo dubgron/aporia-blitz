@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
@@ -12,7 +11,7 @@ namespace Aporia
     {
     public:
         IndexBuffer() = default;
-        IndexBuffer(size_t max_objects, size_t index_count, const std::vector<uint32_t>& indecies);
+        IndexBuffer(u64 max_objects, u64 index_count, const std::vector<u32>& indices);
 
         IndexBuffer(const IndexBuffer&) = delete;
         IndexBuffer& operator=(const IndexBuffer&) = delete;
@@ -25,10 +24,10 @@ namespace Aporia
         void bind() const;
         void unbind() const;
 
-        size_t count() const { return _count; }
+        u64 count() const { return _count; }
 
     private:
-        uint32_t _id = 0;
-        size_t _count = 0;
+        u32 _id = 0;
+        u64 _count = 0;
     };
 }

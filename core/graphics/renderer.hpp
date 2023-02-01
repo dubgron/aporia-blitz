@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/framebuffer.hpp"
 #include "graphics/light.hpp"
@@ -23,7 +24,7 @@ namespace Aporia
 
     class Renderer final
     {
-        static constexpr size_t MAX_QUEUE = 100000;
+        static constexpr u64 MAX_QUEUE = 100000;
 
     public:
         Renderer(ShaderManager& shaders, EventManager& events, WindowConfig& config);
@@ -54,7 +55,7 @@ namespace Aporia
         void _flush_framebuffer(const Framebuffer& framebuffer, Shader program_id);
         void _flush_buffer(BufferType buffer, Shader program_id);
 
-        void _on_resize(Window& window, uint32_t width, uint32_t height);
+        void _on_resize(Window& window, u32 width, u32 height);
 
     private:
         ShaderManager& _shaders;

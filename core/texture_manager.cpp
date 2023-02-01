@@ -60,7 +60,7 @@ namespace Aporia
             }
             else
             {
-                static uint32_t id = 0;
+                static u32 id = 0;
                 glDeleteTextures(1, &id);
 
                 Image atlas_image{ filepath };
@@ -111,8 +111,8 @@ namespace Aporia
                         APORIA_LOG(Warning, "There are two textures named '{}'! One of them will be overwritten!", name);
                     }
 
-                    glm::vec2 u = { texture["u"][0], texture["u"][1] };
-                    glm::vec2 v = { texture["v"][0], texture["v"][1] };
+                    v2 u = { texture["u"][0], texture["u"][1] };
+                    v2 v = { texture["v"][0], texture["v"][1] };
 
                     _textures.try_emplace(name, Texture{ u, v, atlas });
                 }
@@ -120,7 +120,7 @@ namespace Aporia
                 if (_textures.find("default") == _textures.end())
                 {
                     APORIA_LOG(Warning, "There is no default texture in '{}'!", filepath);
-                    _textures.try_emplace("default", Texture{ { 0.0f, 0.0f }, { 1.0f, 1.0f }, atlas });
+                    _textures.try_emplace("default", Texture{ { 0.f, 0.f }, { 1.f, 1.f }, atlas });
                 }
 
                 APORIA_LOG(Info, "All textures from '{}' loaded successfully", filepath);

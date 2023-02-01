@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdint>
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
-    using Shader = const uint32_t;
-    using ShaderRef = uint32_t;
+    using Shader = const u32;
+    using ShaderRef = u32;
 }

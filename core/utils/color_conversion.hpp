@@ -1,18 +1,18 @@
 #pragma once
 
 #include <cmath>
-#include <cstdint>
 
+#include "aporia_types.hpp"
 #include "components/color.hpp"
 
 namespace Aporia
 {
-    inline Color hsv_to_rgb(int h, double s, double v)
+    inline Color hsv_to_rgb(i32 h, f64 s, f64 v)
     {
-        const double C = s * v;
-        const double X = C * (1.0 - std::abs(std::fmod(h / 60.0, 2.0) - 1.0));
-        const double m = v - C;
-        double Rs, Gs, Bs;
+        const f64 C = s * v;
+        const f64 X = C * (1.0 - std::abs(std::fmod(h / 60.0, 2.0) - 1.0));
+        const f64 m = v - C;
+        f64 Rs, Gs, Bs;
 
         if (h >= 0 && h < 60)
         {
@@ -51,9 +51,9 @@ namespace Aporia
             Bs = X;
         }
 
-        const uint8_t r = static_cast<uint8_t>(Rs + m) * 255;
-        const uint8_t g = static_cast<uint8_t>(Gs + m) * 255;
-        const uint8_t b = static_cast<uint8_t>(Bs + m) * 255;
+        const u8 r = static_cast<u8>(Rs + m) * 255;
+        const u8 g = static_cast<u8>(Gs + m) * 255;
+        const u8 b = static_cast<u8>(Bs + m) * 255;
 
         return Color{ r, g, b };
     }

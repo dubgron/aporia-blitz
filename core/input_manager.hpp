@@ -5,6 +5,8 @@
 #include "inputs/keyboard.hpp"
 #include "inputs/mouse.hpp"
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
     class EventManager;
@@ -14,7 +16,7 @@ namespace Aporia
         static constexpr size_t AxisNum = magic_enum::enum_count<GamepadAxis>();
 
         InputBuffer<Gamepad> buttons;
-        std::array<float, AxisNum> axes = { 0.0f };
+        std::array<f32, AxisNum> axes = { 0.f };
     };
 
     class InputManager final
@@ -40,7 +42,7 @@ namespace Aporia
         bool is_any_gamepad_button_pressed() const;
         bool is_any_gamepad_button_released() const;
 
-        float get_gamepad_axis(GamepadAxis gamepad_axis) const;
+        f32 get_gamepad_axis(GamepadAxis gamepad_axis) const;
 
         /* Mouse */
         bool is_button_triggered(Mouse button) const;
@@ -51,7 +53,7 @@ namespace Aporia
         bool is_any_button_pressed() const;
         bool is_any_button_released() const;
 
-        float is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
+        f32 is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
 
     private:
         void _on_key_triggered(Keyboard key);
@@ -60,7 +62,7 @@ namespace Aporia
         void _on_button_triggered(Mouse button);
         void _on_button_released(Mouse button);
 
-        void _on_wheel_scrolled(MouseWheel wheel, float delta);
+        void _on_wheel_scrolled(MouseWheel wheel, f32 delta);
         void _reset_wheel();
 
         void _update();
@@ -70,6 +72,6 @@ namespace Aporia
         GamepadInput _gamepad;
         InputBuffer<Mouse> _buttons;
         InputBuffer<MouseWheel> _wheels;
-        float _wheel_delta = 0.0f;
+        f32 _wheel_delta = 0.f;
     };
 }

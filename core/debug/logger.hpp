@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <string>
+#include <string_view>
 
 #include <spdlog/logger.h>
 
@@ -31,10 +31,10 @@ namespace Aporia
 
         static void Init(const std::string& name);
 
-        static void Log(const char* file, int line, const char* func, LogLevel lvl, std::string_view msg);
+        static void Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view msg);
 
         template<typename... Args>
-        static inline void Log(const char* file, int line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)
+        static inline void Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)
         {
             _logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), fmt, std::forward<Args>(args)...);
         }

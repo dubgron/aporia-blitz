@@ -2,16 +2,16 @@
 
 namespace Aporia
 {
-    IndexBuffer::IndexBuffer(size_t max_objects, size_t index_count, const std::vector<uint32_t>& indecies)
+    IndexBuffer::IndexBuffer(u64 max_objects, u64 index_count, const std::vector<u32>& indices)
         : _count(index_count)
     {
         glGenBuffers(1, &_id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
 
 #       if defined(APORIA_EMSCRIPTEN)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_objects * index_count * sizeof(uint32_t), &indecies[0], GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_objects * index_count * sizeof(u32), &indecies[0], GL_STATIC_DRAW);
 #       else
-            glNamedBufferData(_id, max_objects * index_count * sizeof(uint32_t), &indecies[0], GL_STATIC_DRAW);
+            glNamedBufferData(_id, index_count * max_objects * sizeof(u32), &indices[0], GL_STATIC_DRAW);
 #       endif
     }
 

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <string>
 
+#include "aporia_types.hpp"
 #include "graphics/shader_properties.hpp"
 #include "utils/read_file.hpp"
 
@@ -20,18 +21,18 @@ namespace Aporia
         const std::string_view type_token = "#type ";
         const std::string_view version_token = "#version ";
 
-        size_t line_begin = 0;
-        size_t line_end = contents.find('\n', line_begin);
+        u64 line_begin = 0;
+        u64 line_end = contents.find('\n', line_begin);
 
         while (line_end != std::string::npos)
         {
             const std::string line = contents.substr(line_begin, line_end - line_begin);
 
-            const size_t params_begin = line.find(' ') + 1;
+            const u64 params_begin = line.find(' ') + 1;
             const std::string params = line.substr(params_begin, line_end - params_begin);
             if (line.starts_with("#blend "))
             {
-                const size_t delim = params.find(' ');
+                const u64 delim = params.find(' ');
                 if (delim != std::string::npos)
                 {
                     results.properties.blend[0] = string_to<ShaderBlend>(params.substr(0, delim));
@@ -56,8 +57,8 @@ namespace Aporia
             }
             else if (line.starts_with("#type "))
             {
-                const size_t shader_begin = line_end + 1;
-                const size_t shader_end = contents.find("#type ", shader_begin);
+                const u64 shader_begin = line_end + 1;
+                const u64 shader_end = contents.find("#type ", shader_begin);
 
                 ShaderType type = string_to<ShaderType>(params);
                 std::string shader = contents.substr(shader_begin, shader_end - shader_begin);

@@ -4,7 +4,7 @@
 
 namespace Aporia
 {
-    VertexBuffer::VertexBuffer(size_t max_objects, size_t vertex_count)
+    VertexBuffer::VertexBuffer(u64 max_objects, u64 vertex_count)
         : _count(vertex_count)
     {
         glGenBuffers(1, &_id);
@@ -72,7 +72,7 @@ namespace Aporia
         unbind();
     }
 
-    void VertexBuffer::flush()
+    void VertexBuffer::flush() const
     {
         if (!_buffer.empty())
         {

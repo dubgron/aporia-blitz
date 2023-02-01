@@ -28,7 +28,7 @@
     #define DEBUG_TEXTURE(texture) \
         ImGui::Begin("DEBUG | Textures");\
         ImGui::Text("ID: %d, Size: %d x %d", texture.id, texture.width, texture.height); \
-        ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (float)texture.width, (float)texture.height }, ImVec2{ 0.0f, 0.0f }, ImVec2{ 1.0f, 1.0f }); \
+        ImGui::Image((void*)(intptr_t)texture.id, ImVec2{ (f32)texture.width, (f32)texture.height }, ImVec2{ 0.f, 0.f }, ImVec2{ 1.f, 1.f }); \
         ImGui::End();
 #else
     #define DEBUG_TEXTURE
@@ -58,8 +58,8 @@ namespace Aporia
         quads_vbo.add_layout();
         quads.set_vertex_buffer( std::move(quads_vbo) );
 
-        std::vector<uint32_t> quad_indecies(MAX_QUEUE * 6);
-        for (auto [i, offset] = std::make_pair<size_t, uint32_t>(0, 0); i < MAX_QUEUE * 6; i += 6, offset += 4)
+        std::vector<u32> quad_indecies(MAX_QUEUE * 6);
+        for (auto [i, offset] = std::make_pair<u64, u32>(0, 0); i < MAX_QUEUE * 6; i += 6, offset += 4)
         {
             quad_indecies[  i  ] = offset + 0;
             quad_indecies[i + 1] = offset + 1;
@@ -83,8 +83,8 @@ namespace Aporia
         lines_vbo.add_layout();
         lines.set_vertex_buffer( std::move(lines_vbo) );
 
-        std::vector<uint32_t> line_indecies(MAX_QUEUE * 2);
-        for (uint32_t i = 0; i < MAX_QUEUE * 2; ++i)
+        std::vector<u32> line_indecies(MAX_QUEUE * 2);
+        for (u32 i = 0; i < MAX_QUEUE * 2; ++i)
         {
             line_indecies[i] = i;
         }
@@ -100,7 +100,7 @@ namespace Aporia
         lights.raymarching.create_framebuffer(config.width, config.height);
 
         /* Initialize texture sampler */
-        std::array<int32_t, OPENGL_MAX_TEXTURE_UNITS> sampler{};
+        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};
         std::iota(sampler.begin(), sampler.end(), 0);
 
         /* Setup default shaders */
@@ -146,19 +146,19 @@ namespace Aporia
 
         _shaders.bind(font_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
+        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
 
         _shaders.bind(lights.raymarching_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
         _shaders.set_int("u_masking", lights.masking.get_color_buffer().id);
-        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
-        _shaders.set_float2("u_window_size", glm::vec2{ window.get_size() });
+        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        _shaders.set_float2("u_window_size", v2{ window.get_size() });
 
         _shaders.bind(lights.shadowcasting_shader);
         _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
         _shaders.set_int("u_raymarching", lights.raymarching.get_color_buffer().id);
-        _shaders.set_float("u_camera_zoom", 1.0f / camera.get_zoom());
-        _shaders.set_float2("u_window_size", glm::vec2{ window.get_size() });
+        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        _shaders.set_float2("u_window_size", v2{ window.get_size() });
 
         _shaders.unbind();
     }
@@ -180,7 +180,7 @@ namespace Aporia
         {
             lights.end();
 
-            const uint32_t num_lights = static_cast<uint32_t>(lights.sources.size());
+            const u32 num_lights = static_cast<u32>(lights.sources.size());
 
             _shaders.bind(lights.raymarching_shader);
             _shaders.set_uint("u_num_lights", num_lights);
@@ -247,18 +247,18 @@ namespace Aporia
 
     void Renderer::draw(const Sprite& sprite)
     {
-        const glm::mat4 transformation = to_mat4(_transformation_stack.back() * sprite.transform);
+        const m4 transformation = to_mat4(_transformation_stack.back() * sprite.transform);
 
-        const glm::vec3 base_offset     = transformation[3];
-        const glm::vec3 right_offset    = transformation[0] * sprite.rect.width;
-        const glm::vec3 up_offset       = transformation[1] * sprite.rect.height;
+        const v3 base_offset     = transformation[3];
+        const v3 right_offset    = transformation[0] * sprite.rect.width;
+        const v3 up_offset       = transformation[1] * sprite.rect.height;
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
         key.program_id              = sprite.shader;
 
         key.vertex[0].position      = base_offset;
-        key.vertex[0].tex_coord     = glm::vec2{ sprite.texture.u.x, sprite.texture.v.y };
+        key.vertex[0].tex_coord     = v2{ sprite.texture.u.x, sprite.texture.v.y };
         key.vertex[0].tex_id        = sprite.texture.origin.id;
         key.vertex[0].color         = sprite.color;
 
@@ -268,7 +268,7 @@ namespace Aporia
         key.vertex[1].color         = sprite.color;
 
         key.vertex[2].position      = base_offset + right_offset + up_offset;
-        key.vertex[2].tex_coord     = glm::vec2{ sprite.texture.v.x, sprite.texture.u.y };
+        key.vertex[2].tex_coord     = v2{ sprite.texture.v.x, sprite.texture.u.y };
         key.vertex[2].tex_id        = sprite.texture.origin.id;
         key.vertex[2].color         = sprite.color;
 
@@ -282,11 +282,11 @@ namespace Aporia
 
     void Renderer::draw(const Rectangle2D& rect)
     {
-        const glm::mat4 transformation = to_mat4(_transformation_stack.back() * rect.transform);
+        const m4 transformation = to_mat4(_transformation_stack.back() * rect.transform);
 
-        const glm::vec3 base_offset     = transformation[3];
-        const glm::vec3 right_offset    = transformation[0] * rect.size.width;
-        const glm::vec3 up_offset       = transformation[1] * rect.size.height;
+        const v3 base_offset     = transformation[3];
+        const v3 right_offset    = transformation[0] * rect.size.width;
+        const v3 up_offset       = transformation[1] * rect.size.height;
 
         RenderQueueKey key;
         key.buffer              = BufferType::Quads;
@@ -294,29 +294,29 @@ namespace Aporia
 
         key.vertex[0].position  = base_offset;
         key.vertex[0].color     = rect.color;
-        key.vertex[0].tex_coord = glm::vec2{ 0.0f, 0.0f };
+        key.vertex[0].tex_coord = v2{ 0.f, 0.f };
 
         key.vertex[1].position  = base_offset + right_offset;
         key.vertex[1].color     = rect.color;
-        key.vertex[1].tex_coord = glm::vec2{ 1.0f, 0.0f };
+        key.vertex[1].tex_coord = v2{ 1.f, 0.f };
 
         key.vertex[2].position  = base_offset + right_offset + up_offset;
         key.vertex[2].color     = rect.color;
-        key.vertex[2].tex_coord = glm::vec2{ 1.0f, 1.0f };
+        key.vertex[2].tex_coord = v2{ 1.f, 1.f };
 
         key.vertex[3].position  = base_offset + up_offset;
         key.vertex[3].color     = rect.color;
-        key.vertex[3].tex_coord = glm::vec2{ 0.0f, 1.0f };
+        key.vertex[3].tex_coord = v2{ 0.f, 1.f };
 
         _render_queue.push_back( std::move(key) );
     }
 
     void Renderer::draw(const Line2D& line2d)
     {
-        const glm::mat4 transformation = to_mat4(_transformation_stack.back() * line2d.transform);
+        const m4 transformation = to_mat4(_transformation_stack.back() * line2d.transform);
 
-        const glm::vec3 base_offset = transformation[3];
-        const glm::vec3 offset      = glm::mat2x4{ transformation[0], transformation[1] } * line2d.offset;
+        const v3 base_offset = transformation[3];
+        const v3 offset      = glm::mat2x4{ transformation[0], transformation[1] } * line2d.offset;
 
         RenderQueueKey key;
         key.buffer              = BufferType::Lines;
@@ -333,11 +333,11 @@ namespace Aporia
 
     void Renderer::draw(const Circle2D& circle)
     {
-        const glm::mat4 transformation = to_mat4(_transformation_stack.back() * circle.transform);
+        const m4 transformation = to_mat4(_transformation_stack.back() * circle.transform);
 
-        const glm::vec3 base_offset          = transformation[3];
-        const glm::vec3 right_half_offset    = transformation[0] * circle.radius;
-        const glm::vec3 up_half_offset       = transformation[1] * circle.radius;
+        const v3 base_offset          = transformation[3];
+        const v3 right_half_offset    = transformation[0] * circle.radius;
+        const v3 up_half_offset       = transformation[1] * circle.radius;
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
@@ -345,19 +345,19 @@ namespace Aporia
 
         key.vertex[0].position      = base_offset - right_half_offset - up_half_offset;
         key.vertex[0].color         = circle.color;
-        key.vertex[0].tex_coord     = glm::vec2{ -1.0f, -1.0f };
+        key.vertex[0].tex_coord     = v2{ -1.f, -1.f };
 
         key.vertex[1].position      = base_offset + right_half_offset - up_half_offset;
         key.vertex[1].color         = circle.color;
-        key.vertex[1].tex_coord     = glm::vec2{ 1.0f, -1.0f };
+        key.vertex[1].tex_coord     = v2{ 1.f, -1.f };
 
         key.vertex[2].position      = base_offset + right_half_offset + up_half_offset;
         key.vertex[2].color         = circle.color;
-        key.vertex[2].tex_coord     = glm::vec2{ 1.0f, 1.0f };
+        key.vertex[2].tex_coord     = v2{ 1.f, 1.f };
 
         key.vertex[3].position      = base_offset - right_half_offset + up_half_offset;
         key.vertex[3].color         = circle.color;
-        key.vertex[3].tex_coord     = glm::vec2{ -1.0f, 1.0f };
+        key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
 
         _render_queue.push_back( std::move(key) );
     }
@@ -371,19 +371,19 @@ namespace Aporia
 
         const Font& font = *text.font;
 
-        const glm::vec2 uv_length = glm::vec2{ font.atlas.origin.width, font.atlas.origin.height };
+        const v2 uv_length = v2{ font.atlas.origin.width, font.atlas.origin.height };
 
         /* Adjust text scaling by the predefined atlas font size */
-        const Transform2D font_scale{ .scale = glm::vec2{ 1.0f / font.atlas.font_size } };
+        const Transform2D font_scale{ .scale = v2{ 1.f / font.atlas.font_size } };
 
-        const glm::mat4 transformation = to_mat4(_transformation_stack.back() * text.transform * font_scale);
+        const m4 transformation = to_mat4(_transformation_stack.back() * text.transform * font_scale);
 
-        const float text_scale = glm::length(text.transform.scale);
-        const float screen_px_range = text_scale * font.atlas.distance_range / font.atlas.font_size;
+        const f32 text_scale = glm::length(text.transform.scale);
+        const f32 screen_px_range = text_scale * font.atlas.distance_range / font.atlas.font_size;
 
-        glm::vec2 advance{ 0.0f };
-        const size_t length = text.caption.size();
-        for (size_t i = 0; i < length; ++i)
+        v2 advance{ 0.f };
+        const u64 length = text.caption.size();
+        for (u64 i = 0; i < length; ++i)
         {
             const unicode_t character = text.caption[i];
 
@@ -405,15 +405,15 @@ namespace Aporia
 
             if (character == ' ')
             {
-                advance.x += font.metrics.em_size * font.atlas.font_size / 4.0f;
+                advance.x += font.metrics.em_size * font.atlas.font_size / 4.f;
             }
             else if (character == '\t')
             {
-                advance.x += font.metrics.em_size * font.atlas.font_size * 2.0f;
+                advance.x += font.metrics.em_size * font.atlas.font_size * 2.f;
             }
             else if (character == '\n')
             {
-                advance.x = 0.0f;
+                advance.x = 0.f;
                 advance.y -= font.metrics.line_height * font.atlas.font_size;
             }
             else if (font.glyphs.contains(character))
@@ -423,37 +423,37 @@ namespace Aporia
                 const Font::GlyphData::Bounds& atlas_bounds = glyph.atlas_bounds;
                 const Font::GlyphData::Bounds& plane_bounds = glyph.plane_bounds;
 
-                const glm::vec2 position = advance - glm::vec2{ plane_bounds.left, plane_bounds.bottom } * font.atlas.font_size;
+                const v2 position = advance - v2{ plane_bounds.left, plane_bounds.bottom } * font.atlas.font_size;
 
-                const glm::vec2 u_vector = glm::vec2{ atlas_bounds.left, atlas_bounds.bottom } / uv_length;
-                const glm::vec2 v_vector = glm::vec2{ atlas_bounds.right, atlas_bounds.top } / uv_length;
+                const v2 u_vector = v2{ atlas_bounds.left, atlas_bounds.bottom } / uv_length;
+                const v2 v_vector = v2{ atlas_bounds.right, atlas_bounds.top } / uv_length;
 
-                const float width = atlas_bounds.right - atlas_bounds.left;
-                const float height = atlas_bounds.top - atlas_bounds.bottom;
+                const f32 width = atlas_bounds.right - atlas_bounds.left;
+                const f32 height = atlas_bounds.top - atlas_bounds.bottom;
 
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
                 key.program_id              = text.shader;
 
-                key.vertex[0].position      = transformation * glm::vec4{ position, 0.0f, 1.0f };
+                key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
                 key.vertex[0].tex_id        = font.atlas.origin.id;
-                key.vertex[0].tex_coord     = glm::vec2{ u_vector.x, v_vector.y };
+                key.vertex[0].tex_coord     = v2{ u_vector.x, v_vector.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
-                key.vertex[1].position      = transformation * glm::vec4{ position.x + width, position.y, 0.0f, 1.0f };
+                key.vertex[1].position      = transformation * v4{ position.x + width, position.y, 0.f, 1.f };
                 key.vertex[1].tex_id        = font.atlas.origin.id;
                 key.vertex[1].tex_coord     = v_vector;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
-                key.vertex[2].position      = transformation * glm::vec4{ position.x + width, position.y + height, 0.0f, 1.0f };
+                key.vertex[2].position      = transformation * v4{ position.x + width, position.y + height, 0.f, 1.f };
                 key.vertex[2].tex_id        = font.atlas.origin.id;
-                key.vertex[2].tex_coord     = glm::vec2{ v_vector.x, u_vector.y };
+                key.vertex[2].tex_coord     = v2{ v_vector.x, u_vector.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
-                key.vertex[3].position      = transformation * glm::vec4{ position.x, position.y + height, 0.0f, 1.0f };
+                key.vertex[3].position      = transformation * v4{ position.x, position.y + height, 0.f, 1.f };
                 key.vertex[3].tex_id        = font.atlas.origin.id;
                 key.vertex[3].tex_coord     = u_vector;
                 key.vertex[3].color         = text.color;
@@ -491,9 +491,9 @@ namespace Aporia
                     _flush_buffer(prev_key.buffer, prev_key.program_id);
                 }
 
-                const uint8_t buffer_index = std::to_underlying(key.buffer);
+                const u8 buffer_index = std::to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
-                for (size_t i = 0; i < vertex_buffer.count(); ++i)
+                for (u64 i = 0; i < vertex_buffer.count(); ++i)
                 {
                     vertex_buffer.emplace( std::move(key.vertex[i]) );
                 }
@@ -509,7 +509,7 @@ namespace Aporia
 
     void Renderer::_flush_framebuffer(const Framebuffer& framebuffer, Shader program_id)
     {
-        constexpr uint8_t buffer_index = std::to_underlying(BufferType::Quads);
+        constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
         for (Vertex vertex : framebuffer.get_vertices())
         {
@@ -523,11 +523,11 @@ namespace Aporia
     {
         _shaders.bind(program_id);
 
-        const uint8_t buffer_index = std::to_underlying(buffer);
+        const u8 buffer_index = std::to_underlying(buffer);
         _vertex_arrays[buffer_index].render();
     }
 
-    void Renderer::_on_resize(Window& window, uint32_t width, uint32_t height)
+    void Renderer::_on_resize(Window& window, u32 width, u32 height)
     {
         _framebuffer.create_framebuffer(width, height);
         lights.masking.create_framebuffer(width, height);

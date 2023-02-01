@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "graphics/vertex.hpp"
 
 namespace Aporia
@@ -12,7 +13,7 @@ namespace Aporia
     {
     public:
         VertexBuffer() = default;
-        VertexBuffer(size_t max_objects, size_t count);
+        VertexBuffer(u64 max_objects, u64 count);
 
         VertexBuffer(const VertexBuffer&) = delete;
         VertexBuffer& operator=(const VertexBuffer&) = delete;
@@ -27,7 +28,7 @@ namespace Aporia
 
         void add_layout();
 
-        void flush();
+        void flush() const;
 
         void push(Vertex vertex);
         void emplace(Vertex&& vertex);
@@ -43,12 +44,12 @@ namespace Aporia
         std::vector<Vertex>::const_reverse_iterator rbegin() const    { return _buffer.rbegin(); }
         std::vector<Vertex>::const_reverse_iterator rend() const      { return _buffer.rend(); }
 
-        size_t size() const { return _buffer.size(); }
-        size_t count() const { return _count; }
+        u64 size() const { return _buffer.size(); }
+        u64 count() const { return _count; }
 
     private:
-        uint32_t _id = 0;
-        size_t _count = 0;
+        u32 _id = 0;
+        u64 _count = 0;
 
         std::vector<Vertex> _buffer;
     };

@@ -1,24 +1,21 @@
 #pragma once
 
-#include <cstdint>
-
-#include <glm/vec2.hpp>
-
+#include "aporia_types.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
     struct Texture final
     {
-        glm::vec2 u{ 0.0f };
-        glm::vec2 v{ 0.0f };
+        v2 u{ 0.f };
+        v2 v{ 0.f };
 
         struct Origin final
         {
             texture_id id = 0;
-            int32_t width = 0;
-            int32_t height = 0;
-            int32_t channels = 0;
+            i32 width = 0;
+            i32 height = 0;
+            i32 channels = 0;
         } origin;
     };
 }

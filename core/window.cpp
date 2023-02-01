@@ -18,7 +18,7 @@ namespace Aporia
     Window::Window(EventManager& events, WindowConfig& config)
         : _events(events), _config(config)
     {
-        glfwSetErrorCallback([](int32_t error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
+        glfwSetErrorCallback([](i32 error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
 
         if (!glfwInit())
         {
@@ -53,7 +53,7 @@ namespace Aporia
                 win._events.call_event<WindowCloseEvent>(win);
             });
 
-        glfwSetKeyCallback(_window, [](GLFWwindow* window, int32_t key_code, int32_t scan_code, int32_t action, int32_t mods)
+        glfwSetKeyCallback(_window, [](GLFWwindow* window, i32 key_code, i32 scan_code, i32 action, i32 mods)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 Keyboard key = static_cast<Keyboard>(key_code);
@@ -67,7 +67,7 @@ namespace Aporia
                 }
             });
 
-        glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int32_t button_code, int32_t action, int32_t mods)
+        glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, i32 button_code, i32 action, i32 mods)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 Mouse button = static_cast<Mouse>(button_code);
@@ -81,26 +81,26 @@ namespace Aporia
                 }
             });
 
-        glfwSetScrollCallback(_window, [](GLFWwindow* window, double x_offset, double y_offset)
+        glfwSetScrollCallback(_window, [](GLFWwindow* window, f64 x_offset, f64 y_offset)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 if (x_offset)
                 {
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, static_cast<float>(x_offset));
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
                 }
                 if (y_offset)
                 {
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, static_cast<float>(y_offset));
+                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
                 }
             });
 
-        glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double x_pos, double y_pos)
+        glfwSetCursorPosCallback(_window, [](GLFWwindow* window, f64 x_pos, f64 y_pos)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 win._events.call_event<MouseMoveEvent>(glm::vec2{ x_pos, y_pos });
             });
 
-        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* window, int32_t width, int32_t height)
+        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* window, i32 width, i32 height)
             {
                 Window& win = *(Window*)glfwGetWindowUserPointer(window);
                 win._events.call_event<WindowResizeEvent>(win, width, height);
@@ -177,7 +177,7 @@ namespace Aporia
                 window.close();
             });
 
-        events.add_listener<WindowResizeEvent>([](Window& window, uint32_t width, uint32_t height)
+        events.add_listener<WindowResizeEvent>([](Window& window, u32 width, u32 height)
             {
                 glViewport(0, 0, width, height);
             });
@@ -234,18 +234,18 @@ namespace Aporia
         /**
          *  Precalculated following lines:
          *
-         *  screen_to_clip = glm::scale(glm::mat4{ 1.0f }, glm::vec3{ 2.0f / window_size.x, -2.0f / window_size.y, 1.0f });
-         *  screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.0f, 1.0f, 0.0f });
+         *  screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / window_size.x, -2.f / window_size.y, 1.f });
+         *  screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
          *
          */
         const glm::mat4 screen_to_clip{
-            2.0f / window_size.x,   0.0f,                   0.0f,   0.0f,
-            0.0f,                   -2.0f / window_size.y,  0.0f,   0.0f,
-            0.0f,                   0.0f,                   1.0f,   0.0f,
-            -1.0f,                  1.0f,                   0.0f,   1.0f };
+            2.f / window_size.x,   0.f,                   0.f,   0.f,
+            0.f,                   -2.f / window_size.y,  0.f,   0.f,
+            0.f,                   0.f,                   1.f,   0.f,
+            -1.f,                  1.f,                   0.f,   1.f };
 
         const glm::mat4 clip_to_world = glm::inverse(camera.get_view_projection_matrix());
-        const glm::vec2 world_position = clip_to_world * screen_to_clip * glm::vec4{ screen_position, 0.0f, 1.0f };
+        const glm::vec2 world_position = clip_to_world * screen_to_clip * glm::vec4{ screen_position, 0.f, 1.f };
 
         return world_position;
     }

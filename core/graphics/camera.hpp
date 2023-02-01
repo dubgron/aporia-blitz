@@ -1,60 +1,58 @@
 #pragma once
 
-#include <cstdint>
-
-#include <glm/glm.hpp>
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
     struct CameraView final
     {
-        glm::vec2 position{ 0.0f };
-        float rotation = 0.0f;
+        v2 position{ 0.f };
+        f32 rotation = 0.f;
 
         /* Cached Values */
-        mutable glm::mat4 matrix{ 1.0f };
+        mutable m4 matrix{ 1.f };
 
-        mutable glm::vec2 up_vector{ 0.0f, 1.0f };
-        mutable glm::vec2 right_vector{ 1.0f, 0.0f };
+        mutable v2 up_vector{ 0.f, 1.f };
+        mutable v2 right_vector{ 1.f, 0.f };
     };
 
     struct CameraProjection final
     {
-        float fov = 1.0f;
-        float aspect_ratio = 1.0f;
-        float zoom = 1.0f;
+        f32 fov = 1.f;
+        f32 aspect_ratio = 1.f;
+        f32 zoom = 1.f;
 
         /* Cached Values */
-        mutable glm::mat4 matrix{ 1.0f };
+        mutable m4 matrix{ 1.f };
     };
 
     class Camera final
     {
     public:
-        Camera(float fov, float aspect_ratio);
+        Camera(f32 fov, f32 aspect_ratio);
 
-        const glm::mat4& get_view_projection_matrix() const;
+        const m4& get_view_projection_matrix() const;
 
-        void set_position(glm::vec2 new_position);
-        void move(const glm::vec2& vector);
-        const glm::vec2& get_position() const;
+        void set_position(v2 new_position);
+        void move(const v2& vector);
+        const v2& get_position() const;
 
-        void set_rotation(float new_rotation);
-        void rotate(float rotation);
-        float get_rotation() const;
+        void set_rotation(f32 new_rotation);
+        void rotate(f32 rotation);
+        f32 get_rotation() const;
 
-        const glm::vec2& get_up_vector() const;
-        const glm::vec2& get_right_vector() const;
+        const v2& get_up_vector() const;
+        const v2& get_right_vector() const;
 
-        void set_fov(float new_fov);
-        float get_fov() const;
+        void set_fov(f32 new_fov);
+        f32 get_fov() const;
 
-        void set_aspect_ratio(float new_aspect_ratio);
-        float get_aspect_ratio() const;
+        void set_aspect_ratio(f32 new_aspect_ratio);
+        f32 get_aspect_ratio() const;
 
-        void set_zoom(float new_zoom);
-        void zoom(float zoom);
-        float get_zoom() const;
+        void set_zoom(f32 new_zoom);
+        void zoom(f32 zoom);
+        f32 get_zoom() const;
 
     private:
         void recalculate_view() const;
@@ -64,7 +62,7 @@ namespace Aporia
         CameraView _view;
         CameraProjection _projection;
 
-        mutable glm::mat4 _vp_matrix{ 1.0f };
+        mutable m4 _vp_matrix{ 1.f };
 
     private:
         /* Dirty Flags for Matrices */

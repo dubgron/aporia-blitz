@@ -58,7 +58,7 @@ namespace Aporia
         LayerStack _layer_stack;
         ImGuiLayer _imgui_layer;
 
-        Deltatime _dt = 0.0f;
+        Deltatime _dt = 0.f;
 
     private:
         Timer _timer;

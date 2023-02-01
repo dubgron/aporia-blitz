@@ -1,6 +1,5 @@
 #include "font_manager.hpp"
 
-#include <cstdint>
 #include <utility>
 
 #include <nlohmann/json.hpp>
@@ -43,8 +42,8 @@ namespace Aporia
             result.atlas.origin.height = atlas_data.height;
             result.atlas.origin.channels = atlas_data.channels;
 
-            /* TODO: Move the OpenGL part of creatng texture to a separate function */
-            uint32_t id = 0;
+            /* TODO: Move the OpenGL part of creating texture to a separate function */
+            u32 id = 0;
             glGenTextures(1, &id);
 
             glActiveTexture(GL_TEXTURE0 + id);

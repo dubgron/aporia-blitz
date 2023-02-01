@@ -39,19 +39,19 @@ namespace Aporia
         return impl::random<std::exponential_distribution<T>>(lambda);
     }
 
-    template<typename T = int> requires std::is_integral_v<T>
-    inline T poisson(float mean)
+    template<typename T = i32> requires std::is_integral_v<T>
+    inline T poisson(f32 mean)
     {
         return impl::random<std::poisson_distribution<T>>(mean);
     }
 
     template<typename T> requires std::is_integral_v<T>
-    inline T binomial(T n, float p)
+    inline T binomial(T n, f32 p)
     {
         return impl::random<std::binomial_distribution<T>>(n, p);
     }
 
-    inline bool bernoulli(float p)
+    inline bool bernoulli(f32 p)
     {
         return impl::random<std::bernoulli_distribution>(p);
     }

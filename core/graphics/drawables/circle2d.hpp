@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/shader.hpp"
@@ -11,7 +12,7 @@ namespace Aporia
         Circle2D();
 
         Transform2D transform;
-        float radius = 0.0f;
+        f32 radius = 0.f;
         Color color = Colors::White;
         ShaderRef shader = 0;
     };

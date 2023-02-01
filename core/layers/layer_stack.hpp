@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <functional>
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "layers/layer.hpp"
 
 namespace Aporia
@@ -33,6 +33,6 @@ namespace Aporia
 
     private:
         Container _layers;
-        uint32_t _overlay_index = 0;
+        u32 _overlay_index = 0;
     };
 }

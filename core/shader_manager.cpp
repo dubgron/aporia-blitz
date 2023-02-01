@@ -108,126 +108,126 @@ namespace Aporia
         _active_id = 0;
     }
 
-    void ShaderManager::set_float(const std::string& name, float value)
+    void ShaderManager::set_float(const std::string& name, f32 value)
     {
         glUniform1f(_location(name), value);
     }
 
-    void ShaderManager::set_float2(const std::string& name, glm::vec2 value)
+    void ShaderManager::set_float2(const std::string& name, v2 value)
     {
         glUniform2f(_location(name), value.x, value.y);
     }
 
-    void ShaderManager::set_float3(const std::string& name, glm::vec3 value)
+    void ShaderManager::set_float3(const std::string& name, v3 value)
     {
         glUniform3f(_location(name), value.x, value.y, value.z);
     }
 
-    void ShaderManager::set_float4(const std::string& name, glm::vec4 value)
+    void ShaderManager::set_float4(const std::string& name, v4 value)
     {
         glUniform4f(_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void ShaderManager::set_float_array(const std::string& name, float* value, int32_t count)
+    void ShaderManager::set_float_array(const std::string& name, f32* value, i32 count)
     {
         glUniform1fv(_location(name), count, value);
     }
 
 #   if !defined(APORIA_EMSCRIPTEN)
-    void ShaderManager::set_double(const std::string& name, double value)
+    void ShaderManager::set_double(const std::string& name, f64 value)
     {
         glUniform1d(_location(name), value);
     }
 
-    void ShaderManager::set_double2(const std::string& name, glm::dvec2 value)
+    void ShaderManager::set_double2(const std::string& name, v2_f64 value)
     {
         glUniform2d(_location(name), value.x, value.y);
     }
 
-    void ShaderManager::set_double3(const std::string& name, glm::dvec3 value)
+    void ShaderManager::set_double3(const std::string& name, v3_f64 value)
     {
         glUniform3d(_location(name), value.x, value.y, value.z);
     }
 
-    void ShaderManager::set_double4(const std::string& name, glm::dvec4 value)
+    void ShaderManager::set_double4(const std::string& name, v4_f64 value)
     {
         glUniform4d(_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void ShaderManager::set_double_array(const std::string& name, double* value, int32_t count)
+    void ShaderManager::set_double_array(const std::string& name, f64* value, i32 count)
     {
         glUniform1dv(_location(name), count, value);
     }
 #   endif
 
-    void ShaderManager::set_int(const std::string& name, int32_t value)
+    void ShaderManager::set_int(const std::string& name, i32 value)
     {
         glUniform1i(_location(name), value);
     }
 
-    void ShaderManager::set_int2(const std::string& name, glm::ivec2 value)
+    void ShaderManager::set_int2(const std::string& name, v2_i32 value)
     {
         glUniform2i(_location(name), value.x, value.y);
     }
 
-    void ShaderManager::set_int3(const std::string& name, glm::ivec3 value)
+    void ShaderManager::set_int3(const std::string& name, v3_i32 value)
     {
         glUniform3i(_location(name), value.x, value.y, value.z);
     }
 
-    void ShaderManager::set_int4(const std::string& name, glm::ivec4 value)
+    void ShaderManager::set_int4(const std::string& name, v4_i32 value)
     {
         glUniform4i(_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void ShaderManager::set_int_array(const std::string& name, int* value, int32_t count)
+    void ShaderManager::set_int_array(const std::string& name, i32* value, i32 count)
     {
         glUniform1iv(_location(name), count, value);
     }
 
-    void ShaderManager::set_uint(const std::string& name, uint32_t value)
+    void ShaderManager::set_uint(const std::string& name, u32 value)
     {
         glUniform1ui(_location(name), value);
     }
 
-    void ShaderManager::set_uint2(const std::string& name, glm::uvec2 value)
+    void ShaderManager::set_uint2(const std::string& name, v2_u32 value)
     {
         glUniform2ui(_location(name), value.x, value.y);
     }
 
-    void ShaderManager::set_uint3(const std::string& name, glm::uvec3 value)
+    void ShaderManager::set_uint3(const std::string& name, v3_u32 value)
     {
         glUniform3ui(_location(name), value.x, value.y, value.z);
     }
 
-    void ShaderManager::set_uint4(const std::string& name, glm::uvec4 value)
+    void ShaderManager::set_uint4(const std::string& name, v4_u32 value)
     {
         glUniform4ui(_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void ShaderManager::set_uint_array(const std::string& name, uint32_t* value, int32_t count)
+    void ShaderManager::set_uint_array(const std::string& name, u32* value, i32 count)
     {
         glUniform1uiv(_location(name), count, value);
     }
 
-    void ShaderManager::set_mat2(const std::string& name, glm::mat2 value, bool transpose /* = false */, int32_t count /* = 1 */)
+    void ShaderManager::set_mat2(const std::string& name, glm::mat2 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix2fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat3(const std::string& name, glm::mat3 value, bool transpose /* = false */, int32_t count /* = 1 */)
+    void ShaderManager::set_mat3(const std::string& name, glm::mat3 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix3fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat4(const std::string& name, glm::mat4 value, bool transpose /* = false */, int32_t count /* = 1 */)
+    void ShaderManager::set_mat4(const std::string& name, glm::mat4 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix4fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
     Shader ShaderManager::_load(const std::string& contents, ShaderType type)
     {
-        const uint32_t shader_type = to_opengl_type(type);
+        const u32 shader_type = to_opengl_type(type);
 
         Shader shader_id = glCreateShader(shader_type);
         const char* shader = contents.c_str();
@@ -235,11 +235,11 @@ namespace Aporia
         glShaderSource(shader_id, 1, &shader, nullptr);
         glCompileShader(shader_id);
 
-        int32_t results;
+        i32 results;
         glGetShaderiv(shader_id, GL_COMPILE_STATUS, &results);
         if (results == GL_FALSE)
         {
-            int32_t length;
+            i32 length;
             glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
 
             std::vector<GLchar> msg(length);
@@ -324,11 +324,11 @@ namespace Aporia
         }
     }
 
-    int32_t ShaderManager::_location(const std::string& name)
+    i32 ShaderManager::_location(const std::string& name)
     {
-        int32_t location;
+        i32 location;
 
-        std::unordered_map<std::string, int32_t>& locations_dict = _locations[_active_id];
+        std::unordered_map<std::string, i32>& locations_dict = _locations[_active_id];
         if (!locations_dict.contains(name))
         {
             location = glGetUniformLocation(_active_id, name.c_str());

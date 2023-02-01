@@ -1,17 +1,18 @@
 #pragma once
 
-#include <cstdint>
 #include <string_view>
+
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
     struct ImageData
     {
-        uint8_t* pixels = nullptr;
+        u8* pixels = nullptr;
 
-        int32_t width = 0;
-        int32_t height = 0;
-        int32_t channels = 0;
+        i32 width = 0;
+        i32 height = 0;
+        i32 channels = 0;
     };
 
     class Image

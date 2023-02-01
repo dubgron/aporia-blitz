@@ -22,10 +22,10 @@ namespace Aporia
         event_manager.add_listener<ReloadCameraConfigEvent>(std::bind(&CameraController::_on_config_reload, this));
     }
 
-    void CameraController::control_movement(const InputManager& input_manager, float delta_time)
+    void CameraController::control_movement(const InputManager& input_manager, f32 delta_time)
     {
-        const float movement_speed = _config.movement_speed * delta_time;
-        glm::vec2 movement{ 0.0f };
+        const f32 movement_speed = _config.movement_speed * delta_time;
+        v2 movement{ 0.f };
 
         if (input_manager.is_key_pressed(_config.movement_key_up))
         {
@@ -49,15 +49,15 @@ namespace Aporia
 
         if (movement.x || movement.y)
         {
-            const glm::vec2 to_move = _camera.get_right_vector() * movement.x + _camera.get_up_vector() * movement.y;
+            const v2 to_move = _camera.get_right_vector() * movement.x + _camera.get_up_vector() * movement.y;
             _camera.move(to_move);
         }
     }
 
-    void CameraController::control_rotation(const InputManager& input_manager, float delta_time)
+    void CameraController::control_rotation(const InputManager& input_manager, f32 delta_time)
     {
-        const float rotation_speed = _config.rotation_speed * delta_time;
-        float rotation = 0.0f;
+        const f32 rotation_speed = _config.rotation_speed * delta_time;
+        f32 rotation = 0.f;
 
         if (input_manager.is_key_pressed(_config.rotation_key_left))
         {
@@ -75,10 +75,10 @@ namespace Aporia
         }
     }
 
-    void CameraController::control_zoom(const InputManager& input_manager, float delta_time)
+    void CameraController::control_zoom(const InputManager& input_manager, f32 delta_time)
     {
-        const float zoom_speed = _config.zoom_speed * delta_time;
-        float zoom = 0.0f;
+        const f32 zoom_speed = _config.zoom_speed * delta_time;
+        f32 zoom = 0.f;
 
         if (input_manager.is_key_pressed(_config.zoom_key_in))
         {
@@ -92,15 +92,15 @@ namespace Aporia
 
         if (zoom)
         {
-            const float new_zoom = std::clamp(_camera.get_zoom() + zoom, _config.zoom_min, _config.zoom_max);
+            const f32 new_zoom = std::clamp(_camera.get_zoom() + zoom, _config.zoom_min, _config.zoom_max);
             _camera.set_zoom(new_zoom);
         }
     }
 
-    void CameraController::follow(const glm::vec2& to_follow, float delta_time)
+    void CameraController::follow(const v2& to_follow, f32 delta_time)
     {
-        const glm::vec2 direction{ to_follow - _camera.get_position() };
-        const glm::vec2 to_move{ direction * _config.movement_speed * delta_time * _camera.get_zoom() / _camera.get_fov() };
+        const v2 direction{ to_follow - _camera.get_position() };
+        const v2 to_move{ direction * _config.movement_speed * delta_time * _camera.get_zoom() / _camera.get_fov() };
         _camera.move(to_move);
     }
 
@@ -119,9 +119,9 @@ namespace Aporia
         return _config.background_color;
     }
 
-    void CameraController::_on_resize(Window& window, uint32_t width, uint32_t height)
+    void CameraController::_on_resize(Window& window, u32 width, u32 height)
     {
-        _config.aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+        _config.aspect_ratio = static_cast<f32>(width) / static_cast<f32>(height);
 
         _camera.set_aspect_ratio(_config.aspect_ratio);
     }

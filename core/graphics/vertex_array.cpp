@@ -2,7 +2,7 @@
 
 namespace Aporia
 {
-    VertexArray::VertexArray(size_t vertex_count, size_t index_count)
+    VertexArray::VertexArray(u64 vertex_count, u64 index_count)
     {
         glGenVertexArrays(1, &_id);
 
@@ -60,7 +60,7 @@ namespace Aporia
         this->bind();
         _index_buffer.bind();
 
-        const uint32_t count = static_cast<uint32_t>(_vertex_buffer.size() / _vertex_buffer.count() * _index_buffer.count());
+        const u32 count = static_cast<u32>(_vertex_buffer.size() / _vertex_buffer.count() * _index_buffer.count());
         glDrawElements(_mode, count, GL_UNSIGNED_INT, nullptr);
 
         _index_buffer.unbind();

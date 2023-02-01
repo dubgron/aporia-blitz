@@ -3,35 +3,35 @@
 #include <cmath>
 
 #include <glm/ext/matrix_transform.hpp>
-#include <glm/glm.hpp>
 
+#include "aporia_types.hpp"
 #include "components/transform2d.hpp"
 
 namespace Aporia
 {
-    inline glm::mat4 to_mat4(const Transform2D& transform)
+    inline m4 to_mat4(const Transform2D& transform)
     {
         /**
          *  Precalculated following lines:
          *
-         *  result = glm::translate(glm::mat4{ 1.0f }, transform.position + glm::vec3{ transform.origin, 0.0f });
-         *  result = glm::rotate(result, transform.rotation, glm::vec3{ 0.0f, 0.0f, 1.0f });
-         *  result = glm::scale(result, glm::vec3{ transform.scale, 1.0f });
-         *  result = glm::translate(result, glm::vec3{ a-transform.origin, 0.0f });
+         *  result = glm::translate(glm::mat4{ 1.f }, transform.position + glm::vec3{ transform.origin, 0.f });
+         *  result = glm::rotate(result, transform.rotation, glm::vec3{ 0.f, 0.f, 1.f });
+         *  result = glm::scale(result, glm::vec3{ transform.scale, 1.f });
+         *  result = glm::translate(result, glm::vec3{ a-transform.origin, 0.f });
          *
          */
-        const glm::vec2 sin_scaled{ transform.scale * std::sin(transform.rotation) };
-        const glm::vec2 cos_scaled{ transform.scale * std::cos(transform.rotation) };
+        const v2 sin_scaled{ transform.scale * std::sin(transform.rotation) };
+        const v2 cos_scaled{ transform.scale * std::cos(transform.rotation) };
 
-        const float x_translate = transform.position.x + transform.origin.x - (transform.origin.x * cos_scaled.x - transform.origin.y * sin_scaled.y);
-        const float y_translate = transform.position.y + transform.origin.y - (transform.origin.x * sin_scaled.x + transform.origin.y * cos_scaled.y);
-        const float z_translate = transform.position.z;
+        const f32 x_translate = transform.position.x + transform.origin.x - (transform.origin.x * cos_scaled.x - transform.origin.y * sin_scaled.y);
+        const f32 y_translate = transform.position.y + transform.origin.y - (transform.origin.x * sin_scaled.x + transform.origin.y * cos_scaled.y);
+        const f32 z_translate = transform.position.z;
 
-        return glm::mat4{
-            cos_scaled.x,   sin_scaled.x,   0.0f,        0.0f,
-            -sin_scaled.y,  cos_scaled.y,   0.0f,        0.0f,
-            0.0f,           0.0f,           1.0f,        0.0f,
-            x_translate,    y_translate,    z_translate, 1.0f };
+        return m4{
+            cos_scaled.x,   sin_scaled.x,   0.f,            0.f,
+            -sin_scaled.y,  cos_scaled.y,   0.f,            0.f,
+            0.f,            0.f,            1.f,            0.f,
+            x_translate,    y_translate,    z_translate,    1.f };
     }
 
     inline Transform2D operator*(const Transform2D& transform1, const Transform2D& transform2)

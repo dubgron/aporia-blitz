@@ -10,13 +10,13 @@
 #else
     #include <ctime>
     /* Workaround for compilers which don't support std::format */
-    std::string format_timestamp(std::string fmt, const std::chrono::system_clock::time_point& timestamp)
+    std::string format_timestamp(std::string_view fmt, const std::chrono::system_clock::time_point& timestamp)
     {
         std::time_t now_c = std::chrono::system_clock::to_time_t(timestamp);
         std::tm now_tm = *std::localtime(&now_c);
 
         char buff[30];
-        strftime(buff, sizeof(buff), fmt.c_str(), &now_tm);
+        strftime(buff, sizeof(buff), fmt.data(), &now_tm);
 
         return buff;
     }
@@ -44,7 +44,7 @@ namespace Aporia
         _logger->flush_on(spdlog::level::debug);
     }
 
-    void Logger::Log(const char* file, int line, const char* func, LogLevel lvl, std::string_view msg)
+    void Logger::Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view msg)
     {
         _logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), msg);
     }

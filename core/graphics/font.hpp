@@ -3,11 +3,12 @@
 #include <map>
 #include <utility>
 
+#include "aporia_types.hpp"
 #include "components/texture.hpp"
 
 namespace Aporia
 {
-    using unicode_t = uint8_t;
+    using unicode_t = u8;
 
     struct Font final
     {
@@ -15,21 +16,21 @@ namespace Aporia
         {
             Texture::Origin origin;
 
-            float font_size = 64.0f;
-            float distance_range = 2.0f;
+            f32 font_size = 64.f;
+            f32 distance_range = 2.f;
         };
 
         struct GlyphData final
         {
             struct Bounds final
             {
-                float left = 0.0f;
-                float bottom = 0.0f;
-                float right = 0.0f;
-                float top = 0.0f;
+                f32 left = 0.f;
+                f32 bottom = 0.f;
+                f32 right = 0.f;
+                f32 top = 0.f;
             };
 
-            float advance = 0.0f;
+            f32 advance = 0.f;
 
             Bounds plane_bounds;
             Bounds atlas_bounds;
@@ -39,17 +40,17 @@ namespace Aporia
 
         struct Metrics final
         {
-            float em_size = 0.0f;
-            float line_height = 0.0f;
+            f32 em_size = 0.f;
+            f32 line_height = 0.f;
 
-            float ascender_y = 0.0f;
-            float descender_y = 0.0f;
+            f32 ascender_y = 0.f;
+            f32 descender_y = 0.f;
 
-            float underline_y = 0.0f;
-            float underline_thickness = 0.0f;
+            f32 underline_y = 0.f;
+            f32 underline_thickness = 0.f;
         };
 
-        using Kerning = std::map<std::pair<unicode_t, unicode_t>, float>;
+        using Kerning = std::map<std::pair<unicode_t, unicode_t>, f32>;
 
         Atlas atlas;
         Glyphs glyphs;

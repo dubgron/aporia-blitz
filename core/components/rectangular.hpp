@@ -1,10 +1,12 @@
 #pragma once
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
     struct Rectangular final
     {
-        float width = 0.0f;
-        float height = 0.0f;
+        f32 width = 0.f;
+        f32 height = 0.f;
     };
 }

@@ -1,10 +1,6 @@
-#pragma once 
+#pragma once
 
-#include <cstdint>
-
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-
+#include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "platform/opengl.hpp"
 
@@ -12,13 +8,13 @@ namespace Aporia
 {
     struct Vertex final
     {
-        glm::vec3 position{ 0.0f };
+        v3 position{ 0.f };
 
         Color color = Colors::White;
 
         texture_id tex_id = 0;
-        glm::vec2 tex_coord{ 0.0f };
+        v2 tex_coord{ 0.f };
 
-        float additional = 0.0f;
+        f32 additional = 0.f;
     };
 }

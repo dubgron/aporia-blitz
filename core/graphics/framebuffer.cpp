@@ -9,22 +9,22 @@ namespace Aporia
     Framebuffer::Framebuffer()
     {
         /* Setup vertices */
-        _vertex[0].position = glm::vec3{ -1.0f, -1.0f, 0.0f };
-        _vertex[0].tex_coord = glm::vec2{ 0.0f, 0.0f };
+        _vertex[0].position = v3{ -1.f, -1.f, 0.f };
+        _vertex[0].tex_coord = v2{ 0.f, 0.f };
 
-        _vertex[1].position = glm::vec3{ 1.0f, -1.0f, 0.0f };
-        _vertex[1].tex_coord = glm::vec2{ 1.0f, 0.0f };
+        _vertex[1].position = v3{ 1.f, -1.f, 0.f };
+        _vertex[1].tex_coord = v2{ 1.f, 0.f };
 
-        _vertex[2].position = glm::vec3{ 1.0f, 1.0f, 0.0f };
-        _vertex[2].tex_coord = glm::vec2{ 1.0f, 1.0f };
+        _vertex[2].position = v3{ 1.f, 1.f, 0.f };
+        _vertex[2].tex_coord = v2{ 1.f, 1.f };
 
-        _vertex[3].position = glm::vec3{ -1.0f, 1.0f, 0.0f };
-        _vertex[3].tex_coord = glm::vec2{ 0.0f, 1.0f };
+        _vertex[3].position = v3{ -1.f, 1.f, 0.f };
+        _vertex[3].tex_coord = v2{ 0.f, 1.f };
     }
 
     Framebuffer::~Framebuffer()
     {
-        uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
+        u32 color_buffer_id = static_cast<u32>(_color_buffer.id);
         glDeleteTextures(1, &color_buffer_id);
         glDeleteRenderbuffers(1, &_renderbuffer_id);
         glDeleteFramebuffers(1, &_framebuffer_id);
@@ -44,11 +44,11 @@ namespace Aporia
 
     void Framebuffer::clear(Color color /* = Colors::Black */)
     {
-        glClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+        glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void Framebuffer::create_framebuffer(int32_t width, int32_t height)
+    void Framebuffer::create_framebuffer(i32 width, i32 height)
     {
         if (width <= 0 || height <= 0)
         {
@@ -56,7 +56,7 @@ namespace Aporia
         }
 
         /* Delete potential previous buffers and textures */
-        uint32_t color_buffer_id = static_cast<uint32_t>(_color_buffer.id);
+        u32 color_buffer_id = static_cast<u32>(_color_buffer.id);
         glDeleteTextures(1, &color_buffer_id);
         glDeleteRenderbuffers(1, &_renderbuffer_id);
         glDeleteFramebuffers(1, &_framebuffer_id);
@@ -88,7 +88,7 @@ namespace Aporia
             .height = height,
             .channels = 3 };
 
-        for (size_t i = 0; i < _vertex.size(); ++i)
+        for (u64 i = 0; i < _vertex.size(); ++i)
         {
             _vertex[i].tex_id = _color_buffer.id;
         }

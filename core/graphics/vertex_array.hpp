@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "aporia_types.hpp"
 #include "graphics/index_buffer.hpp"
 #include "graphics/vertex_buffer.hpp"
 
@@ -12,7 +13,7 @@ namespace Aporia
     class VertexArray final
     {
     public:
-        VertexArray(size_t vertex_count, size_t index_count);
+        VertexArray(u64 vertex_count, u64 index_count);
 
         VertexArray(const VertexArray&) = delete;
         VertexArray& operator=(const VertexArray&) = delete;
@@ -34,8 +35,8 @@ namespace Aporia
         IndexBuffer& get_index_buffer() { return _index_buffer; }
 
     private:
-        uint32_t _id = 0;
-        uint32_t _mode = 0;
+        u32 _id = 0;
+        u32 _mode = 0;
 
         VertexBuffer _vertex_buffer;
         IndexBuffer _index_buffer;

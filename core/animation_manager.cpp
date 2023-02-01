@@ -38,7 +38,7 @@ namespace Aporia
     void AnimationManager::_load()
     {
         _animations.clear();
-        _animations.try_emplace("default", Animation{ "default", { { _textures.get_texture("default"), 0.0f } } });
+        _animations.try_emplace("default", Animation{ "default", { { _textures.get_texture("default"), 0.f } } });
 
         nlohmann::json animation_json = load_json(_config.animations);
         for (const auto& animation : animation_json["animations"])

@@ -3,9 +3,11 @@
 #include <chrono>
 #include <type_traits>
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
-    using Deltatime = float;
+    using Deltatime = f32;
 
     class Timer final
     {
