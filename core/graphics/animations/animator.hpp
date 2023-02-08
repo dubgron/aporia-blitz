@@ -16,7 +16,7 @@ namespace Aporia
     class Animator final
     {
     public:
-        Animator(std::string name, Sprite& sprite);
+        Animator(std::string name = "None", Sprite* sprite = nullptr);
 
         void add_animation(Animation&& animation);
         void play(const std::string& name);
@@ -40,6 +40,6 @@ namespace Aporia
         std::queue<std::string_view> _queue;
         std::string_view _afterqueue = "";
 
-        Sprite& _sprite;
+        Sprite* _sprite;
     };
 }

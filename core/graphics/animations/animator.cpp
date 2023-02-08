@@ -3,15 +3,17 @@
 #include <algorithm>
 #include <utility>
 
+#include "animation.hpp"
 #include "common.hpp"
 #include "graphics/drawables/sprite.hpp"
 
 namespace Aporia
 {
-    Animator::Animator(std::string name, Sprite& sprite)
+    Animator::Animator(std::string name, Sprite* sprite)
         : _name( std::move(name) ), _sprite(sprite)
     {
-        _animations.try_emplace("default", Animation{ "default", { { sprite.texture, 0.f } } });
+        _animations.try_emplace("default",
+            Animation{ "default", { { sprite ? sprite->texture : Texture{}, 0.f } } });
     }
 
     void Animator::add_animation(Animation&& animation)
@@ -59,7 +61,10 @@ namespace Aporia
     {
         _update_queue();
 
-        _sprite.texture = _animations.at(_current_animation).update();
+        if (_sprite)
+        {
+            _sprite->texture = _animations.at(_current_animation).update();
+        }
     }
 
     void Animator::queue(const std::string& name)
