@@ -15,7 +15,7 @@ namespace Aporia
 {
     enum LogLevel
     {
-        Trace       = spdlog::level::trace,
+        Verbose     = spdlog::level::trace,
         Debug       = spdlog::level::debug,
         Info        = spdlog::level::info,
         Warning     = spdlog::level::warn,
