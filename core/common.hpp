@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aporia_memory.hpp"
 #include "aporia_types.hpp"
 
 /* Debug */

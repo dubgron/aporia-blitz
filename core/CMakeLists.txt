@@ -21,6 +21,8 @@ add_library(core STATIC
     "animation_manager.hpp"
     "aporia.hpp"
     "aporia_types.hpp"
+    "aporia_memory.cpp"
+    "aporia_memory.hpp"
     "common.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
