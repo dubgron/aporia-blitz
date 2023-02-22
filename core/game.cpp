@@ -30,10 +30,12 @@ namespace Aporia
           _imgui_layer(_window)
     {
         _layer_stack.push_overlay(_imgui_layer);
+        _world.init();
     }
 
     Game::~Game()
     {
+        _world.deinit();
         _layer_stack.pop_overlay(_imgui_layer);
     }
 

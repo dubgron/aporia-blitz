@@ -13,6 +13,7 @@
 #include "shader_manager.hpp"
 #include "texture_manager.hpp"
 #include "window.hpp"
+#include "world.hpp"
 #include "graphics/camera_controller.hpp"
 #include "graphics/renderer.hpp"
 #include "layers/imgui_layer.hpp"
@@ -57,6 +58,8 @@ namespace Aporia
 
         LayerStack _layer_stack;
         ImGuiLayer _imgui_layer;
+
+        World _world;
 
         Deltatime _dt = 0.f;
 

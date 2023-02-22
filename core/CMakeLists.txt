@@ -45,6 +45,8 @@ add_library(core STATIC
     "texture_manager.hpp"
     "window.cpp"
     "window.hpp"
+    "world.cpp"
+    "world.hpp"
     "components/color.hpp"
     "components/rectangular.hpp"
     "components/texture.hpp"

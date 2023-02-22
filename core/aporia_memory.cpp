@@ -2,9 +2,6 @@
 
 #include "debug/asserts.hpp"
 
-#define PTR_TO_INT(p) reinterpret_cast<u64>(p)
-#define INT_TO_PTR(i) reinterpret_cast<void*>(i)
-
 namespace Aporia
 {
     static u64 next_aligned(u64 address, u64 align)

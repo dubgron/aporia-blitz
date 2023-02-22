@@ -2,11 +2,14 @@
 
 #include "aporia_types.hpp"
 
-#define Bytes(n)      (n)
-#define Kilobytes(n)  (n << 10)
-#define Megabytes(n)  (n << 20)
-#define Gigabytes(n)  (((u64)n) << 30)
-#define Terabytes(n)  (((u64)n) << 40)
+#define PTR_TO_INT(p) reinterpret_cast<u64>(p)
+#define INT_TO_PTR(i) reinterpret_cast<void*>(i)
+
+#define BYTES(n)      (n)
+#define KILOBYTES(n)  (n << 10)
+#define MEGABYTES(n)  (n << 20)
+#define GIGABYTES(n)  (((u64)n) << 30)
+#define TERABYTES(n)  (((u64)n) << 40)
 
 namespace Aporia
 {
