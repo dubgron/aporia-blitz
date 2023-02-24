@@ -6,7 +6,7 @@
 #include <spdlog/logger.h>
 
 #if defined(APORIA_DEBUGTOOLS)
-    #define APORIA_LOG(lvl, ...) Aporia::Logger::Log(__FILE__, __LINE__, __func__, lvl, __VA_ARGS__)
+    #define APORIA_LOG(lvl, fmt, ...) Aporia::Logger::Log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
 #else
     #define APORIA_LOG
 #endif
@@ -31,10 +31,8 @@ namespace Aporia
 
         static void Init(const std::string& name);
 
-        static void Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view msg);
-
         template<typename... Args>
-        static inline void Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)
+        static void Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)
         {
             _logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), fmt, std::forward<Args>(args)...);
         }

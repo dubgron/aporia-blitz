@@ -43,9 +43,4 @@ namespace Aporia
         _logger->set_level(spdlog::level::trace);
         _logger->flush_on(spdlog::level::debug);
     }
-
-    void Logger::Log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view msg)
-    {
-        _logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), msg);
-    }
 }
