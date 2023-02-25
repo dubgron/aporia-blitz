@@ -11,12 +11,20 @@ namespace Aporia
 {
     class EventManager;
 
-    struct GamepadInput final
+    struct GamepadInput
     {
-        static constexpr size_t AxisNum = magic_enum::enum_count<GamepadAxis>();
+        static constexpr u64 AxisNum = magic_enum::enum_count<GamepadAxis>();
 
         InputBuffer<Gamepad> buttons;
-        std::array<f32, AxisNum> axes = { 0.f };
+        f32 axes[AxisNum] = { 0.f };
+    };
+
+    struct MouseInput
+    {
+        static constexpr u64 MouseWheelNum = magic_enum::enum_count<MouseWheel>();
+
+        InputBuffer<Mouse> buttons;
+        f32 wheels[MouseWheelNum] = { 0.f };
     };
 
     class InputManager final
@@ -70,8 +78,6 @@ namespace Aporia
     private:
         InputBuffer<Keyboard> _keys;
         GamepadInput _gamepad;
-        InputBuffer<Mouse> _buttons;
-        InputBuffer<MouseWheel> _wheels;
-        f32 _wheel_delta = 0.f;
+        MouseInput _mouse;
     };
 }
