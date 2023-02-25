@@ -168,6 +168,8 @@ namespace Aporia
         _buttons.update();
         _wheels.update();
 
+        _gamepad.buttons.update();
+
         GLFWgamepadstate gamepad_state;
         if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
         {
