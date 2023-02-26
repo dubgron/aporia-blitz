@@ -4,7 +4,10 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "configs/all_configs.hpp"
+#include "configs/camera_config.hpp"
+#include "configs/shader_config.hpp"
+#include "configs/texture_config.hpp"
+#include "configs/window_config.hpp"
 
 namespace Aporia
 {
@@ -20,7 +23,6 @@ namespace Aporia
         TextureConfig texture_config;
         ShaderConfig shader_config;
         CameraConfig camera_config;
-        AnimationConfig animation_config;
 
     private:
         EventManager& _events;
@@ -32,6 +34,5 @@ namespace Aporia
         void load_texture_config(const json& config);
         void load_shader_config(const json& config);
         void load_camera_config(const json& config);
-        void load_animation_config(const json& config);
     };
 }

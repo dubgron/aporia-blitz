@@ -46,5 +46,4 @@ namespace Aporia
     using ReloadTextureConfigEvent = Event<13>;
     using ReloadShaderConfigEvent = Event<14>;
     using ReloadCameraConfigEvent = Event<15>;
-    using ReloadAnimationConfigEvent = Event<16>;
 }

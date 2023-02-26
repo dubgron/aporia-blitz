@@ -21,7 +21,6 @@ namespace Aporia
           _inputs(_events),
           _scenes(),
           _textures(_events, _configs.texture_config),
-          _animations(_events, _textures, _configs.animation_config),
           _fonts(),
           _shaders(_configs.shader_config),
           _camera(_events, _configs.camera_config),

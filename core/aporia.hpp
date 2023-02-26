@@ -4,8 +4,6 @@
 #include <common.hpp>
 
 /* Configs */
-#include <configs/all_configs.hpp>
-#include <configs/animation_config.hpp>
 #include <configs/camera_config.hpp>
 #include <configs/shader_config.hpp>
 #include <configs/texture_config.hpp>
@@ -40,10 +38,6 @@
 #include <graphics/vertex_array.hpp>
 #include <graphics/vertex_buffer.hpp>
 
-/* Animations */
-#include <graphics/animations/animation.hpp>
-#include <graphics/animations/animator.hpp>
-
 /* Drawables */
 #include <graphics/drawables/circle2d.hpp>
 #include <graphics/drawables/group.hpp>
@@ -68,7 +62,6 @@
 #include <window.hpp>
 
 /* Managers */
-#include <animation_manager.hpp>
 #include <config_manager.hpp>
 #include <event_manager.hpp>
 #include <font_manager.hpp>

@@ -27,13 +27,12 @@ namespace Aporia
 
         /* TODO: Handling when json file is not correct */
         using json = nlohmann::json;
-        json config_json = load_json(_path);
+        const json config_json = load_json(_path);
 
         load_window_config(config_json);
         load_texture_config(config_json);
         load_shader_config(config_json);
         load_camera_config(config_json);
-        load_animation_config(config_json);
     }
 
     void ConfigManager::reload()
@@ -52,9 +51,6 @@ namespace Aporia
 
         load_camera_config(config_json);
         _events.call_event<ReloadCameraConfigEvent>();
-
-        load_animation_config(config_json);
-        _events.call_event<ReloadAnimationConfigEvent>();
     }
 
     void ConfigManager::load_window_config(const json& config)
@@ -112,10 +108,5 @@ namespace Aporia
 
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
-    }
-
-    void ConfigManager::load_animation_config(const json& config)
-    {
-        animation_config.animations = config["animation_config"];
     }
 }

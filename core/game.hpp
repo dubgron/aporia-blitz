@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 
-#include "animation_manager.hpp"
 #include "config_manager.hpp"
 #include "event_manager.hpp"
 #include "font_manager.hpp"
@@ -49,7 +48,6 @@ namespace Aporia
         InputManager _inputs;
         SceneManager _scenes;
         TextureManager _textures;
-        AnimationManager _animations;
         FontManager _fonts;
         ShaderManager _shaders;
 

@@ -17,8 +17,6 @@ if (NOT APORIA_EMSCRIPTEN)
 endif()
 
 add_library(core STATIC
-    "animation_manager.cpp"
-    "animation_manager.hpp"
     "aporia.hpp"
     "aporia_types.hpp"
     "aporia_memory.cpp"
@@ -51,8 +49,6 @@ add_library(core STATIC
     "components/rectangular.hpp"
     "components/texture.hpp"
     "components/transform2d.hpp"
-    "configs/all_configs.hpp"
-    "configs/animation_config.hpp"
     "configs/camera_config.hpp"
     "configs/shader_config.hpp"
     "configs/texture_config.hpp"
@@ -85,10 +81,6 @@ add_library(core STATIC
     "graphics/vertex_array.hpp"
     "graphics/vertex_buffer.cpp"
     "graphics/vertex_buffer.hpp"
-    "graphics/animations/animation.cpp"
-    "graphics/animations/animation.hpp"
-    "graphics/animations/animator.cpp"
-    "graphics/animations/animator.hpp"
     "graphics/drawables/circle2d.hpp"
     "graphics/drawables/drawables.cpp"
     "graphics/drawables/group.hpp"
@@ -172,7 +164,6 @@ source_group(core/components            "core/components/.+\.[cht]pp")
 source_group(core/configs               "core/configs/.+\.[cht]pp")
 source_group(core/debug                 "core/debug/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
-source_group(core/graphics/animations   "core/graphics/animations.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
 source_group(core/inputs                "core/inputs/.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")

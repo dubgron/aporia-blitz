@@ -24,8 +24,7 @@ namespace Aporia
         ReloadWindowConfigEvent,
         ReloadTextureConfigEvent,
         ReloadShaderConfigEvent,
-        ReloadCameraConfigEvent,
-        ReloadAnimationConfigEvent>;
+        ReloadCameraConfigEvent>;
 
     template<typename T>
     concept EventType = has_type_v<EventsContainer, T>;
