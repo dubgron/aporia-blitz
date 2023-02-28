@@ -12,9 +12,11 @@ namespace Aporia
 {
     inline std::string read_file(std::string_view filepath)
     {
-        assert(std::filesystem::exists(filepath));
+        APORIA_CHECK( std::filesystem::exists(filepath) );
 
         std::ifstream file{ filepath.data(), std::ios::in };
+        APORIA_LOG(Info, "Opened '{}' successfully!", filepath);
+
         return std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
     }
 

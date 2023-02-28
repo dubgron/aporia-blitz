@@ -259,22 +259,22 @@ namespace Aporia
 
         key.vertex[0].position      = base_offset;
         key.vertex[0].tex_coord     = v2{ sprite.texture.u.x, sprite.texture.v.y };
-        key.vertex[0].tex_id        = sprite.texture.origin.id;
+        key.vertex[0].tex_id        = sprite.texture.source.id;
         key.vertex[0].color         = sprite.color;
 
         key.vertex[1].position      = base_offset + right_offset;
         key.vertex[1].tex_coord     = sprite.texture.v;
-        key.vertex[1].tex_id        = sprite.texture.origin.id;
+        key.vertex[1].tex_id        = sprite.texture.source.id;
         key.vertex[1].color         = sprite.color;
 
         key.vertex[2].position      = base_offset + right_offset + up_offset;
         key.vertex[2].tex_coord     = v2{ sprite.texture.v.x, sprite.texture.u.y };
-        key.vertex[2].tex_id        = sprite.texture.origin.id;
+        key.vertex[2].tex_id        = sprite.texture.source.id;
         key.vertex[2].color         = sprite.color;
 
         key.vertex[3].position      = base_offset + up_offset;
         key.vertex[3].tex_coord     = sprite.texture.u;
-        key.vertex[3].tex_id        = sprite.texture.origin.id;
+        key.vertex[3].tex_id        = sprite.texture.source.id;
         key.vertex[3].color         = sprite.color;
 
         _render_queue.push_back( std::move(key) );
@@ -371,7 +371,7 @@ namespace Aporia
 
         const Font& font = *text.font;
 
-        const v2 uv_length = v2{ font.atlas.origin.width, font.atlas.origin.height };
+        const v2 uv_length = v2{ font.atlas.source.width, font.atlas.source.height };
 
         /* Adjust text scaling by the predefined atlas font size */
         const Transform2D font_scale{ .scale = v2{ 1.f / font.atlas.font_size } };
@@ -385,13 +385,13 @@ namespace Aporia
         const u64 length = text.caption.size();
         for (u64 i = 0; i < length; ++i)
         {
-            const unicode_t character = text.caption[i];
+            const u8 character = text.caption[i];
 
             if (i > 0)
             {
-                const unicode_t prev_character = text.caption[i - 1];
+                const u8 prev_character = text.caption[i - 1];
 
-                const std::pair<unicode_t, unicode_t> key = std::make_pair(prev_character, character);
+                const std::pair<u8, u8> key = std::make_pair(prev_character, character);
                 if (font.kerning.contains(key))
                 {
                     advance.x += font.kerning.at(key) * font.atlas.font_size;
@@ -418,10 +418,10 @@ namespace Aporia
             }
             else if (font.glyphs.contains(character))
             {
-                const Font::GlyphData& glyph = font.glyphs.at(character);
+                const Glyph& glyph = font.glyphs.at(character);
 
-                const Font::GlyphData::Bounds& atlas_bounds = glyph.atlas_bounds;
-                const Font::GlyphData::Bounds& plane_bounds = glyph.plane_bounds;
+                const GlyphBounds& atlas_bounds = glyph.atlas_bounds;
+                const GlyphBounds& plane_bounds = glyph.plane_bounds;
 
                 const v2 position = advance - v2{ plane_bounds.left, plane_bounds.bottom } * font.atlas.font_size;
 
@@ -436,25 +436,25 @@ namespace Aporia
                 key.program_id              = text.shader;
 
                 key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
-                key.vertex[0].tex_id        = font.atlas.origin.id;
+                key.vertex[0].tex_id        = font.atlas.source.id;
                 key.vertex[0].tex_coord     = v2{ u_vector.x, v_vector.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
                 key.vertex[1].position      = transformation * v4{ position.x + width, position.y, 0.f, 1.f };
-                key.vertex[1].tex_id        = font.atlas.origin.id;
+                key.vertex[1].tex_id        = font.atlas.source.id;
                 key.vertex[1].tex_coord     = v_vector;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
                 key.vertex[2].position      = transformation * v4{ position.x + width, position.y + height, 0.f, 1.f };
-                key.vertex[2].tex_id        = font.atlas.origin.id;
+                key.vertex[2].tex_id        = font.atlas.source.id;
                 key.vertex[2].tex_coord     = v2{ v_vector.x, u_vector.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
                 key.vertex[3].position      = transformation * v4{ position.x, position.y + height, 0.f, 1.f };
-                key.vertex[3].tex_id        = font.atlas.origin.id;
+                key.vertex[3].tex_id        = font.atlas.source.id;
                 key.vertex[3].tex_coord     = u_vector;
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;

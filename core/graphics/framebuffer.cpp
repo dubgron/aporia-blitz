@@ -82,7 +82,7 @@ namespace Aporia
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        _color_buffer = Texture::Origin{
+        _color_buffer = Texture{
             .id = static_cast<texture_id>(color_buffer_id),
             .width = width,
             .height = height,
@@ -94,7 +94,7 @@ namespace Aporia
         }
     }
 
-    const Texture::Origin& Framebuffer::get_color_buffer() const
+    const Texture& Framebuffer::get_color_buffer() const
     {
         return _color_buffer;
     }

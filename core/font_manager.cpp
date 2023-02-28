@@ -4,8 +4,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "aporia_textures.hpp"
 #include "common.hpp"
-#include "graphics/image.hpp"
 #include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
 
@@ -37,10 +37,9 @@ namespace Aporia
             Image atlas;
             atlas.load(png_filepath.string());
 
-            ImageData& atlas_data = atlas.get_data();
-            result.atlas.origin.width = atlas_data.width;
-            result.atlas.origin.height = atlas_data.height;
-            result.atlas.origin.channels = atlas_data.channels;
+            result.atlas.source.width = atlas.width;
+            result.atlas.source.height = atlas.height;
+            result.atlas.source.channels = atlas.channels;
 
             /* TODO: Move the OpenGL part of creating texture to a separate function */
             u32 id = 0;
@@ -49,8 +48,8 @@ namespace Aporia
             glActiveTexture(GL_TEXTURE0 + id);
             glBindTexture(GL_TEXTURE_2D, id);
 
-            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, atlas_data.width, atlas_data.height);
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas_data.width, atlas_data.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas_data.pixels);
+            glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, atlas.width, atlas.height);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas.width, atlas.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas.pixels);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -59,7 +58,7 @@ namespace Aporia
 
             glGenerateMipmap(GL_TEXTURE_2D);
 
-            result.atlas.origin.id = id;
+            result.atlas.source.id = id;
 
             using json = nlohmann::json;
 
@@ -78,7 +77,7 @@ namespace Aporia
 
             for (const auto& glyph : font["glyphs"])
             {
-                Font::GlyphData glyph_data;
+                Glyph glyph_data;
 
                 glyph_data.advance                  = glyph["advance"];
 
@@ -103,7 +102,7 @@ namespace Aporia
 
             for (const auto& kerning : font["kerning"])
             {
-                std::pair<unicode_t, unicode_t> key = std::make_pair(kerning["unicode1"], kerning["unicode2"]);
+                std::pair<u8, u8> key = std::make_pair(kerning["unicode1"], kerning["unicode2"]);
                 result.kerning.try_emplace(std::move(key), kerning["advance"]);
             }
 

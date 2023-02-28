@@ -26,7 +26,6 @@
 /* Graphics */
 #include <graphics/font.hpp>
 #include <graphics/framebuffer.hpp>
-#include <graphics/image.hpp>
 #include <graphics/index_buffer.hpp>
 #include <graphics/light.hpp>
 #include <graphics/render_queue.hpp>
@@ -68,14 +67,12 @@
 #include <input_manager.hpp>
 #include <scene_manager.hpp>
 #include <shader_manager.hpp>
-#include <texture_manager.hpp>
 
 /* Components */
 #include <components/circular.hpp>
 #include <components/color.hpp>
 #include <components/linear2d.hpp>
 #include <components/rectangular.hpp>
-#include <components/texture.hpp>
 #include <components/transform2d.hpp>
 
 /* Platform */
