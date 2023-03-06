@@ -1,11 +1,8 @@
 #include "camera_controller.hpp"
 
 #include <algorithm>
-#include <cmath>
-#include <functional>
 
 #include "common.hpp"
-#include "event_manager.hpp"
 #include "input_manager.hpp"
 #include "window.hpp"
 #include "components/color.hpp"
@@ -13,13 +10,9 @@
 
 namespace Aporia
 {
-    CameraController::CameraController(EventManager& event_manager, CameraConfig& config)
+    CameraController::CameraController(CameraConfig& config)
         : _camera(config.fov, config.aspect_ratio), _config(config)
     {
-        using namespace std::placeholders;
-
-        event_manager.add_listener<WindowResizeEvent>(std::bind(&CameraController::_on_resize, this, _1, _2, _3));
-        event_manager.add_listener<ReloadCameraConfigEvent>(std::bind(&CameraController::_on_config_reload, this));
     }
 
     void CameraController::control_movement(const InputManager& input_manager, f32 delta_time)
@@ -119,14 +112,13 @@ namespace Aporia
         return _config.background_color;
     }
 
-    void CameraController::_on_resize(Window& window, u32 width, u32 height)
+    void CameraController::on_window_resize(u32 width, u32 height)
     {
         _config.aspect_ratio = static_cast<f32>(width) / static_cast<f32>(height);
-
         _camera.set_aspect_ratio(_config.aspect_ratio);
     }
 
-    void CameraController::_on_config_reload()
+    void CameraController::on_config_reload()
     {
         _camera.set_fov(_config.fov);
         _camera.set_aspect_ratio(_config.aspect_ratio);

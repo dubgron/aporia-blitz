@@ -6,7 +6,6 @@
 namespace Aporia
 {
     class Camera;
-    class EventManager;
     class InputManager;
     class Window;
     struct CameraConfig;
@@ -15,7 +14,7 @@ namespace Aporia
     class CameraController
     {
     public:
-        CameraController(EventManager& event_manager, CameraConfig& config);
+        CameraController(CameraConfig& config);
 
         void control_movement(const InputManager& input_manager, f32 delta_time);
         void control_rotation(const InputManager& input_manager, f32 delta_time);
@@ -26,9 +25,8 @@ namespace Aporia
         const Camera& get_camera() const;
         const Color& get_clear_color() const;
 
-    private:
-        void _on_resize(Window& window, u32 width, u32 height);
-        void _on_config_reload();
+        void on_window_resize(u32 width, u32 height);
+        void on_config_reload();
 
     private:
         Camera _camera;

@@ -12,7 +12,6 @@
 namespace Aporia
 {
     class Camera;
-    class EventManager;
     class ShaderManager;
     class Window;
     struct Circle2D;
@@ -27,7 +26,10 @@ namespace Aporia
         static constexpr u64 MAX_QUEUE = 100000;
 
     public:
-        Renderer(ShaderManager& shaders, EventManager& events, WindowConfig& config);
+        Renderer(ShaderManager& shaders);
+
+        void init(u32 width, u32 height);
+        void deinit();
 
         void begin(const Window& window, const Camera& camera);
         void end(Color color = Colors::Black);
@@ -42,6 +44,8 @@ namespace Aporia
         void push_transform(const Transform2D& transform);
         void pop_transform();
 
+        void on_window_resize(u32 width, u32 height);
+
     public:
         /* Predefined shaders */
         static ShaderRef default_shader;
@@ -54,8 +58,6 @@ namespace Aporia
         void _flush_queue();
         void _flush_framebuffer(const Framebuffer& framebuffer, Shader program_id);
         void _flush_buffer(BufferType buffer, Shader program_id);
-
-        void _on_resize(Window& window, u32 width, u32 height);
 
     private:
         ShaderManager& _shaders;

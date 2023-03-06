@@ -32,13 +32,19 @@ namespace Aporia
         std::vector<LightSource> sources;
         Group blockers;
 
-        UniformBuffer<LightSource[MAX_LIGHTS], 0> uniform_buffer{ "Lights" };
+        UniformBuffer<LightSource[MAX_LIGHTS], 0> uniform_buffer;
 
         bool enabled = false;
 
-        LightRenderer()
+        void init()
         {
             sources.reserve(MAX_LIGHTS);
+            uniform_buffer.init("Lights");
+        }
+
+        void deinit()
+        {
+            uniform_buffer.deinit();
         }
 
         void begin()

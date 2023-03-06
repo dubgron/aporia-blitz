@@ -62,7 +62,6 @@
 
 /* Managers */
 #include <config_manager.hpp>
-#include <event_manager.hpp>
 #include <font_manager.hpp>
 #include <input_manager.hpp>
 #include <scene_manager.hpp>

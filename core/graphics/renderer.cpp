@@ -4,15 +4,10 @@
 #include <cmath>
 #include <numeric>
 
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
-#include <glm/ext/matrix_transform.hpp>
-
+#include "aporia_types.hpp"
 #include "common.hpp"
-#include "event_manager.hpp"
 #include "shader_manager.hpp"
 #include "window.hpp"
-#include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/drawables/circle2d.hpp"
 #include "graphics/drawables/group.hpp"
@@ -40,8 +35,12 @@ namespace Aporia
     ShaderRef Renderer::font_shader = 0;
     ShaderRef Renderer::postprocessing_shader = 0;
 
-    Renderer::Renderer(ShaderManager& shaders, EventManager& events, WindowConfig& config)
+    Renderer::Renderer(ShaderManager& shaders)
         : _shaders(shaders)
+    {
+    }
+
+    void Renderer::init(u32 width, u32 height)
     {
         _transformation_stack.reserve(10);
         _transformation_stack.emplace_back();
@@ -58,19 +57,19 @@ namespace Aporia
         quads_vbo.add_layout();
         quads.set_vertex_buffer( std::move(quads_vbo) );
 
-        std::vector<u32> quad_indecies(MAX_QUEUE * 6);
+        std::vector<u32> quad_indices(MAX_QUEUE * 6);
         for (auto [i, offset] = std::make_pair<u64, u32>(0, 0); i < MAX_QUEUE * 6; i += 6, offset += 4)
         {
-            quad_indecies[  i  ] = offset + 0;
-            quad_indecies[i + 1] = offset + 1;
-            quad_indecies[i + 2] = offset + 2;
+            quad_indices[  i  ] = offset + 0;
+            quad_indices[i + 1] = offset + 1;
+            quad_indices[i + 2] = offset + 2;
 
-            quad_indecies[i + 3] = offset + 2;
-            quad_indecies[i + 4] = offset + 3;
-            quad_indecies[i + 5] = offset + 0;
+            quad_indices[i + 3] = offset + 2;
+            quad_indices[i + 4] = offset + 3;
+            quad_indices[i + 5] = offset + 0;
         }
 
-        IndexBuffer quads_ibo{ MAX_QUEUE, 6, quad_indecies };
+        IndexBuffer quads_ibo{ MAX_QUEUE, 6, quad_indices };
         quads.set_index_buffer( std::move(quads_ibo) );
 
         quads.unbind();
@@ -83,43 +82,46 @@ namespace Aporia
         lines_vbo.add_layout();
         lines.set_vertex_buffer( std::move(lines_vbo) );
 
-        std::vector<u32> line_indecies(MAX_QUEUE * 2);
+        std::vector<u32> line_indices(MAX_QUEUE * 2);
         for (u32 i = 0; i < MAX_QUEUE * 2; ++i)
         {
-            line_indecies[i] = i;
+            line_indices[i] = i;
         }
 
-        IndexBuffer lines_ibo{ MAX_QUEUE, 2, line_indecies };
+        IndexBuffer lines_ibo{ MAX_QUEUE, 2, line_indices };
         lines.set_index_buffer( std::move(lines_ibo) );
 
         lines.unbind();
 
+        /* Initialize Light Renderer */
+        lights.init();
+
         /* Setup Framebuffer */
-        _framebuffer.create_framebuffer(config.width, config.height);
-        lights.masking.create_framebuffer(config.width, config.height);
-        lights.raymarching.create_framebuffer(config.width, config.height);
+        _framebuffer.create_framebuffer(width, height);
+        lights.masking.create_framebuffer(width, height);
+        lights.raymarching.create_framebuffer(width, height);
 
         /* Initialize texture sampler */
-        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};
+        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler;
         std::iota(sampler.begin(), sampler.end(), 0);
 
         /* Setup default shaders */
         default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
 
         _shaders.bind(default_shader);
-        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup font shaders */
         font_shader = _shaders.create_program("font", "assets/shaders/font.shader");
 
         _shaders.bind(font_shader);
-        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup post-processing shaders */
         postprocessing_shader = _shaders.create_program("post-processing", "assets/shaders/postprocessing.shader");
 
         _shaders.bind(postprocessing_shader);
-        _shaders.set_int_array("u_atlas", &sampler[0], OPENGL_MAX_TEXTURE_UNITS);
+        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup lighting shaders */
         lights.raymarching_shader = _shaders.create_program("raymarching", "assets/shaders/raymarching.shader");
@@ -130,11 +132,11 @@ namespace Aporia
         /* Bind Light's Uniform Buffer to shaders */
         lights.uniform_buffer.bind_to_shader(lights.raymarching_shader);
         lights.uniform_buffer.bind_to_shader(lights.shadowcasting_shader);
+    }
 
-        /* Bind to events */
-        using namespace std::placeholders;
-
-        events.add_listener<WindowResizeEvent>( std::bind(&Renderer::_on_resize, this, _1, _2, _3) );
+    void Renderer::deinit()
+    {
+        lights.deinit();
     }
 
     void Renderer::begin(const Window& window, const Camera& camera)
@@ -477,6 +479,13 @@ namespace Aporia
         }
     }
 
+    void Renderer::on_window_resize(u32 width, u32 height)
+    {
+        _framebuffer.create_framebuffer(width, height);
+        lights.masking.create_framebuffer(width, height);
+        lights.raymarching.create_framebuffer(width, height);
+    }
+
     void Renderer::_flush_queue()
     {
         if (!_render_queue.empty())
@@ -525,12 +534,5 @@ namespace Aporia
 
         const u8 buffer_index = std::to_underlying(buffer);
         _vertex_arrays[buffer_index].render();
-    }
-
-    void Renderer::_on_resize(Window& window, u32 width, u32 height)
-    {
-        _framebuffer.create_framebuffer(width, height);
-        lights.masking.create_framebuffer(width, height);
-        lights.raymarching.create_framebuffer(width, height);
     }
 }

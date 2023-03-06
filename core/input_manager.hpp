@@ -9,8 +9,6 @@
 
 namespace Aporia
 {
-    class EventManager;
-
     struct GamepadInput
     {
         static constexpr u64 AxisNum = magic_enum::enum_count<GamepadAxis>();
@@ -30,7 +28,15 @@ namespace Aporia
     class InputManager final
     {
     public:
-        InputManager(EventManager& event_manager);
+        void on_key_triggered(Keyboard key);
+        void on_key_released(Keyboard key);
+
+        void on_button_triggered(Mouse button);
+        void on_button_released(Mouse button);
+
+        void on_wheel_scrolled(MouseWheel wheel, f32 delta);
+
+        void update();
 
         /* Keyboard */
         bool is_key_triggered(Keyboard key) const;
@@ -62,18 +68,6 @@ namespace Aporia
         bool is_any_button_released() const;
 
         f32 is_wheel_scrolling(MouseWheel wheel = MouseWheel::VerticalWheel) const;
-
-    private:
-        void _on_key_triggered(Keyboard key);
-        void _on_key_released(Keyboard key);
-
-        void _on_button_triggered(Mouse button);
-        void _on_button_released(Mouse button);
-
-        void _on_wheel_scrolled(MouseWheel wheel, f32 delta);
-        void _reset_wheel();
-
-        void _update();
 
     private:
         InputBuffer<Keyboard> _keys;

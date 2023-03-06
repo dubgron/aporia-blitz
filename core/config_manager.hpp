@@ -11,11 +11,9 @@
 
 namespace Aporia
 {
-    class EventManager;
-
     struct ConfigManager final
     {
-        ConfigManager(EventManager& events, const std::string& path);
+        ConfigManager(const std::string& path);
 
         void reload();
 
@@ -25,8 +23,6 @@ namespace Aporia
         CameraConfig camera_config;
 
     private:
-        EventManager& _events;
-
         std::string _path = "";
 
         using json = nlohmann::json;

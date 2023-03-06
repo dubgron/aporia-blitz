@@ -27,8 +27,6 @@ add_library(core STATIC
     "config_manager.cpp"
     "config_manager.hpp"
     "entry_point.hpp"
-    "event.hpp"
-    "event_manager.hpp"
     "font_manager.cpp"
     "font_manager.hpp"
     "game.cpp"

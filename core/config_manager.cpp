@@ -9,15 +9,14 @@
 #include <nlohmann/json.hpp>
 
 #include "common.hpp"
-#include "event_manager.hpp"
 #include "components/color.hpp"
 #include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(EventManager& events, const std::string& path)
-        : _events(events), _path(path)
+    ConfigManager::ConfigManager(const std::string& path)
+        : _path(path)
     {
         if (!std::filesystem::exists(_path))
         {
@@ -26,7 +25,6 @@ namespace Aporia
         }
 
         /* TODO: Handling when json file is not correct */
-        using json = nlohmann::json;
         const json config_json = load_json(_path);
 
         load_window_config(config_json);
@@ -37,20 +35,12 @@ namespace Aporia
 
     void ConfigManager::reload()
     {
-        using json = nlohmann::json;
-        json config_json = load_json(_path);
+        const json config_json = load_json(_path);
 
         load_window_config(config_json);
-        _events.call_event<ReloadWindowConfigEvent>();
-
         load_texture_config(config_json);
-        _events.call_event<ReloadTextureConfigEvent>();
-
         load_shader_config(config_json);
-        _events.call_event<ReloadShaderConfigEvent>();
-
         load_camera_config(config_json);
-        _events.call_event<ReloadCameraConfigEvent>();
     }
 
     void ConfigManager::load_window_config(const json& config)
@@ -63,9 +53,10 @@ namespace Aporia
         window_config.vsync = window["vsync"];
 
         const auto& position = window.find("position");
-        window_config.position = position != window.end()
-            ? std::make_optional<glm::ivec2>(position->at(0), position->at(1))
-            : std::nullopt;
+        if (position != window.end())
+        {
+            window_config.position = std::make_optional<glm::ivec2>(position->at(0), position->at(1));
+        }
     }
 
     void ConfigManager::load_texture_config(const json& config)
@@ -97,7 +88,10 @@ namespace Aporia
         camera_config.rotation_speed = camera["rotation_speed"];
         camera_config.zoom_speed = camera["zoom_speed"];
 
-        auto get_key = [&camera](const char* key) { return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value(); };
+        auto get_key = [&camera](const char* key)
+            {
+                return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value();
+            };
 
         camera_config.movement_key_up = get_key("movement_key_up");
         camera_config.movement_key_down = get_key("movement_key_down");

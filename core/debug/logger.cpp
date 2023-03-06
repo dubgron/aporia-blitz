@@ -39,8 +39,8 @@ namespace Aporia
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
 
         _logger = std::make_shared<spdlog::logger>(name, spdlog::sinks_init_list{ std::move(console_sink), std::move(file_sink) });
-        _logger->set_pattern("[%Y-%m-%d %H:%M:%S] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
-        _logger->set_level(spdlog::level::trace);
+        _logger->set_pattern("[%Y-%m-%d %H:%M:%S:%e] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
+        _logger->set_level(spdlog::level::debug);
         _logger->flush_on(spdlog::level::debug);
     }
 }

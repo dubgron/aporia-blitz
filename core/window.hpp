@@ -7,14 +7,18 @@ struct GLFWwindow;
 namespace Aporia
 {
     class Camera;
-    class EventManager;
+    class CameraController;
+    class InputManager;
+    class Renderer;
     struct WindowConfig;
 
     class Window final
     {
     public:
-        Window(EventManager& events, WindowConfig& config);
-        ~Window();
+        Window(InputManager& inputs, Renderer& renderer, CameraController& camera);
+
+        void init(const WindowConfig& config);
+        void deinit();
 
         void display();
 
@@ -24,17 +28,16 @@ namespace Aporia
         bool is_open() const;
 
         v2_u32 get_size() const;
-        v2 get_mouse_position(Camera& camera) const;
+        v2 get_mouse_position() const;
 
         GLFWwindow* get_native_window();
 
-    private:
-        void _on_config_reload();
+        void on_config_reload(const WindowConfig& config);
 
     private:
-        EventManager& _events;
-
-        WindowConfig& _config;
+        InputManager& _inputs;
+        Renderer& _renderer;
+        CameraController& _camera;
 
         GLFWwindow* _window;
     };

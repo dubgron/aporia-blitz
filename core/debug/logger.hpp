@@ -5,6 +5,8 @@
 
 #include <spdlog/logger.h>
 
+#include "aporia_types.hpp"
+
 #if defined(APORIA_DEBUGTOOLS)
     #define APORIA_LOG(lvl, fmt, ...) Aporia::Logger::Log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
 #else

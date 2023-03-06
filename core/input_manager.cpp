@@ -1,29 +1,62 @@
 #include "input_manager.hpp"
 
-#include <functional>
-
 #include "common.hpp"
-#include "event_manager.hpp"
 
 namespace Aporia
 {
-    InputManager::InputManager(EventManager& event_manager)
+    void InputManager::on_key_triggered(Keyboard key)
     {
-        using namespace std::placeholders;
+        _keys.push_state(key, true);
+    }
 
-        event_manager.add_listener<KeyPressedEvent>(std::bind(&InputManager::_on_key_triggered, this, _1));
-        event_manager.add_listener<KeyReleasedEvent>(std::bind(&InputManager::_on_key_released, this, _1));
+    void InputManager::on_key_released(Keyboard key)
+    {
+        _keys.push_state(key, false);
+    }
 
-        event_manager.add_listener<ButtonPressedEvent>(std::bind(&InputManager::_on_button_triggered, this, _1));
-        event_manager.add_listener<ButtonReleasedEvent>(std::bind(&InputManager::_on_button_released, this, _1));
+    void InputManager::on_button_triggered(Mouse button)
+    {
+        _mouse.buttons.push_state(button, true);
+    }
 
-        event_manager.add_listener<MouseWheelScrollEvent>(std::bind(&InputManager::_on_wheel_scrolled, this, _1, _2));
+    void InputManager::on_button_released(Mouse button)
+    {
+        _mouse.buttons.push_state(button, false);
+    }
 
-#       if defined(APORIA_EMSCRIPTEN)
-            event_manager.add_listener<EndFrameEvent>(std::bind(&InputManager::_update, this));
-#       else
-            event_manager.add_listener<BeginFrameEvent>(std::bind(&InputManager::_update, this));
-#       endif
+    void InputManager::on_wheel_scrolled(MouseWheel wheel, f32 delta)
+    {
+        const u64 wheel_idx = static_cast<u64>(wheel);
+        _mouse.wheels[wheel_idx] = delta;
+    }
+
+    void InputManager::update()
+    {
+        _keys.update();
+        _mouse.buttons.update();
+        _gamepad.buttons.update();
+
+        for (u64 idx = 0; idx < MouseInput::MouseWheelNum; ++idx)
+        {
+            _mouse.wheels[idx] = 0.f;
+        }
+
+        // TODO(dubgron): Update emscripten to use GLFW3.3 (see https://github.com/emscripten-core/emscripten/commit/7cd514d84a1dc7ef966a875400d9c3f1e4ad6c95)
+        GLFWgamepadstate gamepad_state;
+        if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
+        {
+            for (u64 gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
+            {
+                const Gamepad gamepad_code = static_cast<Gamepad>(gamepad_idx);
+                const bool new_state = gamepad_state.buttons[gamepad_idx] == GLFW_PRESS;
+                _gamepad.buttons.push_state(gamepad_code, new_state);
+            }
+
+            for (u64 axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
+            {
+                _gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
+            }
+        }
     }
 
     bool InputManager::is_key_triggered(Keyboard key) const
@@ -126,63 +159,5 @@ namespace Aporia
     {
         const u64 wheel_idx = static_cast<u64>(wheel);
         return _mouse.wheels[wheel_idx];
-    }
-
-    void InputManager::_on_key_triggered(Keyboard key)
-    {
-        _keys.push_state(key, true);
-    }
-
-    void InputManager::_on_key_released(Keyboard key)
-    {
-        _keys.push_state(key, false);
-    }
-
-    void InputManager::_on_button_triggered(Mouse button)
-    {
-        _mouse.buttons.push_state(button, true);
-    }
-
-    void InputManager::_on_button_released(Mouse button)
-    {
-        _mouse.buttons.push_state(button, false);
-    }
-
-    void InputManager::_on_wheel_scrolled(MouseWheel wheel, f32 delta)
-    {
-        const u64 wheel_idx = static_cast<u64>(wheel);
-        _mouse.wheels[wheel_idx] = delta;
-    }
-
-    void InputManager::_reset_wheel()
-    {
-        for (u64 idx = 0; idx < MouseInput::MouseWheelNum; ++idx)
-        {
-            _mouse.wheels[idx] = 0.f;
-        }
-    }
-
-    void InputManager::_update()
-    {
-        _keys.update();
-        _mouse.buttons.update();
-        _gamepad.buttons.update();
-        _reset_wheel();
-
-        GLFWgamepadstate gamepad_state;
-        if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
-        {
-            for (u64 gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
-            {
-                const Gamepad gamepad_code = static_cast<Gamepad>(gamepad_idx);
-                const bool new_state = gamepad_state.buttons[gamepad_idx] == GLFW_PRESS;
-                _gamepad.buttons.push_state(gamepad_code, new_state);
-            }
-
-            for (u64 axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
-            {
-                _gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
-            }
-        }
     }
 }

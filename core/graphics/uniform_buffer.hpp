@@ -20,9 +20,10 @@ namespace Aporia
     class UniformBuffer final
     {
     public:
-        UniformBuffer(std::string name)
-            : _name( std::move(name) )
+        void init(std::string name)
         {
+            _name = std::move(name);
+
             glGenBuffers(1, &_id);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _id);
@@ -32,7 +33,7 @@ namespace Aporia
             glBindBufferBase(GL_UNIFORM_BUFFER, Binding, _id);
         }
 
-        ~UniformBuffer()
+        void deinit()
         {
             glDeleteBuffers(1, &_id);
         }

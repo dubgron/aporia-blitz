@@ -6,19 +6,28 @@
 #include <glm/gtx/transform.hpp>
 
 #include "common.hpp"
-#include "event_manager.hpp"
+#include "input_manager.hpp"
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
+#include "graphics/camera_controller.hpp"
+#include "graphics/renderer.hpp"
 #include "inputs/keyboard.hpp"
 #include "inputs/mouse.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
-    Window::Window(EventManager& events, WindowConfig& config)
-        : _events(events), _config(config)
+    Window::Window(InputManager& inputs, Renderer& renderer, CameraController& camera)
+        : _inputs(inputs), _renderer(renderer), _camera(camera)
     {
-        glfwSetErrorCallback([](i32 error, const char* description) { fprintf(stderr, "[GLFW Error #%d]: %s\n", error, description); });
+    }
+
+    void Window::init(const WindowConfig& config)
+    {
+        glfwSetErrorCallback([](i32 error, const char* description)
+            {
+                APORIA_LOG(Error, "GLFW Error #{}: {}", error, description);
+            });
 
         if (!glfwInit())
         {
@@ -42,150 +51,89 @@ namespace Aporia
         glfwSetWindowUserPointer(_window, this);
         glfwSwapInterval(config.vsync);
 
-        if (_config.position)
+        if (config.position)
         {
-            glfwSetWindowPos(_window, _config.position->x, _config.position->y);
+            glfwSetWindowPos(_window, config.position->x, config.position->y);
         }
 
-        glfwSetWindowCloseCallback(_window, [](GLFWwindow * window)
+        glfwSetWindowCloseCallback(_window, [](GLFWwindow* handle)
             {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                win._events.call_event<WindowCloseEvent>(win);
-            });
-
-        glfwSetKeyCallback(_window, [](GLFWwindow* window, i32 key_code, i32 scan_code, i32 action, i32 mods)
-            {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                Keyboard key = static_cast<Keyboard>(key_code);
-                if (action == GLFW_PRESS || action == GLFW_REPEAT)
-                {
-                    win._events.call_event<KeyPressedEvent>(key);
-                }
-                else if (action == GLFW_RELEASE)
-                {
-                    win._events.call_event<KeyReleasedEvent>(key);
-                }
-            });
-
-        glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, i32 button_code, i32 action, i32 mods)
-            {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                Mouse button = static_cast<Mouse>(button_code);
-                if (action == GLFW_PRESS || action == GLFW_REPEAT)
-                {
-                    win._events.call_event<ButtonPressedEvent>(button);
-                }
-                else if (action == GLFW_RELEASE)
-                {
-                    win._events.call_event<ButtonReleasedEvent>(button);
-                }
-            });
-
-        glfwSetScrollCallback(_window, [](GLFWwindow* window, f64 x_offset, f64 y_offset)
-            {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                if (x_offset)
-                {
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
-                }
-                if (y_offset)
-                {
-                    win._events.call_event<MouseWheelScrollEvent>(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
-                }
-            });
-
-        glfwSetCursorPosCallback(_window, [](GLFWwindow* window, f64 x_pos, f64 y_pos)
-            {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                win._events.call_event<MouseMoveEvent>(glm::vec2{ x_pos, y_pos });
-            });
-
-        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* window, i32 width, i32 height)
-            {
-                Window& win = *(Window*)glfwGetWindowUserPointer(window);
-                win._events.call_event<WindowResizeEvent>(win, width, height);
-            });
-
-#       if !defined(APORIA_EMSCRIPTEN)
-            if (gl3wInit())
-            {
-                APORIA_LOG(Critical, "Failed to initialize OpenGL!");
-            }
-#       endif
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        APORIA_LOG(Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-
-#       if !defined(APORIA_EMSCRIPTEN)
-            glEnable(GL_DEBUG_OUTPUT);
-            glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-                {
-                    constexpr auto log_level = [](GLenum severity)
-                    {
-                        switch (severity)
-                        {
-                        case GL_DEBUG_SEVERITY_HIGH:            return LogLevel::Error;
-                        case GL_DEBUG_SEVERITY_MEDIUM:          return LogLevel::Warning;
-                        case GL_DEBUG_SEVERITY_LOW:             return LogLevel::Info;
-                        case GL_DEBUG_SEVERITY_NOTIFICATION:    return LogLevel::Debug;
-                        default:                                return LogLevel::Critical;
-                        }
-                    };
-
-                    constexpr auto debug_source = [](GLenum source)
-                    {
-                        switch (source)
-                        {
-                        case GL_DEBUG_SOURCE_API:                   return "OPENGL_API";
-                        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:         return "WINDOW_SYSTEM";
-                        case GL_DEBUG_SOURCE_SHADER_COMPILER:       return "SHADER_COMPILER";
-                        case GL_DEBUG_SOURCE_THIRD_PARTY:           return "THIRD_PARTY";
-                        case GL_DEBUG_SOURCE_APPLICATION:           return "APPLICATION";
-                        case GL_DEBUG_SOURCE_OTHER:                 return "OTHER";
-                        default:                                    return "INVALID_SOURCE";
-                        }
-                    };
-
-                    constexpr auto debug_type = [](GLenum type)
-                    {
-                        switch (type)
-                        {
-                        case GL_DEBUG_TYPE_ERROR:                   return "ERROR";
-                        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:     return "DEPRECATED_BEHAVIOR";
-                        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:      return "UNDEFINED_BEHAVIOR";
-                        case GL_DEBUG_TYPE_PORTABILITY:             return "PORTABILITY";
-                        case GL_DEBUG_TYPE_PERFORMANCE:             return "PERFORMANCE";
-                        case GL_DEBUG_TYPE_MARKER:                  return "MARKER";
-                        case GL_DEBUG_TYPE_PUSH_GROUP:              return "PUSH_GROUP";
-                        case GL_DEBUG_TYPE_POP_GROUP:               return "POP_GROUP";
-                        case GL_DEBUG_TYPE_OTHER:                   return "OTHER";
-                        default:                                    return "INVALID_TYPE";
-                        }
-                    };
-
-                    APORIA_LOG(log_level(severity), "{} {} [ID = {}] '{}'", debug_source(source), debug_type(type), id, message);
-                }, nullptr);
-#       endif
-
-        events.add_listener<WindowCloseEvent>([](Window& window)
-            {
+                Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
                 window.close();
             });
 
-        events.add_listener<WindowResizeEvent>([](Window& window, u32 width, u32 height)
+        glfwSetKeyCallback(_window, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
             {
+                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
+                const Keyboard key = static_cast<Keyboard>(key_code);
+                if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                {
+                    window._inputs.on_key_triggered(key);
+                }
+                else if (action == GLFW_RELEASE)
+                {
+                    window._inputs.on_key_released(key);
+                }
+            });
+
+        glfwSetMouseButtonCallback(_window, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
+            {
+                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
+                const Mouse button = static_cast<Mouse>(button_code);
+                if (action == GLFW_PRESS || action == GLFW_REPEAT)
+                {
+                    window._inputs.on_button_triggered(button);
+                }
+                else if (action == GLFW_RELEASE)
+                {
+                    window._inputs.on_button_released(button);
+                }
+            });
+
+        glfwSetScrollCallback(_window, [](GLFWwindow* handle, f64 x_offset, f64 y_offset)
+            {
+                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
+                window._inputs.on_wheel_scrolled(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
+                window._inputs.on_wheel_scrolled(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
+            });
+
+        // NOTE(dubgron): We probably would like to use this callback in the future.
+        // glfwSetCursorPosCallback(_window, [](GLFWwindow* handle, f64 x_pos, f64 y_pos)
+        //     {
+        //     });
+
+        glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* handle, i32 width, i32 height)
+            {
+                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
+                window._renderer.on_window_resize(width, height);
+                window._camera.on_window_resize(width, height);
                 glViewport(0, 0, width, height);
             });
 
-        events.add_listener<ReloadWindowConfigEvent>(std::bind(&Window::_on_config_reload, this));
+#if !defined(APORIA_EMSCRIPTEN)
+        // NOTE(dubgron): It has to be called after glfwMakeContextCurrent.
+        const i32 gl3w_init_return_code = gl3wInit();
+        if (gl3w_init_return_code != GL3W_OK)
+        {
+            const char* error_reason = gl3w_return_code_to_string(gl3w_init_return_code);
+            APORIA_LOG(Critical, "Failed to initialize OpenGL! Reason: {}", error_reason);
+            return;
+        }
+
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+            {
+                const LogLevel log_level = gl_debug_severity_to_log_level(severity);
+                const char* debug_source = gl_debug_source_to_string(source);
+                const char* debug_type = gl_debug_type_to_string(type);
+                APORIA_LOG(log_level, "{} {} [ID = {}] '{}'", debug_source, debug_type, id, message);
+            }, nullptr);
+#endif
+
+        APORIA_LOG(Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
     }
 
-    Window::~Window()
+    void Window::deinit()
     {
         glfwMakeContextCurrent(_window);
         glfwDestroyWindow(_window);
@@ -199,11 +147,7 @@ namespace Aporia
 
     void Window::poll_events() const
     {
-        _events.call_event<BeginProcessingWindowEvents>();
-
         glfwPollEvents();
-
-        _events.call_event<EndProcessingWindowEvents>();
     }
 
     void Window::close()
@@ -224,7 +168,7 @@ namespace Aporia
         return size;
     }
 
-    glm::vec2 Window::get_mouse_position(Camera& camera) const
+    glm::vec2 Window::get_mouse_position() const
     {
         glm::dvec2 screen_position{ 0.0 };
         glfwGetCursorPos(_window, &screen_position.x, &screen_position.y);
@@ -244,7 +188,7 @@ namespace Aporia
             0.f,                   0.f,                   1.f,   0.f,
             -1.f,                  1.f,                   0.f,   1.f };
 
-        const glm::mat4 clip_to_world = glm::inverse(camera.get_view_projection_matrix());
+        const glm::mat4 clip_to_world = glm::inverse(_camera.get_camera().get_view_projection_matrix());
         const glm::vec2 world_position = clip_to_world * screen_to_clip * glm::vec4{ screen_position, 0.f, 1.f };
 
         return world_position;
@@ -255,15 +199,15 @@ namespace Aporia
         return _window;
     }
 
-    void Window::_on_config_reload()
+    void Window::on_config_reload(const WindowConfig& config)
     {
-        glfwSetWindowTitle(_window, _config.title.c_str());
-        glfwSetWindowSize(_window, _config.width, _config.height);
-        glfwSwapInterval(_config.vsync);
+        glfwSetWindowTitle(_window, config.title.c_str());
+        glfwSetWindowSize(_window, config.width, config.height);
+        glfwSwapInterval(config.vsync);
 
-        if (_config.position)
+        if (config.position)
         {
-            glfwSetWindowPos(_window, _config.position->x, _config.position->y);
+            glfwSetWindowPos(_window, config.position->x, config.position->y);
         }
     }
 }

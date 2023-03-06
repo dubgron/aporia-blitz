@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "config_manager.hpp"
-#include "event_manager.hpp"
 #include "font_manager.hpp"
 #include "input_manager.hpp"
 #include "scene.hpp"
@@ -39,10 +38,7 @@ namespace Aporia
         void main_loop();
 
     protected:
-        EventManager _events;
         ConfigManager _configs;
-
-        Window _window;
 
         InputManager _inputs;
         SceneManager _scenes;
@@ -51,6 +47,8 @@ namespace Aporia
 
         CameraController _camera;
         Renderer _renderer;
+
+        Window _window;
 
         LayerStack _layer_stack;
         ImGuiLayer _imgui_layer;

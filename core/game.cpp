@@ -15,26 +15,29 @@ namespace Aporia
     }
 
     Game::Game(const std::string& config_file)
-        : _events(),
-          _configs(_events, config_file),
-          _window(_events, _configs.window_config),
-          _inputs(_events),
+        : _configs(config_file),
+          _inputs(),
           _scenes(),
           _fonts(),
           _shaders(_configs.shader_config),
-          _camera(_events, _configs.camera_config),
-          _renderer(_shaders, _events, _configs.window_config),
+          _camera(_configs.camera_config),
+          _renderer(_shaders),
+          _window(_inputs, _renderer, _camera),
           _layer_stack(),
           _imgui_layer(_window)
     {
-        _layer_stack.push_overlay(_imgui_layer);
+        _window.init(_configs.window_config);
+        _renderer.init(_configs.window_config.width, _configs.window_config.height);
         _world.init();
+        _layer_stack.push_overlay(_imgui_layer);
     }
 
     Game::~Game()
     {
-        _world.deinit();
         _layer_stack.pop_overlay(_imgui_layer);
+        _world.deinit();
+        _renderer.deinit();
+        _window.deinit();
     }
 
     void Game::run()
@@ -56,7 +59,6 @@ namespace Aporia
     void Game::main_loop()
     {
         _dt = _timer.reset();
-        _events.call_event<BeginFrameEvent>();
 
         _window.poll_events();
         _scenes.get_current_scene()->on_input(_inputs);
@@ -76,6 +78,6 @@ namespace Aporia
 
         _window.display();
 
-        _events.call_event<EndFrameEvent>();
+        _inputs.update();
     }
 }
