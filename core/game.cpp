@@ -44,14 +44,14 @@ namespace Aporia
     {
         on_init();
 
-#       if defined(APORIA_EMSCRIPTEN)
-            emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
-#       else
-            while (_window.is_open())
-            {
-                main_loop();
-            }
-#       endif
+#if defined(APORIA_EMSCRIPTEN)
+        emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
+#else
+        while (_window.is_open())
+        {
+            main_loop();
+        }
+#endif
 
         on_terminate();
     }

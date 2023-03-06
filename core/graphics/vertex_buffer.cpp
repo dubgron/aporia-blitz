@@ -10,11 +10,11 @@ namespace Aporia
         glGenBuffers(1, &_id);
         glBindBuffer(GL_ARRAY_BUFFER, _id);
 
-#       if defined(APORIA_EMSCRIPTEN)
-            glBufferData(GL_ARRAY_BUFFER, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
-#       else
-            glNamedBufferData(_id, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
-#       endif
+#if defined(APORIA_EMSCRIPTEN)
+        glBufferData(GL_ARRAY_BUFFER, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+#else
+        glNamedBufferData(_id, max_objects * vertex_count * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+#endif
 
         _buffer.reserve(max_objects * vertex_count);
     }
@@ -55,13 +55,13 @@ namespace Aporia
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
 
-#       if defined(APORIA_EMSCRIPTEN)
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
-#       else
-            glEnableVertexAttribArray(2);
-            glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
-#       endif
+#if defined(APORIA_EMSCRIPTEN)
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
+#else
+        glEnableVertexAttribArray(2);
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_id));
+#endif
 
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
@@ -76,13 +76,13 @@ namespace Aporia
     {
         if (!_buffer.empty())
         {
-#           if defined(APORIA_EMSCRIPTEN)
-                bind();
-                glBufferSubData(GL_ARRAY_BUFFER, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
-                unbind();
-#           else
-                glNamedBufferSubData(_id, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
-#           endif
+#if defined(APORIA_EMSCRIPTEN)
+            bind();
+            glBufferSubData(GL_ARRAY_BUFFER, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
+            unbind();
+#else
+            glNamedBufferSubData(_id, 0, _buffer.size() * sizeof(Vertex), &_buffer[0]);
+#endif
         }
     }
 

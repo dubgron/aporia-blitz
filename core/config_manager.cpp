@@ -55,7 +55,7 @@ namespace Aporia
         const auto& position = window.find("position");
         if (position != window.end())
         {
-            window_config.position = std::make_optional<glm::ivec2>(position->at(0), position->at(1));
+            window_config.position = std::make_optional<v2_i32>(position->at(0), position->at(1));
         }
     }
 

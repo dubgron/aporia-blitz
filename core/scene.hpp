@@ -15,7 +15,9 @@ namespace Aporia
     {
     public:
         Scene(std::string name)
-            : _name( std::move(name) ) {}
+            : _name( std::move(name) )
+        {
+        }
 
         virtual void on_load() {};
         virtual void on_input(const InputManager& inputs) {};

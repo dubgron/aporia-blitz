@@ -11,8 +11,6 @@ namespace Aporia
     class FontManager final
     {
     public:
-        FontManager() = default;
-
         void load_font(std::string name, std::filesystem::path filepath);
         const Font& get(const std::string& name) const;
 

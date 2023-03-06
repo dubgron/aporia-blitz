@@ -8,8 +8,8 @@ int main(int argc, char** argv)
 {
     Aporia::Logger::Init("aporia");
 
-    auto game = create_game();
+    const std::unique_ptr<Aporia::Game> game = create_game();
     game->run();
 
-    return 1;
+    return 0;
 }

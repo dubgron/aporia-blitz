@@ -11,7 +11,9 @@
 namespace Aporia
 {
     ImGuiLayer::ImGuiLayer(Window& window)
-        : Layer("ImGui Layer"), _window(window) {}
+        : Layer("ImGui Layer"), _window(window)
+    {
+    }
 
     void ImGuiLayer::on_attach()
     {
@@ -21,10 +23,10 @@ namespace Aporia
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-#       if !defined(APORIA_EMSCRIPTEN)
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-#       endif
+#if !defined(APORIA_EMSCRIPTEN)
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
 
         ImGui::StyleColorsDark();
 

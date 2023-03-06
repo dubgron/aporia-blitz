@@ -34,13 +34,13 @@ namespace Aporia
         void set_float4(const std::string& name, v4 value);
         void set_float_array(const std::string& name, f32* value, i32 count);
 
-#       if !defined(APORIA_EMSCRIPTEN)
+#if !defined(APORIA_EMSCRIPTEN)
         void set_double(const std::string& name, f64 value);
         void set_double2(const std::string& name, v2_f64 value);
         void set_double3(const std::string& name, v3_f64 value);
         void set_double4(const std::string& name, v4_f64 value);
         void set_double_array(const std::string& name, f64* value, i32 count);
-#       endif
+#endif
 
         void set_int(const std::string& name, i32 value);
         void set_int2(const std::string& name, v2_i32 value);

@@ -9,7 +9,9 @@
 namespace Aporia
 {
     ShaderManager::ShaderManager(const ShaderConfig& config)
-        : _config(config) {}
+        : _config(config)
+    {
+    }
 
     ShaderManager::~ShaderManager()
     {
@@ -133,7 +135,7 @@ namespace Aporia
         glUniform1fv(_location(name), count, value);
     }
 
-#   if !defined(APORIA_EMSCRIPTEN)
+#if !defined(APORIA_EMSCRIPTEN)
     void ShaderManager::set_double(const std::string& name, f64 value)
     {
         glUniform1d(_location(name), value);
@@ -158,7 +160,7 @@ namespace Aporia
     {
         glUniform1dv(_location(name), count, value);
     }
-#   endif
+#endif
 
     void ShaderManager::set_int(const std::string& name, i32 value)
     {
@@ -210,17 +212,17 @@ namespace Aporia
         glUniform1uiv(_location(name), count, value);
     }
 
-    void ShaderManager::set_mat2(const std::string& name, glm::mat2 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void ShaderManager::set_mat2(const std::string& name, m2 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix2fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat3(const std::string& name, glm::mat3 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void ShaderManager::set_mat3(const std::string& name, m3 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix3fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void ShaderManager::set_mat4(const std::string& name, glm::mat4 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void ShaderManager::set_mat4(const std::string& name, m4 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix4fv(_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }

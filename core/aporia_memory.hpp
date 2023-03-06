@@ -29,14 +29,14 @@ namespace Aporia
         void* push_zero(u64 size);
 
         template<typename T>
-        T* push(u64 count)
+        T* push(u64 count = 1)
         {
             const u64 size = count * sizeof(T);
             return reinterpret_cast<T*>( push(size) );
         }
 
         template<typename T>
-        T* push_zero(u64 count)
+        T* push_zero(u64 count = 1)
         {
             const u64 size = count * sizeof(T);
             return reinterpret_cast<T*>( push_zero(size) );
@@ -49,6 +49,6 @@ namespace Aporia
         u64 pos = 0;
 
         void begin(MemoryArena* in_arena);
-        void rollback();
+        void end();
     };
 }

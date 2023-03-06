@@ -160,20 +160,20 @@ namespace Aporia
         return !glfwWindowShouldClose(_window);
     }
 
-    glm::uvec2 Window::get_size() const
+    v2_u32 Window::get_size() const
     {
-        glm::ivec2 size;
+        v2_i32 size;
         glfwGetWindowSize(_window, &size.x, &size.y);
 
         return size;
     }
 
-    glm::vec2 Window::get_mouse_position() const
+    v2 Window::get_mouse_position() const
     {
-        glm::dvec2 screen_position{ 0.0 };
+        v2_f64 screen_position{ 0.0 };
         glfwGetCursorPos(_window, &screen_position.x, &screen_position.y);
 
-        const glm::vec2 window_size = get_size();
+        const v2 window_size = get_size();
 
         /**
          *  Precalculated following lines:
@@ -182,14 +182,14 @@ namespace Aporia
          *  screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
          *
          */
-        const glm::mat4 screen_to_clip{
+        const m4 screen_to_clip{
             2.f / window_size.x,   0.f,                   0.f,   0.f,
             0.f,                   -2.f / window_size.y,  0.f,   0.f,
             0.f,                   0.f,                   1.f,   0.f,
             -1.f,                  1.f,                   0.f,   1.f };
 
-        const glm::mat4 clip_to_world = glm::inverse(_camera.get_camera().get_view_projection_matrix());
-        const glm::vec2 world_position = clip_to_world * screen_to_clip * glm::vec4{ screen_position, 0.f, 1.f };
+        const m4 clip_to_world = glm::inverse(_camera.get_camera().get_view_projection_matrix());
+        const v2 world_position = clip_to_world * screen_to_clip * v4{ screen_position, 0.f, 1.f };
 
         return world_position;
     }
