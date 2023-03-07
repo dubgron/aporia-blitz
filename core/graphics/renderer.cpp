@@ -255,23 +255,27 @@ namespace Aporia
         key.buffer                  = BufferType::Quads;
         key.program_id              = sprite.shader;
 
+        const v2 half_pixel_offset = 0.5f / v2{ sprite.texture.source.width, sprite.texture.source.height };
+        const v2 tex_coord_u = sprite.texture.u + half_pixel_offset;
+        const v2 tex_coord_v = sprite.texture.v - half_pixel_offset;
+
         key.vertex[0].position      = base_offset;
-        key.vertex[0].tex_coord     = v2{ sprite.texture.u.x, sprite.texture.v.y };
+        key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
         key.vertex[0].tex_id        = sprite.texture.source.id;
         key.vertex[0].color         = sprite.color;
 
         key.vertex[1].position      = base_offset + right_offset;
-        key.vertex[1].tex_coord     = sprite.texture.v;
+        key.vertex[1].tex_coord     = tex_coord_v;
         key.vertex[1].tex_id        = sprite.texture.source.id;
         key.vertex[1].color         = sprite.color;
 
         key.vertex[2].position      = base_offset + right_offset + up_offset;
-        key.vertex[2].tex_coord     = v2{ sprite.texture.v.x, sprite.texture.u.y };
+        key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
         key.vertex[2].tex_id        = sprite.texture.source.id;
         key.vertex[2].color         = sprite.color;
 
         key.vertex[3].position      = base_offset + up_offset;
-        key.vertex[3].tex_coord     = sprite.texture.u;
+        key.vertex[3].tex_coord     = tex_coord_u;
         key.vertex[3].tex_id        = sprite.texture.source.id;
         key.vertex[3].color         = sprite.color;
 
@@ -369,7 +373,8 @@ namespace Aporia
 
         const Font& font = *text.font;
 
-        const v2 uv_length = v2{ font.atlas.source.width, font.atlas.source.height };
+        const v2 texture_size = v2{ font.atlas.source.width, font.atlas.source.height };
+        const v2 half_pixel_offset = 0.5f / texture_size;
 
         /* Adjust text scaling by the predefined atlas font size */
         const Transform2D font_scale{ .scale = v2{ 1.f / font.atlas.font_size } };
@@ -423,8 +428,8 @@ namespace Aporia
 
                 const v2 position = advance - v2{ plane_bounds.left, plane_bounds.bottom } * font.atlas.font_size;
 
-                const v2 u_vector = v2{ atlas_bounds.left, atlas_bounds.bottom } / uv_length;
-                const v2 v_vector = v2{ atlas_bounds.right, atlas_bounds.top } / uv_length;
+                const v2 tex_coord_u = v2{ atlas_bounds.left, atlas_bounds.bottom } / texture_size + half_pixel_offset;
+                const v2 tex_coord_v = v2{ atlas_bounds.right, atlas_bounds.top } / texture_size - half_pixel_offset;
 
                 const f32 width = atlas_bounds.right - atlas_bounds.left;
                 const f32 height = atlas_bounds.top - atlas_bounds.bottom;
@@ -435,25 +440,25 @@ namespace Aporia
 
                 key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
                 key.vertex[0].tex_id        = font.atlas.source.id;
-                key.vertex[0].tex_coord     = v2{ u_vector.x, v_vector.y };
+                key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
                 key.vertex[1].position      = transformation * v4{ position.x + width, position.y, 0.f, 1.f };
                 key.vertex[1].tex_id        = font.atlas.source.id;
-                key.vertex[1].tex_coord     = v_vector;
+                key.vertex[1].tex_coord     = tex_coord_v;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
                 key.vertex[2].position      = transformation * v4{ position.x + width, position.y + height, 0.f, 1.f };
                 key.vertex[2].tex_id        = font.atlas.source.id;
-                key.vertex[2].tex_coord     = v2{ v_vector.x, u_vector.y };
+                key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
                 key.vertex[3].position      = transformation * v4{ position.x, position.y + height, 0.f, 1.f };
                 key.vertex[3].tex_id        = font.atlas.source.id;
-                key.vertex[3].tex_coord     = u_vector;
+                key.vertex[3].tex_coord     = tex_coord_u;
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;
 
