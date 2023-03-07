@@ -6,9 +6,9 @@
 
 namespace Aporia
 {
-    Camera::Camera(f32 fov, f32 aspect_ratio)
-        : _projection{ .fov = fov, .aspect_ratio = aspect_ratio }
+    void Camera::init(f32 fov, f32 aspect_ratio)
     {
+        _projection = CameraProjection{ .fov = fov, .aspect_ratio = aspect_ratio };
     }
 
     const m4& Camera::get_view_projection_matrix() const

@@ -13,7 +13,7 @@ namespace Aporia
     class CameraController
     {
     public:
-        CameraController(CameraConfig& config);
+        void init(const CameraConfig& config);
 
         void control_movement(f32 delta_time);
         void control_rotation(f32 delta_time);
@@ -28,7 +28,7 @@ namespace Aporia
         void on_config_reload();
 
     private:
+        const CameraConfig* _config = nullptr;
         Camera _camera;
-        CameraConfig& _config;
     };
 }

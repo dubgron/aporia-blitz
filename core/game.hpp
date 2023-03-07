@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "config_manager.hpp"
+#include "aporia_config.hpp"
 #include "font_manager.hpp"
 #include "scene.hpp"
 #include "scene_manager.hpp"
@@ -36,8 +36,6 @@ namespace Aporia
         void main_loop();
 
     protected:
-        ConfigManager _configs;
-
         SceneManager _scenes;
         FontManager _fonts;
 

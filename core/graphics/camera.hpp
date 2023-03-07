@@ -29,7 +29,7 @@ namespace Aporia
     class Camera final
     {
     public:
-        Camera(f32 fov, f32 aspect_ratio);
+        void init(f32 fov, f32 aspect_ratio);
 
         const m4& get_view_projection_matrix() const;
 

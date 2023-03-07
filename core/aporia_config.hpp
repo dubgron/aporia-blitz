@@ -1,7 +1,10 @@
 #pragma once
 
+#include <optional>
+#include <string_view>
+
 #include "aporia_inputs.hpp"
-#include "aporia_types.hpp"
+#include "aporia_shaders.hpp"
 #include "components/color.hpp"
 
 namespace Aporia
@@ -30,4 +33,27 @@ namespace Aporia
         f32 zoom_max = 1.f;
         f32 zoom_min = 1.f;
     };
+
+    struct ShaderConfig final
+    {
+        ShaderProperties default_properties;
+    };
+
+    struct WindowConfig final
+    {
+        std::string title;
+
+        u32 width = 0;
+        u32 height = 0;
+
+        bool vsync = true;
+
+        std::optional<v2_i32> position = std::nullopt;
+    };
+
+    extern WindowConfig window_config;
+    extern ShaderConfig shader_config;
+    extern CameraConfig camera_config;
+
+    void load_config(std::string_view filepath);
 }

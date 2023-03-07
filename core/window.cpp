@@ -5,9 +5,9 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "common.hpp"
-#include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/camera_controller.hpp"
 #include "graphics/renderer.hpp"
@@ -22,6 +22,8 @@ namespace Aporia
 
     void Window::init(const WindowConfig& config)
     {
+        _config = &config;
+
         glfwSetErrorCallback([](i32 error, const char* description)
             {
                 APORIA_LOG(Error, "GLFW Error #{}: {}", error, description);
@@ -194,15 +196,15 @@ namespace Aporia
         return _window;
     }
 
-    void Window::on_config_reload(const WindowConfig& config)
+    void Window::on_config_reload()
     {
-        glfwSetWindowTitle(_window, config.title.c_str());
-        glfwSetWindowSize(_window, config.width, config.height);
-        glfwSwapInterval(config.vsync);
+        glfwSetWindowTitle(_window, _config->title.c_str());
+        glfwSetWindowSize(_window, _config->width, _config->height);
+        glfwSwapInterval(_config->vsync);
 
-        if (config.position)
+        if (_config->position)
         {
-            glfwSetWindowPos(_window, config.position->x, config.position->y);
+            glfwSetWindowPos(_window, _config->position->x, _config->position->y);
         }
     }
 }

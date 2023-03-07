@@ -1,6 +1,5 @@
 #include "aporia_shaders.hpp"
 
-#include "configs/shader_config.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia

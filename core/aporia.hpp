@@ -4,17 +4,12 @@
 #include <common.hpp>
 
 /* Aporia Headers */
+#include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_memory.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_types.hpp"
-
-/* Configs */
-#include <configs/camera_config.hpp>
-#include <configs/shader_config.hpp>
-#include <configs/texture_config.hpp>
-#include <configs/window_config.hpp>
 
 /* Utils */
 #include <utils/color_conversion.hpp>
@@ -60,7 +55,6 @@
 #include <window.hpp>
 
 /* Managers */
-#include <config_manager.hpp>
 #include <font_manager.hpp>
 #include <scene_manager.hpp>
 

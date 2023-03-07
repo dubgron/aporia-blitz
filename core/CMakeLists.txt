@@ -18,6 +18,8 @@ endif()
 
 add_library(core STATIC
     "aporia.hpp"
+    "aporia_config.cpp"
+    "aporia_config.hpp"
     "aporia_inputs.cpp"
     "aporia_inputs.hpp"
     "aporia_memory.cpp"
@@ -28,8 +30,6 @@ add_library(core STATIC
     "aporia_textures.hpp"
     "aporia_types.hpp"
     "common.hpp"
-    "config_manager.cpp"
-    "config_manager.hpp"
     "entry_point.hpp"
     "font_manager.cpp"
     "font_manager.hpp"
@@ -45,10 +45,6 @@ add_library(core STATIC
     "components/color.hpp"
     "components/rectangular.hpp"
     "components/transform2d.hpp"
-    "configs/camera_config.hpp"
-    "configs/shader_config.hpp"
-    "configs/texture_config.hpp"
-    "configs/window_config.hpp"
     "debug/asserts.hpp"
     "debug/break.hpp"
     "debug/logger.cpp"
@@ -148,7 +144,6 @@ endif()
 
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/components            "core/components/.+\.[cht]pp")
-source_group(core/configs               "core/configs/.+\.[cht]pp")
 source_group(core/debug                 "core/debug/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")

@@ -1,49 +1,25 @@
-#include "config_manager.hpp"
+#include "aporia_config.hpp"
 
 #include <filesystem>
-#include <string_view>
-#include <vector>
 
-#include <glm/vec2.hpp>
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
 #include "aporia_inputs.hpp"
+#include "aporia_shaders.hpp"
 #include "common.hpp"
 #include "components/color.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
 {
-    ConfigManager::ConfigManager(const std::string& path)
-        : _path(path)
-    {
-        if (!std::filesystem::exists(_path))
-        {
-            APORIA_LOG(Critical, "Config file '{}' doesn't exist!", _path);
-            return;
-        }
+    using json = nlohmann::json;
 
-        /* TODO: Handling when json file is not correct */
-        const json config_json = load_json(_path);
+    WindowConfig window_config;
+    ShaderConfig shader_config;
+    CameraConfig camera_config;
 
-        load_window_config(config_json);
-        load_texture_config(config_json);
-        load_shader_config(config_json);
-        load_camera_config(config_json);
-    }
-
-    void ConfigManager::reload()
-    {
-        const json config_json = load_json(_path);
-
-        load_window_config(config_json);
-        load_texture_config(config_json);
-        load_shader_config(config_json);
-        load_camera_config(config_json);
-    }
-
-    void ConfigManager::load_window_config(const json& config)
+    void load_window_config(const json& config)
     {
         const auto& window = config["window_config"];
 
@@ -59,12 +35,7 @@ namespace Aporia
         }
     }
 
-    void ConfigManager::load_texture_config(const json& config)
-    {
-        texture_config.atlas = config["texture_config"];
-    }
-
-    void ConfigManager::load_shader_config(const json& config)
+    void load_shader_config(const json& config)
     {
         const auto& shader = config["shader_config"];
         const auto& default_properties = shader["default_properties"];
@@ -76,7 +47,7 @@ namespace Aporia
         shader_config.default_properties.depth_write = string_to_shader_depth_write(default_properties["depth_write"].get<std::string_view>());
     }
 
-    void ConfigManager::load_camera_config(const json& config)
+    void load_camera_config(const json& config)
     {
         const auto& camera = config["camera_config"];
         const auto& bg_color = camera["background_color"];
@@ -102,5 +73,19 @@ namespace Aporia
 
         camera_config.zoom_max = camera["zoom_max"];
         camera_config.zoom_min = camera["zoom_min"];
+    }
+
+    void load_config(std::string_view filepath)
+    {
+        APORIA_VALIDATE_OR_RETURN(std::filesystem::exists(filepath),
+            "Config file '{}' doesn't exist!", filepath);
+
+        /* TODO(dubgron): Handling when json file is not correct */
+        std::string json_contents = read_file(filepath);
+        const json config_json = json::parse( std::move(json_contents) );
+
+        load_window_config(config_json);
+        load_shader_config(config_json);
+        load_camera_config(config_json);
     }
 }

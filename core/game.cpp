@@ -15,18 +15,16 @@ namespace Aporia
     }
 
     Game::Game(const std::string& config_file)
-        : _configs(config_file),
-          _scenes(),
-          _fonts(),
-          _camera(_configs.camera_config),
-          _renderer(),
+        : _camera(),
           _window(_renderer, _camera),
-          _layer_stack(),
           _imgui_layer(_window)
     {
-        _window.init(_configs.window_config);
-        _renderer.init(_configs.window_config.width, _configs.window_config.height);
-        set_default_shader_properties(_configs.shader_config.default_properties);
+        load_config(config_file);
+
+        _camera.init(camera_config);
+        _window.init(window_config);
+        _renderer.init(window_config.width, window_config.height);
+        set_default_shader_properties(shader_config.default_properties);
         _world.init();
         _layer_stack.push_overlay(_imgui_layer);
     }

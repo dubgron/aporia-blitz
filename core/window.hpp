@@ -31,9 +31,11 @@ namespace Aporia
 
         GLFWwindow* get_native_window();
 
-        void on_config_reload(const WindowConfig& config);
+        void on_config_reload();
 
     private:
+        const WindowConfig* _config;
+
         Renderer& _renderer;
         CameraController& _camera;
 
