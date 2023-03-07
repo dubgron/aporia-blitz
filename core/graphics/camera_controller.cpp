@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
+#include "aporia_inputs.hpp"
 #include "common.hpp"
-#include "input_manager.hpp"
 #include "window.hpp"
 #include "components/color.hpp"
 #include "configs/camera_config.hpp"
@@ -15,27 +15,27 @@ namespace Aporia
     {
     }
 
-    void CameraController::control_movement(const InputManager& input_manager, f32 delta_time)
+    void CameraController::control_movement(f32 delta_time)
     {
         const f32 movement_speed = _config.movement_speed * delta_time;
         v2 movement{ 0.f };
 
-        if (input_manager.is_key_pressed(_config.movement_key_up))
+        if (is_key_pressed(_config.movement_key_up))
         {
             movement.y += movement_speed;
         }
 
-        if (input_manager.is_key_pressed(_config.movement_key_down))
+        if (is_key_pressed(_config.movement_key_down))
         {
             movement.y -= movement_speed;
         }
 
-        if (input_manager.is_key_pressed(_config.movement_key_left))
+        if (is_key_pressed(_config.movement_key_left))
         {
             movement.x -= movement_speed;
         }
 
-        if (input_manager.is_key_pressed(_config.movement_key_right))
+        if (is_key_pressed(_config.movement_key_right))
         {
             movement.x += movement_speed;
         }
@@ -47,17 +47,17 @@ namespace Aporia
         }
     }
 
-    void CameraController::control_rotation(const InputManager& input_manager, f32 delta_time)
+    void CameraController::control_rotation(f32 delta_time)
     {
         const f32 rotation_speed = _config.rotation_speed * delta_time;
         f32 rotation = 0.f;
 
-        if (input_manager.is_key_pressed(_config.rotation_key_left))
+        if (is_key_pressed(_config.rotation_key_left))
         {
             rotation += rotation_speed;
         }
 
-        if (input_manager.is_key_pressed(_config.rotation_key_right))
+        if (is_key_pressed(_config.rotation_key_right))
         {
             rotation -= rotation_speed;
         }
@@ -68,17 +68,17 @@ namespace Aporia
         }
     }
 
-    void CameraController::control_zoom(const InputManager& input_manager, f32 delta_time)
+    void CameraController::control_zoom(f32 delta_time)
     {
         const f32 zoom_speed = _config.zoom_speed * delta_time;
         f32 zoom = 0.f;
 
-        if (input_manager.is_key_pressed(_config.zoom_key_in))
+        if (is_key_pressed(_config.zoom_key_in))
         {
             zoom -= zoom_speed;
         }
 
-        if (input_manager.is_key_pressed(_config.zoom_key_out))
+        if (is_key_pressed(_config.zoom_key_out))
         {
             zoom += zoom_speed;
         }

@@ -16,13 +16,12 @@ namespace Aporia
 
     Game::Game(const std::string& config_file)
         : _configs(config_file),
-          _inputs(),
           _scenes(),
           _fonts(),
           _shaders(_configs.shader_config),
           _camera(_configs.camera_config),
           _renderer(_shaders),
-          _window(_inputs, _renderer, _camera),
+          _window(_renderer, _camera),
           _layer_stack(),
           _imgui_layer(_window)
     {
@@ -61,7 +60,6 @@ namespace Aporia
         _dt = _timer.reset();
 
         _window.poll_events();
-        _scenes.get_current_scene()->on_input(_inputs);
 
         _scenes.get_current_scene()->on_scene_transition(_scenes);
 
@@ -78,6 +76,6 @@ namespace Aporia
 
         _window.display();
 
-        _inputs.update();
+        inputs_update();
     }
 }

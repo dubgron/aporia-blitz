@@ -1,5 +1,7 @@
 #pragma once
 
+#include "platform/opengl_common.hpp"
+
 namespace Aporia
 {
     struct Image

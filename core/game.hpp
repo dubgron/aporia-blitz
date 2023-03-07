@@ -5,7 +5,6 @@
 
 #include "config_manager.hpp"
 #include "font_manager.hpp"
-#include "input_manager.hpp"
 #include "scene.hpp"
 #include "scene_manager.hpp"
 #include "shader_manager.hpp"
@@ -40,7 +39,6 @@ namespace Aporia
     protected:
         ConfigManager _configs;
 
-        InputManager _inputs;
         SceneManager _scenes;
         FontManager _fonts;
         ShaderManager _shaders;

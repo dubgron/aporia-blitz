@@ -18,11 +18,13 @@ endif()
 
 add_library(core STATIC
     "aporia.hpp"
-    "aporia_types.hpp"
+    "aporia_inputs.cpp"
+    "aporia_inputs.hpp"
     "aporia_memory.cpp"
     "aporia_memory.hpp"
     "aporia_textures.cpp"
     "aporia_textures.hpp"
+    "aporia_types.hpp"
     "common.hpp"
     "config_manager.cpp"
     "config_manager.hpp"
@@ -31,9 +33,6 @@ add_library(core STATIC
     "font_manager.hpp"
     "game.cpp"
     "game.hpp"
-    "input_buffer.hpp"
-    "input_manager.cpp"
-    "input_manager.hpp"
     "scene.hpp"
     "scene_manager.cpp"
     "scene_manager.hpp"
@@ -83,9 +82,6 @@ add_library(core STATIC
     "graphics/drawables/rectangle2d.hpp"
     "graphics/drawables/sprite.hpp"
     "graphics/drawables/text.hpp"
-    "inputs/gamepad.hpp"
-    "inputs/keyboard.hpp"
-    "inputs/mouse.hpp"
     "layers/imgui_layer.cpp"
     "layers/imgui_layer.hpp"
     "layers/layer.hpp"
@@ -160,7 +156,6 @@ source_group(core/configs               "core/configs/.+\.[cht]pp")
 source_group(core/debug                 "core/debug/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
-source_group(core/inputs                "core/inputs/.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
 source_group(core/utils                 "core/utils/.+\.[cht]pp")

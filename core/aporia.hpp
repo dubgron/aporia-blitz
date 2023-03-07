@@ -3,16 +3,16 @@
 /* Common */
 #include <common.hpp>
 
+/* Aporia Headers */
+#include "aporia_inputs.hpp"
+#include "aporia_memory.hpp"
+#include "aporia_types.hpp"
+
 /* Configs */
 #include <configs/camera_config.hpp>
 #include <configs/shader_config.hpp>
 #include <configs/texture_config.hpp>
 #include <configs/window_config.hpp>
-
-/* Inputs */
-#include <inputs/gamepad.hpp>
-#include <inputs/keyboard.hpp>
-#include <inputs/mouse.hpp>
 
 /* Utils */
 #include <utils/color_conversion.hpp>
@@ -63,7 +63,6 @@
 /* Managers */
 #include <config_manager.hpp>
 #include <font_manager.hpp>
-#include <input_manager.hpp>
 #include <scene_manager.hpp>
 #include <shader_manager.hpp>
 

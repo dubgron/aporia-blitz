@@ -3,11 +3,9 @@
 #include <cassert>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "aporia_types.hpp"
-#include "platform/opengl.hpp"
 
 namespace Aporia
 {

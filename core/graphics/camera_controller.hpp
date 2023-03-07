@@ -6,7 +6,6 @@
 namespace Aporia
 {
     class Camera;
-    class InputManager;
     class Window;
     struct CameraConfig;
     struct Color;
@@ -16,9 +15,9 @@ namespace Aporia
     public:
         CameraController(CameraConfig& config);
 
-        void control_movement(const InputManager& input_manager, f32 delta_time);
-        void control_rotation(const InputManager& input_manager, f32 delta_time);
-        void control_zoom(const InputManager& input_manager, f32 delta_time);
+        void control_movement(f32 delta_time);
+        void control_rotation(f32 delta_time);
+        void control_zoom(f32 delta_time);
         void follow(const v2& to_follow, f32 delta_time);
 
         Camera& get_camera();

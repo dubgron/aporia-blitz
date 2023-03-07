@@ -58,4 +58,3 @@
 
 /* Aporia Blitz */
 #include "common.hpp"
-#include "input_manager.hpp"

@@ -8,14 +8,13 @@ namespace Aporia
 {
     class Camera;
     class CameraController;
-    class InputManager;
     class Renderer;
     struct WindowConfig;
 
     class Window final
     {
     public:
-        Window(InputManager& inputs, Renderer& renderer, CameraController& camera);
+        Window(Renderer& renderer, CameraController& camera);
 
         void init(const WindowConfig& config);
         void deinit();
@@ -35,7 +34,6 @@ namespace Aporia
         void on_config_reload(const WindowConfig& config);
 
     private:
-        InputManager& _inputs;
         Renderer& _renderer;
         CameraController& _camera;
 

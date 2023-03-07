@@ -8,9 +8,9 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "aporia_inputs.hpp"
 #include "common.hpp"
 #include "components/color.hpp"
-#include "inputs/keyboard.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia

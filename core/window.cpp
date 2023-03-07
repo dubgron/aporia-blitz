@@ -5,20 +5,18 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "aporia_inputs.hpp"
 #include "common.hpp"
-#include "input_manager.hpp"
 #include "configs/window_config.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/camera_controller.hpp"
 #include "graphics/renderer.hpp"
-#include "inputs/keyboard.hpp"
-#include "inputs/mouse.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
-    Window::Window(InputManager& inputs, Renderer& renderer, CameraController& camera)
-        : _inputs(inputs), _renderer(renderer), _camera(camera)
+    Window::Window(Renderer& renderer, CameraController& camera)
+        : _renderer(renderer), _camera(camera)
     {
     }
 
@@ -64,37 +62,34 @@ namespace Aporia
 
         glfwSetKeyCallback(_window, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
             {
-                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
                 const Keyboard key = static_cast<Keyboard>(key_code);
                 if (action == GLFW_PRESS || action == GLFW_REPEAT)
                 {
-                    window._inputs.on_key_triggered(key);
+                    on_key_triggered(key);
                 }
                 else if (action == GLFW_RELEASE)
                 {
-                    window._inputs.on_key_released(key);
+                    on_key_released(key);
                 }
             });
 
         glfwSetMouseButtonCallback(_window, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
             {
-                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
                 const Mouse button = static_cast<Mouse>(button_code);
                 if (action == GLFW_PRESS || action == GLFW_REPEAT)
                 {
-                    window._inputs.on_button_triggered(button);
+                    on_button_triggered(button);
                 }
                 else if (action == GLFW_RELEASE)
                 {
-                    window._inputs.on_button_released(button);
+                    on_button_released(button);
                 }
             });
 
         glfwSetScrollCallback(_window, [](GLFWwindow* handle, f64 x_offset, f64 y_offset)
             {
-                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
-                window._inputs.on_wheel_scrolled(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
-                window._inputs.on_wheel_scrolled(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
+                on_wheel_scrolled(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
+                on_wheel_scrolled(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
             });
 
         // NOTE(dubgron): We probably would like to use this callback in the future.

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "aporia_inputs.hpp"
 #include "aporia_types.hpp"
 #include "components/color.hpp"
-#include "inputs/keyboard.hpp"
 
 namespace Aporia
 {
