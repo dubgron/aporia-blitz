@@ -4,9 +4,9 @@
 #include <cmath>
 #include <numeric>
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
 #include "common.hpp"
-#include "shader_manager.hpp"
 #include "window.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/drawables/circle2d.hpp"
@@ -31,14 +31,9 @@
 
 namespace Aporia
 {
-    ShaderRef Renderer::default_shader = 0;
-    ShaderRef Renderer::font_shader = 0;
-    ShaderRef Renderer::postprocessing_shader = 0;
-
-    Renderer::Renderer(ShaderManager& shaders)
-        : _shaders(shaders)
-    {
-    }
+    ShaderID Renderer::default_shader = 0;
+    ShaderID Renderer::font_shader = 0;
+    ShaderID Renderer::postprocessing_shader = 0;
 
     void Renderer::init(u32 width, u32 height)
     {
@@ -102,32 +97,32 @@ namespace Aporia
         lights.raymarching.create_framebuffer(width, height);
 
         /* Initialize texture sampler */
-        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler;
+        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};
         std::iota(sampler.begin(), sampler.end(), 0);
 
         /* Setup default shaders */
-        default_shader = _shaders.create_program("default", "assets/shaders/default.shader");
+        default_shader = create_shader("assets/shaders/default.shader");
 
-        _shaders.bind(default_shader);
-        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
+        bind_shader(default_shader);
+        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup font shaders */
-        font_shader = _shaders.create_program("font", "assets/shaders/font.shader");
+        font_shader = create_shader("assets/shaders/font.shader");
 
-        _shaders.bind(font_shader);
-        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
+        bind_shader(font_shader);
+        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup post-processing shaders */
-        postprocessing_shader = _shaders.create_program("post-processing", "assets/shaders/postprocessing.shader");
+        postprocessing_shader = create_shader("assets/shaders/postprocessing.shader");
 
-        _shaders.bind(postprocessing_shader);
-        _shaders.set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
+        bind_shader(postprocessing_shader);
+        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         /* Setup lighting shaders */
-        lights.raymarching_shader = _shaders.create_program("raymarching", "assets/shaders/raymarching.shader");
-        lights.shadowcasting_shader = _shaders.create_program("shadowcasting", "assets/shaders/shadowcasting.shader");
+        lights.raymarching_shader = create_shader("assets/shaders/raymarching.shader");
+        lights.shadowcasting_shader = create_shader("assets/shaders/shadowcasting.shader");
 
-        _shaders.unbind();
+        unbind_shader();
 
         /* Bind Light's Uniform Buffer to shaders */
         lights.uniform_buffer.bind_to_shader(lights.raymarching_shader);
@@ -137,32 +132,33 @@ namespace Aporia
     void Renderer::deinit()
     {
         lights.deinit();
+        remove_all_shaders();
     }
 
     void Renderer::begin(const Window& window, const Camera& camera)
     {
         lights.begin();
 
-        _shaders.bind(default_shader);
-        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        bind_shader(default_shader);
+        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
 
-        _shaders.bind(font_shader);
-        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        bind_shader(font_shader);
+        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
 
-        _shaders.bind(lights.raymarching_shader);
-        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        _shaders.set_int("u_masking", lights.masking.get_color_buffer().id);
-        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
-        _shaders.set_float2("u_window_size", v2{ window.get_size() });
+        bind_shader(lights.raymarching_shader);
+        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_int("u_masking", lights.masking.get_color_buffer().id);
+        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        shader_set_float2("u_window_size", v2{ window.get_size() });
 
-        _shaders.bind(lights.shadowcasting_shader);
-        _shaders.set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        _shaders.set_int("u_raymarching", lights.raymarching.get_color_buffer().id);
-        _shaders.set_float("u_camera_zoom", 1.f / camera.get_zoom());
-        _shaders.set_float2("u_window_size", v2{ window.get_size() });
+        bind_shader(lights.shadowcasting_shader);
+        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_int("u_raymarching", lights.raymarching.get_color_buffer().id);
+        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        shader_set_float2("u_window_size", v2{ window.get_size() });
 
-        _shaders.unbind();
+        unbind_shader();
     }
 
     void Renderer::end(Color color /* = Colors::Black */)
@@ -184,11 +180,11 @@ namespace Aporia
 
             const u32 num_lights = static_cast<u32>(lights.sources.size());
 
-            _shaders.bind(lights.raymarching_shader);
-            _shaders.set_uint("u_num_lights", num_lights);
+            bind_shader(lights.raymarching_shader);
+            shader_set_uint("u_num_lights", num_lights);
 
-            _shaders.bind(lights.shadowcasting_shader);
-            _shaders.set_uint("u_num_lights", num_lights);
+            bind_shader(lights.shadowcasting_shader);
+            shader_set_uint("u_num_lights", num_lights);
 
             lights.masking.bind();
             lights.masking.clear(Colors::Transparent);
@@ -212,7 +208,7 @@ namespace Aporia
             _flush_framebuffer(lights.raymarching, lights.shadowcasting_shader);
         }
 
-        _shaders.unbind();
+        unbind_shader();
     }
 
     void Renderer::draw(const Group& group)
@@ -516,7 +512,7 @@ namespace Aporia
         }
     }
 
-    void Renderer::_flush_framebuffer(const Framebuffer& framebuffer, Shader program_id)
+    void Renderer::_flush_framebuffer(const Framebuffer& framebuffer, ShaderID program_id)
     {
         constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = _vertex_arrays[buffer_index].get_vertex_buffer();
@@ -528,9 +524,9 @@ namespace Aporia
         _flush_buffer(BufferType::Quads, program_id);
     }
 
-    void Renderer::_flush_buffer(BufferType buffer, Shader program_id)
+    void Renderer::_flush_buffer(BufferType buffer, ShaderID program_id)
     {
-        _shaders.bind(program_id);
+        bind_shader(program_id);
 
         const u8 buffer_index = std::to_underlying(buffer);
         _vertex_arrays[buffer_index].render();

@@ -1,11 +1,10 @@
 #pragma once
 
-#include <concepts>
 #include <string>
 #include <type_traits>
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
-#include "graphics/shader.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
@@ -38,7 +37,7 @@ namespace Aporia
             glDeleteBuffers(1, &_id);
         }
 
-        void bind_to_shader(Shader program_id)
+        void bind_to_shader(ShaderID program_id)
         {
             const u32 buffer_index = glGetUniformBlockIndex(program_id, _name.c_str());
             glUniformBlockBinding(program_id, buffer_index, Binding);

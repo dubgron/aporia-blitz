@@ -18,15 +18,15 @@ namespace Aporia
         : _configs(config_file),
           _scenes(),
           _fonts(),
-          _shaders(_configs.shader_config),
           _camera(_configs.camera_config),
-          _renderer(_shaders),
+          _renderer(),
           _window(_renderer, _camera),
           _layer_stack(),
           _imgui_layer(_window)
     {
         _window.init(_configs.window_config);
         _renderer.init(_configs.window_config.width, _configs.window_config.height);
+        set_default_shader_properties(_configs.shader_config.default_properties);
         _world.init();
         _layer_stack.push_overlay(_imgui_layer);
     }

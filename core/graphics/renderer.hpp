@@ -12,7 +12,6 @@
 namespace Aporia
 {
     class Camera;
-    class ShaderManager;
     class Window;
     struct Circle2D;
     struct Line2D;
@@ -26,8 +25,6 @@ namespace Aporia
         static constexpr u64 MAX_QUEUE = 100000;
 
     public:
-        Renderer(ShaderManager& shaders);
-
         void init(u32 width, u32 height);
         void deinit();
 
@@ -48,20 +45,18 @@ namespace Aporia
 
     public:
         /* Predefined shaders */
-        static ShaderRef default_shader;
-        static ShaderRef font_shader;
-        static ShaderRef postprocessing_shader;
+        static ShaderID default_shader;
+        static ShaderID font_shader;
+        static ShaderID postprocessing_shader;
 
         LightRenderer lights;
 
     private:
         void _flush_queue();
-        void _flush_framebuffer(const Framebuffer& framebuffer, Shader program_id);
-        void _flush_buffer(BufferType buffer, Shader program_id);
+        void _flush_framebuffer(const Framebuffer& framebuffer, ShaderID program_id);
+        void _flush_buffer(BufferType buffer, ShaderID program_id);
 
     private:
-        ShaderManager& _shaders;
-
         RenderQueue _render_queue;
 
         std::vector<VertexArray> _vertex_arrays;

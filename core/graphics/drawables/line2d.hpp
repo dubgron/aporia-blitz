@@ -2,10 +2,10 @@
 
 #include <glm/vec2.hpp>
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "components/transform2d.hpp"
-#include "graphics/shader.hpp"
 
 namespace Aporia
 {
@@ -17,6 +17,6 @@ namespace Aporia
         v2 offset{ 0.f };
 
         Color color = Colors::White;
-        ShaderRef shader = 0;
+        ShaderID shader = 0;
     };
 }

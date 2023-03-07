@@ -1,9 +1,9 @@
 #pragma once
 
+#include "aporia_shaders.hpp"
 #include "components/color.hpp"
 #include "components/rectangular.hpp"
 #include "components/transform2d.hpp"
-#include "graphics/shader.hpp"
 
 namespace Aporia
 {
@@ -14,6 +14,6 @@ namespace Aporia
         Transform2D transform;
         Rectangular size;
         Color color = Colors::White;
-        ShaderRef shader = 0;
+        ShaderID shader = 0;
     };
 }

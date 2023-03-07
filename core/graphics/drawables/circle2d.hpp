@@ -1,9 +1,9 @@
 #pragma once
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
 #include "components/color.hpp"
 #include "components/transform2d.hpp"
-#include "graphics/shader.hpp"
 
 namespace Aporia
 {
@@ -14,6 +14,6 @@ namespace Aporia
         Transform2D transform;
         f32 radius = 0.f;
         Color color = Colors::White;
-        ShaderRef shader = 0;
+        ShaderID shader = 0;
     };
 }

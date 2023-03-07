@@ -7,7 +7,6 @@
 #include "font_manager.hpp"
 #include "scene.hpp"
 #include "scene_manager.hpp"
-#include "shader_manager.hpp"
 #include "window.hpp"
 #include "world.hpp"
 #include "graphics/camera_controller.hpp"
@@ -41,7 +40,6 @@ namespace Aporia
 
         SceneManager _scenes;
         FontManager _fonts;
-        ShaderManager _shaders;
 
         CameraController _camera;
         Renderer _renderer;

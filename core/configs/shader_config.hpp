@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/shader_properties.hpp"
+#include "aporia_shaders.hpp"
 
 namespace Aporia
 {

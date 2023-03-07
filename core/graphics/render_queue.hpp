@@ -3,8 +3,8 @@
 #include <array>
 #include <vector>
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
-#include "shader.hpp"
 #include "vertex.hpp"
 
 namespace Aporia
@@ -19,7 +19,7 @@ namespace Aporia
     struct RenderQueueKey final
     {
         BufferType buffer = BufferType::Quads;
-        ShaderRef program_id = 0;
+        ShaderID program_id = 0;
 
         std::array<Vertex, 4> vertex;
     };

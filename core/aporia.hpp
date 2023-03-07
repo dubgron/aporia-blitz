@@ -6,6 +6,8 @@
 /* Aporia Headers */
 #include "aporia_inputs.hpp"
 #include "aporia_memory.hpp"
+#include "aporia_shaders.hpp"
+#include "aporia_textures.hpp"
 #include "aporia_types.hpp"
 
 /* Configs */
@@ -19,7 +21,6 @@
 #include <utils/math.hpp>
 #include <utils/random.hpp>
 #include <utils/read_file.hpp>
-#include <utils/shader_parser.hpp>
 #include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
 
@@ -30,8 +31,6 @@
 #include <graphics/light.hpp>
 #include <graphics/render_queue.hpp>
 #include <graphics/renderer.hpp>
-#include <graphics/shader.hpp>
-#include <graphics/shader_properties.hpp>
 #include <graphics/uniform_buffer.hpp>
 #include <graphics/vertex.hpp>
 #include <graphics/vertex_array.hpp>
@@ -64,7 +63,6 @@
 #include <config_manager.hpp>
 #include <font_manager.hpp>
 #include <scene_manager.hpp>
-#include <shader_manager.hpp>
 
 /* Components */
 #include <components/circular.hpp>

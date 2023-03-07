@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "aporia_shaders.hpp"
 #include "aporia_types.hpp"
 #include "graphics/framebuffer.hpp"
 #include "graphics/uniform_buffer.hpp"
@@ -23,8 +24,8 @@ namespace Aporia
     {
         static constexpr u64 MAX_LIGHTS = 1000;
 
-        ShaderRef raymarching_shader = 0;
-        ShaderRef shadowcasting_shader = 0;
+        ShaderID raymarching_shader = 0;
+        ShaderID shadowcasting_shader = 0;
 
         Framebuffer masking;
         Framebuffer raymarching;
