@@ -13,7 +13,7 @@ namespace Aporia
         if (type == "fragment")     return ShaderType::Fragment;
         if (type == "vertex")       return ShaderType::Vertex;
 
-        assert("Invalid ShaderType" && 0);
+        APORIA_ASSERT_NO_ENTRY();
         return ShaderType::Invalid;
     }
 
@@ -23,7 +23,7 @@ namespace Aporia
         {
         case ShaderType::Fragment:  return GL_FRAGMENT_SHADER;
         case ShaderType::Vertex:    return GL_VERTEX_SHADER;
-        default:                    assert("Invalid ShaderType" && 0); return 0;
+        default:                    APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
 
@@ -50,7 +50,7 @@ namespace Aporia
         if (blend == "src_1_alpha")                return ShaderBlend::Src1Alpha;
         if (blend == "one_minus_src_1_alpha")      return ShaderBlend::OneMinusSrc1Alpha;
 
-        assert("Invalid ShaderBlend" && 0);
+        APORIA_ASSERT_NO_ENTRY();
         return ShaderBlend::Default;
     }
 
@@ -77,7 +77,7 @@ namespace Aporia
         case ShaderBlend::OneMinusSrc1Color:        return GL_ONE_MINUS_SRC1_COLOR;
         case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
         case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
-        default:                                    assert("Invalid ShaderBlend" && 0); return 0;
+        default:                                    APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
 
@@ -89,7 +89,7 @@ namespace Aporia
         if (blend_op == "min")      return ShaderBlendOp::Min;
         if (blend_op == "max")      return ShaderBlendOp::Max;
 
-        assert("Invalid ShaderBlendOp" && 0);
+        APORIA_ASSERT_NO_ENTRY();
         return ShaderBlendOp::Default;
     }
 
@@ -102,7 +102,7 @@ namespace Aporia
         case ShaderBlendOp::ReverseSubtract:    return GL_FUNC_REVERSE_SUBTRACT;
         case ShaderBlendOp::Min:                return GL_MIN;
         case ShaderBlendOp::Max:                return GL_MAX;
-        default:                                assert("Invalid ShaderBlendOp" && 0); return 0;
+        default:                                APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
 
@@ -118,7 +118,7 @@ namespace Aporia
         if (depth_test == "equal")     return ShaderDepthTest::Equal;
         if (depth_test == "notequal")  return ShaderDepthTest::NotEqual;
 
-        assert("Invalid ShaderDepthTest" && 0);
+        APORIA_ASSERT_NO_ENTRY();
         return ShaderDepthTest::Default;
     }
 
@@ -134,7 +134,7 @@ namespace Aporia
         case ShaderDepthTest::GEqual:       return GL_GEQUAL;
         case ShaderDepthTest::Equal:        return GL_EQUAL;
         case ShaderDepthTest::NotEqual:     return GL_NOTEQUAL;
-        default:                            assert("Invalid ShaderDepthTest" && 0); return 0;
+        default:                            APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
 
@@ -143,7 +143,7 @@ namespace Aporia
         if (depth_write == "on")   return ShaderDepthWrite::On;
         if (depth_write == "off")  return ShaderDepthWrite::Off;
 
-        assert("Invalid ShaderDepthWrite" && 0);
+        APORIA_ASSERT_NO_ENTRY();
         return ShaderDepthWrite::Default;
     }
 
@@ -153,7 +153,7 @@ namespace Aporia
         {
         case ShaderDepthWrite::On:      return GL_TRUE;
         case ShaderDepthWrite::Off:     return GL_FALSE;
-        default:                        assert("Invalid ShaderDepthWrite" && 0); return 0;
+        default:                        APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
 
@@ -164,9 +164,6 @@ namespace Aporia
         /* Most common case - parsing vertex and fragment shaders */
         results.shaders.reserve(2);
 
-        const std::string_view type_token = "#type ";
-        const std::string_view version_token = "#version ";
-
         u64 line_begin = 0;
         u64 line_end = contents.find('\n', line_begin);
 
@@ -176,6 +173,7 @@ namespace Aporia
 
             const u64 params_begin = line.find(' ') + 1;
             const std::string_view params = line.substr(params_begin, line_end - params_begin);
+
             if (line.starts_with("#blend "))
             {
                 const u64 delim = params.find(' ');
@@ -431,7 +429,7 @@ namespace Aporia
 
     void bind_shader(ShaderID program_id)
     {
-        assert(program_id > 0);
+        APORIA_ASSERT(program_id > 0);
         apply_shader_properties(program_id);
 
         glUseProgram(program_id);

@@ -18,7 +18,7 @@ namespace Aporia
         pos = 0;
         align = 8;
 
-        APORIA_CHECK( PTR_TO_INT(memory) % align == 0 );
+        APORIA_ASSERT( PTR_TO_INT(memory) % align == 0 );
     }
 
     void MemoryArena::dealloc()
