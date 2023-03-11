@@ -9,7 +9,7 @@ namespace Aporia
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
 
 #if defined(APORIA_EMSCRIPTEN)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_objects * index_count * sizeof(u32), &indecies[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_objects * index_count * sizeof(u32), &indices[0], GL_STATIC_DRAW);
 #else
         glNamedBufferData(_id, index_count * max_objects * sizeof(u32), &indices[0], GL_STATIC_DRAW);
 #endif

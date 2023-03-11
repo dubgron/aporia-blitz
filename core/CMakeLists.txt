@@ -137,7 +137,7 @@ if (APORIA_EMSCRIPTEN)
             -sALLOW_MEMORY_GROWTH=1
             -sASYNCIFY=1
             -sASSERTIONS=1
-            -sLLD_REPORT_UNDEFINED)
+            --no-heap-copy)
 
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)
 endif()

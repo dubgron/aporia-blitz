@@ -3,7 +3,7 @@
 #include "platform/opengl_common.hpp"
 
 #if defined(APORIA_EMSCRIPTEN)
-    #include <GLES3/gl3.h>
+    #include <GLES3/gl32.h>
 #else
     #include <GL/gl3w.h>
 

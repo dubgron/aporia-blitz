@@ -4,6 +4,11 @@
 
 #include <magic_enum.hpp>
 
+#if defined(APORIA_EMSCRIPTEN)
+    int glfwGetGamepadState(int jid, GLFWgamepadstate* state) { return 0; }
+    int glfwGetError(const char** description) { return 0; }
+#endif
+
 namespace Aporia
 {
     template<typename T> requires std::is_enum_v<T>
@@ -136,6 +141,7 @@ namespace Aporia
             mouse.wheels[idx] = 0.f;
         }
 
+#if !defined(APORIA_EMSCRIPTEN)
         GLFWgamepadstate gamepad_state;
         if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
         {
@@ -151,6 +157,7 @@ namespace Aporia
                 gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
             }
         }
+#endif
     }
 
     void on_key_triggered(Keyboard key)

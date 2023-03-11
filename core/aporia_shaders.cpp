@@ -1,5 +1,6 @@
 #include "aporia_shaders.hpp"
 
+#include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
@@ -13,6 +14,7 @@ namespace Aporia
         if (type == "fragment")     return ShaderType::Fragment;
         if (type == "vertex")       return ShaderType::Vertex;
 
+        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len = {}.", type, type.length());
         APORIA_ASSERT_NO_ENTRY();
         return ShaderType::Invalid;
     }
@@ -50,6 +52,7 @@ namespace Aporia
         if (blend == "src_1_alpha")                return ShaderBlend::Src1Alpha;
         if (blend == "one_minus_src_1_alpha")      return ShaderBlend::OneMinusSrc1Alpha;
 
+        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len = {}.", blend, blend.length());
         APORIA_ASSERT_NO_ENTRY();
         return ShaderBlend::Default;
     }
@@ -73,10 +76,12 @@ namespace Aporia
         case ShaderBlend::ConstantAlpha:            return GL_CONSTANT_ALPHA;
         case ShaderBlend::OneMinusConstantAlpha:    return GL_ONE_MINUS_CONSTANT_ALPHA;
         case ShaderBlend::SrcAlphaSaturate:         return GL_SRC_ALPHA_SATURATE;
+#if !defined(APORIA_EMSCRIPTEN)
         case ShaderBlend::Src1Color:                return GL_SRC1_COLOR;
         case ShaderBlend::OneMinusSrc1Color:        return GL_ONE_MINUS_SRC1_COLOR;
         case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
         case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
+#endif
         default:                                    APORIA_ASSERT_NO_ENTRY(); return 0;
         }
     }
@@ -89,6 +94,7 @@ namespace Aporia
         if (blend_op == "min")      return ShaderBlendOp::Min;
         if (blend_op == "max")      return ShaderBlendOp::Max;
 
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len = {}.", blend_op, blend_op.length());
         APORIA_ASSERT_NO_ENTRY();
         return ShaderBlendOp::Default;
     }
@@ -118,6 +124,7 @@ namespace Aporia
         if (depth_test == "equal")     return ShaderDepthTest::Equal;
         if (depth_test == "notequal")  return ShaderDepthTest::NotEqual;
 
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len = {}.", depth_test, depth_test.length());
         APORIA_ASSERT_NO_ENTRY();
         return ShaderDepthTest::Default;
     }
@@ -143,6 +150,7 @@ namespace Aporia
         if (depth_write == "on")   return ShaderDepthWrite::On;
         if (depth_write == "off")  return ShaderDepthWrite::Off;
 
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len = {}.", depth_write, depth_write.length());
         APORIA_ASSERT_NO_ENTRY();
         return ShaderDepthWrite::Default;
     }
@@ -207,10 +215,10 @@ namespace Aporia
                 const ShaderType shader_type = string_to_shader_type(params);
                 const std::string_view shader_code = contents.substr(shader_begin, shader_end - shader_begin);
 
-                ShaderData subshader;
-                subshader.type = shader_type;
-                subshader.contents = shader_code;
-                results.shaders.push_back( std::move(subshader) );
+                ShaderData shader;
+                shader.type = shader_type;
+                shader.contents = shader_code;
+                results.shaders.push_back( std::move(shader) );
 
                 line_end = shader_end - 1;
             }
@@ -401,7 +409,7 @@ namespace Aporia
 
     void remove_all_shaders()
     {
-        for (const ShaderID program_id : std::views::keys(programs))
+        for (const auto&[program_id, program_info] : programs)
         {
             glDeleteProgram(program_id);
         }
