@@ -15,4 +15,7 @@ if (NOT APORIA_EMSCRIPTEN)
     target_link_libraries(imgui gl3w)
 endif()
 
+# Specified the C++ standard for AppleClang
+target_compile_features(imgui PUBLIC cxx_std_11)
+
 target_include_directories(imgui PUBLIC ${IMGUI_INCLUDE_DIR})
