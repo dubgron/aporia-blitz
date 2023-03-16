@@ -80,7 +80,7 @@ namespace Aporia
         APORIA_VALIDATE_OR_RETURN(std::filesystem::exists(filepath),
             "Config file '{}' doesn't exist!", filepath);
 
-        /* TODO(dubgron): Handling when json file is not correct */
+        // @TODO(dubgron): Handling when json file is not correct.
         std::string json_contents = read_file(filepath);
         const json config_json = json::parse( std::move(json_contents) );
 

@@ -41,7 +41,7 @@ namespace Aporia
             result.atlas.source.height = atlas.height;
             result.atlas.source.channels = atlas.channels;
 
-            /* TODO: Move the OpenGL part of creating texture to a separate function */
+            // @TODO(dubgron): Move the OpenGL part of creating texture to a separate function.
             u32 id = 0;
             glGenTextures(1, &id);
 
