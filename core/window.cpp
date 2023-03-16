@@ -7,16 +7,16 @@
 
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
+#include "aporia_rendering.hpp"
 #include "common.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/camera_controller.hpp"
-#include "graphics/renderer.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
-    Window::Window(Renderer& renderer, CameraController& camera)
-        : _renderer(renderer), _camera(camera)
+    Window::Window(CameraController& camera)
+        : _camera(camera)
     {
     }
 
@@ -94,7 +94,7 @@ namespace Aporia
                 on_wheel_scrolled(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
             });
 
-        // NOTE(dubgron): We probably would like to use this callback in the future.
+        // @NOTE(dubgron): We probably would like to use this callback in the future.
         // glfwSetCursorPosCallback(_window, [](GLFWwindow* handle, f64 x_pos, f64 y_pos)
         //     {
         //     });
@@ -102,13 +102,13 @@ namespace Aporia
         glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* handle, i32 width, i32 height)
             {
                 const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
-                window._renderer.on_window_resize(width, height);
+                resize_framebuffers(width, height);
                 window._camera.on_window_resize(width, height);
                 glViewport(0, 0, width, height);
             });
 
 #if !defined(APORIA_EMSCRIPTEN)
-        // NOTE(dubgron): It has to be called after glfwMakeContextCurrent.
+        // @NOTE(dubgron): It has to be called after glfwMakeContextCurrent.
         const i32 gl3w_init_return_code = gl3wInit();
         if (gl3w_init_return_code != GL3W_OK)
         {

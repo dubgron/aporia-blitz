@@ -7,6 +7,7 @@
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_memory.hpp"
+#include "aporia_rendering.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_types.hpp"
@@ -21,15 +22,6 @@
 
 /* Graphics */
 #include <graphics/font.hpp>
-#include <graphics/framebuffer.hpp>
-#include <graphics/index_buffer.hpp>
-#include <graphics/light.hpp>
-#include <graphics/render_queue.hpp>
-#include <graphics/renderer.hpp>
-#include <graphics/uniform_buffer.hpp>
-#include <graphics/vertex.hpp>
-#include <graphics/vertex_array.hpp>
-#include <graphics/vertex_buffer.hpp>
 
 /* Drawables */
 #include <graphics/drawables/circle2d.hpp>

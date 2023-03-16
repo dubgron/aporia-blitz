@@ -10,7 +10,6 @@
 #include "window.hpp"
 #include "world.hpp"
 #include "graphics/camera_controller.hpp"
-#include "graphics/renderer.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"
 #include "utils/timer.hpp"
@@ -40,7 +39,6 @@ namespace Aporia
         FontManager _fonts;
 
         CameraController _camera;
-        Renderer _renderer;
 
         Window _window;
 

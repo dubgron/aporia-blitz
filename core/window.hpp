@@ -8,13 +8,12 @@ namespace Aporia
 {
     class Camera;
     class CameraController;
-    class Renderer;
     struct WindowConfig;
 
     class Window final
     {
     public:
-        Window(Renderer& renderer, CameraController& camera);
+        Window(CameraController& camera);
 
         void init(const WindowConfig& config);
         void deinit();
@@ -36,7 +35,6 @@ namespace Aporia
     private:
         const WindowConfig* _config;
 
-        Renderer& _renderer;
         CameraController& _camera;
 
         GLFWwindow* _window;

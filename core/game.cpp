@@ -4,6 +4,7 @@
     #include <emscripten.h>
 #endif
 
+#include "aporia_rendering.hpp"
 #include "common.hpp"
 #include "scene.hpp"
 
@@ -15,7 +16,7 @@ namespace Aporia
     }
 
     Game::Game(const std::string& config_file)
-        : _window(_renderer, _camera),
+        : _window(_camera),
           _imgui_layer(_window)
     {
         load_config(config_file);
@@ -24,7 +25,7 @@ namespace Aporia
         _window.init(window_config);
 
         set_default_shader_properties(shader_config.default_properties);
-        _renderer.init(window_config.width, window_config.height);
+        rendering_init(window_config.width, window_config.height);
         _world.init();
 
         _layer_stack.push_overlay(_imgui_layer);
@@ -34,7 +35,7 @@ namespace Aporia
     {
         _layer_stack.pop_overlay(_imgui_layer);
         _world.deinit();
-        _renderer.deinit();
+        rendering_deinit();
         _window.deinit();
     }
 
@@ -63,14 +64,12 @@ namespace Aporia
         _scenes.get_current_scene()->on_scene_transition(_scenes);
 
         _imgui_layer.begin();
-        _renderer.begin(_window, _camera.get_camera());
+        rendering_begin(_window, _camera.get_camera());
 
         on_update(_dt);
         _scenes.get_current_scene()->on_update(_dt);
 
-        _scenes.get_current_scene()->on_draw(_renderer);
-
-        _renderer.end(_camera.get_clear_color());
+        rendering_end(_camera.get_clear_color());
         _imgui_layer.end();
 
         _window.display();

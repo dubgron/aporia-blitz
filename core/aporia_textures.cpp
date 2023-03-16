@@ -77,7 +77,7 @@ namespace Aporia
         glGenerateTextureMipmap(id);
 #endif
 
-        const Texture atlas_texture{ static_cast<texture_id>(id), atlas_image.width, atlas_image.height, atlas_image.channels };
+        const Texture atlas_texture{ id, atlas_image.width, atlas_image.height, atlas_image.channels };
         for (auto& texture : texture_json["textures"])
         {
             std::string name = texture["name"];

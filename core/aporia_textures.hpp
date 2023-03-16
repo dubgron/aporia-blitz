@@ -18,7 +18,7 @@ namespace Aporia
 
     struct Texture
     {
-        texture_id id = 0;
+        u32 id = 0;
 
         i32 width = 0;
         i32 height = 0;

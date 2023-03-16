@@ -21,7 +21,6 @@ namespace Aporia
         virtual void on_load() {};
         virtual void on_scene_transition(SceneManager& scenes) {};
         virtual void on_update(Deltatime dt) {};
-        virtual void on_draw(Renderer& renderer) {};
         virtual void on_unload() {};
 
         const std::string& get_name() const { return _name; }
