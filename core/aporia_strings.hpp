@@ -27,7 +27,7 @@ namespace Aporia
         bool operator==(const char* string) const;
 
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
-        operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), length }; }
+        operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), static_cast<size_t>(length) }; }
     };
 
     String create_string(const char* string);

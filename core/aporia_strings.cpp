@@ -14,7 +14,7 @@ namespace Aporia
     {
         APORIA_ASSERT(data);
         APORIA_ASSERT(length > offset);
-        return String{ data + offset, clamp(count, 0, length - offset) };
+        return String{ data + offset, clamp<u64>(count, 0, length - offset) };
     }
 
     String String::trim() const
