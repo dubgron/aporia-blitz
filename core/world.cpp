@@ -26,7 +26,7 @@ namespace Aporia
 
     EntityID World::create_entity(Entity** out_entity)
     {
-        APORIA_VALIDATE_OR_RETURN_VALUE(free_list, EntityID{},
+        APORIA_ASSERT_WITH_MESSAGE(free_list,
             "The free list is empty! Can't create new Entity");
 
         // Pop an element from the free list.
@@ -59,16 +59,16 @@ namespace Aporia
         const u64 index = entity_id.index;
         const u64 generation = entity_id.generation;
 
-        APORIA_VALIDATE_OR_RETURN(index < max_entities && generation > 0,
-            "Invalid EntityID (index = {}, generation = {})!", index, generation);
+        APORIA_ASSERT_WITH_MESSAGE(index < max_entities && generation > 0,
+            "Invalid EntityID (index: {}, generation: {})!", index, generation);
 
         EntityNode* entity_node = &entity_list[index];
 
-        APORIA_VALIDATE_OR_RETURN(entity_node->entity != nullptr,
-            "Entity with ID = (index = {}, generation = {}) is null!", index, generation);
+        APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
+            "Entity with ID = (index: {}, generation: {}) is null!", index, generation);
 
-        APORIA_VALIDATE_OR_RETURN(entity_node->generation == generation,
-            "Generation mismatch! Tried to remove Entity (index = {}, generation = {}) but it its current generation = {}!",
+        APORIA_ASSERT_WITH_MESSAGE(entity_node->generation == generation,
+            "Generation mismatch! Tried to remove Entity (index: {}, generation: {}) but it its current generation: {}!",
             index, generation, entity_node->generation);
 
         // Swap the removed entity with the end of the entity array and redirect its node.
@@ -100,8 +100,8 @@ namespace Aporia
         const u64 index = entity_id.index;
         const u64 generation = entity_id.generation;
 
-        APORIA_VALIDATE_OR_RETURN_VALUE(index < max_entities && generation > 0, nullptr,
-            "Invalid EntityID (index = {}, generation = {})!", index, generation);
+        APORIA_ASSERT_WITH_MESSAGE(index < max_entities && generation > 0,
+            "Invalid EntityID (index: {}, generation: {})!", index, generation);
 
         const EntityNode* entity_node = &entity_list[index];
         if (entity_node->generation != generation)

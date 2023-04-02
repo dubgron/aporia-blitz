@@ -233,7 +233,7 @@ namespace Aporia
 
     void Framebuffer::create(i32 width, i32 height)
     {
-        APORIA_VALIDATE_OR_RETURN(width > 0 && height > 0,
+        APORIA_ASSERT_WITH_MESSAGE(width > 0 && height > 0,
             "Invalid framebuffer dimensions! Width: {}, Height: {}", width, height);
 
         /* Delete potential previous buffers and textures */
@@ -741,8 +741,7 @@ namespace Aporia
 
     void draw(const Text& text)
     {
-        APORIA_VALIDATE_OR_RETURN(text.font,
-            "Invalid font!");
+        APORIA_ASSERT(text.font);
 
         const Font& font = *text.font;
 

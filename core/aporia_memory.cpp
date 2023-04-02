@@ -38,7 +38,7 @@ namespace Aporia
     void* MemoryArena::push(u64 size)
     {
         const u64 space_left = max - pos;
-        APORIA_VALIDATE_OR_RETURN_VALUE(size > 0 && size <= space_left, nullptr,
+        APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= space_left,
             "Can't allocate {} B! Pos: {} B, Max: {} B, Left: {} B", size, pos, max, space_left);
 
         const u64 result = PTR_TO_INT(memory) + pos;
@@ -55,16 +55,14 @@ namespace Aporia
 
     void TempArena::begin(MemoryArena* in_arena)
     {
-        APORIA_VALIDATE_OR_RETURN(in_arena, "The arena is null! Can't create a TempArena!");
-
+        APORIA_ASSERT_WITH_MESSAGE(in_arena, "The arena is null! Can't create a TempArena!");
         arena = in_arena;
         pos = in_arena->pos;
     }
 
     void TempArena::end()
     {
-        APORIA_VALIDATE_OR_RETURN(arena, "TempArena has an invalid arena! Can't rollback!");
-
+        APORIA_ASSERT_WITH_MESSAGE(arena, "TempArena has an invalid arena! Can't rollback!");
         arena->pos = pos;
     }
 }

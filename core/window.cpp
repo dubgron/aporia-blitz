@@ -123,7 +123,7 @@ namespace Aporia
                 const LogLevel log_level = gl_debug_severity_to_log_level(severity);
                 const char* debug_source = gl_debug_source_to_string(source);
                 const char* debug_type = gl_debug_type_to_string(type);
-                APORIA_LOG(log_level, "{} {} [ID = {}] '{}'", debug_source, debug_type, id, message);
+                APORIA_LOG(log_level, "{} {} [ID: {}] '{}'", debug_source, debug_type, id, message);
             }, nullptr);
 #endif
 

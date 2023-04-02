@@ -14,8 +14,8 @@ namespace Aporia
         if (type == "fragment")     return ShaderType::Fragment;
         if (type == "vertex")       return ShaderType::Vertex;
 
-        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len = {}.", type, type.length());
-        APORIA_ASSERT_NO_ENTRY();
+        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len: {}.", type, type.length());
+        APORIA_UNREACHABLE();
         return ShaderType::Invalid;
     }
 
@@ -25,7 +25,7 @@ namespace Aporia
         {
         case ShaderType::Fragment:  return GL_FRAGMENT_SHADER;
         case ShaderType::Vertex:    return GL_VERTEX_SHADER;
-        default:                    APORIA_ASSERT_NO_ENTRY(); return 0;
+        default:                    APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -52,8 +52,8 @@ namespace Aporia
         if (blend == "src_1_alpha")                return ShaderBlend::Src1Alpha;
         if (blend == "one_minus_src_1_alpha")      return ShaderBlend::OneMinusSrc1Alpha;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len = {}.", blend, blend.length());
-        APORIA_ASSERT_NO_ENTRY();
+        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len: {}.", blend, blend.length());
+        APORIA_UNREACHABLE();
         return ShaderBlend::Default;
     }
 
@@ -82,7 +82,7 @@ namespace Aporia
         case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
         case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
 #endif
-        default:                                    APORIA_ASSERT_NO_ENTRY(); return 0;
+        default:                                    APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -94,8 +94,8 @@ namespace Aporia
         if (blend_op == "min")      return ShaderBlendOp::Min;
         if (blend_op == "max")      return ShaderBlendOp::Max;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len = {}.", blend_op, blend_op.length());
-        APORIA_ASSERT_NO_ENTRY();
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len: {}.", blend_op, blend_op.length());
+        APORIA_UNREACHABLE();
         return ShaderBlendOp::Default;
     }
 
@@ -108,7 +108,7 @@ namespace Aporia
         case ShaderBlendOp::ReverseSubtract:    return GL_FUNC_REVERSE_SUBTRACT;
         case ShaderBlendOp::Min:                return GL_MIN;
         case ShaderBlendOp::Max:                return GL_MAX;
-        default:                                APORIA_ASSERT_NO_ENTRY(); return 0;
+        default:                                APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -124,8 +124,8 @@ namespace Aporia
         if (depth_test == "equal")     return ShaderDepthTest::Equal;
         if (depth_test == "notequal")  return ShaderDepthTest::NotEqual;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len = {}.", depth_test, depth_test.length());
-        APORIA_ASSERT_NO_ENTRY();
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len: {}.", depth_test, depth_test.length());
+        APORIA_UNREACHABLE();
         return ShaderDepthTest::Default;
     }
 
@@ -141,7 +141,7 @@ namespace Aporia
         case ShaderDepthTest::GEqual:       return GL_GEQUAL;
         case ShaderDepthTest::Equal:        return GL_EQUAL;
         case ShaderDepthTest::NotEqual:     return GL_NOTEQUAL;
-        default:                            APORIA_ASSERT_NO_ENTRY(); return 0;
+        default:                            APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -150,8 +150,8 @@ namespace Aporia
         if (depth_write == "on")   return ShaderDepthWrite::On;
         if (depth_write == "off")  return ShaderDepthWrite::Off;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len = {}.", depth_write, depth_write.length());
-        APORIA_ASSERT_NO_ENTRY();
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len: {}.", depth_write, depth_write.length());
+        APORIA_UNREACHABLE();
         return ShaderDepthWrite::Default;
     }
 
@@ -161,7 +161,7 @@ namespace Aporia
         {
         case ShaderDepthWrite::On:      return GL_TRUE;
         case ShaderDepthWrite::Off:     return GL_FALSE;
-        default:                        APORIA_ASSERT_NO_ENTRY(); return 0;
+        default:                        APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -303,8 +303,8 @@ namespace Aporia
 
     void apply_shader_properties(ShaderID program_id)
     {
-        APORIA_VALIDATE_OR_RETURN(programs.contains(program_id),
-            "Shader program with ID = {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
+            "Shader program with ID: {} is not valid!", program_id);
 
         const ShaderInfo& program_info = programs.at(program_id);
         const ShaderProperties& properties = program_info.properties;
@@ -335,7 +335,7 @@ namespace Aporia
 
     i32 get_uniform_location(const std::string& name)
     {
-        APORIA_VALIDATE_OR_RETURN_VALUE(programs.contains(active_program_id), -1,
+        APORIA_ASSERT_WITH_MESSAGE(programs.contains(active_program_id),
             "No active shader program!");
 
         ShaderInfo& program_info = programs.at(active_program_id);
@@ -400,8 +400,8 @@ namespace Aporia
 
     void remove_shader(ShaderID program_id)
     {
-        APORIA_VALIDATE_OR_RETURN(programs.contains(program_id),
-            "Shader program with ID = {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
+            "Shader program with ID: {} is not valid!", program_id);
 
         glDeleteProgram(program_id);
         programs.erase(program_id);
@@ -424,8 +424,8 @@ namespace Aporia
 
     void reload_shader(ShaderID program_id)
     {
-        APORIA_VALIDATE_OR_RETURN(programs.contains(program_id),
-            "Shader program with ID = {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
+            "Shader program with ID: {} is not valid!", program_id);
 
         const std::string program_source = programs.at(program_id).source;
 

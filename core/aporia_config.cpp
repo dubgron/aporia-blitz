@@ -77,7 +77,7 @@ namespace Aporia
 
     void load_config(std::string_view filepath)
     {
-        APORIA_VALIDATE_OR_RETURN(std::filesystem::exists(filepath),
+        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(filepath),
             "Config file '{}' doesn't exist!", filepath);
 
         // @TODO(dubgron): Handling when json file is not correct.

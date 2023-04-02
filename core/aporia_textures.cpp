@@ -29,7 +29,8 @@ namespace Aporia
 
     void load_texture_atlas(std::string_view filepath)
     {
-        APORIA_VALIDATE_OR_RETURN(std::filesystem::exists(filepath), "File '{}' does not open!", filepath)
+        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(filepath),
+            "File '{}' does not open!", filepath);
 
         std::string data = read_file(filepath);
 
@@ -38,7 +39,8 @@ namespace Aporia
 
         const std::string atlas_filepath = texture_json["atlas"];
 
-        APORIA_VALIDATE_OR_RETURN(std::filesystem::exists(atlas_filepath), "File '{}' does not open!", filepath)
+        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(atlas_filepath),
+            "File '{}' does not open!", filepath);
 
         static u32 id = 0;
         glDeleteTextures(1, &id);
@@ -98,8 +100,7 @@ namespace Aporia
 
     const SubTexture& get_subtexture(const std::string& name)
     {
-        static const SubTexture EmptySubTexture;
-        APORIA_VALIDATE_OR_RETURN_VALUE(textures.contains(name), EmptySubTexture,
+        APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
             "Failed to find sub texture '{}'! Returned default texture!", name);
 
         return textures.find(name)->second;

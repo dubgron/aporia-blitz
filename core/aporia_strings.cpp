@@ -13,7 +13,7 @@ namespace Aporia
     String String::substr(u64 offset, u64 count) const
     {
         APORIA_ASSERT(data);
-        APORIA_ASSERT(length < offset);
+        APORIA_ASSERT(length > offset);
         return String{ data + offset, clamp(count, 0, length - offset) };
     }
 
