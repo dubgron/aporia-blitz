@@ -37,8 +37,9 @@ namespace Aporia
 
     void* MemoryArena::push(u64 size)
     {
-        APORIA_VALIDATE_OR_RETURN_VALUE(size > 0 && pos + size <= max, nullptr,
-            "Can't allocate {} B! Pos: {} B, Max: {} B, Left: {} B", size, pos, max, max - pos);
+        const u64 space_left = max - pos;
+        APORIA_VALIDATE_OR_RETURN_VALUE(size > 0 && size <= space_left, nullptr,
+            "Can't allocate {} B! Pos: {} B, Max: {} B, Left: {} B", size, pos, max, space_left);
 
         const u64 result = PTR_TO_INT(memory) + pos;
         pos = next_aligned(pos + size, align);
