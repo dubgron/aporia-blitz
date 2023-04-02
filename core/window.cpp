@@ -101,9 +101,12 @@ namespace Aporia
 
         glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* handle, i32 width, i32 height)
             {
-                const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
-                resize_framebuffers(width, height);
-                window._camera.on_window_resize(width, height);
+                if (width > 0 && height > 0)
+                {
+                    const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
+                    resize_framebuffers(width, height);
+                    window._camera.on_window_resize(width, height);
+                }
                 glViewport(0, 0, width, height);
             });
 
