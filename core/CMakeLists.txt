@@ -28,6 +28,8 @@ add_library(core STATIC
     "aporia_rendering.hpp"
     "aporia_shaders.cpp"
     "aporia_shaders.hpp"
+    "aporia_strings.cpp"
+    "aporia_strings.hpp"
     "aporia_textures.cpp"
     "aporia_textures.hpp"
     "aporia_types.hpp"

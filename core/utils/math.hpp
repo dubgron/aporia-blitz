@@ -7,6 +7,10 @@
 #include "aporia_types.hpp"
 #include "components/transform2d.hpp"
 
+#define min(value, bound)                     ((value) > (bound) ? (bound) : (value))
+#define max(value, bound)                     ((value) < (bound) ? (bound) : (value))
+#define clamp(value, min_bound, max_bound)    min(max(value, min_bound), max_bound)
+
 namespace Aporia
 {
     inline m4 to_mat4(const Transform2D& transform)
