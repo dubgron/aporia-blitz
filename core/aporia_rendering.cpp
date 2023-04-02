@@ -144,7 +144,7 @@ namespace Aporia
     {
 #if defined(APORIA_EMSCRIPTEN)
         bind();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, _buffer.size() * sizeof(Vertex), data.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, data.size() * sizeof(Vertex), data.data());
         unbind();
 #else
         glNamedBufferSubData(id, 0, data.size() * sizeof(Vertex), data.data());
