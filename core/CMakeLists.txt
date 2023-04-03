@@ -53,6 +53,7 @@ add_library(core STATIC
     "debug/break.hpp"
     "debug/logger.cpp"
     "debug/logger.hpp"
+    "editor/aporia_commandline.cpp"
     "graphics/camera.cpp"
     "graphics/camera.hpp"
     "graphics/camera_controller.cpp"
@@ -135,6 +136,7 @@ endif()
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/components            "core/components/.+\.[cht]pp")
 source_group(core/debug                 "core/debug/.+\.[cht]pp")
+source_group(core/editor                "core/editor/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
