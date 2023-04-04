@@ -18,6 +18,7 @@
 namespace Aporia
 {
     static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
+    static constexpr u64 MAX_RENDERING_OBJECTS_PER_DRAW_CALL = 10000;
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
     ShaderID default_shader = 0;
@@ -331,6 +332,12 @@ namespace Aporia
 
                 const u8 buffer_index = std::to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
+
+                if (vertex_buffer.data.size() + vertex_buffer.count > MAX_RENDERING_OBJECTS_PER_DRAW_CALL * vertex_buffer.count)
+                {
+                    flush_buffer(key.buffer, key.program_id);
+                }
+
                 for (u64 i = 0; i < vertex_buffer.count; ++i)
                 {
                     vertex_buffer.data.push_back( key.vertex[i] );
@@ -414,12 +421,12 @@ namespace Aporia
         quads.bind();
 
         VertexBuffer quads_vbo;
-        quads_vbo.init(MAX_RENDERING_QUEUE_SIZE, 4);
+        quads_vbo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 4);
         quads_vbo.add_layout();
         quads.vertex_buffer = std::move(quads_vbo);
 
-        std::vector<u32> quad_indices(MAX_RENDERING_QUEUE_SIZE * 6);
-        for (u32 i = 0, offset = 0; i < MAX_RENDERING_QUEUE_SIZE; i += 6, offset += 4)
+        std::vector<u32> quad_indices(MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 6);
+        for (u32 i = 0, offset = 0; i < MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
         {
             quad_indices[  i  ] = offset + 0;
             quad_indices[i + 1] = offset + 1;
@@ -431,7 +438,7 @@ namespace Aporia
         }
 
         IndexBuffer quads_ibo;
-        quads_ibo.init(MAX_RENDERING_QUEUE_SIZE, 6, quad_indices);
+        quads_ibo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
         quads.index_buffer = std::move(quads_ibo);
 
         quads.unbind();
@@ -442,18 +449,18 @@ namespace Aporia
         lines.bind();
 
         VertexBuffer lines_vbo;
-        lines_vbo.init(MAX_RENDERING_QUEUE_SIZE, 2);
+        lines_vbo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 2);
         lines_vbo.add_layout();
         lines.vertex_buffer = std::move(lines_vbo);
 
-        std::vector<u32> line_indices(MAX_RENDERING_QUEUE_SIZE * 2);
-        for (u32 i = 0; i < MAX_RENDERING_QUEUE_SIZE * 2; ++i)
+        std::vector<u32> line_indices(MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 2);
+        for (u32 i = 0; i < MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 2; ++i)
         {
             line_indices[i] = i;
         }
 
         IndexBuffer lines_ibo;
-        lines_ibo.init(MAX_RENDERING_QUEUE_SIZE, 2, line_indices);
+        lines_ibo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 2, line_indices);
         lines.index_buffer = std::move(lines_ibo);
 
         lines.unbind();
