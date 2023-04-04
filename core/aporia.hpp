@@ -9,6 +9,7 @@
 #include "aporia_memory.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_shaders.hpp"
+#include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_types.hpp"
 

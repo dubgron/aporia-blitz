@@ -19,7 +19,7 @@ namespace Aporia
     ShaderConfig shader_config;
     CameraConfig camera_config;
 
-    void load_window_config(const json& config)
+    static void load_window_config(const json& config)
     {
         const auto& window = config["window_config"];
 
@@ -35,7 +35,7 @@ namespace Aporia
         }
     }
 
-    void load_shader_config(const json& config)
+    static void load_shader_config(const json& config)
     {
         const auto& shader = config["shader_config"];
         const auto& default_properties = shader["default_properties"];
@@ -47,7 +47,7 @@ namespace Aporia
         shader_config.default_properties.depth_write = string_to_shader_depth_write(default_properties["depth_write"].get<std::string_view>());
     }
 
-    void load_camera_config(const json& config)
+    static void load_camera_config(const json& config)
     {
         const auto& camera = config["camera_config"];
         const auto& bg_color = camera["background_color"];

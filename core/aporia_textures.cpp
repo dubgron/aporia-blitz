@@ -7,7 +7,7 @@
 
 namespace Aporia
 {
-    std::unordered_map<std::string, SubTexture> textures;
+    static std::unordered_map<std::string, SubTexture> textures;
 
     void Image::load(std::string_view filepath)
     {

@@ -51,9 +51,9 @@ namespace Aporia
             Bs = X;
         }
 
-        const u8 r = static_cast<u8>(Rs + m) * 255;
-        const u8 g = static_cast<u8>(Gs + m) * 255;
-        const u8 b = static_cast<u8>(Bs + m) * 255;
+        const u8 r = static_cast<u8>( (Rs + m) * 255 );
+        const u8 g = static_cast<u8>( (Gs + m) * 255 );
+        const u8 b = static_cast<u8>( (Bs + m) * 255 );
 
         return Color{ r, g, b };
     }
