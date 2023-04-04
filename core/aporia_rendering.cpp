@@ -18,7 +18,7 @@
 namespace Aporia
 {
     static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
-    static constexpr u64 MAX_RENDERING_OBJECTS_PER_DRAW_CALL = 10000;
+    static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
     ShaderID default_shader = 0;
@@ -48,20 +48,18 @@ namespace Aporia
             (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer == key2.buffer && key1.program_id < key2.program_id);
     }
 
-    void IndexBuffer::init(u32 in_max_objects, u32 in_count, const std::vector<u32>& indices)
+    void IndexBuffer::init(u32 max_objects, u32 count, const std::vector<u32>& indices)
     {
-        max_objects = in_max_objects;
-        count = in_count;
+        max_size = max_objects * count;
+        index_count = count;
 
         glGenBuffers(1, &id);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 
-        const u64 buffer_size = in_max_objects * in_count * sizeof(u32);
-
 #if defined(APORIA_EMSCRIPTEN)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer_size, indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_size * sizeof(u32), indices.data(), GL_STATIC_DRAW);
 #else
-        glNamedBufferData(id, buffer_size, indices.data(), GL_STATIC_DRAW);
+        glNamedBufferData(id, max_size * sizeof(u32), indices.data(), GL_STATIC_DRAW);
 #endif
     }
 
@@ -80,23 +78,21 @@ namespace Aporia
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::init(u32 in_max_objects, u32 in_count)
+    void VertexBuffer::init(u32 max_objects, u32 count)
     {
-        max_objects = in_max_objects;
-        count = in_count;
+        max_size = max_objects * count;
+        vertex_count = count;
 
         glGenBuffers(1, &id);
         glBindBuffer(GL_ARRAY_BUFFER, id);
 
-        const u64 buffer_size = in_max_objects * in_count * sizeof(Vertex);
-
 #if defined(APORIA_EMSCRIPTEN)
-        glBufferData(GL_ARRAY_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #else
-        glNamedBufferData(id, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+        glNamedBufferData(id, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #endif
 
-        data.reserve(in_max_objects * in_count);
+        data.reserve(max_size);
     }
 
     void VertexBuffer::deinit()
@@ -190,7 +186,7 @@ namespace Aporia
         this->bind();
         index_buffer.bind();
 
-        const u32 count = index_buffer.count * vertex_buffer.data.size() / vertex_buffer.count;
+        const u32 count = index_buffer.index_count * vertex_buffer.data.size() / vertex_buffer.vertex_count;
         glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
 
         index_buffer.unbind();
@@ -333,12 +329,12 @@ namespace Aporia
                 const u8 buffer_index = std::to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
 
-                if (vertex_buffer.data.size() + vertex_buffer.count > MAX_RENDERING_OBJECTS_PER_DRAW_CALL * vertex_buffer.count)
+                if (vertex_buffer.data.size() + vertex_buffer.vertex_count > vertex_buffer.max_size)
                 {
                     flush_buffer(key.buffer, key.program_id);
                 }
 
-                for (u64 i = 0; i < vertex_buffer.count; ++i)
+                for (u64 i = 0; i < vertex_buffer.vertex_count; ++i)
                 {
                     vertex_buffer.data.push_back( key.vertex[i] );
                 }
@@ -421,12 +417,12 @@ namespace Aporia
         quads.bind();
 
         VertexBuffer quads_vbo;
-        quads_vbo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 4);
+        quads_vbo.init(MAX_OBJECTS_PER_DRAW_CALL, 4);
         quads_vbo.add_layout();
         quads.vertex_buffer = std::move(quads_vbo);
 
-        std::vector<u32> quad_indices(MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 6);
-        for (u32 i = 0, offset = 0; i < MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
+        std::vector<u32> quad_indices(MAX_OBJECTS_PER_DRAW_CALL * 6);
+        for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
         {
             quad_indices[  i  ] = offset + 0;
             quad_indices[i + 1] = offset + 1;
@@ -438,7 +434,7 @@ namespace Aporia
         }
 
         IndexBuffer quads_ibo;
-        quads_ibo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
+        quads_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
         quads.index_buffer = std::move(quads_ibo);
 
         quads.unbind();
@@ -449,18 +445,18 @@ namespace Aporia
         lines.bind();
 
         VertexBuffer lines_vbo;
-        lines_vbo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 2);
+        lines_vbo.init(MAX_OBJECTS_PER_DRAW_CALL, 2);
         lines_vbo.add_layout();
         lines.vertex_buffer = std::move(lines_vbo);
 
-        std::vector<u32> line_indices(MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 2);
-        for (u32 i = 0; i < MAX_RENDERING_OBJECTS_PER_DRAW_CALL * 2; ++i)
+        std::vector<u32> line_indices(MAX_OBJECTS_PER_DRAW_CALL * 2);
+        for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
         {
             line_indices[i] = i;
         }
 
         IndexBuffer lines_ibo;
-        lines_ibo.init(MAX_RENDERING_OBJECTS_PER_DRAW_CALL, 2, line_indices);
+        lines_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 2, line_indices);
         lines.index_buffer = std::move(lines_ibo);
 
         lines.unbind();

@@ -46,10 +46,10 @@ namespace Aporia
     struct IndexBuffer
     {
         u32 id = 0;
-        u32 max_objects = 0;
-        u32 count = 0;
+        u32 max_size = 0;
+        u32 index_count = 0;
 
-        void init(u32 in_max_objects, u32 in_count, const std::vector<u32>& indices);
+        void init(u32 max_objects, u32 count, const std::vector<u32>& indices);
         void deinit();
 
         void bind() const;
@@ -59,12 +59,12 @@ namespace Aporia
     struct VertexBuffer
     {
         u32 id = 0;
-        u32 max_objects = 0;
-        u32 count = 0;
+        u32 max_size = 0;
+        u32 vertex_count = 0;
 
         std::vector<Vertex> data;
 
-        void init(u32 in_max_objects, u32 in_count);
+        void init(u32 max_objects, u32 count);
         void deinit();
 
         void bind() const;
