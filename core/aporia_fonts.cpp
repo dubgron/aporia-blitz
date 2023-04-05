@@ -1,24 +1,17 @@
-#include "font_manager.hpp"
+#include "aporia_fonts.hpp"
 
-#include <utility>
-
-#include <nlohmann/json.hpp>
-
-#include "aporia_textures.hpp"
-#include "common.hpp"
-#include "platform/opengl.hpp"
 #include "utils/read_file.hpp"
 
 namespace Aporia
 {
-    const Font FontManager::default_font{};
+    static std::unordered_map<String, Font> fonts;
 
-    void FontManager::load_font(std::string name, std::filesystem::path filepath)
+    void load_font(String name, std::filesystem::path filepath)
     {
         std::filesystem::path png_filepath = filepath.replace_extension("png");
         std::filesystem::path json_filepath = filepath.replace_extension("json");
 
-        if (_fonts.contains(name))
+        if (fonts.contains(name))
         {
             APORIA_LOG(Warning, "Already loaded font named '{}'!", name);
         }
@@ -32,14 +25,8 @@ namespace Aporia
         }
         else
         {
-            Font result;
-
             Image atlas;
             atlas.load(png_filepath.string());
-
-            result.atlas.source.width = atlas.width;
-            result.atlas.source.height = atlas.height;
-            result.atlas.source.channels = atlas.channels;
 
             // @TODO(dubgron): Move the OpenGL part of creating texture to a separate function.
             u32 id = 0;
@@ -58,7 +45,11 @@ namespace Aporia
 
             glGenerateMipmap(GL_TEXTURE_2D);
 
+            Font result;
             result.atlas.source.id = id;
+            result.atlas.source.width = atlas.width;
+            result.atlas.source.height = atlas.height;
+            result.atlas.source.channels = atlas.channels;
 
             using json = nlohmann::json;
 
@@ -79,7 +70,7 @@ namespace Aporia
             {
                 Glyph glyph_data;
 
-                glyph_data.advance                  = glyph["advance"];
+                glyph_data.advance = glyph["advance"];
 
                 if (glyph.contains("atlasBounds"))
                 {
@@ -97,30 +88,24 @@ namespace Aporia
                     glyph_data.plane_bounds.top     = glyph["planeBounds"]["top"];
                 }
 
-                result.glyphs.try_emplace(glyph["unicode"], std::move(glyph_data));
+                result.glyphs.emplace(glyph["unicode"], glyph_data);
             }
 
             for (const auto& kerning : font["kerning"])
             {
                 std::pair<u8, u8> key = std::make_pair(kerning["unicode1"], kerning["unicode2"]);
-                result.kerning.try_emplace(std::move(key), kerning["advance"]);
+                result.kerning.emplace(key, kerning["advance"]);
             }
 
-            _fonts.try_emplace(std::move(name), std::move(result));
+            fonts.emplace(name, std::move(result));
         }
     }
 
-    const Font& FontManager::get(const std::string& name) const
+    const Font& get_font(String name)
     {
-        auto font = _fonts.find(name);
-        if (font == _fonts.end())
-        {
-            APORIA_LOG(Warning, "There is no font named '{}'!", name);
-            return default_font;
-        }
-        else
-        {
-            return font->second;
-        }
+        APORIA_ASSERT_WITH_MESSAGE(fonts.contains(name),
+            "Failed to find font '{}'!", name);
+
+        return fonts.find(name)->second;
     }
 }

@@ -5,6 +5,7 @@
 
 /* Aporia Headers */
 #include "aporia_config.hpp"
+#include "aporia_fonts.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_memory.hpp"
 #include "aporia_rendering.hpp"
@@ -21,16 +22,12 @@
 #include <utils/timer.hpp>
 #include <utils/type_traits.hpp>
 
-/* Graphics */
-#include <graphics/font.hpp>
-
 /* Drawables */
 #include <graphics/drawables/circle2d.hpp>
 #include <graphics/drawables/group.hpp>
 #include <graphics/drawables/line2d.hpp>
 #include <graphics/drawables/rectangle2d.hpp>
 #include <graphics/drawables/sprite.hpp>
-#include <graphics/drawables/text.hpp>
 
 /* Camera */
 #include <graphics/camera.hpp>
@@ -48,7 +45,6 @@
 #include <window.hpp>
 
 /* Managers */
-#include <font_manager.hpp>
 #include <scene_manager.hpp>
 
 /* Components */

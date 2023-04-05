@@ -811,7 +811,7 @@ namespace Aporia
 
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
-                key.program_id              = text.shader;
+                key.program_id              = text.program_id;
 
                 key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
                 key.vertex[0].tex_id        = font.atlas.source.id;

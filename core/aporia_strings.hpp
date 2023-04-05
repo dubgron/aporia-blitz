@@ -61,3 +61,14 @@ namespace Aporia
         String join(MemoryArena* arena, String delim) const;
     };
 }
+
+// @TODO(dubgron): Remove this in the future once we replace all usages of std.
+template <>
+struct std::hash<Aporia::String>
+{
+    std::size_t operator()(const Aporia::String& str) const
+    {
+        const string_view sv{ (char*)str.data, (size_t)str.length };
+        return hash<string_view>()(sv);
+    }
+};

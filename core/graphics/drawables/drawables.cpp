@@ -3,7 +3,6 @@
 #include "graphics/drawables/line2d.hpp"
 #include "graphics/drawables/rectangle2d.hpp"
 #include "graphics/drawables/sprite.hpp"
-#include "graphics/drawables/text.hpp"
 
 namespace Aporia
 {
@@ -24,11 +23,6 @@ namespace Aporia
 
     Sprite::Sprite()
         : shader(default_shader)
-    {
-    }
-
-    Text::Text()
-        : shader(font_shader)
     {
     }
 }

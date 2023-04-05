@@ -101,7 +101,7 @@ namespace Aporia
     const SubTexture& get_subtexture(const std::string& name)
     {
         APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
-            "Failed to find sub texture '{}'! Returned default texture!", name);
+            "Failed to find sub texture '{}'!", name);
 
         return textures.find(name)->second;
     }

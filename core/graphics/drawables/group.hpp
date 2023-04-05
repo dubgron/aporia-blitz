@@ -7,12 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "aporia_fonts.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/drawables/line2d.hpp"
 #include "graphics/drawables/circle2d.hpp"
 #include "graphics/drawables/rectangle2d.hpp"
 #include "graphics/drawables/sprite.hpp"
-#include "graphics/drawables/text.hpp"
 #include "utils/type_traits.hpp"
 
 namespace Aporia

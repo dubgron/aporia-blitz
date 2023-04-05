@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "aporia_config.hpp"
-#include "font_manager.hpp"
 #include "scene.hpp"
 #include "scene_manager.hpp"
 #include "window.hpp"
@@ -36,7 +35,6 @@ namespace Aporia
 
     protected:
         SceneManager _scenes;
-        FontManager _fonts;
 
         CameraController _camera;
 
