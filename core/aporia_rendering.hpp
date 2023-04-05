@@ -6,6 +6,8 @@
 #include "components/transform2d.hpp"
 #include "graphics/drawables/group.hpp"
 
+#include <array>
+
 namespace Aporia
 {
 #if defined(APORIA_EMSCRIPTEN)

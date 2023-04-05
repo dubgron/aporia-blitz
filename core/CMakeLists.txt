@@ -109,6 +109,15 @@ if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
 endif()
 
+# Disable exceptions and RTTI
+if (MSVC)
+    string(REGEX REPLACE "/EHsc" "/EHsc-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REGEX REPLACE "/GR" "/GR-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    target_compile_definitions(core PUBLIC _HAS_EXCEPTIONS=0)
+else()
+	target_compile_options(core PUBLIC -fno-exceptions -fno-rtti)
+endif()
+
 if (APORIA_EMSCRIPTEN)
     target_compile_options(core
         PUBLIC
