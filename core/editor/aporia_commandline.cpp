@@ -162,7 +162,7 @@ namespace Aporia
             });
 
         StringList result;
-        const u64 result_num = min(max_count, matches.size());
+        const u64 result_num = min<u64>(max_count, matches.size());
         for (i64 i = 0; i < result_num; ++i)
         {
             result.push_node(&temp_arena, matches[i].command_name);

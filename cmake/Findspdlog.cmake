@@ -10,6 +10,7 @@ add_library(spdlog STATIC
     ${SPDLOG_SOURCE_DIR}/cfg.cpp
     ${SPDLOG_SOURCE_DIR}/fmt.cpp)
 
+target_compile_features(spdlog PRIVATE cxx_std_11)
 target_include_directories(spdlog PUBLIC ${SPDLOG_INCLUDE_DIR})
 target_compile_definitions(spdlog PUBLIC
     SPDLOG_COMPILED_LIB
