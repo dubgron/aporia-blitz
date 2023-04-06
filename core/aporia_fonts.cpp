@@ -1,6 +1,6 @@
 #include "aporia_fonts.hpp"
 
-#include "utils/read_file.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {

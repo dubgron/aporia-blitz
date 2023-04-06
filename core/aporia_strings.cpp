@@ -1,6 +1,6 @@
 #include "aporia_strings.hpp"
 
-#include "utils/math.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {

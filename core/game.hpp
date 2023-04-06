@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "aporia_config.hpp"
+#include "aporia_utils.hpp"
 #include "scene.hpp"
 #include "scene_manager.hpp"
 #include "window.hpp"
@@ -11,7 +12,6 @@
 #include "graphics/camera_controller.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"
-#include "utils/timer.hpp"
 
 namespace Aporia
 {

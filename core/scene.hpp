@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-#include "utils/timer.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {

@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "utils/read_file.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {

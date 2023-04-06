@@ -1,7 +1,7 @@
 #include "aporia_rendering.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
-#include "utils/math.hpp"
+#include "aporia_utils.hpp"
 
 #define APORIA_COMMANDLINE_FUNCTION(name) CommandlineResult name(StringList args)
 

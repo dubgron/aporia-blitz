@@ -37,6 +37,8 @@ add_library(core STATIC
     "aporia_textures.cpp"
     "aporia_textures.hpp"
     "aporia_types.hpp"
+    "aporia_utils.cpp"
+    "aporia_utils.hpp"
     "common.hpp"
     "entry_point.hpp"
     "game.cpp"
@@ -68,13 +70,7 @@ add_library(core STATIC
     "layers/layer_stack.cpp"
     "layers/layer_stack.hpp"
     "platform/opengl.hpp"
-    "platform/opengl_common.hpp"
-    "utils/color_conversion.hpp"
-    "utils/math.hpp"
-    "utils/random.hpp"
-    "utils/read_file.hpp"
-    "utils/timer.hpp"
-    "utils/type_traits.hpp")
+    "platform/opengl_common.hpp")
 
 target_precompile_headers(core PRIVATE "aporia_pch.hpp")
 
@@ -145,7 +141,6 @@ source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
-source_group(core/utils                 "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS     ON

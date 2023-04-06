@@ -1,7 +1,7 @@
 #include "aporia_shaders.hpp"
 
+#include "aporia_utils.hpp"
 #include "platform/opengl.hpp"
-#include "utils/read_file.hpp"
 
 namespace Aporia
 {

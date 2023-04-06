@@ -8,15 +8,24 @@
 #include <vector>
 
 #include "aporia_fonts.hpp"
+#include "aporia_utils.hpp"
 #include "components/transform2d.hpp"
 #include "graphics/drawables/line2d.hpp"
 #include "graphics/drawables/circle2d.hpp"
 #include "graphics/drawables/rectangle2d.hpp"
 #include "graphics/drawables/sprite.hpp"
-#include "utils/type_traits.hpp"
 
 namespace Aporia
 {
+    template<typename Tuple, typename T>
+    struct has_type;
+
+    template<typename T, typename... Us>
+    struct has_type<std::tuple<Us...>, T> : std::disjunction<std::is_same<T, Us>...> {};
+
+    template<typename Tuple, typename T>
+    constexpr bool has_type_v = has_type<Tuple, T>::value;
+
     class Group final
     {
         template<typename T>

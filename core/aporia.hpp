@@ -13,14 +13,7 @@
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_types.hpp"
-
-/* Utils */
-#include <utils/color_conversion.hpp>
-#include <utils/math.hpp>
-#include <utils/random.hpp>
-#include <utils/read_file.hpp>
-#include <utils/timer.hpp>
-#include <utils/type_traits.hpp>
+#include "aporia_utils.hpp"
 
 /* Drawables */
 #include <graphics/drawables/circle2d.hpp>

@@ -1,9 +1,9 @@
 #include "aporia_rendering.hpp"
 
+#include "aporia_utils.hpp"
 #include "window.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/drawables/group.hpp"
-#include "utils/math.hpp"
 
 #if defined(APORIA_DEBUG)
     #define DEBUG_TEXTURE(texture) \
