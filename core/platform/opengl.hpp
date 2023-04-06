@@ -7,7 +7,7 @@
 #else
     #include <GL/gl3w.h>
 
-    #include "debug/logger.hpp"
+    #include "aporia_debug.hpp"
 
     namespace Aporia
     {

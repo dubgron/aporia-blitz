@@ -1,6 +1,6 @@
 #include "aporia_memory.hpp"
 
-#include "debug/asserts.hpp"
+#include "aporia_debug.hpp"
 
 namespace Aporia
 {

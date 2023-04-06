@@ -20,6 +20,8 @@ add_library(core STATIC
     "aporia.hpp"
     "aporia_config.cpp"
     "aporia_config.hpp"
+    "aporia_debug.cpp"
+    "aporia_debug.hpp"
     "aporia_fonts.cpp"
     "aporia_fonts.hpp"
     "aporia_inputs.cpp"
@@ -49,10 +51,6 @@ add_library(core STATIC
     "components/color.hpp"
     "components/rectangular.hpp"
     "components/transform2d.hpp"
-    "debug/asserts.hpp"
-    "debug/break.hpp"
-    "debug/logger.cpp"
-    "debug/logger.hpp"
     "editor/aporia_commandline.cpp"
     "graphics/camera.cpp"
     "graphics/camera.hpp"
@@ -142,7 +140,6 @@ endif()
 
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/components            "core/components/.+\.[cht]pp")
-source_group(core/debug                 "core/debug/.+\.[cht]pp")
 source_group(core/editor                "core/editor/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
