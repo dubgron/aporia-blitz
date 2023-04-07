@@ -5,7 +5,6 @@
 #endif
 
 #include "aporia_rendering.hpp"
-#include "common.hpp"
 
 namespace Aporia
 {

@@ -8,7 +8,6 @@
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
-#include "common.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/camera_controller.hpp"
 #include "platform/opengl.hpp"

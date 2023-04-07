@@ -1,8 +1,5 @@
 #pragma once
 
-/* Common */
-#include <common.hpp>
-
 /* Aporia Headers */
 #include "aporia_config.hpp"
 #include "aporia_fonts.hpp"

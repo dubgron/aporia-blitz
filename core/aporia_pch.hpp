@@ -55,6 +55,3 @@
 #endif
 
 #include "platform/opengl.hpp"
-
-/* Aporia Blitz */
-#include "common.hpp"

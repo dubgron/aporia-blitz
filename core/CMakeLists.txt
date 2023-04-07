@@ -39,7 +39,6 @@ add_library(core STATIC
     "aporia_types.hpp"
     "aporia_utils.cpp"
     "aporia_utils.hpp"
-    "common.hpp"
     "entry_point.hpp"
     "game.cpp"
     "game.hpp"

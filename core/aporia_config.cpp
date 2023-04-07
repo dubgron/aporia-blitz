@@ -8,7 +8,6 @@
 #include "aporia_utils.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
-#include "common.hpp"
 #include "components/color.hpp"
 
 namespace Aporia

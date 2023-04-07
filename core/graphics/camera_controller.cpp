@@ -4,7 +4,6 @@
 
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
-#include "common.hpp"
 #include "window.hpp"
 #include "components/color.hpp"
 
