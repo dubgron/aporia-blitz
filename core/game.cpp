@@ -6,7 +6,6 @@
 
 #include "aporia_rendering.hpp"
 #include "common.hpp"
-#include "scene.hpp"
 
 namespace Aporia
 {
@@ -61,13 +60,10 @@ namespace Aporia
 
         _window.poll_events();
 
-        _scenes.get_current_scene()->on_scene_transition(_scenes);
-
         _imgui_layer.begin();
         rendering_begin(_window, _camera.get_camera());
 
         on_update(_dt);
-        _scenes.get_current_scene()->on_update(_dt);
 
         rendering_end(_camera.get_clear_color());
         _imgui_layer.end();

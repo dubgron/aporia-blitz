@@ -31,14 +31,8 @@
 #include <layers/layer.hpp>
 #include <layers/layer_stack.hpp>
 
-/* Scenes */
-#include <scene.hpp>
-
 /* Window */
 #include <window.hpp>
-
-/* Managers */
-#include <scene_manager.hpp>
 
 /* Components */
 #include <components/circular.hpp>

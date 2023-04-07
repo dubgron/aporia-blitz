@@ -5,8 +5,6 @@
 
 #include "aporia_config.hpp"
 #include "aporia_utils.hpp"
-#include "scene.hpp"
-#include "scene_manager.hpp"
 #include "window.hpp"
 #include "world.hpp"
 #include "graphics/camera_controller.hpp"
@@ -34,8 +32,6 @@ namespace Aporia
         void main_loop();
 
     protected:
-        SceneManager _scenes;
-
         CameraController _camera;
 
         Window _window;
