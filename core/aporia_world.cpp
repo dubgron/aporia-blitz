@@ -1,5 +1,7 @@
 #include "aporia_world.hpp"
 
+#include "aporia_debug.hpp"
+
 #define INDEX_IN_ARRAY(elem, array) ((PTR_TO_INT(elem) - PTR_TO_INT(array)) / sizeof(*elem))
 
 namespace Aporia

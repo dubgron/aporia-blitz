@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <memory>
 
+#include "aporia_debug.hpp"
+
 namespace Aporia
 {
     void LayerStack::push_layer(Layer& layer)

@@ -1,5 +1,7 @@
 #include "aporia_utils.hpp"
 
+#include "aporia_debug.hpp"
+
 namespace Aporia
 {
     std::string read_file(std::string_view filepath)

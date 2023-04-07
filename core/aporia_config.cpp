@@ -5,6 +5,7 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_inputs.hpp"

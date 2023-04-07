@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <string_view>
+#include <string>
 
 #include "aporia_entity.hpp"
 #include "aporia_inputs.hpp"

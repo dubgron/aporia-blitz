@@ -4,6 +4,7 @@
     #include <emscripten.h>
 #endif
 
+#include "aporia_debug.hpp"
 #include "aporia_rendering.hpp"
 
 namespace Aporia

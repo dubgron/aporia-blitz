@@ -5,6 +5,7 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include "aporia_debug.hpp"
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"

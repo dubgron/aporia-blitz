@@ -1,5 +1,6 @@
 #include "aporia_shaders.hpp"
 
+#include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 #include "platform/opengl.hpp"
 

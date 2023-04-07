@@ -1,5 +1,6 @@
 #include "aporia_fonts.hpp"
 
+#include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia

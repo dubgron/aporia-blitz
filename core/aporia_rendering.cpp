@@ -1,5 +1,6 @@
 #include "aporia_rendering.hpp"
 
+#include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 #include "graphics/camera.hpp"
