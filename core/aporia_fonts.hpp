@@ -1,10 +1,12 @@
 #pragma once
 
+#include <filesystem>
 #include <map>
-#include <utility>
 
+#include "aporia_entity.hpp"
+#include "aporia_shaders.hpp"
+#include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
-#include "aporia_types.hpp"
 
 namespace Aporia
 {
@@ -44,7 +46,7 @@ namespace Aporia
         f32 underline_thickness = 0.f;
     };
 
-    struct Font final
+    struct Font
     {
         using Glyphs = std::map<u8, Glyph>;
         using Kerning = std::map<std::pair<u8, u8>, f32>;
@@ -54,4 +56,17 @@ namespace Aporia
         FontMetrics metrics;
         Kerning kerning;
     };
+
+    struct Text final
+    {
+        Transform2D transform;
+        Color color = Colors::White;
+        ShaderID program_id = 0;
+
+        std::string caption;
+        const Font* font = nullptr;
+    };
+
+    void load_font(String name, std::filesystem::path filepath);
+    const Font& get_font(String name);
 }

@@ -1,17 +1,18 @@
 #include "imgui_layer.hpp"
 
 #include <imgui.h>
-#include <examples/imgui_impl_glfw.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
-#include "common.hpp"
-#include "window.hpp"
+#include "aporia_window.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
     ImGuiLayer::ImGuiLayer(Window& window)
-        : Layer("ImGui Layer"), _window(window) {}
+        : Layer("ImGui Layer"), _window(window)
+    {
+    }
 
     void ImGuiLayer::on_attach()
     {
@@ -21,18 +22,18 @@ namespace Aporia
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-#       if !defined(APORIA_EMSCRIPTEN)
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-#       endif
+#if !defined(APORIA_EMSCRIPTEN)
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
 
         ImGui::StyleColorsDark();
 
         ImGuiStyle& style = ImGui::GetStyle();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            style.WindowRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            style.WindowRounding = 0.f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.f;
         }
 
         GLFWwindow* window = _window.get_native_window();

@@ -17,97 +17,47 @@ if (NOT APORIA_EMSCRIPTEN)
 endif()
 
 add_library(core STATIC
-    "animation_manager.cpp"
-    "animation_manager.hpp"
     "aporia.hpp"
-    "common.hpp"
-    "config_manager.cpp"
-    "config_manager.hpp"
-    "entry_point.hpp"
-    "event.hpp"
-    "event_manager.hpp"
-    "font_manager.cpp"
-    "font_manager.hpp"
-    "game.cpp"
-    "game.hpp"
-    "input_buffer.hpp"
-    "input_manager.cpp"
-    "input_manager.hpp"
-    "scene.hpp"
-    "scene_manager.cpp"
-    "scene_manager.hpp"
-    "shader_manager.cpp"
-    "shader_manager.hpp"
-    "texture_manager.cpp"
-    "texture_manager.hpp"
-    "window.cpp"
-    "window.hpp"
-    "components/color.hpp"
-    "components/rectangular.hpp"
-    "components/texture.hpp"
-    "components/transform2d.hpp"
-    "configs/all_configs.hpp"
-    "configs/animation_config.hpp"
-    "configs/camera_config.hpp"
-    "configs/shader_config.hpp"
-    "configs/texture_config.hpp"
-    "configs/window_config.hpp"
-    "debug/asserts.hpp"
-    "debug/break.hpp"
-    "debug/logger.cpp"
-    "debug/logger.hpp"
-    "graphics/camera.cpp"
-    "graphics/camera.hpp"
-    "graphics/camera_controller.cpp"
-    "graphics/camera_controller.hpp"
-    "graphics/font.hpp"
-    "graphics/framebuffer.cpp"
-    "graphics/framebuffer.hpp"
-    "graphics/image.cpp"
-    "graphics/image.hpp"
-    "graphics/index_buffer.cpp"
-    "graphics/index_buffer.hpp"
-    "graphics/light.hpp"
-    "graphics/renderer.cpp"
-    "graphics/renderer.hpp"
-    "graphics/render_queue.hpp"
-    "graphics/shader.hpp"
-    "graphics/shader_properties.cpp"
-    "graphics/shader_properties.hpp"
-    "graphics/uniform_buffer.hpp"
-    "graphics/vertex.hpp"
-    "graphics/vertex_array.cpp"
-    "graphics/vertex_array.hpp"
-    "graphics/vertex_buffer.cpp"
-    "graphics/vertex_buffer.hpp"
-    "graphics/animations/animation.cpp"
-    "graphics/animations/animation.hpp"
-    "graphics/animations/animator.cpp"
-    "graphics/animations/animator.hpp"
-    "graphics/drawables/circle2d.hpp"
-    "graphics/drawables/drawables.cpp"
-    "graphics/drawables/group.hpp"
-    "graphics/drawables/line2d.hpp"
-    "graphics/drawables/rectangle2d.hpp"
-    "graphics/drawables/sprite.hpp"
-    "graphics/drawables/text.hpp"
-    "inputs/gamepad.hpp"
-    "inputs/keyboard.hpp"
-    "inputs/mouse.hpp"
+    "aporia_camera.cpp"
+    "aporia_camera.hpp"
+    "aporia_config.cpp"
+    "aporia_config.hpp"
+    "aporia_debug.cpp"
+    "aporia_debug.hpp"
+    "aporia_entity.cpp"
+    "aporia_entity.hpp"
+    "aporia_entry.hpp"
+    "aporia_fonts.cpp"
+    "aporia_fonts.hpp"
+    "aporia_game.cpp"
+    "aporia_game.hpp"
+    "aporia_inputs.cpp"
+    "aporia_inputs.hpp"
+    "aporia_memory.cpp"
+    "aporia_memory.hpp"
+    "aporia_rendering.cpp"
+    "aporia_rendering.hpp"
+    "aporia_shaders.cpp"
+    "aporia_shaders.hpp"
+    "aporia_strings.cpp"
+    "aporia_strings.hpp"
+    "aporia_textures.cpp"
+    "aporia_textures.hpp"
+    "aporia_types.hpp"
+    "aporia_utils.cpp"
+    "aporia_utils.hpp"
+    "aporia_window.cpp"
+    "aporia_window.hpp"
+    "aporia_world.cpp"
+    "aporia_world.hpp"
+    "editor/aporia_commandline.cpp"
     "layers/imgui_layer.cpp"
     "layers/imgui_layer.hpp"
     "layers/layer.hpp"
     "layers/layer_stack.cpp"
     "layers/layer_stack.hpp"
     "platform/opengl.hpp"
-    "platform/opengl_common.hpp"
-    "utils/color_conversion.hpp"
-    "utils/math.hpp"
-    "utils/random.hpp"
-    "utils/read_file.hpp"
-    "utils/shader_parser.hpp"
-    "utils/timer.hpp"
-    "utils/type_traits.hpp")
+    "platform/opengl_common.hpp")
 
 target_precompile_headers(core PRIVATE "aporia_pch.hpp")
 
@@ -140,6 +90,15 @@ if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
 endif()
 
+# Disable exceptions and RTTI
+if (MSVC)
+    string(REGEX REPLACE "/EHsc" "/EHsc-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    string(REGEX REPLACE "/GR" "/GR-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    target_compile_definitions(core PUBLIC _HAS_EXCEPTIONS=0)
+else()
+	target_compile_options(core PUBLIC -fno-exceptions -fno-rtti)
+endif()
+
 if (APORIA_EMSCRIPTEN)
     target_compile_options(core
         PUBLIC
@@ -157,22 +116,15 @@ if (APORIA_EMSCRIPTEN)
             -sALLOW_MEMORY_GROWTH=1
             -sASYNCIFY=1
             -sASSERTIONS=1
-            -sLLD_REPORT_UNDEFINED)
+            --no-heap-copy)
 
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)
 endif()
 
 source_group(core                       "core/.+\.[cht]pp")
-source_group(core/components            "core/components/.+\.[cht]pp")
-source_group(core/configs               "core/configs/.+\.[cht]pp")
-source_group(core/debug                 "core/debug/.+\.[cht]pp")
-source_group(core/graphics              "core/graphics/.+\.[cht]pp")
-source_group(core/graphics/animations   "core/graphics/animations.+\.[cht]pp")
-source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
-source_group(core/inputs                "core/inputs/.+\.[cht]pp")
+source_group(core/editor                "core/editor/.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
-source_group(core/utils                 "core/utils/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS     ON

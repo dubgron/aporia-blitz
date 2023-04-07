@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "common.hpp"
+#include "aporia_debug.hpp"
 
 namespace Aporia
 {

@@ -9,7 +9,9 @@ namespace Aporia
     {
     public:
         Layer(std::string name)
-            : _name( std::move(name) ) {}
+            : _name( std::move(name) )
+        {
+        }
 
         virtual void on_attach() {};
         virtual void on_detach() {};
