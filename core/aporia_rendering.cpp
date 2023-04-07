@@ -1,7 +1,7 @@
 #include "aporia_rendering.hpp"
 
 #include "aporia_utils.hpp"
-#include "window.hpp"
+#include "aporia_window.hpp"
 #include "graphics/camera.hpp"
 #include "graphics/drawables/group.hpp"
 

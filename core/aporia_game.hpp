@@ -5,8 +5,8 @@
 
 #include "aporia_config.hpp"
 #include "aporia_utils.hpp"
-#include "window.hpp"
-#include "world.hpp"
+#include "aporia_window.hpp"
+#include "aporia_world.hpp"
 #include "graphics/camera_controller.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"

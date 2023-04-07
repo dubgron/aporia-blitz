@@ -1,4 +1,4 @@
-#include "world.hpp"
+#include "aporia_world.hpp"
 
 #define INDEX_IN_ARRAY(elem, array) ((PTR_TO_INT(elem) - PTR_TO_INT(array)) / sizeof(*elem))
 

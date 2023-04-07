@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 
-#include "window.hpp"
+#include "aporia_window.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia

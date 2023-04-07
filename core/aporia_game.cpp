@@ -1,4 +1,4 @@
-#include "game.hpp"
+#include "aporia_game.hpp"
 
 #if defined(APORIA_EMSCRIPTEN)
     #include <emscripten.h>

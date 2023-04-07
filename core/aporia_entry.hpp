@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game.hpp"
+#include "aporia_game.hpp"
 
 extern std::unique_ptr<Aporia::Game> create_game();
 
