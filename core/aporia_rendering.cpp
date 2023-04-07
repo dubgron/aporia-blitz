@@ -1,9 +1,10 @@
 #include "aporia_rendering.hpp"
 
+#include "aporia_camera.hpp"
+#include <aporia_config.hpp>
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
-#include "graphics/camera.hpp"
 
 #if defined(APORIA_DEBUG)
     #define DEBUG_TEXTURE(texture) \
@@ -502,36 +503,39 @@ namespace Aporia
         remove_all_shaders();
     }
 
-    void rendering_begin(const Window& window, const Camera& camera)
+    void rendering_begin(const Window& window, Camera& camera)
     {
         light_sources.clear();
 
+        const m4& view_projection_matrix = camera.calculate_view_projection_matrix();
+        const f32 camera_zoom = 1.f / camera.projection.zoom;
+
         bind_shader(default_shader);
-        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
         bind_shader(font_shader);
-        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
-        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_float("u_camera_zoom", camera_zoom);
 
         bind_shader(raymarching_shader);
-        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_masking", masking.color_buffer.id);
-        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        shader_set_float("u_camera_zoom", camera_zoom);
         shader_set_float2("u_window_size", v2{ window.get_size() });
 
         bind_shader(shadowcasting_shader);
-        shader_set_mat4("u_vp_matrix", camera.get_view_projection_matrix());
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_raymarching", raymarching.color_buffer.id);
-        shader_set_float("u_camera_zoom", 1.f / camera.get_zoom());
+        shader_set_float("u_camera_zoom", camera_zoom);
         shader_set_float2("u_window_size", v2{ window.get_size() });
 
         unbind_shader();
     }
 
-    void rendering_end(Color color /* = Colors::Black */)
+    void rendering_end()
     {
         main_framebuffer.bind();
-        main_framebuffer.clear(color);
+        main_framebuffer.clear(camera_config.background_color);
 
         flush_rendering_queue();
 
@@ -555,19 +559,15 @@ namespace Aporia
 
             masking.bind();
             masking.clear(Colors::Transparent);
-
             //draw(light_blockers);
             flush_rendering_queue();
-
             masking.unbind();
 
             DEBUG_TEXTURE(masking.color_buffer);
 
             raymarching.bind();
             raymarching.clear(Colors::Black);
-
             flush_framebuffer(masking, raymarching_shader);
-
             raymarching.unbind();
 
             DEBUG_TEXTURE(raymarching.color_buffer);

@@ -6,23 +6,17 @@
 #include <glm/gtx/transform.hpp>
 
 #include "aporia_debug.hpp"
+#include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
-#include "graphics/camera.hpp"
-#include "graphics/camera_controller.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
-    Window::Window(CameraController& camera)
-        : _camera(camera)
+    void Window::init(Camera& camera)
     {
-    }
-
-    void Window::init(const WindowConfig& config)
-    {
-        _config = &config;
+        _camera = &camera;
 
         glfwSetErrorCallback([](i32 error, const char* description)
             {
@@ -40,7 +34,7 @@ namespace Aporia
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-        _window = glfwCreateWindow(config.width, config.height, config.title.c_str(), nullptr, nullptr);
+        _window = glfwCreateWindow(window_config.width, window_config.height, window_config.title.c_str(), nullptr, nullptr);
 
         if (!_window)
         {
@@ -49,11 +43,11 @@ namespace Aporia
 
         glfwMakeContextCurrent(_window);
         glfwSetWindowUserPointer(_window, this);
-        glfwSwapInterval(config.vsync);
+        glfwSwapInterval(window_config.vsync);
 
-        if (config.position)
+        if (window_config.position)
         {
-            glfwSetWindowPos(_window, config.position->x, config.position->y);
+            glfwSetWindowPos(_window, window_config.position->x, window_config.position->y);
         }
 
         glfwSetWindowCloseCallback(_window, [](GLFWwindow* handle)
@@ -105,7 +99,8 @@ namespace Aporia
                 {
                     const Window& window = *reinterpret_cast<Window*>( glfwGetWindowUserPointer(handle) );
                     resize_framebuffers(width, height);
-                    window._camera.on_window_resize(width, height);
+                    APORIA_ASSERT(window._camera);
+                    window._camera->on_window_resize(width, height);
                 }
                 glViewport(0, 0, width, height);
             });
@@ -175,20 +170,18 @@ namespace Aporia
 
         const v2 window_size = get_size();
 
-        /**
-         *  Precalculated following lines:
-         *
-         *  screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / window_size.x, -2.f / window_size.y, 1.f });
-         *  screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
-         *
-         */
+        // @NOTE(dubgron): Precalculated following lines:
+        //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / window_size.x, -2.f / window_size.y, 1.f });
+        //     screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
         const m4 screen_to_clip{
             2.f / window_size.x,   0.f,                   0.f,   0.f,
             0.f,                   -2.f / window_size.y,  0.f,   0.f,
             0.f,                   0.f,                   1.f,   0.f,
             -1.f,                  1.f,                   0.f,   1.f };
 
-        const m4 clip_to_world = glm::inverse(_camera.get_camera().get_view_projection_matrix());
+        APORIA_ASSERT(_camera);
+        const m4 view_projection_matrix = _camera->calculate_view_projection_matrix();
+        const m4 clip_to_world = glm::inverse(view_projection_matrix);
         const v2 world_position = clip_to_world * screen_to_clip * v4{ screen_position, 0.f, 1.f };
 
         return world_position;
@@ -201,13 +194,13 @@ namespace Aporia
 
     void Window::on_config_reload()
     {
-        glfwSetWindowTitle(_window, _config->title.c_str());
-        glfwSetWindowSize(_window, _config->width, _config->height);
-        glfwSwapInterval(_config->vsync);
+        glfwSetWindowTitle(_window, window_config.title.c_str());
+        glfwSetWindowSize(_window, window_config.width, window_config.height);
+        glfwSwapInterval(window_config.vsync);
 
-        if (_config->position)
+        if (window_config.position)
         {
-            glfwSetWindowPos(_window, _config->position->x, _config->position->y);
+            glfwSetWindowPos(_window, window_config.position->x, window_config.position->y);
         }
     }
 }

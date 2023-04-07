@@ -7,15 +7,11 @@ struct GLFWwindow;
 namespace Aporia
 {
     class Camera;
-    class CameraController;
-    struct WindowConfig;
 
     class Window final
     {
     public:
-        Window(CameraController& camera);
-
-        void init(const WindowConfig& config);
+        void init(Camera& camera);
         void deinit();
 
         void display();
@@ -33,10 +29,7 @@ namespace Aporia
         void on_config_reload();
 
     private:
-        const WindowConfig* _config;
-
-        CameraController& _camera;
-
         GLFWwindow* _window;
+        Camera* _camera = nullptr;
     };
 }

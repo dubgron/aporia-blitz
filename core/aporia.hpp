@@ -1,6 +1,7 @@
 #pragma once
 
 /* Aporia Headers */
+#include <aporia_camera.hpp>
 #include <aporia_config.hpp>
 #include <aporia_fonts.hpp>
 #include <aporia_entity.hpp>
@@ -14,10 +15,6 @@
 #include <aporia_types.hpp>
 #include <aporia_utils.hpp>
 #include <aporia_window.hpp>
-
-/* Camera */
-#include <graphics/camera.hpp>
-#include <graphics/camera_controller.hpp>
 
 /* Layers */
 #include <layers/imgui_layer.hpp>

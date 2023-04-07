@@ -3,11 +3,11 @@
 #include <string>
 #include <memory>
 
+#include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 #include "aporia_world.hpp"
-#include "graphics/camera_controller.hpp"
 #include "layers/imgui_layer.hpp"
 #include "layers/layer_stack.hpp"
 
@@ -32,7 +32,7 @@ namespace Aporia
         void main_loop();
 
     protected:
-        CameraController _camera;
+        Camera _camera;
 
         Window _window;
 

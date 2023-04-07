@@ -144,8 +144,8 @@ namespace Aporia
     void rendering_init(u32 width, u32 height);
     void rendering_deinit();
 
-    void rendering_begin(const class Window& window, const class Camera& camera);
-    void rendering_end(Color color = Colors::Black);
+    void rendering_begin(const class Window& window, struct Camera& camera);
+    void rendering_end();
 
     void draw(const Sprite& sprite);
     void draw(const Rectangle2D& rect);

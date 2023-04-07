@@ -15,13 +15,12 @@ namespace Aporia
     }
 
     Game::Game(const std::string& config_file)
-        : _window(_camera),
-          _imgui_layer(_window)
+        : _imgui_layer(_window)
     {
         load_config(config_file);
 
-        _camera.init(camera_config);
-        _window.init(window_config);
+        _camera.init();
+        _window.init(_camera);
 
         set_default_shader_properties(shader_config.default_properties);
         rendering_init(window_config.width, window_config.height);
@@ -61,11 +60,11 @@ namespace Aporia
         _window.poll_events();
 
         _imgui_layer.begin();
-        rendering_begin(_window, _camera.get_camera());
+        rendering_begin(_window, _camera);
 
         on_update(_dt);
 
-        rendering_end(_camera.get_clear_color());
+        rendering_end();
         _imgui_layer.end();
 
         _window.display();

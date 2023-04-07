@@ -18,6 +18,8 @@ endif()
 
 add_library(core STATIC
     "aporia.hpp"
+    "aporia_camera.cpp"
+    "aporia_camera.hpp"
     "aporia_config.cpp"
     "aporia_config.hpp"
     "aporia_debug.cpp"
@@ -49,10 +51,6 @@ add_library(core STATIC
     "aporia_world.cpp"
     "aporia_world.hpp"
     "editor/aporia_commandline.cpp"
-    "graphics/camera.cpp"
-    "graphics/camera.hpp"
-    "graphics/camera_controller.cpp"
-    "graphics/camera_controller.hpp"
     "layers/imgui_layer.cpp"
     "layers/imgui_layer.hpp"
     "layers/layer.hpp"
@@ -125,7 +123,6 @@ endif()
 
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/editor                "core/editor/.+\.[cht]pp")
-source_group(core/graphics              "core/graphics/.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
 
