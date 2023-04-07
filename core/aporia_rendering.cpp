@@ -3,7 +3,6 @@
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 #include "graphics/camera.hpp"
-#include "graphics/drawables/group.hpp"
 
 #if defined(APORIA_DEBUG)
     #define DEBUG_TEXTURE(texture) \
@@ -38,7 +37,6 @@ namespace Aporia
     static Framebuffer masking;
     static Framebuffer raymarching;
     static std::vector<LightSource> light_sources;
-    static Group light_blockers;
     static UniformBuffer lights_uniform_buffer;
 
     bool operator<(const RenderQueueKey& key1, const RenderQueueKey& key2) noexcept
@@ -397,11 +395,6 @@ namespace Aporia
         light_sources.push_back(light_source);
     }
 
-    void add_light_blocker(Group& light_blocker)
-    {
-        light_blockers.add(light_blocker);
-    }
-
     void rendering_init(u32 width, u32 height)
     {
         transformation_stack.reserve(10);
@@ -562,7 +555,7 @@ namespace Aporia
             masking.bind();
             masking.clear(Colors::Transparent);
 
-            draw(light_blockers);
+            //draw(light_blockers);
             flush_rendering_queue();
 
             masking.unbind();
@@ -582,43 +575,6 @@ namespace Aporia
         }
 
         unbind_shader();
-    }
-
-    void draw(const Group& group)
-    {
-        rendering_push_transform(group.transform);
-
-        for (const Line2D& line : group.get_container<Line2D>())
-        {
-            draw(line);
-        }
-
-        for (const Rectangle2D& rectangle : group.get_container<Rectangle2D>())
-        {
-            draw(rectangle);
-        }
-
-        for (const Circle2D& circle : group.get_container<Circle2D>())
-        {
-            draw(circle);
-        }
-
-        for (const Sprite& sprite : group.get_container<Sprite>())
-        {
-            draw(sprite);
-        }
-
-        for (const Text& text : group.get_container<Text>())
-        {
-            draw(text);
-        }
-
-        for (const Group& group : group.get_container<Group>())
-        {
-            draw(group);
-        }
-
-        rendering_pop_transform();
     }
 
     void draw(const Sprite& sprite)

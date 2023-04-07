@@ -1,7 +1,7 @@
 #pragma once
 
+#include "aporia_entity.hpp"
 #include "aporia_memory.hpp"
-#include "graphics/drawables/sprite.hpp"
 
 namespace Aporia
 {
@@ -9,15 +9,6 @@ namespace Aporia
     {
         u64 index = 0;
         u64 generation = 0;
-    };
-
-    struct Entity
-    {
-        u64 index = 0;
-
-        u64 flags = 0;
-        Sprite sprite;
-        /* etc. */
     };
 
     struct EntityNode

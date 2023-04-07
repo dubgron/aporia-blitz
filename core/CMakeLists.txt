@@ -22,6 +22,8 @@ add_library(core STATIC
     "aporia_config.hpp"
     "aporia_debug.cpp"
     "aporia_debug.hpp"
+    "aporia_entity.cpp"
+    "aporia_entity.hpp"
     "aporia_entry.hpp"
     "aporia_fonts.cpp"
     "aporia_fonts.hpp"
@@ -46,20 +48,11 @@ add_library(core STATIC
     "aporia_window.hpp"
     "aporia_world.cpp"
     "aporia_world.hpp"
-    "components/color.hpp"
-    "components/rectangular.hpp"
-    "components/transform2d.hpp"
     "editor/aporia_commandline.cpp"
     "graphics/camera.cpp"
     "graphics/camera.hpp"
     "graphics/camera_controller.cpp"
     "graphics/camera_controller.hpp"
-    "graphics/drawables/circle2d.hpp"
-    "graphics/drawables/drawables.cpp"
-    "graphics/drawables/group.hpp"
-    "graphics/drawables/line2d.hpp"
-    "graphics/drawables/rectangle2d.hpp"
-    "graphics/drawables/sprite.hpp"
     "layers/imgui_layer.cpp"
     "layers/imgui_layer.hpp"
     "layers/layer.hpp"
@@ -131,10 +124,8 @@ if (APORIA_EMSCRIPTEN)
 endif()
 
 source_group(core                       "core/.+\.[cht]pp")
-source_group(core/components            "core/components/.+\.[cht]pp")
 source_group(core/editor                "core/editor/.+\.[cht]pp")
 source_group(core/graphics              "core/graphics/.+\.[cht]pp")
-source_group(core/graphics/drawables    "core/graphics/drawables.+\.[cht]pp")
 source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aporia_entity.hpp"
 #include "aporia_types.hpp"
 #include "graphics/camera.hpp"
 

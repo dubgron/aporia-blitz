@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+#include "aporia_types.hpp"
+
 namespace Aporia
 {
     using ShaderID = u32;

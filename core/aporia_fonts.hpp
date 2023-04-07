@@ -3,11 +3,10 @@
 #include <filesystem>
 #include <map>
 
+#include "aporia_entity.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
-#include "components/color.hpp"
-#include "components/transform2d.hpp"
 
 namespace Aporia
 {

@@ -5,10 +5,10 @@
 #include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "aporia_entity.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
-#include "components/color.hpp"
 
 namespace Aporia
 {

@@ -3,6 +3,7 @@
 /* Aporia Headers */
 #include <aporia_config.hpp>
 #include <aporia_fonts.hpp>
+#include <aporia_entity.hpp>
 #include <aporia_game.hpp>
 #include <aporia_inputs.hpp>
 #include <aporia_memory.hpp>
@@ -14,13 +15,6 @@
 #include <aporia_utils.hpp>
 #include <aporia_window.hpp>
 
-/* Drawables */
-#include <graphics/drawables/circle2d.hpp>
-#include <graphics/drawables/group.hpp>
-#include <graphics/drawables/line2d.hpp>
-#include <graphics/drawables/rectangle2d.hpp>
-#include <graphics/drawables/sprite.hpp>
-
 /* Camera */
 #include <graphics/camera.hpp>
 #include <graphics/camera_controller.hpp>
@@ -29,13 +23,6 @@
 #include <layers/imgui_layer.hpp>
 #include <layers/layer.hpp>
 #include <layers/layer_stack.hpp>
-
-/* Components */
-#include <components/circular.hpp>
-#include <components/color.hpp>
-#include <components/linear2d.hpp>
-#include <components/rectangular.hpp>
-#include <components/transform2d.hpp>
 
 /* Platform */
 #include <platform/opengl.hpp>

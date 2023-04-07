@@ -2,8 +2,7 @@
 
 #include <random>
 
-#include <components/color.hpp>
-#include <components/transform2d.hpp>
+#include "aporia_entity.hpp"
 
 namespace Aporia
 {

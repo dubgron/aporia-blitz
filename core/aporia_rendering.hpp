@@ -1,10 +1,9 @@
 #pragma once
 
+#include "aporia_entity.hpp"
+#include "aporia_fonts.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
-#include "components/color.hpp"
-#include "components/transform2d.hpp"
-#include "graphics/drawables/group.hpp"
 
 #include <array>
 
@@ -141,7 +140,6 @@ namespace Aporia
     void disable_lighting();
 
     void add_light_source(LightSource light_source);
-    void add_light_blocker(Group& light_blocker);
 
     void rendering_init(u32 width, u32 height);
     void rendering_deinit();
@@ -149,7 +147,6 @@ namespace Aporia
     void rendering_begin(const class Window& window, const class Camera& camera);
     void rendering_end(Color color = Colors::Black);
 
-    void draw(const Group& group);
     void draw(const Sprite& sprite);
     void draw(const Rectangle2D& rect);
     void draw(const Line2D& line);

@@ -3,9 +3,9 @@
 #include <optional>
 #include <string_view>
 
+#include "aporia_entity.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
-#include "components/color.hpp"
 
 namespace Aporia
 {
