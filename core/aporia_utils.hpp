@@ -6,14 +6,13 @@
 
 namespace Aporia
 {
-    using Deltatime = f32;
     using Clock = std::chrono::steady_clock;
     using TimePoint = Clock::time_point;
     using Duration = Clock::duration;
 
-    using Hours = std::chrono::duration<Deltatime, std::ratio<3600>>;
-    using Minutes = std::chrono::duration<Deltatime, std::ratio<60>>;
-    using Seconds = std::chrono::duration<Deltatime>;
+    using Hours = std::chrono::duration<f32, std::ratio<3600>>;
+    using Minutes = std::chrono::duration<f32, std::ratio<60>>;
+    using Seconds = std::chrono::duration<f32>;
     using Milliseconds = std::chrono::milliseconds;
     using Microseconds = std::chrono::microseconds;
     using Nanoseconds = std::chrono::nanoseconds;
@@ -23,16 +22,15 @@ namespace Aporia
         TimePoint start_time = Clock::now();
 
         template<typename T = Seconds>
-        Deltatime reset()
+        f32 reset()
         {
-            Deltatime elapsed = get_elapsed_time<T>();
+            f32 elapsed = get_elapsed_time<T>();
             start_time = Clock::now();
-
             return elapsed;
         }
 
         template<typename T = Seconds>
-        Deltatime get_elapsed_time() const
+        f32 get_elapsed_time() const
         {
             return std::chrono::duration_cast<T>(Clock::now() - start_time).count();
         }

@@ -10,8 +10,13 @@ public:
     {
     }
 
-    void on_update(Aporia::Deltatime dt) override
+    void on_update(f32 time, f32 delta_time) override
     {
+    }
+
+    void on_draw() override
+    {
+
     }
 
     void on_terminate() override

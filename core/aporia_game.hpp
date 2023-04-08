@@ -25,7 +25,8 @@ namespace Aporia
         virtual ~Game();
 
         virtual void on_init() {};
-        virtual void on_update(Deltatime dt) {};
+        virtual void on_update(f32 time, f32 delta_time) {};
+        virtual void on_draw() {};
         virtual void on_terminate() {};
 
         void run();
@@ -41,9 +42,10 @@ namespace Aporia
 
         World _world;
 
-        Deltatime _dt = 0.f;
+        Timer frame_timer;
+        f32 total_time = 0.f;
 
-    private:
-        Timer _timer;
+        f32 delta_time = 1.f / 60.f;
+        f32 accumulated_frame_time = 0.f;
     };
 }

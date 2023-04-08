@@ -41,6 +41,8 @@ namespace Aporia
     {
         on_init();
 
+        frame_timer.reset();
+
 #if defined(APORIA_EMSCRIPTEN)
         emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
 #else
@@ -55,20 +57,27 @@ namespace Aporia
 
     void Game::main_loop()
     {
-        _dt = _timer.reset();
+        const f32 frame_time = frame_timer.reset();
+        total_time += frame_time;
 
-        _window.poll_events();
+        accumulated_frame_time += frame_time;
+        while (accumulated_frame_time > delta_time)
+        {
+            inputs_update();
+            _window.poll_events();
+
+            on_update(total_time, delta_time);
+            accumulated_frame_time -= delta_time;
+        }
 
         _imgui_layer.begin();
         rendering_begin(_window, _camera);
 
-        on_update(_dt);
+        on_draw();
 
         rendering_end();
         _imgui_layer.end();
 
         _window.display();
-
-        inputs_update();
     }
 }
