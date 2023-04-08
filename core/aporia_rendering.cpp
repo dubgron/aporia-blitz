@@ -233,10 +233,10 @@ namespace Aporia
         APORIA_ASSERT_WITH_MESSAGE(width > 0 && height > 0,
             "Invalid framebuffer dimensions! Width: {}, Height: {}", width, height);
 
-        /* Delete potential previous buffers and textures */
+        // Delete potential previous buffers and textures
         destroy();
 
-        /* Create new buffers and textures */
+        // Create new buffers and textures
         color_buffer.width = width;
         color_buffer.height = height;
         color_buffer.channels = 4;
@@ -261,7 +261,7 @@ namespace Aporia
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        /* Setup vertices */
+        // Setup vertices
         vertices[0].position = v3{ -1.f, -1.f, 0.f };
         vertices[0].tex_coord = v2{ 0.f, 0.f };
         vertices[0].tex_id = color_buffer.id;
@@ -406,7 +406,7 @@ namespace Aporia
 
         vertex_arrays.reserve(2);
 
-        /* Set VertexArray for opaque Quads */
+        // Set VertexArray for opaque Quads
         VertexArray& quads = vertex_arrays.emplace_back();
         quads.init(4, 6);
         quads.bind();
@@ -434,7 +434,7 @@ namespace Aporia
 
         quads.unbind();
 
-        /* Set VertexArray for Lines */
+        // Set VertexArray for Lines
         VertexArray& lines = vertex_arrays.emplace_back();
         lines.init(2, 2);
         lines.bind();
@@ -456,32 +456,32 @@ namespace Aporia
 
         lines.unbind();
 
-        /* Setup Framebuffer */
+        // Setup Framebuffer
         main_framebuffer.create(width, height);
 
-        /* Initialize texture sampler */
+        // Initialize texture sampler
         std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};
         std::iota(sampler.begin(), sampler.end(), 0);
 
-        /* Setup default shaders */
+        // Setup default shaders
         default_shader = create_shader("assets/shaders/default.shader");
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
-        /* Setup font shaders */
+        // Setup font shaders
         font_shader = create_shader("assets/shaders/font.shader");
 
         bind_shader(font_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
-        /* Setup post-processing shaders */
+        // Setup post-processing shaders
         postprocessing_shader = create_shader("assets/shaders/postprocessing.shader");
 
         bind_shader(postprocessing_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
-        /* Setup lighting shaders */
+        // Setup lighting shaders
         raymarching_shader = create_shader("assets/shaders/raymarching.shader");
         shadowcasting_shader = create_shader("assets/shaders/shadowcasting.shader");
 
@@ -708,7 +708,7 @@ namespace Aporia
         const v2 texture_size = v2{ font.atlas.source.width, font.atlas.source.height };
         const v2 half_pixel_offset = 0.5f / texture_size;
 
-        /* Adjust text scaling by the predefined atlas font size */
+        // Adjust text scaling by the predefined atlas font size
         const Transform2D font_scale{ .scale = v2{ 1.f / font.atlas.font_size } };
 
         const m4 transformation = to_mat4(transformation_stack.back() * text.transform * font_scale);

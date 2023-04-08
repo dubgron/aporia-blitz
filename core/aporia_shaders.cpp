@@ -170,7 +170,7 @@ namespace Aporia
     {
         ShaderProgramData results;
 
-        /* Most common case - parsing vertex and fragment shaders */
+        // Most common case - parsing vertex and fragment shaders
         results.shaders.reserve(2);
 
         u64 line_begin = 0;

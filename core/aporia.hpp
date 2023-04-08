@@ -1,6 +1,6 @@
 #pragma once
 
-/* Aporia Headers */
+// Aporia Headers
 #include <aporia_camera.hpp>
 #include <aporia_config.hpp>
 #include <aporia_fonts.hpp>
@@ -16,14 +16,14 @@
 #include <aporia_utils.hpp>
 #include <aporia_window.hpp>
 
-/* Layers */
+// Layers
 #include <layers/imgui_layer.hpp>
 #include <layers/layer.hpp>
 #include <layers/layer_stack.hpp>
 
-/* Platform */
+// Platform
 #include <platform/opengl.hpp>
 #include <platform/opengl_common.hpp>
 
-/* Entry Point */
+// Entry Point
 #include <aporia_entry.hpp>

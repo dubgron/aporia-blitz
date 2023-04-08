@@ -27,7 +27,7 @@ namespace Aporia
         f32 additional = 0.f;
     };
 
-    /* Index for VertexArray in Renderer */
+    // Index for VertexArray in Renderer
     enum class BufferType : u8
     {
         Quads = 0,
@@ -158,7 +158,7 @@ namespace Aporia
 
     void resize_framebuffers(u32 width, u32 height);
 
-    /* Predefined shaders */
+    // Predefined shaders
     extern ShaderID default_shader;
     extern ShaderID font_shader;
     extern ShaderID postprocessing_shader;

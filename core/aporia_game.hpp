@@ -15,7 +15,7 @@ namespace Aporia
 {
     class Game
     {
-        /* Defined by Client */
+        // Defined by Client
         friend std::unique_ptr<Game> create_game();
 
         friend void main_loop(void* game_ptr);

@@ -86,6 +86,6 @@ namespace Aporia
 
         u64 flags = 0;
         Sprite sprite;
-        /* etc. */
+        // etc.
     };
 }
