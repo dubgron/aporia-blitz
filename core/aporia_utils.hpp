@@ -59,6 +59,9 @@ namespace Aporia
         return min(max(value, min_bound), max_bound);
     }
 
+    f32 degrees_to_radians(f32 angle_in_degrees);
+    f32 radians_to_degrees(f32 angle_in_radians);
+
     i32 unwind_angle(i64 angle);
     Color hsv_to_rgb(i64 hue, f64 saturation, f64 value);
 

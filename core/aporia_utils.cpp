@@ -44,6 +44,16 @@ namespace Aporia
             .scale = transform1.scale * transform2.scale };
     }
 
+    f32 degrees_to_radians(f32 angle_in_degrees)
+    {
+        return angle_in_degrees / 180.f * M_PI;
+    }
+
+    f32 radians_to_degrees(f32 angle_in_radians)
+    {
+        return angle_in_radians / M_PI * 180.f;
+    }
+
     i32 unwind_angle(i64 angle)
     {
         constexpr i32 full_angle = 360;
