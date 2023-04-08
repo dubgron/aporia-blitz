@@ -1,4 +1,5 @@
 #include "aporia_debug.hpp"
+#include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
@@ -28,6 +29,7 @@ namespace Aporia
     static StringList command_hist_help;
     static StringList command_history;
     static StringList suggestions;
+    static ConsoleWindowState state = ConsoleWindowState::Closed;
     static ConsoleInputState input_state = ConsoleInputState::Empty;
 
     static MemoryArena command_arena;
@@ -289,8 +291,30 @@ namespace Aporia
         return 0;
     }
 
-    static void commandline_update(ConsoleWindowState state)
+    static void commandline_update()
     {
+        if (is_key_triggered(Keyboard::Tilde))
+        {
+            if (is_key_pressed(Keyboard::LShift))
+            {
+                switch (state)
+                {
+                    case ConsoleWindowState::Closed:        state = ConsoleWindowState::OpenedFull; break;
+                    case ConsoleWindowState::Opened:        state = ConsoleWindowState::OpenedFull; break;
+                    case ConsoleWindowState::OpenedFull:    state = ConsoleWindowState::Closed;     break;
+                }
+            }
+            else
+            {
+                switch (state)
+                {
+                    case ConsoleWindowState::Closed:        state = ConsoleWindowState::Opened; break;
+                    case ConsoleWindowState::Opened:        state = ConsoleWindowState::Closed; break;
+                    case ConsoleWindowState::OpenedFull:    state = ConsoleWindowState::Opened; break;
+                }
+            }
+        }
+
         temp_arena.clear();
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
