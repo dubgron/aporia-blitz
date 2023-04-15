@@ -5,7 +5,6 @@ option(APORIA_EMSCRIPTEN    "Compile with Emscripten"   OFF)
 
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
-find_package(magic_enum REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(stb REQUIRED)
@@ -65,7 +64,6 @@ target_link_libraries(core
     glfw
     glm
     imgui
-    magic_enum
     nlohmann_json
     spdlog
     stb)
@@ -83,7 +81,6 @@ target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
 target_compile_definitions(core
     PUBLIC
         _USE_MATH_DEFINES
-        MAGIC_ENUM_RANGE_MAX=512
         NOMINMAX)
 
 if (APORIA_DEBUGTOOLS)

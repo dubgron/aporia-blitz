@@ -10,10 +10,13 @@
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
+#include "aporia_utils.hpp"
 #include "platform/opengl.hpp"
 
 namespace Aporia
 {
+    extern Input input;
+
     void Window::init(Camera& camera)
     {
         _camera = &camera;
@@ -58,34 +61,20 @@ namespace Aporia
 
         glfwSetKeyCallback(_window, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
             {
-                const Keyboard key = static_cast<Keyboard>(key_code);
-                if (action == GLFW_PRESS || action == GLFW_REPEAT)
-                {
-                    on_key_triggered(key);
-                }
-                else if (action == GLFW_RELEASE)
-                {
-                    on_key_released(key);
-                }
+                const InputAction input_action = static_cast<InputAction>(action);
+                process_input_action(input.keys[key_code], input_action);
             });
 
         glfwSetMouseButtonCallback(_window, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
             {
-                const Mouse button = static_cast<Mouse>(button_code);
-                if (action == GLFW_PRESS || action == GLFW_REPEAT)
-                {
-                    on_button_triggered(button);
-                }
-                else if (action == GLFW_RELEASE)
-                {
-                    on_button_released(button);
-                }
+                const InputAction input_action = static_cast<InputAction>(action);
+                process_input_action(input.mouse[button_code], input_action);
             });
 
         glfwSetScrollCallback(_window, [](GLFWwindow* handle, f64 x_offset, f64 y_offset)
             {
-                on_wheel_scrolled(MouseWheel::HorizontalWheel, static_cast<f32>(x_offset));
-                on_wheel_scrolled(MouseWheel::VerticalWheel, static_cast<f32>(y_offset));
+                process_input_value(input.wheels[+MouseWheel::HorizontalWheel], x_offset);
+                process_input_value(input.wheels[+MouseWheel::VerticalWheel], y_offset);
             });
 
         // @NOTE(dubgron): We probably would like to use this callback in the future.

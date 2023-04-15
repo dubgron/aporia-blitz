@@ -19,16 +19,16 @@ namespace Aporia
         f32 rotation_speed = 0.f;
         f32 zoom_speed = 0.f;
 
-        Keyboard movement_key_up = Keyboard::W;
-        Keyboard movement_key_down = Keyboard::S;
-        Keyboard movement_key_left = Keyboard::A;
-        Keyboard movement_key_right = Keyboard::D;
+        Key movement_key_up = Key::W;
+        Key movement_key_down = Key::S;
+        Key movement_key_left = Key::A;
+        Key movement_key_right = Key::D;
 
-        Keyboard rotation_key_left = Keyboard::Q;
-        Keyboard rotation_key_right = Keyboard::E;
+        Key rotation_key_left = Key::Q;
+        Key rotation_key_right = Key::E;
 
-        Keyboard zoom_key_in = Keyboard::Space;
-        Keyboard zoom_key_out = Keyboard::LShift;
+        Key zoom_key_in = Key::Space;
+        Key zoom_key_out = Key::LShift;
 
         f32 zoom_max = 1.f;
         f32 zoom_min = 1.f;

@@ -3,7 +3,6 @@
 /* Standard Library */
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -43,8 +42,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_transform.hpp>
-
-#include <magic_enum.hpp>
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>

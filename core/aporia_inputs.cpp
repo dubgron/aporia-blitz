@@ -1,8 +1,6 @@
 #include "aporia_inputs.hpp"
 
-#include <bitset>
-
-#include <magic_enum.hpp>
+#include "aporia_utils.hpp"
 
 #if defined(APORIA_EMSCRIPTEN)
     int glfwGetGamepadState(int jid, GLFWgamepadstate* state) { return 0; }
@@ -11,280 +9,319 @@
 
 namespace Aporia
 {
-    template<typename T> requires std::is_enum_v<T>
-    class InputBuffer
+    Input input;
+
+    enum Flags : u8
     {
-        static constexpr u64 Count = magic_enum::enum_count<T>();
-        using Buffer = std::bitset<Count>;
-
-    public:
-        void update()
-        {
-            _past_state = _current_state;
-        }
-
-        void push_state(T code, bool state)
-        {
-            const u64 index = _index(code);
-            _current_state[index] = state;
-        }
-
-        bool is_triggered(T code) const
-        {
-            const u64 index = _index(code);
-            return _is_triggered(index);
-        }
-
-        bool is_pressed(T code) const
-        {
-            const u64 index = _index(code);
-            return _is_pressed(index);
-        }
-
-        bool is_released(T code) const
-        {
-            const u64 index = _index(code);
-            return _is_released(index);
-        }
-
-        bool is_any_triggered() const
-        {
-            for (u64 index = 0; index < Count; ++index)
-            {
-                if (_is_triggered(index))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        bool is_any_pressed() const
-        {
-            for (u64 index = 0; index < Count; ++index)
-            {
-                if (_is_pressed(index))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        bool is_any_released() const
-        {
-            for (u64 index = 0; index < Count; ++index)
-            {
-                if (_is_released(index))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-    private:
-        u64 _index(T code) const
-        {
-            return magic_enum::enum_index(code).value();
-        }
-
-        bool _is_triggered(u64 index) const
-        {
-            return _current_state.test(index) && !_past_state.test(index);
-        }
-
-        bool _is_pressed(u64 index) const
-        {
-            return _current_state.test(index) && _past_state.test(index);
-        }
-
-        bool _is_released(u64 index) const
-        {
-            return !_current_state.test(index) && _past_state.test(index);
-        }
-
-        Buffer _current_state;
-        Buffer _past_state;
+        none                = 0x00,
+        ended_frame_down    = 0x01,
+        was_released        = 0x02,
+        is_repeated         = 0x04,
+        was_handled         = 0x08
     };
 
-    static constexpr u64 MouseWheelCount = magic_enum::enum_count<MouseWheel>();
-    static constexpr u64 GamepadAxisCount = magic_enum::enum_count<GamepadAxis>();
-
-    struct MouseInput
+    static InputState get_input_state(Key key)
     {
-        InputBuffer<Mouse> buttons;
-        f32 wheels[MouseWheelCount] = { 0.f };
-    };
+        u64 key_code = +key;
+        APORIA_ASSERT(key_code < +Key::Count);
+        return input.keys[key_code];
+    }
 
-    struct GamepadInput
+    static InputState get_input_state(MouseButton button)
     {
-        InputBuffer<Gamepad> buttons;
-        f32 axes[GamepadAxisCount] = { 0.f };
-    };
+        const u64 button_code = +button;
+        APORIA_ASSERT(button_code < +MouseButton::Count);
+        return input.mouse[button_code];
+    }
 
-    static InputBuffer<Keyboard> keyboard;
-    static MouseInput mouse;
-    static GamepadInput gamepad;
-
-    void inputs_update()
+    static InputState get_input_state(GamepadButton button)
     {
-        keyboard.update();
-        mouse.buttons.update();
-        gamepad.buttons.update();
+        const u64 button_code = +button;
+        APORIA_ASSERT(button_code < +GamepadButton::Count);
+        return input.buttons[button_code];
+    }
 
-        for (u64 idx = 0; idx < MouseWheelCount; ++idx)
+    static void clear_input_state(InputState* state, u64 count)
+    {
+        for (u64 idx = 0; idx < count; ++idx)
         {
-            mouse.wheels[idx] = 0.f;
+            // Leave only InputFlag::ended_frame_down flag
+            state[idx].flags &= ended_frame_down;
+            state[idx].pressed_count = 0;
         }
+    }
 
+    static i32 has_been_pressed(InputState state)
+    {
+        return (state.flags & was_handled) ? 0 : state.pressed_count;
+    }
+
+    static bool has_been_held(InputState state)
+    {
+        return !(state.flags & was_handled) && (state.flags & ended_frame_down);
+    }
+
+    static bool has_been_released(InputState state)
+    {
+        return !(state.flags & was_handled) && (state.flags & was_released);
+    }
+
+    void process_input_action(InputState& state, InputAction action)
+    {
+        switch (action)
+        {
+            case InputAction::Released:
+            {
+                state.flags &= ~ended_frame_down;
+                state.flags |= was_released;
+            }
+            break;
+
+            case InputAction::Pressed:
+            {
+                state.pressed_count += 1;
+                state.flags |= ended_frame_down;
+            }
+            break;
+
+            case InputAction::Repeat:
+            {
+                state.flags |= is_repeated;
+            }
+            break;
+        }
+    }
+
+    void process_input_value(AnalogInputState& state, f32 value)
+    {
+        state.end_value = value;
+        state.max_value = max<f32>(state.max_value, value);
+        state.min_value = min<f32>(state.min_value, value);
+    }
+
+    void poll_gamepad_inputs()
+    {
 #if !defined(APORIA_EMSCRIPTEN)
         GLFWgamepadstate gamepad_state;
         if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
         {
-            for (u64 gamepad_idx = 0; gamepad_idx < magic_enum::enum_count<Gamepad>(); ++gamepad_idx)
+            for (u64 gamepad_idx = 0; gamepad_idx < +GamepadButton::Count; ++gamepad_idx)
             {
-                const Gamepad gamepad_code = static_cast<Gamepad>(gamepad_idx);
-                const bool new_state = gamepad_state.buttons[gamepad_idx] == GLFW_PRESS;
-                gamepad.buttons.push_state(gamepad_code, new_state);
+                const InputAction action = static_cast<InputAction>(gamepad_state.buttons[gamepad_idx]);
+                process_input_action(input.buttons[gamepad_idx], action);
             }
 
-            for (u64 axis_idx = 0; axis_idx < magic_enum::enum_count<GamepadAxis>(); ++axis_idx)
+            for (u64 axis_idx = 0; axis_idx < +GamepadAxis::Count; ++axis_idx)
             {
-                gamepad.axes[axis_idx] = gamepad_state.axes[axis_idx];
+                const f32 current_value = gamepad_state.axes[axis_idx];
+                process_input_value(input.axes[axis_idx], current_value);
             }
         }
 #endif
     }
 
-    void on_key_triggered(Keyboard key)
+    void inputs_clear()
     {
-        keyboard.push_state(key, true);
+        clear_input_state(input.keys, +Key::Count);
+        clear_input_state(input.mouse, +MouseButton::Count);
+        clear_input_state(input.buttons, +GamepadButton::Count);
+
+        memset(input.wheels, 0.f, sizeof(AnalogInputState) * +MouseWheel::Count);
+        memset(input.axes, 0.f, sizeof(AnalogInputState) * +GamepadAxis::Count);
     }
 
-    void on_key_released(Keyboard key)
+    i32 has_been_pressed(Key key)
     {
-        keyboard.push_state(key, false);
+        const InputState state = get_input_state(key);
+        return has_been_pressed(state);
     }
 
-    void on_button_triggered(Mouse button)
+    bool has_been_held(Key key)
     {
-        mouse.buttons.push_state(button, true);
+        const InputState state = get_input_state(key);
+        return has_been_held(state);
     }
 
-    void on_button_released(Mouse button)
+    bool has_been_released(Key key)
     {
-        mouse.buttons.push_state(button, false);
+        const InputState state = get_input_state(key);
+        return has_been_released(state);
     }
 
-    void on_wheel_scrolled(MouseWheel wheel, f32 delta)
+    i32 has_been_pressed(MouseButton button)
     {
-        const u64 wheel_idx = static_cast<u64>(wheel);
-        mouse.wheels[wheel_idx] = delta;
+        const InputState state = get_input_state(button);
+        return has_been_pressed(state);
     }
 
-    bool is_key_triggered(Keyboard key)
+    bool has_been_held(MouseButton button)
     {
-        return keyboard.is_triggered(key);
+        const InputState state = get_input_state(button);
+        return has_been_held(state);
     }
 
-    bool is_key_pressed(Keyboard key)
+    bool has_been_released(MouseButton button)
     {
-        return keyboard.is_pressed(key);
+        const InputState state = get_input_state(button);
+        return has_been_released(state);
     }
 
-    bool is_key_released(Keyboard key)
+    i32 has_been_pressed(GamepadButton button)
     {
-        return keyboard.is_released(key);
+        const InputState state = get_input_state(button);
+        return has_been_pressed(state);
     }
 
-    bool is_any_key_triggered()
+    bool has_been_held(GamepadButton button)
     {
-        return keyboard.is_any_triggered();
+        const InputState state = get_input_state(button);
+        return has_been_held(state);
     }
 
-    bool is_any_key_pressed()
+    bool has_been_released(GamepadButton button)
     {
-        return keyboard.is_any_pressed();
+        const InputState state = get_input_state(button);
+        return has_been_released(state);
     }
 
-    bool is_any_key_released()
+    AnalogInputState get_analog_state(MouseWheel wheel)
     {
-        return keyboard.is_any_released();
+        const u64 wheel_code = +wheel;
+        APORIA_ASSERT(wheel_code < +GamepadAxis::Count);
+        return input.wheels[wheel_code];
     }
 
-    bool is_gamepad_button_triggered(Gamepad gamepad_button)
+    AnalogInputState get_analog_state(GamepadAxis axis)
     {
-        return gamepad.buttons.is_triggered(gamepad_button);
+        const u64 axis_code = +axis;
+        APORIA_ASSERT(axis_code < +GamepadAxis::Count);
+        return input.axes[axis_code];
     }
 
-    bool is_gamepad_button_pressed(Gamepad gamepad_button)
+    Key string_to_key(std::string_view string)
     {
-        return gamepad.buttons.is_pressed(gamepad_button);
-    }
+        if (string == "Unknown")        return Key::Unknown;
+        if (string == "Space")          return Key::Space;
+        if (string == "Quote")          return Key::Quote;
+        if (string == "Comma")          return Key::Comma;
+        if (string == "Minus")          return Key::Minus;
+        if (string == "Period")         return Key::Period;
+        if (string == "Slash")          return Key::Slash;
+        if (string == "Num0")           return Key::Num0;
+        if (string == "Num1")           return Key::Num1;
+        if (string == "Num2")           return Key::Num2;
+        if (string == "Num3")           return Key::Num3;
+        if (string == "Num4")           return Key::Num4;
+        if (string == "Num5")           return Key::Num5;
+        if (string == "Num6")           return Key::Num6;
+        if (string == "Num7")           return Key::Num7;
+        if (string == "Num8")           return Key::Num8;
+        if (string == "Num9")           return Key::Num9;
+        if (string == "Semicolon")      return Key::Semicolon;
+        if (string == "Equal")          return Key::Equal;
+        if (string == "A")              return Key::A;
+        if (string == "B")              return Key::B;
+        if (string == "C")              return Key::C;
+        if (string == "D")              return Key::D;
+        if (string == "E")              return Key::E;
+        if (string == "F")              return Key::F;
+        if (string == "G")              return Key::G;
+        if (string == "H")              return Key::H;
+        if (string == "I")              return Key::I;
+        if (string == "J")              return Key::J;
+        if (string == "K")              return Key::K;
+        if (string == "L")              return Key::L;
+        if (string == "M")              return Key::M;
+        if (string == "N")              return Key::N;
+        if (string == "O")              return Key::O;
+        if (string == "P")              return Key::P;
+        if (string == "Q")              return Key::Q;
+        if (string == "R")              return Key::R;
+        if (string == "S")              return Key::S;
+        if (string == "T")              return Key::T;
+        if (string == "U")              return Key::U;
+        if (string == "V")              return Key::V;
+        if (string == "W")              return Key::W;
+        if (string == "X")              return Key::X;
+        if (string == "Y")              return Key::Y;
+        if (string == "Z")              return Key::Z;
+        if (string == "LBracket")       return Key::LBracket;
+        if (string == "Backslash")      return Key::Backslash;
+        if (string == "RBracket")       return Key::RBracket;
+        if (string == "Tilde")          return Key::Tilde;
+        if (string == "World1")         return Key::World1;
+        if (string == "World2")         return Key::World2;
+        if (string == "Escape")         return Key::Escape;
+        if (string == "Enter")          return Key::Enter;
+        if (string == "Tab")            return Key::Tab;
+        if (string == "Backspace")      return Key::Backspace;
+        if (string == "Insert")         return Key::Insert;
+        if (string == "Delete")         return Key::Delete;
+        if (string == "Right")          return Key::Right;
+        if (string == "Left")           return Key::Left;
+        if (string == "Down")           return Key::Down;
+        if (string == "Up")             return Key::Up;
+        if (string == "PageUp")         return Key::PageUp;
+        if (string == "PageDown")       return Key::PageDown;
+        if (string == "Home")           return Key::Home;
+        if (string == "End")            return Key::End;
+        if (string == "CapsLock")       return Key::CapsLock;
+        if (string == "ScrollLock")     return Key::ScrollLock;
+        if (string == "NumLock")        return Key::NumLock;
+        if (string == "PrintScreen")    return Key::PrintScreen;
+        if (string == "Pause")          return Key::Pause;
+        if (string == "F1")             return Key::F1;
+        if (string == "F2")             return Key::F2;
+        if (string == "F3")             return Key::F3;
+        if (string == "F4")             return Key::F4;
+        if (string == "F5")             return Key::F5;
+        if (string == "F6")             return Key::F6;
+        if (string == "F7")             return Key::F7;
+        if (string == "F8")             return Key::F8;
+        if (string == "F9")             return Key::F9;
+        if (string == "F10")            return Key::F10;
+        if (string == "F11")            return Key::F11;
+        if (string == "F12")            return Key::F12;
+        if (string == "F13")            return Key::F13;
+        if (string == "F14")            return Key::F14;
+        if (string == "F15")            return Key::F15;
+        if (string == "F16")            return Key::F16;
+        if (string == "F17")            return Key::F17;
+        if (string == "F18")            return Key::F18;
+        if (string == "F19")            return Key::F19;
+        if (string == "F20")            return Key::F20;
+        if (string == "F21")            return Key::F21;
+        if (string == "F22")            return Key::F22;
+        if (string == "F23")            return Key::F23;
+        if (string == "F24")            return Key::F24;
+        if (string == "F25")            return Key::F25;
+        if (string == "Numpad0")        return Key::Numpad0;
+        if (string == "Numpad1")        return Key::Numpad1;
+        if (string == "Numpad2")        return Key::Numpad2;
+        if (string == "Numpad3")        return Key::Numpad3;
+        if (string == "Numpad4")        return Key::Numpad4;
+        if (string == "Numpad5")        return Key::Numpad5;
+        if (string == "Numpad6")        return Key::Numpad6;
+        if (string == "Numpad7")        return Key::Numpad7;
+        if (string == "Numpad8")        return Key::Numpad8;
+        if (string == "Numpad9")        return Key::Numpad9;
+        if (string == "NumpadPeriod")   return Key::NumpadPeriod;
+        if (string == "NumpadDivide")   return Key::NumpadDivide;
+        if (string == "NumpadMultiply") return Key::NumpadMultiply;
+        if (string == "NumpadSubtract") return Key::NumpadSubtract;
+        if (string == "NumpadAdd")      return Key::NumpadAdd;
+        if (string == "NumpadEnter")    return Key::NumpadEnter;
+        if (string == "NumpadEqual")    return Key::NumpadEqual;
+        if (string == "LShift")         return Key::LShift;
+        if (string == "LControl")       return Key::LControl;
+        if (string == "LAlt")           return Key::LAlt;
+        if (string == "LSuper")         return Key::LSuper;
+        if (string == "RShift")         return Key::RShift;
+        if (string == "RControl")       return Key::RControl;
+        if (string == "RAlt")           return Key::RAlt;
+        if (string == "RSuper")         return Key::RSuper;
+        if (string == "Menu")           return Key::Menu;
 
-    bool is_gamepad_button_released(Gamepad gamepad_button)
-    {
-        return gamepad.buttons.is_released(gamepad_button);
-    }
-
-    bool is_any_gamepad_button_triggered()
-    {
-        return gamepad.buttons.is_any_triggered();
-    }
-
-    bool is_any_gamepad_button_pressed()
-    {
-        return gamepad.buttons.is_any_pressed();
-    }
-
-    bool is_any_gamepad_button_released()
-    {
-        return gamepad.buttons.is_any_released();
-    }
-
-    f32 get_gamepad_axis(GamepadAxis gamepad_axis)
-    {
-        const u64 gamepad_axis_index = magic_enum::enum_index(gamepad_axis).value();
-        return gamepad.axes[gamepad_axis_index];
-    }
-
-    bool is_button_triggered(Mouse button)
-    {
-        return mouse.buttons.is_triggered(button);
-    }
-
-    bool is_button_pressed(Mouse button)
-    {
-        return mouse.buttons.is_pressed(button);
-    }
-
-    bool is_button_released(Mouse button)
-    {
-        return mouse.buttons.is_released(button);
-    }
-
-    bool is_any_button_triggered()
-    {
-        return mouse.buttons.is_any_triggered();
-    }
-
-    bool is_any_button_pressed()
-    {
-        return mouse.buttons.is_any_pressed();
-    }
-
-    bool is_any_button_released()
-    {
-        return mouse.buttons.is_any_released();
-    }
-
-    f32 is_wheel_scrolling(MouseWheel wheel /* = MouseWheel::VerticalWheel */)
-    {
-        const u64 wheel_idx = static_cast<u64>(wheel);
-        return mouse.wheels[wheel_idx];
+        return Key::Unknown;
     }
 }

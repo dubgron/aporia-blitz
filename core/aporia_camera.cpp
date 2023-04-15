@@ -116,22 +116,22 @@ namespace Aporia
         const f32 movement_speed = camera_config.movement_speed * delta_time;
         v2 movement{ 0.f };
 
-        if (is_key_pressed(camera_config.movement_key_up))
+        if (has_been_held(camera_config.movement_key_up))
         {
             movement.y += movement_speed;
         }
 
-        if (is_key_pressed(camera_config.movement_key_down))
+        if (has_been_held(camera_config.movement_key_down))
         {
             movement.y -= movement_speed;
         }
 
-        if (is_key_pressed(camera_config.movement_key_left))
+        if (has_been_held(camera_config.movement_key_left))
         {
             movement.x -= movement_speed;
         }
 
-        if (is_key_pressed(camera_config.movement_key_right))
+        if (has_been_held(camera_config.movement_key_right))
         {
             movement.x += movement_speed;
         }
@@ -148,12 +148,12 @@ namespace Aporia
         const f32 rotation_speed = camera_config.rotation_speed * delta_time;
         f32 rotation = 0.f;
 
-        if (is_key_pressed(camera_config.rotation_key_left))
+        if (has_been_held(camera_config.rotation_key_left))
         {
             rotation += rotation_speed;
         }
 
-        if (is_key_pressed(camera_config.rotation_key_right))
+        if (has_been_held(camera_config.rotation_key_right))
         {
             rotation -= rotation_speed;
         }
@@ -169,12 +169,12 @@ namespace Aporia
         const f32 zoom_speed = camera_config.zoom_speed * delta_time;
         f32 zoom = 0.f;
 
-        if (is_key_pressed(camera_config.zoom_key_in))
+        if (has_been_held(camera_config.zoom_key_in))
         {
             zoom -= zoom_speed;
         }
 
-        if (is_key_pressed(camera_config.zoom_key_out))
+        if (has_been_held(camera_config.zoom_key_out))
         {
             zoom += zoom_speed;
         }

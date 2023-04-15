@@ -2,7 +2,6 @@
 
 #include <filesystem>
 
-#include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
 #include "aporia_debug.hpp"
@@ -61,7 +60,7 @@ namespace Aporia
 
         auto get_key = [&camera](const char* key)
             {
-                return magic_enum::enum_cast<Keyboard>(camera[key].get<std::string_view>()).value();
+                return string_to_key(camera[key].get<std::string_view>());
             };
 
         camera_config.movement_key_up = get_key("movement_key_up");

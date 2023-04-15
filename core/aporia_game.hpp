@@ -45,7 +45,7 @@ namespace Aporia
         Timer frame_timer;
         f32 total_time = 0.f;
 
-        f32 delta_time = 1.f / 60.f;
+        f32 delta_time = 1.f / 240.f;
         f32 accumulated_frame_time = 0.f;
     };
 }

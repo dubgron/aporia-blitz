@@ -1,9 +1,11 @@
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 #include "aporia_utils.hpp"
+#include "aporia_window.hpp"
 
 #define APORIA_COMMANDLINE_FUNCTION(name) CommandlineResult name(StringList args)
 
@@ -293,9 +295,9 @@ namespace Aporia
 
     static void commandline_update()
     {
-        if (is_key_triggered(Keyboard::Tilde))
+        if (has_been_pressed(Key::Tilde))
         {
-            if (is_key_pressed(Keyboard::LShift))
+            if (has_been_held(Key::LShift))
             {
                 switch (state)
                 {
@@ -308,13 +310,16 @@ namespace Aporia
             {
                 switch (state)
                 {
-                    case ConsoleWindowState::Closed:        state = ConsoleWindowState::Opened; break;
-                    case ConsoleWindowState::Opened:        state = ConsoleWindowState::Closed; break;
-                    case ConsoleWindowState::OpenedFull:    state = ConsoleWindowState::Opened; break;
+                    case ConsoleWindowState::Closed:        state = ConsoleWindowState::Opened;     break;
+                    case ConsoleWindowState::Opened:        state = ConsoleWindowState::Closed;     break;
+                    case ConsoleWindowState::OpenedFull:    state = ConsoleWindowState::Opened;     break;
                 }
             }
         }
+    }
 
+    static void commandline_draw()
+    {
         temp_arena.clear();
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
