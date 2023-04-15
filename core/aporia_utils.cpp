@@ -1,5 +1,7 @@
 #include "aporia_utils.hpp"
 
+#include <fstream>
+
 #include "aporia_debug.hpp"
 
 namespace Aporia

@@ -1,31 +1,16 @@
 #pragma once
 
 // Standard Library
-#include <algorithm>
-#include <array>
-#include <cassert>
 #include <chrono>
-#include <cmath>
-#include <concepts>
-#include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <fstream>
-#include <functional>
 #include <map>
 #include <memory>
-#include <numeric>
 #include <optional>
-#include <queue>
 #include <random>
-#include <set>
-#include <sstream>
-#include <string>
 #include <string_view>
-#include <tuple>
-#include <type_traits>
+#include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #if defined(__cpp_lib_format)

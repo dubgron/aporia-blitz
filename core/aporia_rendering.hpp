@@ -5,8 +5,6 @@
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 
-#include <array>
-
 namespace Aporia
 {
 #if defined(APORIA_EMSCRIPTEN)
@@ -39,7 +37,7 @@ namespace Aporia
         BufferType buffer = BufferType::Quads;
         ShaderID program_id = 0;
 
-        std::array<Vertex, 4> vertex;
+        Vertex vertex[4];
     };
 
     bool operator<(const RenderQueueKey& key1, const RenderQueueKey& key2) noexcept;
@@ -113,7 +111,7 @@ namespace Aporia
         u32 renderbuffer_id = 0;
 
         Texture color_buffer;
-        std::array<Vertex, 4> vertices;
+        Vertex vertex[4];
 
         void create(i32 width, i32 height);
         void destroy();

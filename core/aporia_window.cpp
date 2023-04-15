@@ -1,7 +1,6 @@
 #include "aporia_window.hpp"
 
 #include <cstdint>
-#include <functional>
 
 #include <glm/gtx/transform.hpp>
 

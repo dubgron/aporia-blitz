@@ -1,5 +1,6 @@
 #include "aporia_inputs.hpp"
 
+#include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 
 #if defined(APORIA_EMSCRIPTEN)

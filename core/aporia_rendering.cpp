@@ -262,21 +262,21 @@ namespace Aporia
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Setup vertices
-        vertices[0].position = v3{ -1.f, -1.f, 0.f };
-        vertices[0].tex_coord = v2{ 0.f, 0.f };
-        vertices[0].tex_id = color_buffer.id;
+        vertex[0].position = v3{ -1.f, -1.f, 0.f };
+        vertex[0].tex_coord = v2{ 0.f, 0.f };
+        vertex[0].tex_id = color_buffer.id;
 
-        vertices[1].position = v3{ 1.f, -1.f, 0.f };
-        vertices[1].tex_coord = v2{ 1.f, 0.f };
-        vertices[1].tex_id = color_buffer.id;
+        vertex[1].position = v3{ 1.f, -1.f, 0.f };
+        vertex[1].tex_coord = v2{ 1.f, 0.f };
+        vertex[1].tex_id = color_buffer.id;
 
-        vertices[2].position = v3{ 1.f, 1.f, 0.f };
-        vertices[2].tex_coord = v2{ 1.f, 1.f };
-        vertices[2].tex_id = color_buffer.id;
+        vertex[2].position = v3{ 1.f, 1.f, 0.f };
+        vertex[2].tex_coord = v2{ 1.f, 1.f };
+        vertex[2].tex_id = color_buffer.id;
 
-        vertices[3].position = v3{ -1.f, 1.f, 0.f };
-        vertices[3].tex_coord = v2{ 0.f, 1.f };
-        vertices[3].tex_id = color_buffer.id;
+        vertex[3].position = v3{ -1.f, 1.f, 0.f };
+        vertex[3].tex_coord = v2{ 0.f, 1.f };
+        vertex[3].tex_id = color_buffer.id;
     }
 
     void Framebuffer::destroy()
@@ -352,7 +352,7 @@ namespace Aporia
     {
         constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
-        for (Vertex vertex : framebuffer.vertices)
+        for (Vertex vertex : framebuffer.vertex)
         {
             vertex_buffer.data.push_back( vertex );
         }
