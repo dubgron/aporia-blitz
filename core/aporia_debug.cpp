@@ -2,8 +2,11 @@
 
 #include <chrono>
 
+#include <imgui.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+
+#include "aporia_window.hpp"
 
 #if defined(__cpp_lib_format)
     #include <format>
@@ -42,5 +45,63 @@ namespace Aporia
         logger->set_pattern("[%Y-%m-%d %H:%M:%S:%e] [" + name + "] [%^%l%$] (%s:%!@%#) : %v");
         logger->set_level(spdlog::level::debug);
         logger->flush_on(spdlog::level::debug);
+    }
+
+    void imgui_init(Window& window)
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+#if !defined(APORIA_EMSCRIPTEN)
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
+
+        ImGui::StyleColorsDark();
+
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.f;
+        }
+
+        GLFWwindow* handle = window.get_native_window();
+
+        ImGui_ImplGlfw_InitForOpenGL(handle, true);
+        ImGui_ImplOpenGL3_Init(OPENGL_SHADER_VERSION);
+    }
+
+    void imgui_deinit()
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void imgui_frame_begin()
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
+
+    void imgui_frame_end()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        GLFWwindow* window = glfwGetCurrentContext();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(window);
+        }
     }
 }

@@ -8,8 +8,6 @@
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 #include "aporia_world.hpp"
-#include "layers/imgui_layer.hpp"
-#include "layers/layer_stack.hpp"
 
 namespace Aporia
 {
@@ -34,11 +32,7 @@ namespace Aporia
 
     protected:
         Camera _camera;
-
         Window _window;
-
-        LayerStack _layer_stack;
-        ImGuiLayer _imgui_layer;
 
         World _world;
 

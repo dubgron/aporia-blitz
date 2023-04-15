@@ -16,11 +16,6 @@
 #include <aporia_utils.hpp>
 #include <aporia_window.hpp>
 
-// Layers
-#include <layers/imgui_layer.hpp>
-#include <layers/layer.hpp>
-#include <layers/layer_stack.hpp>
-
 // Platform
 #include <platform/opengl.hpp>
 #include <platform/opengl_common.hpp>

@@ -76,6 +76,8 @@
 
 namespace Aporia
 {
+    class Window;
+
     enum LogLevel
     {
         Verbose     = spdlog::level::trace,
@@ -95,4 +97,10 @@ namespace Aporia
         extern std::shared_ptr<spdlog::logger> logger;
         logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), fmt, std::forward<Args>(args)...);
     }
+
+    void imgui_init(Window& window);
+    void imgui_deinit();
+
+    void imgui_frame_begin();
+    void imgui_frame_end();
 }

@@ -50,11 +50,6 @@ add_library(core STATIC
     "aporia_world.cpp"
     "aporia_world.hpp"
     "editor/aporia_commandline.cpp"
-    "layers/imgui_layer.cpp"
-    "layers/imgui_layer.hpp"
-    "layers/layer.hpp"
-    "layers/layer_stack.cpp"
-    "layers/layer_stack.hpp"
     "platform/opengl.hpp"
     "platform/opengl_common.hpp")
 
@@ -120,7 +115,6 @@ endif()
 
 source_group(core                       "core/.+\.[cht]pp")
 source_group(core/editor                "core/editor/.+\.[cht]pp")
-source_group(core/layers                "core/layers/.+\.[cht]pp")
 source_group(core/platform              "core/platform/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES

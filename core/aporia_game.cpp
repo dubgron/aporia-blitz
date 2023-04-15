@@ -15,7 +15,6 @@ namespace Aporia
     }
 
     Game::Game(const std::string& config_file)
-        : _imgui_layer(_window)
     {
         load_config(config_file);
 
@@ -26,12 +25,12 @@ namespace Aporia
         rendering_init(window_config.width, window_config.height);
         _world.init();
 
-        _layer_stack.push_overlay(_imgui_layer);
+        imgui_init(_window);
     }
 
     Game::~Game()
     {
-        _layer_stack.pop_overlay(_imgui_layer);
+        imgui_deinit();
         _world.deinit();
         rendering_deinit();
         _window.deinit();
@@ -72,13 +71,13 @@ namespace Aporia
             inputs_clear();
         }
 
-        _imgui_layer.begin();
+        imgui_frame_begin();
         rendering_begin(_window, _camera);
 
         on_draw();
 
         rendering_end();
-        _imgui_layer.end();
+        imgui_frame_end();
 
         _window.display();
     }
