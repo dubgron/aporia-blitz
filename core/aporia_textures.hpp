@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/opengl_common.hpp"
+#include "aporia_types.hpp"
 
 namespace Aporia
 {

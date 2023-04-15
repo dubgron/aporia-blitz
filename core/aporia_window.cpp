@@ -11,7 +11,7 @@
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_utils.hpp"
-#include "platform/opengl.hpp"
+#include "platform/aporia_opengl.hpp"
 
 namespace Aporia
 {

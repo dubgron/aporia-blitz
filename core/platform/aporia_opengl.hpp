@@ -1,11 +1,22 @@
 #pragma once
 
-#include "platform/opengl_common.hpp"
-
 #if defined(APORIA_EMSCRIPTEN)
+
     #include <GLES3/gl32.h>
+
+    #define OPENGL_VERSION_MAJOR 3
+    #define OPENGL_VERSION_MINOR 0
+    #define OPENGL_MAX_TEXTURE_UNITS 16
+    #define OPENGL_SHADER_VERSION "#version 300 es"
+
 #else
+
     #include <GL/gl3w.h>
+
+    #define OPENGL_VERSION_MAJOR 4
+    #define OPENGL_VERSION_MINOR 5
+    #define OPENGL_MAX_TEXTURE_UNITS 32
+    #define OPENGL_SHADER_VERSION "#version 450"
 
     #include "aporia_debug.hpp"
 
@@ -15,11 +26,11 @@
         {
             switch (severity)
             {
-                case GL_DEBUG_SEVERITY_HIGH:            return LogLevel::Error;
-                case GL_DEBUG_SEVERITY_MEDIUM:          return LogLevel::Warning;
-                case GL_DEBUG_SEVERITY_LOW:             return LogLevel::Info;
-                case GL_DEBUG_SEVERITY_NOTIFICATION:    return LogLevel::Verbose;
-                default:                                return LogLevel::Critical;
+                case GL_DEBUG_SEVERITY_HIGH:                return LogLevel::Error;
+                case GL_DEBUG_SEVERITY_MEDIUM:              return LogLevel::Warning;
+                case GL_DEBUG_SEVERITY_LOW:                 return LogLevel::Info;
+                case GL_DEBUG_SEVERITY_NOTIFICATION:        return LogLevel::Verbose;
+                default:                                    return LogLevel::Critical;
             }
         }
 
@@ -58,14 +69,15 @@
         {
             switch (gl3w_return_code)
             {
-                case GL3W_OK:                       return "OK";
-                case GL3W_ERROR_INIT:               return "ERROR INIT";
-                case GL3W_ERROR_LIBRARY_OPEN:       return "ERROR LIBRARY OPEN";
-                case GL3W_ERROR_OPENGL_VERSION:     return "ERROR OPENGL VERSION";
-                default:                            return "INVALID RETURN CODE";
+                case GL3W_OK:                               return "OK";
+                case GL3W_ERROR_INIT:                       return "ERROR INIT";
+                case GL3W_ERROR_LIBRARY_OPEN:               return "ERROR LIBRARY OPEN";
+                case GL3W_ERROR_OPENGL_VERSION:             return "ERROR OPENGL VERSION";
+                default:                                    return "INVALID RETURN CODE";
             }
         }
     }
+
 #endif
 
 #include <GLFW/glfw3.h>

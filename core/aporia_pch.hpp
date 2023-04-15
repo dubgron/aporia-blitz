@@ -1,6 +1,6 @@
 #pragma once
 
-/* Standard Library */
+// Standard Library
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -34,7 +34,7 @@
     #include <ctime>
 #endif
 
-/* Third-Party Libraries */
+// Third-Party Libraries
 #include <spdlog/spdlog.h>
 
 #include <nlohmann/json.hpp>
@@ -51,4 +51,5 @@
     #include <emscripten.h>
 #endif
 
-#include "platform/opengl.hpp"
+// Platform
+#include "platform/aporia_opengl.hpp"
