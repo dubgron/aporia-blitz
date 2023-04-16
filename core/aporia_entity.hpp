@@ -25,7 +25,7 @@ namespace Aporia
         v2 size;
     };
 
-    struct Color final
+    struct Color
     {
         u8 r = 255;
         u8 g = 255;
@@ -51,7 +51,7 @@ namespace Aporia
         Transform2D transform;
         f32 radius = 0.f;
         Color color = Colors::White;
-        ShaderID shader = 0;
+        u32 shader_id = 0;
     };
 
     struct Line2D
@@ -60,7 +60,7 @@ namespace Aporia
         v2 offset{ 0.f };
 
         Color color = Colors::White;
-        ShaderID shader = 0;
+        u32 shader_id = 0;
     };
 
     struct Rectangle2D
@@ -68,7 +68,7 @@ namespace Aporia
         Transform2D transform;
         Rectangular size;
         Color color = Colors::White;
-        ShaderID shader = 0;
+        u32 shader_id = 0;
     };
 
     struct Sprite
@@ -77,7 +77,7 @@ namespace Aporia
         SubTexture texture;
         Rectangular rect;
         Color color = Colors::White;
-        ShaderID shader = 0;
+        u32 shader_id = 0;
     };
 
     struct Entity

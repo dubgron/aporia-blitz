@@ -8,16 +8,14 @@
 
 namespace Aporia
 {
-    using ShaderID = u32;
-
-    enum class ShaderType : u8
+    enum class SubShaderType : u8
     {
         Invalid,
         Fragment,
         Vertex
     };
-    ShaderType string_to_shader_type(std::string_view type);
-    u32 to_opengl_type(ShaderType type);
+    SubShaderType string_to_subshader_type(std::string_view type);
+    u32 to_opengl_type(SubShaderType type);
 
     enum class ShaderBlend : u8
     {
@@ -83,9 +81,9 @@ namespace Aporia
     ShaderDepthWrite string_to_shader_depth_write(std::string_view depth_write);
     u32 to_opengl_type(ShaderDepthWrite depth_write);
 
-    struct ShaderData
+    struct SubShaderData
     {
-        ShaderType type{ ShaderType::Invalid };
+        SubShaderType type{ SubShaderType::Invalid };
         std::string contents;
     };
 
@@ -97,9 +95,9 @@ namespace Aporia
         ShaderDepthWrite depth_write{ ShaderDepthWrite::Default };
     };
 
-    struct ShaderProgramData
+    struct ShaderData
     {
-        std::vector<ShaderData> shaders;
+        std::vector<SubShaderData> subshaders;
         ShaderProperties properties;
     };
 
@@ -110,15 +108,15 @@ namespace Aporia
         std::unordered_map<std::string, i32> locations;
     };
 
-    ShaderID create_shader(std::string_view filepath);
-    void remove_shader(ShaderID program_id);
+    u32 create_shader(std::string_view filepath);
+    void remove_shader(u32 shader_id);
     void remove_all_shaders();
 
     void set_default_shader_properties(ShaderProperties shader_properties);
 
-    void reload_shader(ShaderID program_id);
+    void reload_shader(u32 shader_id);
 
-    void bind_shader(ShaderID program_id);
+    void bind_shader(u32 shader_id);
     void unbind_shader();
 
     void shader_set_float(const std::string& name, f32 value);

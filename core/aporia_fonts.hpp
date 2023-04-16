@@ -61,7 +61,7 @@ namespace Aporia
     {
         Transform2D transform;
         Color color = Colors::White;
-        ShaderID program_id = 0;
+        u32 shader_id = 0;
 
         std::string caption;
         const Font* font = nullptr;

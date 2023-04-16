@@ -22,11 +22,11 @@ namespace Aporia
     static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
-    ShaderID default_shader = 0;
-    ShaderID font_shader = 0;
-    ShaderID postprocessing_shader = 0;
-    ShaderID raymarching_shader = 0;
-    ShaderID shadowcasting_shader = 0;
+    u32 default_shader = 0;
+    u32 font_shader = 0;
+    u32 postprocessing_shader = 0;
+    u32 raymarching_shader = 0;
+    u32 shadowcasting_shader = 0;
 
     static Framebuffer main_framebuffer;
 
@@ -45,7 +45,7 @@ namespace Aporia
     {
         return key1.vertex[0].position.z < key2.vertex[0].position.z ||
             (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer < key2.buffer) ||
-            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer == key2.buffer && key1.program_id < key2.program_id);
+            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer == key2.buffer && key1.shader_id < key2.shader_id);
     }
 
     void IndexBuffer::init(u32 max_objects, u32 count, const std::vector<u32>& indices)
@@ -215,10 +215,10 @@ namespace Aporia
         glDeleteBuffers(1, &id);
     }
 
-    void UniformBuffer::bind_to_shader(ShaderID program_id)
+    void UniformBuffer::bind_to_shader(u32 shader_id)
     {
-        const u32 buffer_index = glGetUniformBlockIndex(program_id, block_name.data());
-        glUniformBlockBinding(program_id, buffer_index, binding_index);
+        const u32 buffer_index = glGetUniformBlockIndex(shader_id, block_name.data());
+        glUniformBlockBinding(shader_id, buffer_index, binding_index);
     }
 
     void UniformBuffer::set_data(const void* data, u64 size)
@@ -304,9 +304,9 @@ namespace Aporia
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    static void flush_buffer(BufferType buffer, ShaderID program_id)
+    static void flush_buffer(BufferType buffer, u32 shader_id)
     {
-        bind_shader(program_id);
+        bind_shader(shader_id);
 
         const u8 buffer_index = std::to_underlying(buffer);
         vertex_arrays[buffer_index].render();
@@ -321,9 +321,9 @@ namespace Aporia
             RenderQueueKey prev_key = rendering_queue[0];
             for (RenderQueueKey& key : rendering_queue)
             {
-                if (key.program_id != prev_key.program_id || key.buffer != prev_key.buffer)
+                if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
                 {
-                    flush_buffer(prev_key.buffer, prev_key.program_id);
+                    flush_buffer(prev_key.buffer, prev_key.shader_id);
                 }
 
                 const u8 buffer_index = std::to_underlying(key.buffer);
@@ -331,7 +331,7 @@ namespace Aporia
 
                 if (vertex_buffer.data.size() + vertex_buffer.vertex_count > vertex_buffer.max_size)
                 {
-                    flush_buffer(key.buffer, key.program_id);
+                    flush_buffer(key.buffer, key.shader_id);
                 }
 
                 for (u64 i = 0; i < vertex_buffer.vertex_count; ++i)
@@ -342,13 +342,13 @@ namespace Aporia
                 prev_key = key;
             }
 
-            flush_buffer(prev_key.buffer, prev_key.program_id);
+            flush_buffer(prev_key.buffer, prev_key.shader_id);
 
             rendering_queue.clear();
         }
     }
 
-    static void flush_framebuffer(const Framebuffer& framebuffer, ShaderID program_id)
+    static void flush_framebuffer(const Framebuffer& framebuffer, u32 shader_id)
     {
         constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
@@ -357,7 +357,7 @@ namespace Aporia
             vertex_buffer.data.push_back( vertex );
         }
 
-        flush_buffer(BufferType::Quads, program_id);
+        flush_buffer(BufferType::Quads, shader_id);
     }
 
     bool is_lighting_enabled()
@@ -588,11 +588,11 @@ namespace Aporia
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
-        key.program_id              = sprite.shader;
+        key.shader_id               = sprite.shader_id;
 
-        const v2 half_pixel_offset = 0.5f / v2{ sprite.texture.source.width, sprite.texture.source.height };
-        const v2 tex_coord_u = sprite.texture.u + half_pixel_offset;
-        const v2 tex_coord_v = sprite.texture.v - half_pixel_offset;
+        const v2 half_pixel_offset  = 0.5f / v2{ sprite.texture.source.width, sprite.texture.source.height };
+        const v2 tex_coord_u        = sprite.texture.u + half_pixel_offset;
+        const v2 tex_coord_v        = sprite.texture.v - half_pixel_offset;
 
         key.vertex[0].position      = base_offset;
         key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
@@ -627,7 +627,7 @@ namespace Aporia
 
         RenderQueueKey key;
         key.buffer              = BufferType::Quads;
-        key.program_id          = rect.shader;
+        key.shader_id           = rect.shader_id;
 
         key.vertex[0].position  = base_offset;
         key.vertex[0].color     = rect.color;
@@ -652,12 +652,12 @@ namespace Aporia
     {
         const m4 transformation = to_mat4(transformation_stack.back() * line2d.transform);
 
-        const v3 base_offset = transformation[3];
-        const v3 offset      = glm::mat2x4{ transformation[0], transformation[1] } * line2d.offset;
+        const v3 base_offset    = transformation[3];
+        const v3 offset         = glm::mat2x4{ transformation[0], transformation[1] } * line2d.offset;
 
         RenderQueueKey key;
         key.buffer              = BufferType::Lines;
-        key.program_id          = line2d.shader;
+        key.shader_id           = line2d.shader_id;
 
         key.vertex[0].position  = base_offset;
         key.vertex[0].color     = line2d.color;
@@ -678,7 +678,7 @@ namespace Aporia
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
-        key.program_id              = circle.shader;
+        key.shader_id               = circle.shader_id;
 
         key.vertex[0].position      = base_offset - right_half_offset - up_half_offset;
         key.vertex[0].color         = circle.color;
@@ -771,7 +771,7 @@ namespace Aporia
 
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
-                key.program_id              = text.program_id;
+                key.shader_id               = text.shader_id;
 
                 key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
                 key.vertex[0].tex_id        = font.atlas.source.id;

@@ -6,27 +6,27 @@
 
 namespace Aporia
 {
-    static std::unordered_map<ShaderID, ShaderInfo> programs;
-    static ShaderID active_program_id = 0;
+    static std::unordered_map<u32, ShaderInfo> shaders;
+    static u32 active_shader_id = 0;
     static ShaderProperties default_shader_properties;
 
-    ShaderType string_to_shader_type(std::string_view type)
+    SubShaderType string_to_subshader_type(std::string_view type)
     {
-        if (type == "fragment")     return ShaderType::Fragment;
-        if (type == "vertex")       return ShaderType::Vertex;
+        if (type == "fragment")     return SubShaderType::Fragment;
+        if (type == "vertex")       return SubShaderType::Vertex;
 
         APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len: {}.", type, type.length());
         APORIA_UNREACHABLE();
-        return ShaderType::Invalid;
+        return SubShaderType::Invalid;
     }
 
-    u32 to_opengl_type(ShaderType type)
+    u32 to_opengl_type(SubShaderType type)
     {
         switch (type)
         {
-        case ShaderType::Fragment:  return GL_FRAGMENT_SHADER;
-        case ShaderType::Vertex:    return GL_VERTEX_SHADER;
-        default:                    APORIA_UNREACHABLE(); return 0;
+            case SubShaderType::Fragment:   return GL_FRAGMENT_SHADER;
+            case SubShaderType::Vertex:     return GL_VERTEX_SHADER;
+            default:                        APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -62,28 +62,28 @@ namespace Aporia
     {
         switch (blend)
         {
-        case ShaderBlend::Zero:                     return GL_ZERO;
-        case ShaderBlend::One:                      return GL_ONE;
-        case ShaderBlend::SrcColor:                 return GL_SRC_COLOR;
-        case ShaderBlend::OneMinusSrcColor:         return GL_ONE_MINUS_SRC_COLOR;
-        case ShaderBlend::DstColor:                 return GL_DST_COLOR;
-        case ShaderBlend::OneMinusDstColor:         return GL_ONE_MINUS_DST_COLOR;
-        case ShaderBlend::SrcAlpha:                 return GL_SRC_ALPHA;
-        case ShaderBlend::OneMinusSrcAlpha:         return GL_ONE_MINUS_SRC_ALPHA;
-        case ShaderBlend::DstAlpha:                 return GL_DST_ALPHA;
-        case ShaderBlend::OneMinusDstAlpha:         return GL_ONE_MINUS_DST_ALPHA;
-        case ShaderBlend::ConstantColor:            return GL_CONSTANT_COLOR;
-        case ShaderBlend::OneMinusConstantColor:    return GL_ONE_MINUS_CONSTANT_COLOR;
-        case ShaderBlend::ConstantAlpha:            return GL_CONSTANT_ALPHA;
-        case ShaderBlend::OneMinusConstantAlpha:    return GL_ONE_MINUS_CONSTANT_ALPHA;
-        case ShaderBlend::SrcAlphaSaturate:         return GL_SRC_ALPHA_SATURATE;
+            case ShaderBlend::Zero:                     return GL_ZERO;
+            case ShaderBlend::One:                      return GL_ONE;
+            case ShaderBlend::SrcColor:                 return GL_SRC_COLOR;
+            case ShaderBlend::OneMinusSrcColor:         return GL_ONE_MINUS_SRC_COLOR;
+            case ShaderBlend::DstColor:                 return GL_DST_COLOR;
+            case ShaderBlend::OneMinusDstColor:         return GL_ONE_MINUS_DST_COLOR;
+            case ShaderBlend::SrcAlpha:                 return GL_SRC_ALPHA;
+            case ShaderBlend::OneMinusSrcAlpha:         return GL_ONE_MINUS_SRC_ALPHA;
+            case ShaderBlend::DstAlpha:                 return GL_DST_ALPHA;
+            case ShaderBlend::OneMinusDstAlpha:         return GL_ONE_MINUS_DST_ALPHA;
+            case ShaderBlend::ConstantColor:            return GL_CONSTANT_COLOR;
+            case ShaderBlend::OneMinusConstantColor:    return GL_ONE_MINUS_CONSTANT_COLOR;
+            case ShaderBlend::ConstantAlpha:            return GL_CONSTANT_ALPHA;
+            case ShaderBlend::OneMinusConstantAlpha:    return GL_ONE_MINUS_CONSTANT_ALPHA;
+            case ShaderBlend::SrcAlphaSaturate:         return GL_SRC_ALPHA_SATURATE;
 #if !defined(APORIA_EMSCRIPTEN)
-        case ShaderBlend::Src1Color:                return GL_SRC1_COLOR;
-        case ShaderBlend::OneMinusSrc1Color:        return GL_ONE_MINUS_SRC1_COLOR;
-        case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
-        case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
+            case ShaderBlend::Src1Color:                return GL_SRC1_COLOR;
+            case ShaderBlend::OneMinusSrc1Color:        return GL_ONE_MINUS_SRC1_COLOR;
+            case ShaderBlend::Src1Alpha:                return GL_SRC1_ALPHA;
+            case ShaderBlend::OneMinusSrc1Alpha:        return GL_ONE_MINUS_SRC1_ALPHA;
 #endif
-        default:                                    APORIA_UNREACHABLE(); return 0;
+            default:                                    APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -104,12 +104,12 @@ namespace Aporia
     {
         switch (blend_op)
         {
-        case ShaderBlendOp::Add:                return GL_FUNC_ADD;
-        case ShaderBlendOp::Subtract:           return GL_FUNC_SUBTRACT;
-        case ShaderBlendOp::ReverseSubtract:    return GL_FUNC_REVERSE_SUBTRACT;
-        case ShaderBlendOp::Min:                return GL_MIN;
-        case ShaderBlendOp::Max:                return GL_MAX;
-        default:                                APORIA_UNREACHABLE(); return 0;
+            case ShaderBlendOp::Add:                return GL_FUNC_ADD;
+            case ShaderBlendOp::Subtract:           return GL_FUNC_SUBTRACT;
+            case ShaderBlendOp::ReverseSubtract:    return GL_FUNC_REVERSE_SUBTRACT;
+            case ShaderBlendOp::Min:                return GL_MIN;
+            case ShaderBlendOp::Max:                return GL_MAX;
+            default:                                APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -134,15 +134,15 @@ namespace Aporia
     {
         switch (depth_test)
         {
-        case ShaderDepthTest::Always:       return GL_ALWAYS;
-        case ShaderDepthTest::Never:        return GL_NEVER;
-        case ShaderDepthTest::Less:         return GL_LESS;
-        case ShaderDepthTest::LEqual:       return GL_LEQUAL;
-        case ShaderDepthTest::Greater:      return GL_GREATER;
-        case ShaderDepthTest::GEqual:       return GL_GEQUAL;
-        case ShaderDepthTest::Equal:        return GL_EQUAL;
-        case ShaderDepthTest::NotEqual:     return GL_NOTEQUAL;
-        default:                            APORIA_UNREACHABLE(); return 0;
+            case ShaderDepthTest::Always:       return GL_ALWAYS;
+            case ShaderDepthTest::Never:        return GL_NEVER;
+            case ShaderDepthTest::Less:         return GL_LESS;
+            case ShaderDepthTest::LEqual:       return GL_LEQUAL;
+            case ShaderDepthTest::Greater:      return GL_GREATER;
+            case ShaderDepthTest::GEqual:       return GL_GEQUAL;
+            case ShaderDepthTest::Equal:        return GL_EQUAL;
+            case ShaderDepthTest::NotEqual:     return GL_NOTEQUAL;
+            default:                            APORIA_UNREACHABLE(); return 0;
         }
     }
 
@@ -160,18 +160,18 @@ namespace Aporia
     {
         switch (depth_write)
         {
-        case ShaderDepthWrite::On:      return GL_TRUE;
-        case ShaderDepthWrite::Off:     return GL_FALSE;
-        default:                        APORIA_UNREACHABLE(); return 0;
+            case ShaderDepthWrite::On:      return GL_TRUE;
+            case ShaderDepthWrite::Off:     return GL_FALSE;
+            default:                        APORIA_UNREACHABLE(); return 0;
         }
     }
 
-    static ShaderProgramData parse_shader(std::string_view contents)
+    static ShaderData parse_shader(std::string_view contents)
     {
-        ShaderProgramData results;
+        ShaderData result;
 
-        // Most common case - parsing vertex and fragment shaders
-        results.shaders.reserve(2);
+        // Most common case - parsing vertex and fragment subshaders
+        result.subshaders.reserve(2);
 
         u64 line_begin = 0;
         u64 line_end = contents.find('\n', line_begin);
@@ -188,93 +188,89 @@ namespace Aporia
                 const u64 delim = params.find(' ');
                 if (delim != std::string::npos)
                 {
-                    results.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
-                    results.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
+                    result.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
+                    result.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
                 }
                 else
                 {
-                    results.properties.blend[0] = string_to_shader_blend(params);
+                    result.properties.blend[0] = string_to_shader_blend(params);
                 }
             }
             else if (line.starts_with("#blend_op "))
             {
-                results.properties.blend_op = string_to_shader_blend_op(params);
+                result.properties.blend_op = string_to_shader_blend_op(params);
             }
             else if (line.starts_with("#depth_test "))
             {
-                results.properties.depth_test = string_to_shader_depth_test(params);
+                result.properties.depth_test = string_to_shader_depth_test(params);
             }
             else if (line.starts_with("#depth_write "))
             {
-                results.properties.depth_write = string_to_shader_depth_write(params);
+                result.properties.depth_write = string_to_shader_depth_write(params);
             }
             else if (line.starts_with("#type "))
             {
-                const u64 shader_begin = line_end + 1;
-                const u64 shader_end = contents.find("#type ", shader_begin);
+                const u64 subshader_begin = line_end + 1;
+                const u64 subshader_end = contents.find("#type ", subshader_begin);
 
-                const ShaderType shader_type = string_to_shader_type(params);
-                const std::string_view shader_code = contents.substr(shader_begin, shader_end - shader_begin);
+                SubShaderData subshader;
+                subshader.type = string_to_subshader_type(params);
+                subshader.contents = contents.substr(subshader_begin, subshader_end - subshader_begin);
+                result.subshaders.push_back( std::move(subshader) );
 
-                ShaderData shader;
-                shader.type = shader_type;
-                shader.contents = shader_code;
-                results.shaders.push_back( std::move(shader) );
-
-                line_end = shader_end - 1;
+                line_end = subshader_end - 1;
             }
 
             line_begin = line_end + 1;
             line_end = contents.find('\n', line_begin);
         }
 
-        return results;
+        return result;
     }
 
-    ShaderID load_shader(const std::string& contents, ShaderType type)
+    u32 load_subshader(const std::string& contents, SubShaderType type)
     {
-        const u32 shader_type = to_opengl_type(type);
+        const u32 opengl_type = to_opengl_type(type);
+        const char* subshader_code = contents.c_str();
 
-        const ShaderID shader_id = glCreateShader(shader_type);
-        const char* shader = contents.c_str();
-
-        glShaderSource(shader_id, 1, &shader, nullptr);
-        glCompileShader(shader_id);
+        const u32 subshader_id = glCreateShader(opengl_type);
+        glShaderSource(subshader_id, 1, &subshader_code, nullptr);
+        glCompileShader(subshader_id);
 
         i32 results;
-        glGetShaderiv(shader_id, GL_COMPILE_STATUS, &results);
+        glGetShaderiv(subshader_id, GL_COMPILE_STATUS, &results);
         if (results == GL_FALSE)
         {
             i32 length;
-            glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &length);
+            glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
 
             std::vector<GLchar> msg(length);
-            glGetShaderInfoLog(shader_id, length, &length, msg.data());
+            glGetShaderInfoLog(subshader_id, length, &length, msg.data());
 
-            glDeleteProgram(shader_id);
+            glDeleteProgram(subshader_id);
 
             APORIA_LOG(Error, std::string{ msg.data() });
 
             return 0;
         }
 
-        return shader_id;
+        return subshader_id;
     }
 
-    void link_shaders(ShaderID program_id, const std::vector<ShaderID>& loaded_shaders)
+    void link_shaders(u32 shader_id, const std::vector<u32>& loaded_subshaders)
     {
-        for (const ShaderID shader_id : loaded_shaders)
+        for (const u32 subshader_id : loaded_subshaders)
         {
-            glAttachShader(program_id, shader_id);
+            glAttachShader(shader_id, subshader_id);
         }
 
-        glLinkProgram(program_id);
-        glValidateProgram(program_id);
+        glLinkProgram(shader_id);
+        glValidateProgram(shader_id);
 
-        for (const ShaderID shader_id : loaded_shaders)
+        for (const u32 subshader_id : loaded_subshaders)
         {
-            glDetachShader(program_id, shader_id);
-            glDeleteShader(shader_id);
+            glDetachShader(shader_id, subshader_id);
+            glDeleteShader(subshader_id);
         }
     }
 
@@ -302,13 +298,13 @@ namespace Aporia
         }
     }
 
-    void apply_shader_properties(ShaderID program_id)
+    void apply_shader_properties(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
-            "Shader program with ID: {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+            "Shader (with ID: {}) is not valid!", shader_id);
 
-        const ShaderInfo& program_info = programs.at(program_id);
-        const ShaderProperties& properties = program_info.properties;
+        const ShaderInfo& shader_info = shaders.at(shader_id);
+        const ShaderProperties& properties = shader_info.properties;
 
         if (properties.blend[0] != ShaderBlend::Off)
         {
@@ -336,19 +332,19 @@ namespace Aporia
 
     i32 get_uniform_location(const std::string& name)
     {
-        APORIA_ASSERT_WITH_MESSAGE(programs.contains(active_program_id),
-            "No active shader program!");
+        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(active_shader_id),
+            "No active shader!");
 
-        ShaderInfo& program_info = programs.at(active_program_id);
-        std::unordered_map<std::string, i32>& locations_dict = program_info.locations;
+        ShaderInfo& shader_info = shaders.at(active_shader_id);
+        std::unordered_map<std::string, i32>& locations_dict = shader_info.locations;
 
         i32 location;
         if (!locations_dict.contains(name))
         {
-            location = glGetUniformLocation(active_program_id, name.c_str());
+            location = glGetUniformLocation(active_shader_id, name.c_str());
             if (location == -1)
             {
-                APORIA_LOG(Error, "'{}' does not correspond to an active uniform variable in program {}!", name, active_program_id);
+                APORIA_LOG(Error, "'{}' does not correspond to an active uniform variable in shader {}!", name, active_shader_id);
             }
             else
             {
@@ -363,59 +359,59 @@ namespace Aporia
         return location;
     }
 
-    ShaderID create_shader(std::string_view filepath)
+    u32 create_shader(std::string_view filepath)
     {
-        ShaderID program_id = glCreateProgram();
+        u32 shader_id = glCreateProgram();
 
-        std::vector<ShaderID> loaded_shaders;
-        loaded_shaders.reserve(2);
+        std::vector<u32> loaded_subshaders;
+        loaded_subshaders.reserve(2);
 
         const std::string shader_contents = read_file(filepath);
-        ShaderProgramData shader_data = parse_shader(shader_contents);
-        for (const ShaderData& data : shader_data.shaders)
+        ShaderData shader_data = parse_shader(shader_contents);
+        for (const SubShaderData& data : shader_data.subshaders)
         {
-            if (ShaderID shader_id = load_shader(data.contents, data.type))
+            if (u32 shader_id = load_subshader(data.contents, data.type))
             {
-                loaded_shaders.push_back(shader_id);
+                loaded_subshaders.push_back(shader_id);
             }
         }
 
-        if (loaded_shaders.empty())
+        if (loaded_subshaders.empty())
         {
-            glDeleteProgram(program_id);
+            glDeleteProgram(shader_id);
             return 0;
         }
 
-        link_shaders(program_id, loaded_shaders);
+        link_shaders(shader_id, loaded_subshaders);
 
         apply_shader_defaults(shader_data.properties);
 
-        ShaderInfo program_info;
-        program_info.source = filepath;
-        program_info.properties = shader_data.properties;
+        ShaderInfo shader_info;
+        shader_info.source = filepath;
+        shader_info.properties = shader_data.properties;
 
-        programs.emplace(program_id, std::move(program_info));
+        shaders.emplace(shader_id, std::move(shader_info));
 
-        return program_id;
+        return shader_id;
     }
 
-    void remove_shader(ShaderID program_id)
+    void remove_shader(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
-            "Shader program with ID: {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+            "Shader (with ID: {}) is not valid!", shader_id);
 
-        glDeleteProgram(program_id);
-        programs.erase(program_id);
+        glDeleteProgram(shader_id);
+        shaders.erase(shader_id);
     }
 
     void remove_all_shaders()
     {
-        for (const auto&[program_id, program_info] : programs)
+        for (const auto&[shader_id, shader_info] : shaders)
         {
-            glDeleteProgram(program_id);
+            glDeleteProgram(shader_id);
         }
 
-        programs.clear();
+        shaders.clear();
     }
 
     void set_default_shader_properties(ShaderProperties shader_properties)
@@ -423,32 +419,32 @@ namespace Aporia
         default_shader_properties = shader_properties;
     }
 
-    void reload_shader(ShaderID program_id)
+    void reload_shader(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(programs.contains(program_id),
-            "Shader program with ID: {} is not valid!", program_id);
+        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+            "Shader (with ID: {}) is not valid!", shader_id);
 
-        const std::string program_source = programs.at(program_id).source;
+        const std::string shader_source = shaders.at(shader_id).source;
 
-        glDeleteProgram(program_id);
-        programs.erase(program_id);
+        glDeleteProgram(shader_id);
+        shaders.erase(shader_id);
 
-        create_shader(program_source);
+        create_shader(shader_source);
     }
 
-    void bind_shader(ShaderID program_id)
+    void bind_shader(u32 shader_id)
     {
-        APORIA_ASSERT(program_id > 0);
-        apply_shader_properties(program_id);
+        APORIA_ASSERT(shader_id > 0);
+        apply_shader_properties(shader_id);
 
-        glUseProgram(program_id);
-        active_program_id = program_id;
+        glUseProgram(shader_id);
+        active_shader_id = shader_id;
     }
 
     void unbind_shader()
     {
         glUseProgram(0);
-        active_program_id = 0;
+        active_shader_id = 0;
     }
 
     void shader_set_float(const std::string& name, f32 value)

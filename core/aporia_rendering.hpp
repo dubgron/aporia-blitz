@@ -35,7 +35,7 @@ namespace Aporia
     struct RenderQueueKey
     {
         BufferType buffer = BufferType::Quads;
-        ShaderID program_id = 0;
+        u32 shader_id = 0;
 
         Vertex vertex[4];
     };
@@ -101,7 +101,7 @@ namespace Aporia
         void init(u32 in_max_size, u32 in_binding_index, std::string_view in_block_name);
         void deinit();
 
-        void bind_to_shader(ShaderID program_id);
+        void bind_to_shader(u32 shader_id);
         void set_data(const void* data, u64 size);
     };
 
@@ -157,9 +157,9 @@ namespace Aporia
     void resize_framebuffers(u32 width, u32 height);
 
     // Predefined shaders
-    extern ShaderID default_shader;
-    extern ShaderID font_shader;
-    extern ShaderID postprocessing_shader;
-    extern ShaderID raymarching_shader;
-    extern ShaderID shadowcasting_shader;
+    extern u32 default_shader;
+    extern u32 font_shader;
+    extern u32 postprocessing_shader;
+    extern u32 raymarching_shader;
+    extern u32 shadowcasting_shader;
 }
