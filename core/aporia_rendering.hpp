@@ -17,7 +17,7 @@ namespace Aporia
     {
         v3 position{ 0.f };
 
-        Color color = Colors::White;
+        Color color = Color::White;
 
         texture_id tex_id = 0;
         v2 tex_coord{ 0.f };
@@ -120,7 +120,7 @@ namespace Aporia
         void unbind() const;
 
         // @TODO(dubgron): Make clear more customizable.
-        void clear(Color color = Colors::Black);
+        void clear(Color color = Color::Black);
     };
 
     struct LightSource
@@ -145,21 +145,11 @@ namespace Aporia
     void rendering_begin(const class Window& window, struct Camera& camera);
     void rendering_end();
 
-    void draw(const Sprite& sprite);
-    void draw(const Rectangle2D& rect);
-    void draw(const Line2D& line);
-    void draw(const Circle2D& circle);
-    void draw(const Text& text);
-
-    void rendering_push_transform(const Transform2D& transform);
-    void rendering_pop_transform();
+    void draw_entity(const Entity& entity);
+    void draw_rectangle(v2 position, f32 width, f32 height, Color color, u32 shader_id = default_shader);
+    void draw_line(v2 begin, v2 end, f32 thickness, Color color, u32 shader_id = line_shader);
+    void draw_circle(v2 position, f32 radius, Color color, u32 shader_id = circle_shader);
+    void draw_text(const Text& text);
 
     void resize_framebuffers(u32 width, u32 height);
-
-    // Predefined shaders
-    extern u32 default_shader;
-    extern u32 font_shader;
-    extern u32 postprocessing_shader;
-    extern u32 raymarching_shader;
-    extern u32 shadowcasting_shader;
 }

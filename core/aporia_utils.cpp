@@ -16,50 +16,24 @@ namespace Aporia
         return std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
     }
 
-    m4 to_mat4(const Transform2D& transform)
+    const Color Color::Black       = Color{  0,   0,   0,  255 };
+    const Color Color::White       = Color{ 255, 255, 255, 255 };
+    const Color Color::Red         = Color{ 255,  0,   0,  255 };
+    const Color Color::Green       = Color{  0,  255,  0,  255 };
+    const Color Color::Blue        = Color{  0,   0,  255, 255 };
+    const Color Color::Yellow      = Color{ 255, 255,  0,  255 };
+    const Color Color::Magenta     = Color{ 255,  0,  255, 255 };
+    const Color Color::Cyan        = Color{  0,  255, 255, 255 };
+    const Color Color::Transparent = Color{  0,   0,   0,   0  };
+
+    Color color_from_vec4(f64 r, f64 g, f64 b, f64 a)
     {
-        // @NOTE(dubgron): Precalculated following lines:
-        //     result = glm::translate(glm::mat4{ 1.f }, transform.position + glm::vec3{ transform.origin, 0.f });
-        //     result = glm::rotate(result, transform.rotation, glm::vec3{ 0.f, 0.f, 1.f });
-        //     result = glm::scale(result, glm::vec3{ transform.scale, 1.f });
-        //     result = glm::translate(result, glm::vec3{ a-transform.origin, 0.f });
-        const v2 sin_scaled{ transform.scale * std::sin(transform.rotation) };
-        const v2 cos_scaled{ transform.scale * std::cos(transform.rotation) };
+        const u8 new_r = static_cast<u8>(r * 255);
+        const u8 new_g = static_cast<u8>(g * 255);
+        const u8 new_b = static_cast<u8>(b * 255);
+        const u8 new_a = static_cast<u8>(a * 255);
 
-        const f32 x_translate = transform.position.x + transform.origin.x - (transform.origin.x * cos_scaled.x - transform.origin.y * sin_scaled.y);
-        const f32 y_translate = transform.position.y + transform.origin.y - (transform.origin.x * sin_scaled.x + transform.origin.y * cos_scaled.y);
-        const f32 z_translate = transform.position.z;
-
-        return m4{
-            cos_scaled.x,   sin_scaled.x,   0.f,            0.f,
-            -sin_scaled.y,  cos_scaled.y,   0.f,            0.f,
-            0.f,            0.f,            1.f,            0.f,
-            x_translate,    y_translate,    z_translate,    1.f };
-    }
-
-    Transform2D operator*(const Transform2D& transform1, const Transform2D& transform2)
-    {
-        return Transform2D{
-            .position = transform1.position + transform2.position,
-            .origin = transform1.origin + transform2.origin,
-            .rotation = transform1.rotation + transform2.rotation,
-            .scale = transform1.scale * transform2.scale };
-    }
-
-    f32 degrees_to_radians(f32 angle_in_degrees)
-    {
-        return angle_in_degrees / 180.f * M_PI;
-    }
-
-    f32 radians_to_degrees(f32 angle_in_radians)
-    {
-        return angle_in_radians / M_PI * 180.f;
-    }
-
-    i32 unwind_angle(i64 angle)
-    {
-        constexpr i32 full_angle = 360;
-        return (full_angle + (angle % full_angle)) % full_angle;
+        return Color{ new_r, new_g, new_b, new_a };
     }
 
     Color hsv_to_rgb(i64 hue, f64 saturation, f64 value)
@@ -108,12 +82,32 @@ namespace Aporia
             Gs = 0.0;
             Bs = X;
         }
+        else
+        {
+            APORIA_UNREACHABLE();
+        }
 
-        const u8 r = static_cast<u8>( (Rs + m) * 255 );
-        const u8 g = static_cast<u8>( (Gs + m) * 255 );
-        const u8 b = static_cast<u8>( (Bs + m) * 255 );
+        const u8 r = static_cast<u8>((Rs + m) * 255);
+        const u8 g = static_cast<u8>((Gs + m) * 255);
+        const u8 b = static_cast<u8>((Bs + m) * 255);
 
         return Color{ r, g, b };
+    }
+
+    f32 degrees_to_radians(f32 angle_in_degrees)
+    {
+        return angle_in_degrees / 180.f * M_PI;
+    }
+
+    f32 radians_to_degrees(f32 angle_in_radians)
+    {
+        return angle_in_radians / M_PI * 180.f;
+    }
+
+    i32 unwind_angle(i64 angle)
+    {
+        constexpr i32 full_angle = 360;
+        return (full_angle + (angle % full_angle)) % full_angle;
     }
 
     static std::mt19937 random_generator{ std::random_device{}() };

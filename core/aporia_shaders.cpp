@@ -6,6 +6,14 @@
 
 namespace Aporia
 {
+    u32 default_shader = 0;
+    u32 line_shader = 0;
+    u32 circle_shader = 0;
+    u32 font_shader = 0;
+    u32 postprocessing_shader = 0;
+    u32 raymarching_shader = 0;
+    u32 shadowcasting_shader = 0;
+
     static std::unordered_map<u32, ShaderInfo> shaders;
     static u32 active_shader_id = 0;
     static ShaderProperties default_shader_properties;

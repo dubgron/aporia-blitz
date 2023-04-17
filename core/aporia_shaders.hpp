@@ -148,4 +148,13 @@ namespace Aporia
     void shader_set_mat2(const std::string& name, m2 value, bool transpose = false, i32 count = 1);
     void shader_set_mat3(const std::string& name, m3 value, bool transpose = false, i32 count = 1);
     void shader_set_mat4(const std::string& name, m4 value, bool transpose = false, i32 count = 1);
+
+    // Predefined shaders
+    extern u32 default_shader;
+    extern u32 line_shader;
+    extern u32 circle_shader;
+    extern u32 font_shader;
+    extern u32 postprocessing_shader;
+    extern u32 raymarching_shader;
+    extern u32 shadowcasting_shader;
 }

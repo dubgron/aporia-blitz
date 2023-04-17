@@ -22,17 +22,10 @@ namespace Aporia
     static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
-    u32 default_shader = 0;
-    u32 font_shader = 0;
-    u32 postprocessing_shader = 0;
-    u32 raymarching_shader = 0;
-    u32 shadowcasting_shader = 0;
-
     static Framebuffer main_framebuffer;
 
     static std::vector<RenderQueueKey> rendering_queue;
     static std::vector<VertexArray> vertex_arrays;
-    static std::vector<Transform2D> transformation_stack;
 
     // @TODO(dubgron): Move the lighting code to the separate file.
     static bool lighting_enabled = false;
@@ -298,7 +291,7 @@ namespace Aporia
         glDisable(GL_DEPTH_TEST);
     }
 
-    void Framebuffer::clear(Color color /* = Colors::Black */)
+    void Framebuffer::clear(Color color /* = Color::Black */)
     {
         glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -399,9 +392,6 @@ namespace Aporia
 
     void rendering_init(u32 width, u32 height)
     {
-        transformation_stack.reserve(10);
-        transformation_stack.emplace_back();
-
         rendering_queue.reserve(MAX_RENDERING_QUEUE_SIZE);
 
         vertex_arrays.reserve(2);
@@ -465,12 +455,12 @@ namespace Aporia
 
         // Setup default shaders
         default_shader = create_shader("assets/shaders/default.shader");
+        circle_shader = create_shader("assets/shaders/circle.shader");
+        line_shader = create_shader("assets/shaders/line.shader");
+        font_shader = create_shader("assets/shaders/font.shader");
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
-
-        // Setup font shaders
-        font_shader = create_shader("assets/shaders/font.shader");
 
         bind_shader(font_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
@@ -511,6 +501,12 @@ namespace Aporia
         const f32 camera_zoom = 1.f / camera.projection.zoom;
 
         bind_shader(default_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(line_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(circle_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
         bind_shader(font_shader);
@@ -558,7 +554,7 @@ namespace Aporia
             shader_set_uint("u_num_lights", num_lights);
 
             masking.bind();
-            masking.clear(Colors::Transparent);
+            masking.clear(Color::Transparent);
             //draw(light_blockers);
             flush_rendering_queue();
             masking.unbind();
@@ -566,7 +562,7 @@ namespace Aporia
             DEBUG_TEXTURE(masking.color_buffer);
 
             raymarching.bind();
-            raymarching.clear(Colors::Black);
+            raymarching.clear(Color::Black);
             flush_framebuffer(masking, raymarching_shader);
             raymarching.unbind();
 
@@ -578,143 +574,152 @@ namespace Aporia
         unbind_shader();
     }
 
-    void draw(const Sprite& sprite)
+    void draw_entity(const Entity& entity)
     {
-        const m4 transformation = to_mat4(transformation_stack.back() * sprite.transform);
+        const f32 sin = std::sinf(entity.rotation);
+        const f32 cos = std::cosf(entity.rotation);
 
-        const v3 base_offset     = transformation[3];
-        const v3 right_offset    = transformation[0] * sprite.rect.width;
-        const v3 up_offset       = transformation[1] * sprite.rect.height;
+        const v3 right_offset       = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
+        const v3 up_offset          = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;
+
+        const v3 offset_from_center = right_offset * entity.center_of_rotation.x + up_offset * entity.center_of_rotation.y;
+        const v3 base_offset        = v3{ entity.position, entity.z } - offset_from_center;
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
-        key.shader_id               = sprite.shader_id;
+        key.shader_id               = entity.shader_id;
 
-        const v2 half_pixel_offset  = 0.5f / v2{ sprite.texture.source.width, sprite.texture.source.height };
-        const v2 tex_coord_u        = sprite.texture.u + half_pixel_offset;
-        const v2 tex_coord_v        = sprite.texture.v - half_pixel_offset;
+        const v2 half_pixel_offset  = 0.5f / v2{ entity.texture.source.width, entity.texture.source.height };
+        const v2 tex_coord_u        = entity.texture.u + half_pixel_offset;
+        const v2 tex_coord_v        = entity.texture.v - half_pixel_offset;
 
         key.vertex[0].position      = base_offset;
         key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
-        key.vertex[0].tex_id        = sprite.texture.source.id;
-        key.vertex[0].color         = sprite.color;
+        key.vertex[0].tex_id        = entity.texture.source.id;
+        key.vertex[0].color         = entity.color;
 
         key.vertex[1].position      = base_offset + right_offset;
         key.vertex[1].tex_coord     = tex_coord_v;
-        key.vertex[1].tex_id        = sprite.texture.source.id;
-        key.vertex[1].color         = sprite.color;
+        key.vertex[1].tex_id        = entity.texture.source.id;
+        key.vertex[1].color         = entity.color;
 
         key.vertex[2].position      = base_offset + right_offset + up_offset;
         key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
-        key.vertex[2].tex_id        = sprite.texture.source.id;
-        key.vertex[2].color         = sprite.color;
+        key.vertex[2].tex_id        = entity.texture.source.id;
+        key.vertex[2].color         = entity.color;
 
         key.vertex[3].position      = base_offset + up_offset;
         key.vertex[3].tex_coord     = tex_coord_u;
-        key.vertex[3].tex_id        = sprite.texture.source.id;
-        key.vertex[3].color         = sprite.color;
+        key.vertex[3].tex_id        = entity.texture.source.id;
+        key.vertex[3].color         = entity.color;
 
         rendering_queue.push_back(key);
     }
 
-    void draw(const Rectangle2D& rect)
+    void draw_rectangle(v2 position, f32 width, f32 height, Color color, u32 shader_id)
     {
-        const m4 transformation = to_mat4(transformation_stack.back() * rect.transform);
-
-        const v3 base_offset     = transformation[3];
-        const v3 right_offset    = transformation[0] * rect.size.width;
-        const v3 up_offset       = transformation[1] * rect.size.height;
+        const v3 base_offset    = v3{ position, 0.f };
+        const v3 right_offset   = v3{ width, 0.f, 0.f };
+        const v3 up_offset      = v3{ 0.f, height, 0.f };
 
         RenderQueueKey key;
         key.buffer              = BufferType::Quads;
-        key.shader_id           = rect.shader_id;
+        key.shader_id           = shader_id;
 
         key.vertex[0].position  = base_offset;
-        key.vertex[0].color     = rect.color;
+        key.vertex[0].color     = color;
         key.vertex[0].tex_coord = v2{ 0.f, 0.f };
 
         key.vertex[1].position  = base_offset + right_offset;
-        key.vertex[1].color     = rect.color;
+        key.vertex[1].color     = color;
         key.vertex[1].tex_coord = v2{ 1.f, 0.f };
 
         key.vertex[2].position  = base_offset + right_offset + up_offset;
-        key.vertex[2].color     = rect.color;
+        key.vertex[2].color     = color;
         key.vertex[2].tex_coord = v2{ 1.f, 1.f };
 
         key.vertex[3].position  = base_offset + up_offset;
-        key.vertex[3].color     = rect.color;
+        key.vertex[3].color     = color;
         key.vertex[3].tex_coord = v2{ 0.f, 1.f };
 
         rendering_queue.push_back(key);
     }
 
-    void draw(const Line2D& line2d)
+    void draw_line(v2 begin, v2 end, f32 thickness, Color color, u32 shader_id)
     {
-        const m4 transformation = to_mat4(transformation_stack.back() * line2d.transform);
-
-        const v3 base_offset    = transformation[3];
-        const v3 offset         = glm::mat2x4{ transformation[0], transformation[1] } * line2d.offset;
+        const v2 direction = glm::normalize(end - begin);
+        const v2 normal = v2{ -direction.y, direction.x };
 
         RenderQueueKey key;
-        key.buffer              = BufferType::Lines;
-        key.shader_id           = line2d.shader_id;
+        key.buffer                  = BufferType::Quads;
+        key.shader_id               = shader_id;
 
-        key.vertex[0].position  = base_offset;
-        key.vertex[0].color     = line2d.color;
+        key.vertex[0].position      = v3{ begin, 0.f };
+        key.vertex[0].tex_coord     = normal;
+        key.vertex[0].color         = color;
+        key.vertex[0].additional    = thickness;
 
-        key.vertex[1].position  = base_offset + offset;
-        key.vertex[1].color     = line2d.color;
+        key.vertex[1].position      = v3{ begin, 0.f };
+        key.vertex[1].tex_coord     = -normal;
+        key.vertex[1].color         = color;
+        key.vertex[1].additional    = thickness;
+
+        key.vertex[2].position      = v3{ end, 0.f };
+        key.vertex[2].tex_coord     = -normal;
+        key.vertex[2].color         = color;
+        key.vertex[2].additional    = thickness;
+
+        key.vertex[3].position      = v3{ end, 0.f };
+        key.vertex[3].tex_coord     = normal;
+        key.vertex[3].color         = color;
+        key.vertex[3].additional    = thickness;
 
         rendering_queue.push_back(key);
     }
 
-    void draw(const Circle2D& circle)
+    void draw_circle(v2 position, f32 radius, Color color, u32 shader_id)
     {
-        const m4 transformation = to_mat4(transformation_stack.back() * circle.transform);
-
-        const v3 base_offset          = transformation[3];
-        const v3 right_half_offset    = transformation[0] * circle.radius;
-        const v3 up_half_offset       = transformation[1] * circle.radius;
+        const v3 base_offset          = v3{ position, 0.f };
+        const v3 right_half_offset    = v3{ -radius, 0.f, 0.f };
+        const v3 up_half_offset       = v3{ 0.f, radius, 0.f };
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
-        key.shader_id               = circle.shader_id;
+        key.shader_id               = shader_id;
 
         key.vertex[0].position      = base_offset - right_half_offset - up_half_offset;
-        key.vertex[0].color         = circle.color;
+        key.vertex[0].color         = color;
         key.vertex[0].tex_coord     = v2{ -1.f, -1.f };
 
         key.vertex[1].position      = base_offset + right_half_offset - up_half_offset;
-        key.vertex[1].color         = circle.color;
+        key.vertex[1].color         = color;
         key.vertex[1].tex_coord     = v2{ 1.f, -1.f };
 
         key.vertex[2].position      = base_offset + right_half_offset + up_half_offset;
-        key.vertex[2].color         = circle.color;
+        key.vertex[2].color         = color;
         key.vertex[2].tex_coord     = v2{ 1.f, 1.f };
 
         key.vertex[3].position      = base_offset - right_half_offset + up_half_offset;
-        key.vertex[3].color         = circle.color;
+        key.vertex[3].color         = color;
         key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
 
         rendering_queue.push_back(key);
     }
 
-    void draw(const Text& text)
+    void draw_text(const Text& text)
     {
         APORIA_ASSERT(text.font);
-
         const Font& font = *text.font;
 
-        const v2 texture_size = v2{ font.atlas.source.width, font.atlas.source.height };
-        const v2 half_pixel_offset = 0.5f / texture_size;
+        const v2 texture_size           = v2{ font.atlas.source.width, font.atlas.source.height };
+        const v2 half_pixel_offset      = 0.5f / texture_size;
 
         // Adjust text scaling by the predefined atlas font size
-        const Transform2D font_scale{ .scale = v2{ 1.f / font.atlas.font_size } };
+        const f32 effective_font_size   = text.font_size / font.atlas.font_size;
+        const f32 screen_px_range       = font.atlas.distance_range * effective_font_size;
 
-        const m4 transformation = to_mat4(transformation_stack.back() * text.transform * font_scale);
-
-        const f32 text_scale = glm::length(text.transform.scale);
-        const f32 screen_px_range = text_scale * font.atlas.distance_range / font.atlas.font_size;
+        const f32 sin = std::sin(text.rotation);
+        const f32 cos = std::cos(text.rotation);
 
         v2 advance{ 0.f };
         const u64 length = text.caption.size();
@@ -729,27 +734,27 @@ namespace Aporia
                 const std::pair<u8, u8> key = std::make_pair(prev_character, character);
                 if (font.kerning.contains(key))
                 {
-                    advance.x += font.kerning.at(key) * font.atlas.font_size;
+                    advance.x += font.kerning.at(key);
                 }
 
                 if (font.glyphs.contains(prev_character))
                 {
-                    advance.x += font.glyphs.at(prev_character).advance * font.atlas.font_size;
+                    advance.x += font.glyphs.at(prev_character).advance;
                 }
             }
 
             if (character == ' ')
             {
-                advance.x += font.metrics.em_size * font.atlas.font_size / 4.f;
+                advance.x += font.metrics.em_size / 4.f;
             }
             else if (character == '\t')
             {
-                advance.x += font.metrics.em_size * font.atlas.font_size * 2.f;
+                advance.x += font.metrics.em_size * 2.f;
             }
             else if (character == '\n')
             {
                 advance.x = 0.f;
-                advance.y -= font.metrics.line_height * font.atlas.font_size;
+                advance.y -= font.metrics.line_height;
             }
             else if (font.glyphs.contains(character))
             {
@@ -758,40 +763,47 @@ namespace Aporia
                 const GlyphBounds& atlas_bounds = glyph.atlas_bounds;
                 const GlyphBounds& plane_bounds = glyph.plane_bounds;
 
+                const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.bottom } / texture_size + half_pixel_offset;
+                const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.top } / texture_size - half_pixel_offset;
+
+                const f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
+                const f32 height        = (atlas_bounds.top - atlas_bounds.bottom) * effective_font_size;
+
                 // @NOTE(dubgron): We switch the sign of plane_bounds.bottom because
                 // the plane_bounds lives in a space where the y-axis goes downwards.
-                const v2 plane_offset = v2{ plane_bounds.left, -plane_bounds.bottom } * font.atlas.font_size;
-                const v2 position = advance + plane_offset;
+                const v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
+                const v2 line_offset    = advance + plane_offset;
 
-                const v2 tex_coord_u = v2{ atlas_bounds.left, atlas_bounds.bottom } / texture_size + half_pixel_offset;
-                const v2 tex_coord_v = v2{ atlas_bounds.right, atlas_bounds.top } / texture_size - half_pixel_offset;
+                const f32 rotated_x     = cos * line_offset.x - sin * line_offset.y;
+                const f32 rotated_y     = sin * line_offset.x + cos * line_offset.y;
 
-                const f32 width = atlas_bounds.right - atlas_bounds.left;
-                const f32 height = atlas_bounds.top - atlas_bounds.bottom;
+                const v2 base_offset    = text.position + v2{ rotated_x, rotated_y } * text.font_size;
+                const v2 right_offset   = v2{ cos , sin } * width;
+                const v2 up_offset      = v2{ -sin, cos } * height;
 
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
                 key.shader_id               = text.shader_id;
 
-                key.vertex[0].position      = transformation * v4{ position, 0.f, 1.f };
+                key.vertex[0].position      = v3{ base_offset, 0.f };
                 key.vertex[0].tex_id        = font.atlas.source.id;
                 key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
-                key.vertex[1].position      = transformation * v4{ position.x + width, position.y, 0.f, 1.f };
+                key.vertex[1].position      = v3{ base_offset + right_offset, 0.f };
                 key.vertex[1].tex_id        = font.atlas.source.id;
                 key.vertex[1].tex_coord     = tex_coord_v;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
-                key.vertex[2].position      = transformation * v4{ position.x + width, position.y + height, 0.f, 1.f };
+                key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, 0.f };
                 key.vertex[2].tex_id        = font.atlas.source.id;
                 key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
-                key.vertex[3].position      = transformation * v4{ position.x, position.y + height, 0.f, 1.f };
+                key.vertex[3].position      = v3{ base_offset + up_offset, 0.f };
                 key.vertex[3].tex_id        = font.atlas.source.id;
                 key.vertex[3].tex_coord     = tex_coord_u;
                 key.vertex[3].color         = text.color;
@@ -799,19 +811,6 @@ namespace Aporia
 
                 rendering_queue.push_back(key);
             }
-        }
-    }
-
-    void rendering_push_transform(const Transform2D& transform)
-    {
-        transformation_stack.push_back( transformation_stack.back() * transform );
-    }
-
-    void rendering_pop_transform()
-    {
-        if (transformation_stack.size() > 1)
-        {
-            transformation_stack.pop_back();
         }
     }
 

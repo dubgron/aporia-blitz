@@ -1,11 +1,35 @@
 #pragma once 
 
+#include <chrono>
 #include <random>
 
-#include "aporia_entity.hpp"
+#include "aporia_types.hpp"
 
 namespace Aporia
 {
+    std::string read_file(std::string_view filepath);
+
+    struct Color
+    {
+        u8 r = 255;
+        u8 g = 255;
+        u8 b = 255;
+        u8 a = 255;
+
+        static const Color Black;
+        static const Color White;
+        static const Color Red;
+        static const Color Green;
+        static const Color Blue;
+        static const Color Yellow;
+        static const Color Magenta;
+        static const Color Cyan;
+        static const Color Transparent;
+    };
+
+    Color color_from_vec4(f64 r, f64 g, f64 b, f64 a);
+    Color hsv_to_rgb(i64 hue, f64 saturation, f64 value);
+
     using Clock = std::chrono::steady_clock;
     using TimePoint = Clock::time_point;
     using Duration = Clock::duration;
@@ -36,11 +60,6 @@ namespace Aporia
         }
     };
 
-    std::string read_file(std::string_view filepath);
-
-    m4 to_mat4(const Transform2D& transform);
-    Transform2D operator*(const Transform2D& transform1, const Transform2D& transform2);
-
     template<typename T> requires std::is_scalar_v<T>
     T min(T value, T bound)
     {
@@ -61,9 +80,7 @@ namespace Aporia
 
     f32 degrees_to_radians(f32 angle_in_degrees);
     f32 radians_to_degrees(f32 angle_in_radians);
-
     i32 unwind_angle(i64 angle);
-    Color hsv_to_rgb(i64 hue, f64 saturation, f64 value);
 
     i32 random_range(i32 min, i32 max);
     i64 random_range(i64 min, i64 max);

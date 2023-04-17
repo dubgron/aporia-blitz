@@ -57,11 +57,14 @@ namespace Aporia
         Kerning kerning;
     };
 
-    struct Text final
+    struct Text
     {
-        Transform2D transform;
-        Color color = Colors::White;
-        u32 shader_id = 0;
+        v2 position{ 0.f };
+        f32 font_size = 32.f;
+        f32 rotation = 0.f;
+
+        Color color = Color::White;
+        u32 shader_id = font_shader;
 
         std::string caption;
         const Font* font = nullptr;
