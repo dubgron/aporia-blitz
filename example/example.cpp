@@ -16,7 +16,6 @@ public:
 
     void on_draw() override
     {
-
     }
 
     void on_terminate() override

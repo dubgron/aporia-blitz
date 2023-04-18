@@ -3,22 +3,25 @@
 #include <string>
 #include <memory>
 
-#include "aporia_camera.hpp"
-#include "aporia_config.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 #include "aporia_world.hpp"
 
 namespace Aporia
 {
-    class Game
+    struct Game
     {
-        // Defined by Client
-        friend std::unique_ptr<Game> create_game();
+        MemoryArena persistent_arena;
+        MemoryArena frame_arena;
 
-        friend void main_loop(void* game_ptr);
+        World world;
 
-    public:
+        Timer frame_timer;
+        f32 total_time = 0.f;
+
+        f32 delta_time = 1.f / 240.f;
+        f32 accumulated_frame_time = 0.f;
+
         Game(const std::string& config_file);
         virtual ~Game();
 
@@ -30,16 +33,9 @@ namespace Aporia
         void run();
         void main_loop();
 
-    protected:
-        Camera _camera;
-        Window _window;
+        friend void main_loop(void* game_ptr);
 
-        World _world;
-
-        Timer frame_timer;
-        f32 total_time = 0.f;
-
-        f32 delta_time = 1.f / 240.f;
-        f32 accumulated_frame_time = 0.f;
+        // Defined by Client
+        friend std::unique_ptr<Game> create_game();
     };
 }

@@ -4,8 +4,11 @@
     #include <emscripten.h>
 #endif
 
+#include "aporia_camera.hpp"
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_rendering.hpp"
+#include "aporia_window.hpp"
 
 namespace Aporia
 {
@@ -16,24 +19,30 @@ namespace Aporia
 
     Game::Game(const std::string& config_file)
     {
+        persistent_arena.alloc(MEGABYTES(100));
+        frame_arena.alloc(KILOBYTES(10));
+
         load_config(config_file);
 
-        _camera.init();
-        _window.init(_camera);
+        active_camera = create_camera(&persistent_arena);
+        active_window = create_window(&persistent_arena);
+
+        opengl_init();
 
         set_default_shader_properties(shader_config.default_properties);
         rendering_init(window_config.width, window_config.height);
-        _world.init();
+        world.init();
 
-        imgui_init(_window);
+        imgui_init();
     }
 
     Game::~Game()
     {
         imgui_deinit();
-        _world.deinit();
+        world.deinit();
         rendering_deinit();
-        _window.deinit();
+
+        destroy_active_window();
     }
 
     void Game::run()
@@ -45,7 +54,7 @@ namespace Aporia
 #if defined(APORIA_EMSCRIPTEN)
         emscripten_set_main_loop_arg(Aporia::main_loop, this, 0, true);
 #else
-        while (_window.is_open())
+        while (active_window->is_open())
         {
             main_loop();
         }
@@ -59,7 +68,9 @@ namespace Aporia
         const f32 frame_time = frame_timer.reset();
         total_time += frame_time;
 
-        _window.poll_events();
+        frame_arena.clear();
+
+        active_window->poll_events();
         poll_gamepad_inputs();
 
         accumulated_frame_time += frame_time;
@@ -72,13 +83,13 @@ namespace Aporia
         }
 
         imgui_frame_begin();
-        rendering_begin(_window, _camera);
+        rendering_begin();
 
         on_draw();
 
         rendering_end();
         imgui_frame_end();
 
-        _window.display();
+        active_window->display();
     }
 }

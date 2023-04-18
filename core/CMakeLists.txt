@@ -50,6 +50,7 @@ add_library(core STATIC
     "aporia_world.cpp"
     "aporia_world.hpp"
     "editor/aporia_commandline.cpp"
+    "platform/aporia_opengl.cpp"
     "platform/aporia_opengl.hpp")
 
 target_precompile_headers(core PRIVATE "aporia_pch.hpp")

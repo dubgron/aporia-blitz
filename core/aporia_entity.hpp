@@ -23,6 +23,6 @@ namespace Aporia
 
         SubTexture texture;
         Color color;
-        u32 shader_id = 0;
+        u32 shader_id = default_shader;
     };
 }

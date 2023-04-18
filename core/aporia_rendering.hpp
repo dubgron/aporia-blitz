@@ -142,7 +142,7 @@ namespace Aporia
     void rendering_init(u32 width, u32 height);
     void rendering_deinit();
 
-    void rendering_begin(const class Window& window, struct Camera& camera);
+    void rendering_begin();
     void rendering_end();
 
     void draw_entity(const Entity& entity);

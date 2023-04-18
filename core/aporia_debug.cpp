@@ -47,7 +47,7 @@ namespace Aporia
         logger->flush_on(spdlog::level::debug);
     }
 
-    void imgui_init(Window& window)
+    void imgui_init()
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -69,9 +69,7 @@ namespace Aporia
             style.Colors[ImGuiCol_WindowBg].w = 1.f;
         }
 
-        GLFWwindow* handle = window.get_native_window();
-
-        ImGui_ImplGlfw_InitForOpenGL(handle, true);
+        ImGui_ImplGlfw_InitForOpenGL(active_window->handle, true);
         ImGui_ImplOpenGL3_Init(OPENGL_SHADER_VERSION);
     }
 

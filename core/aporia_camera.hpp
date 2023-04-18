@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aporia_types.hpp"
+#include "aporia_memory.hpp"
 
 namespace Aporia
 {
@@ -43,8 +44,6 @@ namespace Aporia
         void mark_as_dirty(CameraDirtyFlag flag) { dirty_flags |= flag; }
         bool is_marked_dirty(CameraDirtyFlag flag) { return dirty_flags & flag; }
 
-        void init();
-
         const m4& calculate_view_projection_matrix();
 
         void set_position(v2 new_position);
@@ -65,4 +64,8 @@ namespace Aporia
 
         void on_window_resize(u32 width, u32 height);
     };
+
+    Camera* create_camera(MemoryArena* arena);
+
+    extern Camera* active_camera;
 }

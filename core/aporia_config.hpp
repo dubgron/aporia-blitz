@@ -9,7 +9,7 @@
 
 namespace Aporia
 {
-    struct CameraConfig final
+    struct CameraConfig
     {
         f32 fov = 1.f;
         f32 aspect_ratio = 1.f;
@@ -34,12 +34,12 @@ namespace Aporia
         f32 zoom_min = 1.f;
     };
 
-    struct ShaderConfig final
+    struct ShaderConfig
     {
         ShaderProperties default_properties;
     };
 
-    struct WindowConfig final
+    struct WindowConfig
     {
         std::string title;
 

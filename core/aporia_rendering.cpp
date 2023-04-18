@@ -493,12 +493,12 @@ namespace Aporia
         remove_all_shaders();
     }
 
-    void rendering_begin(const Window& window, Camera& camera)
+    void rendering_begin()
     {
         light_sources.clear();
 
-        const m4& view_projection_matrix = camera.calculate_view_projection_matrix();
-        const f32 camera_zoom = 1.f / camera.projection.zoom;
+        const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
+        const f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
         bind_shader(default_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
@@ -513,17 +513,19 @@ namespace Aporia
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_float("u_camera_zoom", camera_zoom);
 
+        v2 window_size = v2{ active_window->get_size() };
+
         bind_shader(raymarching_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_masking", masking.color_buffer.id);
         shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", v2{ window.get_size() });
+        shader_set_float2("u_window_size", window_size);
 
         bind_shader(shadowcasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_raymarching", raymarching.color_buffer.id);
         shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", v2{ window.get_size() });
+        shader_set_float2("u_window_size", window_size);
 
         unbind_shader();
     }
@@ -576,8 +578,8 @@ namespace Aporia
 
     void draw_entity(const Entity& entity)
     {
-        const f32 sin = std::sinf(entity.rotation);
-        const f32 cos = std::cosf(entity.rotation);
+        const f32 sin = std::sin(entity.rotation);
+        const f32 cos = std::cos(entity.rotation);
 
         const v3 right_offset       = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
         const v3 up_offset          = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;

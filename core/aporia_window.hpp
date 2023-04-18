@@ -1,18 +1,15 @@
 #pragma once
 
+#include "aporia_memory.hpp"
 #include "aporia_types.hpp"
 
 struct GLFWwindow;
 
 namespace Aporia
 {
-    class Camera;
-
-    class Window final
+    struct Window
     {
-    public:
-        void init(Camera& camera);
-        void deinit();
+        GLFWwindow* handle;
 
         void display();
 
@@ -24,12 +21,11 @@ namespace Aporia
         v2_u32 get_size() const;
         v2 get_mouse_position() const;
 
-        GLFWwindow* get_native_window();
-
         void on_config_reload();
-
-    private:
-        GLFWwindow* _window;
-        Camera* _camera = nullptr;
     };
+
+    Window* create_window(MemoryArena* arena);
+    void destroy_active_window();
+
+    extern Window* active_window;
 }

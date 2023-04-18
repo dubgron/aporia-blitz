@@ -6,6 +6,8 @@
 
 namespace Aporia
 {
+    Camera* active_camera = nullptr;
+
     static void recalculate_view(Camera& camera)
     {
         const f32 x = camera.view.position.x;
@@ -38,11 +40,6 @@ namespace Aporia
         const f32 half_width = half_height * camera.projection.aspect_ratio;
 
         camera.projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height, -1.f, 1.f);
-    }
-
-    void Camera::init()
-    {
-        projection = CameraProjection{ .fov = camera_config.fov, .aspect_ratio = camera_config.aspect_ratio };
     }
 
     const m4& Camera::calculate_view_projection_matrix()
@@ -198,5 +195,14 @@ namespace Aporia
         APORIA_ASSERT(width > 0 && height > 0);
         const f32 aspect_ratio = static_cast<f32>(width) / static_cast<f32>(height);
         set_aspect_ratio(aspect_ratio);
+    }
+
+    Camera* create_camera(MemoryArena* arena)
+    {
+        APORIA_ASSERT(arena);
+        Camera* result = arena->push<Camera>();
+        *result = Camera{};
+        result->projection = CameraProjection{ .fov = camera_config.fov, .aspect_ratio = camera_config.aspect_ratio };
+        return result;
     }
 }
