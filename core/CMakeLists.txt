@@ -1,7 +1,8 @@
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-option(APORIA_DEBUGTOOLS    "Compile with debug tools"  ON)
-option(APORIA_EMSCRIPTEN    "Compile with Emscripten"   OFF)
+option(APORIA_DEBUGTOOLS        "Compile with debug tools"      ON)
+option(APORIA_USE_UNITY_BUILD   "Compile using unity build"     ON)
+option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
 
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
@@ -120,6 +121,14 @@ source_group(core/platform              "core/platform/.+\.[cht]pp")
 set_target_properties(core PROPERTIES
     USE_FOLDERS     ON
     OUTPUT_NAME     "aporia-blitz")
+
+if (APORIA_USE_UNITY_BUILD)
+    # UNITY_BUILD_BATCH_SIZE of 0 means combining all sources for the target into a single unity file
+    set_target_properties(core PROPERTIES
+        UNITY_BUILD             ON
+        UNITY_BUILD_MODE        BATCH
+        UNITY_BUILD_BATCH_SIZE  0)
+endif()
 
 if (NOT APORIA_EMSCRIPTEN)
     set_target_properties(core PROPERTIES

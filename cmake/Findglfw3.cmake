@@ -1,6 +1,8 @@
 set(GLFW_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glfw/include")
 set(GLFW_SOURCE_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glfw/src")
 
+option(GLFW_USE_UNITY_BUILD "Compile glfw using unity build" ON)
+
 add_library(glfw STATIC
     ${GLFW_SOURCE_DIR}/internal.h
     ${GLFW_SOURCE_DIR}/mappings.h
@@ -149,3 +151,11 @@ if (UNIX)
 endif()
 
 target_include_directories(glfw PUBLIC ${GLFW_INCLUDE_DIR})
+
+if (GLFW_USE_UNITY_BUILD)
+    # UNITY_BUILD_BATCH_SIZE of 0 means combining all sources for the target into a single unity file
+    set_target_properties(glfw PROPERTIES
+        UNITY_BUILD             ON
+        UNITY_BUILD_MODE        BATCH
+        UNITY_BUILD_BATCH_SIZE  0)
+endif()
