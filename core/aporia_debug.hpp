@@ -66,11 +66,11 @@
 
 #else
 
-    #define APORIA_LOG
-    #define APORIA_ASSERT_WITH_MESSAGE
-    #define APORIA_ASSERT
-    #define APORIA_UNREACHABLE
-    #define APORIA_BREAKPOINT
+    #define APORIA_LOG(...)
+    #define APORIA_ASSERT_WITH_MESSAGE(...)
+    #define APORIA_ASSERT(...)
+    #define APORIA_UNREACHABLE(...)
+    #define APORIA_BREAKPOINT(...)
 
 #endif
 

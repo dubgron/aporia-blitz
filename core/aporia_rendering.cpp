@@ -13,7 +13,7 @@
         ImGui::Image((void*)(u64)texture.id, ImVec2{ (f32)texture.width, (f32)texture.height }, ImVec2{ 0.f, 1.f }, ImVec2{ 1.f, 0.f }); \
         ImGui::End();
 #else
-    #define DEBUG_TEXTURE
+    #define DEBUG_TEXTURE(...)
 #endif
 
 namespace Aporia
