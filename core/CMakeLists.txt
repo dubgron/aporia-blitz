@@ -89,7 +89,7 @@ if (MSVC)
     string(REGEX REPLACE "/GR" "/GR-" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     target_compile_definitions(core PUBLIC _HAS_EXCEPTIONS=0)
 else()
-	target_compile_options(core PUBLIC -fno-exceptions -fno-rtti)
+    target_compile_options(core PUBLIC -fno-exceptions -fno-rtti)
 endif()
 
 if (APORIA_EMSCRIPTEN)

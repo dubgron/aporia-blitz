@@ -62,22 +62,22 @@ namespace Aporia
         const u64 generation = entity_id.generation;
 
         APORIA_ASSERT_WITH_MESSAGE(index < max_entities && generation > 0,
-            "Invalid EntityID (index: {}, generation: {})!", index, generation);
+            "Invalid Entity ID (index: {}, generation: {})!", index, generation);
 
         EntityNode* entity_node = &entity_list[index];
 
-        APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
-            "Entity with ID = (index: {}, generation: {}) is null!", index, generation);
-
         APORIA_ASSERT_WITH_MESSAGE(entity_node->generation == generation,
-            "Generation mismatch! Tried to remove Entity (index: {}, generation: {}) but it its current generation: {}!",
-            index, generation, entity_node->generation);
+            "Generation mismatch! Tried to remove Entity with ID (index: {}, generation: {}), but only found ID (index: {}, generation: {})!",
+            index, generation, index, entity_node->generation);
+
+        APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
+            "Entity with ID (index: {}, generation: {}) is null!", index, generation);
 
         // Swap the removed entity with the end of the entity array and redirect its node.
-        const Entity& last_entity = entity_array[entity_count - 1];
+        const Entity* last_entity = &entity_array[entity_count - 1];
         entity_count -= 1;
-        *entity_node->entity = last_entity;
-        entity_list[last_entity.index].entity = entity_node->entity;
+        *entity_node->entity = *last_entity;
+        entity_list[last_entity->index].entity = entity_node->entity;
 
         // Clear the node of the removed entity and push it onto the free list.
         entity_node->entity = nullptr;
