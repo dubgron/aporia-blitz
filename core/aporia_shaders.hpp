@@ -108,11 +108,11 @@ namespace Aporia
         std::unordered_map<std::string, i32> locations;
     };
 
+    void shaders_init();
+
     u32 create_shader(std::string_view filepath);
     void remove_shader(u32 shader_id);
     void remove_all_shaders();
-
-    void set_default_shader_properties(ShaderProperties shader_properties);
 
     void reload_shader(u32 shader_id);
 

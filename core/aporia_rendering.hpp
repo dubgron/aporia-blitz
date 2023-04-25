@@ -139,7 +139,7 @@ namespace Aporia
 
     void add_light_source(LightSource light_source);
 
-    void rendering_init(u32 width, u32 height);
+    void rendering_init();
     void rendering_deinit();
 
     void rendering_begin();

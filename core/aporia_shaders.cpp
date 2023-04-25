@@ -1,5 +1,6 @@
 #include "aporia_shaders.hpp"
 
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 #include "platform/aporia_opengl.hpp"
@@ -236,7 +237,7 @@ namespace Aporia
         return result;
     }
 
-    u32 load_subshader(const std::string& contents, SubShaderType type)
+    static u32 load_subshader(const std::string& contents, SubShaderType type)
     {
         const u32 opengl_type = to_opengl_type(type);
         const char* subshader_code = contents.c_str();
@@ -265,7 +266,7 @@ namespace Aporia
         return subshader_id;
     }
 
-    void link_shaders(u32 shader_id, const std::vector<u32>& loaded_subshaders)
+    static void link_shaders(u32 shader_id, const std::vector<u32>& loaded_subshaders)
     {
         for (const u32 subshader_id : loaded_subshaders)
         {
@@ -282,7 +283,7 @@ namespace Aporia
         }
     }
 
-    void apply_shader_defaults(ShaderProperties& properties)
+    static void apply_shader_defaults(ShaderProperties& properties)
     {
         if (properties.blend[0] == ShaderBlend::Default)
         {
@@ -306,7 +307,7 @@ namespace Aporia
         }
     }
 
-    void apply_shader_properties(u32 shader_id)
+    static void apply_shader_properties(u32 shader_id)
     {
         APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
             "Shader (with ID: {}) is not valid!", shader_id);
@@ -338,7 +339,7 @@ namespace Aporia
         }
     }
 
-    i32 get_uniform_location(const std::string& name)
+    static i32 get_uniform_location(const std::string& name)
     {
         APORIA_ASSERT_WITH_MESSAGE(shaders.contains(active_shader_id),
             "No active shader!");
@@ -365,6 +366,11 @@ namespace Aporia
         }
 
         return location;
+    }
+
+    void shaders_init()
+    {
+        default_shader_properties = shader_config.default_properties;
     }
 
     u32 create_shader(std::string_view filepath)
@@ -420,11 +426,6 @@ namespace Aporia
         }
 
         shaders.clear();
-    }
-
-    void set_default_shader_properties(ShaderProperties shader_properties)
-    {
-        default_shader_properties = shader_properties;
     }
 
     void reload_shader(u32 shader_id)

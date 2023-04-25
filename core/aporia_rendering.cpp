@@ -390,7 +390,7 @@ namespace Aporia
         light_sources.push_back(light_source);
     }
 
-    void rendering_init(u32 width, u32 height)
+    void rendering_init()
     {
         rendering_queue.reserve(MAX_RENDERING_QUEUE_SIZE);
 
@@ -447,7 +447,7 @@ namespace Aporia
         lines.unbind();
 
         // Setup Framebuffer
-        main_framebuffer.create(width, height);
+        main_framebuffer.create(window_config.width, window_config.height);
 
         // Initialize texture sampler
         std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};

@@ -1,41 +1,30 @@
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include "aporia_utils.hpp"
-#include "aporia_window.hpp"
+#include "aporia_memory.hpp"
 #include "aporia_world.hpp"
 
 namespace Aporia
 {
+    typedef void game_init_t();
+    typedef void game_update_t(f32 time, f32 delta_time);
+    typedef void game_draw_t(f32 frame_time);
+    typedef void game_terminate_t();
+
     struct Game
     {
-        MemoryArena persistent_arena;
-        MemoryArena frame_arena;
+        game_init_t* init = nullptr;
+        game_update_t* update = nullptr;
+        game_draw_t* draw = nullptr;
+        game_terminate_t* terminate = nullptr;
 
-        World world;
-
-        Timer frame_timer;
-        f32 total_time = 0.f;
-
-        f32 delta_time = 1.f / 240.f;
-        f32 accumulated_frame_time = 0.f;
-
-        Game(const std::string& config_file);
-        virtual ~Game();
-
-        virtual void on_init() {};
-        virtual void on_update(f32 time, f32 delta_time) {};
-        virtual void on_draw() {};
-        virtual void on_terminate() {};
-
-        void run();
-        void main_loop();
-
-        friend void main_loop(void* game_ptr);
-
-        // Defined by Client
-        friend std::unique_ptr<Game> create_game();
+        // @TODO(dubgron): Erradicate all usages of std::string and std::string_view
+        std::string_view config_filepath;
     };
+
+    extern MemoryArena persistent_arena;
+    extern MemoryArena frame_arena;
+
+    extern World world;
+
+    void engine_run(Game* in_game);
 }
