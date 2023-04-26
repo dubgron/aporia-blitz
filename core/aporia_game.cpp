@@ -25,7 +25,7 @@ namespace Aporia
     static f32 delta_time = 1.f / 240.f;
     static f32 accumulated_frame_time = 0.f;
 
-    static void engine_main_loop()
+    static void game_main_loop()
     {
         const f32 frame_time = frame_timer.reset();
         total_time += frame_time;
@@ -55,16 +55,16 @@ namespace Aporia
         active_window->display();
     }
 
-    void engine_run(Game* in_game)
+    void game_run(Game* in_game)
     {
         game = in_game;
 
         // Init
         {
-            Aporia::logging_init("aporia");
+            logging_init("aporia");
 
-            Aporia::persistent_arena.alloc(MEGABYTES(100));
-            Aporia::frame_arena.alloc(KILOBYTES(10));
+            persistent_arena.alloc(MEGABYTES(100));
+            frame_arena.alloc(KILOBYTES(10));
 
             load_config(game->config_filepath);
 
@@ -85,12 +85,12 @@ namespace Aporia
         // Update
         {
 #if defined(APORIA_EMSCRIPTEN)
-            static constexpr auto emscripten_main_loop = [](void* arg) { engine_main_loop(); };
+            static constexpr auto emscripten_main_loop = [](void* arg) { game_main_loop(); };
             emscripten_set_main_loop_arg(emscripten_main_loop, nullptr, 0, true);
 #else
             while (active_window->is_open())
             {
-                engine_main_loop();
+                game_main_loop();
             }
 #endif
         }

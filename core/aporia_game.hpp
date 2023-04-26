@@ -26,5 +26,5 @@ namespace Aporia
 
     extern World world;
 
-    void engine_run(Game* in_game);
+    void game_run(Game* in_game);
 }
