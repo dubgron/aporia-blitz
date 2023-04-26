@@ -74,10 +74,9 @@ target_compile_features(core PUBLIC cxx_std_23)
 
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
 
-target_compile_definitions(core
-    PUBLIC
-        _USE_MATH_DEFINES
-        NOMINMAX)
+target_compile_definitions(core PUBLIC
+    _USE_MATH_DEFINES
+    NOMINMAX)
 
 if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
@@ -114,9 +113,9 @@ if (APORIA_EMSCRIPTEN)
     target_compile_definitions(core PUBLIC APORIA_EMSCRIPTEN)
 endif()
 
-source_group(core                       "core/.+\.[cht]pp")
-source_group(core/editor                "core/editor/.+\.[cht]pp")
-source_group(core/platform              "core/platform/.+\.[cht]pp")
+source_group(core               "core/.+\.[cht]pp")
+source_group(core/editor        "core/editor/.+\.[cht]pp")
+source_group(core/platform      "core/platform/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
     USE_FOLDERS     ON

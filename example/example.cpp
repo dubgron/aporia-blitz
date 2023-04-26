@@ -28,7 +28,7 @@ Aporia::Game create_game()
     game.update             = game_update;
     game.draw               = game_draw;
     game.terminate          = game_terminate;
-    game.config_filepath    = "assets/config.json";
+    game.config_filepath    = "content/config.json";
 
     return game;
 }
