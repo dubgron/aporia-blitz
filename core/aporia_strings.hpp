@@ -18,6 +18,7 @@ namespace Aporia
         String trim() const;
         String trim_left() const;
         String trim_right() const;
+        String append(MemoryArena* arena, String string) const;
 
         StringList split(MemoryArena* arena, u8 delim) const;
 
@@ -28,6 +29,7 @@ namespace Aporia
 
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
         operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), static_cast<size_t>(length) }; }
+        const char* to_cstring(MemoryArena* arena) const;
     };
 
     String create_string(const char* string);

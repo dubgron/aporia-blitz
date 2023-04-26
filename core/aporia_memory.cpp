@@ -53,16 +53,19 @@ namespace Aporia
         return result;
     }
 
-    void TempArena::begin(MemoryArena* in_arena)
+    ScratchArena create_scratch_arena(MemoryArena* arena)
     {
-        APORIA_ASSERT_WITH_MESSAGE(in_arena, "The arena is null! Can't create a TempArena!");
-        arena = in_arena;
-        pos = in_arena->pos;
+        APORIA_ASSERT_WITH_MESSAGE(arena, "The arena is null! Can't create a scratch arena!");
+
+        ScratchArena result;
+        result.arena = arena;
+        result.pos = arena->pos;
+        return result;
     }
 
-    void TempArena::end()
+    void rollback_scratch_arena(ScratchArena& scratch)
     {
-        APORIA_ASSERT_WITH_MESSAGE(arena, "TempArena has an invalid arena! Can't rollback!");
-        arena->pos = pos;
+        APORIA_ASSERT_WITH_MESSAGE(scratch.arena, "Scratch arena has an invalid arena pointer! Can't rollback!");
+        scratch.arena->pos = scratch.pos;
     }
 }

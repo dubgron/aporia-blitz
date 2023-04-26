@@ -52,7 +52,16 @@ add_library(core STATIC
     "aporia_world.hpp"
     "editor/aporia_commandline.cpp"
     "platform/aporia_opengl.cpp"
-    "platform/aporia_opengl.hpp")
+    "platform/aporia_opengl.hpp"
+    "platform/aporia_os.cpp"
+    "platform/aporia_os.hpp"
+    "platform/aporia_unix.cpp"
+    "platform/aporia_win32.cpp")
+
+set_source_files_properties(
+    "platform/aporia_unix.cpp"
+    "platform/aporia_win32.cpp"
+    PROPERTIES HEADER_FILE_ONLY TRUE)
 
 target_precompile_headers(core PRIVATE "aporia_pch.hpp")
 
@@ -80,6 +89,18 @@ target_compile_definitions(core PUBLIC
 
 if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
+endif()
+
+# Add platform-specific defines
+if (WIN32)
+    target_compile_definitions(core PUBLIC APORIA_WINDOWS)
+elseif (UNIX)
+    target_compile_definitions(core PUBLIC APORIA_UNIX)
+    if (APPLE)
+        target_compile_definitions(core PUBLIC APORIA_APPLE)
+    else()
+        target_compile_definitions(core PUBLIC APORIA_LINUX)
+    endif()
 endif()
 
 # Disable exceptions and RTTI

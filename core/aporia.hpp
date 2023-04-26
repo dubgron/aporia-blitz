@@ -20,6 +20,7 @@
 
 // Platform
 #include <platform/aporia_opengl.hpp>
+#include <platform/aporia_os.hpp>
 
 // Entry Point
 #include <aporia_entry.hpp>

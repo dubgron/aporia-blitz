@@ -1,6 +1,7 @@
 #include "aporia_strings.hpp"
 
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia
@@ -43,6 +44,14 @@ namespace Aporia
         {
             result.length -= 1;
         }
+        return result;
+    }
+
+    String String::append(MemoryArena* arena, String string) const
+    {
+        String result = push_string(arena, length + string.length);
+        memcpy(result.data, data, length);
+        memcpy(result.data + length, string.data, string.length);
         return result;
     }
 
@@ -114,6 +123,14 @@ namespace Aporia
     bool String::operator==(const char* string) const
     {
         return *this == create_string(string);
+    }
+
+    const char* String::to_cstring(MemoryArena* arena) const
+    {
+        String cstring = push_string(arena, length + 1);
+        memcpy(cstring.data, data, length);
+        cstring.data[length] = '\0';
+        return reinterpret_cast<const char*>(cstring.data);
     }
 
     String create_string(const char* string)

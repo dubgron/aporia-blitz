@@ -43,12 +43,12 @@ namespace Aporia
         }
     };
 
-    struct TempArena
+    struct ScratchArena
     {
         MemoryArena* arena = nullptr;
         u64 pos = 0;
-
-        void begin(MemoryArena* in_arena);
-        void end();
     };
+
+    ScratchArena create_scratch_arena(MemoryArena* arena);
+    void rollback_scratch_arena(ScratchArena& scratch);
 }
