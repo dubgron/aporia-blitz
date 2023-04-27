@@ -282,13 +282,11 @@ namespace Aporia
     void Framebuffer::bind() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-        glEnable(GL_DEPTH_TEST);
     }
 
     void Framebuffer::unbind() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDisable(GL_DEPTH_TEST);
     }
 
     void Framebuffer::clear(Color color /* = Color::Black */)
@@ -454,10 +452,10 @@ namespace Aporia
         std::iota(sampler.begin(), sampler.end(), 0);
 
         // Setup default shaders
-        default_shader = create_shader("content/shaders/default.shader");
-        circle_shader = create_shader("content/shaders/circle.shader");
-        line_shader = create_shader("content/shaders/line.shader");
-        font_shader = create_shader("content/shaders/font.shader");
+        default_shader = create_shader("content/shaders/default.glsl");
+        circle_shader = create_shader("content/shaders/circle.glsl");
+        line_shader = create_shader("content/shaders/line.glsl");
+        font_shader = create_shader("content/shaders/font.glsl");
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
@@ -466,14 +464,14 @@ namespace Aporia
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         // Setup post-processing shaders
-        postprocessing_shader = create_shader("content/shaders/postprocessing.shader");
+        postprocessing_shader = create_shader("content/shaders/postprocessing.glsl");
 
         bind_shader(postprocessing_shader);
         shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
 
         // Setup lighting shaders
-        raymarching_shader = create_shader("content/shaders/raymarching.shader");
-        shadowcasting_shader = create_shader("content/shaders/shadowcasting.shader");
+        raymarching_shader = create_shader("content/shaders/raymarching.glsl");
+        shadowcasting_shader = create_shader("content/shaders/shadowcasting.glsl");
 
         unbind_shader();
     }

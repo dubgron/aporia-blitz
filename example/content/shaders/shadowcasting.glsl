@@ -7,27 +7,18 @@
 #type vertex
 #version 450 core
 
-layout (location = 0) in vec3 l_position;
-layout (location = 1) in vec4 l_color;
-layout (location = 2) in int l_tex_id;
-layout (location = 3) in vec2 l_tex_coord;
+layout (location = 0) in vec3 in_position;
+layout (location = 1) in vec4 in_color;
+layout (location = 2) in int in_tex_id;
+layout (location = 3) in vec2 in_tex_coord;
 
-out DATA
-{
-    vec3 position;
-    vec4 color;
-    flat int tex_id;
-    vec2 uv;
-} vs_out;
+layout (location = 0) out vec2 out_tex_coord;
 
 void main()
 {
-    gl_Position = vec4(l_position, 1.0);
+    gl_Position = vec4(in_position, 1.0);
 
-    vs_out.position = l_position;
-    vs_out.color = l_color;
-    vs_out.tex_id = l_tex_id;
-    vs_out.uv = l_tex_coord;
+    out_tex_coord = in_tex_coord;
 }
 
 
@@ -35,15 +26,7 @@ void main()
 #type fragment
 #version 450 core
 
-out vec4 l_color;
-
-in DATA
-{
-    vec3 position;
-    vec4 color;
-    flat int tex_id;
-    vec2 uv;
-} fs_in;
+layout (location = 0) in vec2 in_tex_coord;
 
 struct Light
 {
@@ -69,6 +52,8 @@ uniform sampler2D u_raymarching;
 uniform mat4 u_vp_matrix;
 uniform vec2 u_window_size;
 uniform float u_camera_zoom;
+
+layout (location = 0) out vec4 out_color;
 
 vec2 half_pixel_offset = 0.5 / u_window_size;
 vec2 aspect_ratio = u_window_size.xy / u_window_size.y;
@@ -108,7 +93,6 @@ vec3 mix_lights(vec2 uv)
 
 void main()
 {
-    vec2 uv = (fs_in.uv - vec2(0.5));
-    l_color = vec4(mix_lights(uv), 1.0);
-    // l_color = vec4(1.0, 0.0, 0.0, 1.0);
+    vec2 uv = (in_tex_coord - vec2(0.5));
+    out_color = vec4(mix_lights(uv), 1.0);
 }
