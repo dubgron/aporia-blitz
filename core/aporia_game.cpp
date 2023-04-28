@@ -49,6 +49,15 @@ namespace Aporia
 
         game->draw(frame_time);
 
+        for (u64 idx = 0; idx < world.entity_count; ++idx)
+        {
+            const Entity& entity = world.entity_array[idx];
+            if (is_flag_set(entity, EntityFlag_Visible))
+            {
+                draw_entity(entity);
+            }
+        }
+
         rendering_end();
         imgui_frame_end();
 

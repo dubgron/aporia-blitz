@@ -3,6 +3,7 @@
 #include "aporia_camera.hpp"
 #include <aporia_config.hpp>
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 
@@ -555,7 +556,16 @@ namespace Aporia
 
             masking.bind();
             masking.clear(Color::Transparent);
-            //draw(light_blockers);
+
+            for (u64 idx = 0; idx < world.entity_count; ++idx)
+            {
+                const Entity& entity = world.entity_array[idx];
+                if (is_flag_set(entity, EntityFlag_Visible) && is_flag_set(entity, EntityFlag_BlockingLight))
+                {
+                    draw_entity(entity);
+                }
+            }
+
             flush_rendering_queue();
             masking.unbind();
 

@@ -6,10 +6,18 @@
 
 namespace Aporia
 {
+    enum EntityFlag : u64
+    {
+        EntityFlag_None             = 0x00,
+        EntityFlag_Visible          = 0x01,
+        EntityFlag_BlockingLight    = 0x02,
+    };
+
     struct Entity
     {
         u64 index = 0;
-        u64 flags = 0;
+
+        u64 flags = EntityFlag_Visible | EntityFlag_BlockingLight;
 
         v2 position{ 0.f };
         f32 z = 0.f;
@@ -25,4 +33,8 @@ namespace Aporia
         Color color;
         u32 shader_id = default_shader;
     };
+
+    bool is_flag_set(const Entity& entity, EntityFlag flag);
+    void set_flag(Entity& entity, EntityFlag flag);
+    void unset_flag(Entity& entity, EntityFlag flag);
 }

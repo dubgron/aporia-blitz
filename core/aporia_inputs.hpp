@@ -210,10 +210,19 @@ namespace Aporia
         Repeat
     };
 
+    enum InputFlag : u8
+    {
+        InputFlag_None              = 0x00,
+        InputFlag_EndedFrameDown    = 0x01,
+        InputFlag_WasReleased       = 0x02,
+        InputFlag_IsRepeated        = 0x04,
+        InputFlag_WasHandled        = 0x08
+    };
+
     struct InputState
     {
         u8 pressed_count = 0;
-        u8 flags = 0;
+        u8 flags = InputFlag_None;
     };
 
     struct AnalogInputState
@@ -242,14 +251,17 @@ namespace Aporia
     i32 has_been_pressed(Key key);
     bool has_been_held(Key key);
     bool has_been_released(Key key);
+    bool is_flag_set(Key key, InputFlag flag);
 
     i32 has_been_pressed(MouseButton button);
     bool has_been_held(MouseButton button);
     bool has_been_released(MouseButton button);
+    bool is_flag_set(MouseButton button, InputFlag flag);
 
     i32 has_been_pressed(GamepadButton button);
     bool has_been_held(GamepadButton button);
     bool has_been_released(GamepadButton button);
+    bool is_flag_set(GamepadButton button, InputFlag flag);
 
     AnalogInputState get_analog_state(MouseWheel wheel);
     AnalogInputState get_analog_state(GamepadAxis axis);

@@ -12,14 +12,20 @@ namespace Aporia
 {
     Input input;
 
-    enum Flags : u8
+    static bool is_flag_set(InputState state, InputFlag flag)
     {
-        none                = 0x00,
-        ended_frame_down    = 0x01,
-        was_released        = 0x02,
-        is_repeated         = 0x04,
-        was_handled         = 0x08
-    };
+        return state.flags & flag;
+    }
+
+    static void set_flag(InputState& state, InputFlag flag)
+    {
+        state.flags |= flag;
+    }
+
+    static void unset_flag(InputState& state, InputFlag flag)
+    {
+        state.flags &= ~flag;
+    }
 
     static InputState get_input_state(Key key)
     {
@@ -46,25 +52,25 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < count; ++idx)
         {
-            // Leave only InputFlag::ended_frame_down flag
-            state[idx].flags &= ended_frame_down;
+            // Leave only InputFlag_EndedFrameDown flag
+            state[idx].flags &= InputFlag_EndedFrameDown;
             state[idx].pressed_count = 0;
         }
     }
 
     static i32 has_been_pressed(InputState state)
     {
-        return (state.flags & was_handled) ? 0 : state.pressed_count;
+        return is_flag_set(state, InputFlag_WasHandled) ? 0 : state.pressed_count;
     }
 
     static bool has_been_held(InputState state)
     {
-        return !(state.flags & was_handled) && (state.flags & ended_frame_down);
+        return !is_flag_set(state, InputFlag_WasHandled) && is_flag_set(state, InputFlag_EndedFrameDown);
     }
 
     static bool has_been_released(InputState state)
     {
-        return !(state.flags & was_handled) && (state.flags & was_released);
+        return !is_flag_set(state, InputFlag_WasHandled) && is_flag_set(state, InputFlag_WasReleased);
     }
 
     void process_input_action(InputState& state, InputAction action)
@@ -73,21 +79,21 @@ namespace Aporia
         {
             case InputAction::Released:
             {
-                state.flags &= ~ended_frame_down;
-                state.flags |= was_released;
+                unset_flag(state, InputFlag_EndedFrameDown);
+                set_flag(state, InputFlag_WasReleased);
             }
             break;
 
             case InputAction::Pressed:
             {
                 state.pressed_count += 1;
-                state.flags |= ended_frame_down;
+                set_flag(state, InputFlag_EndedFrameDown);
             }
             break;
 
             case InputAction::Repeat:
             {
-                state.flags |= is_repeated;
+                set_flag(state, InputFlag_IsRepeated);
             }
             break;
         }
@@ -149,6 +155,12 @@ namespace Aporia
         return has_been_released(state);
     }
 
+    bool is_flag_set(Key key, InputFlag flag)
+    {
+        const InputState state = get_input_state(key);
+        return is_flag_set(state, flag);
+    }
+
     i32 has_been_pressed(MouseButton button)
     {
         const InputState state = get_input_state(button);
@@ -167,6 +179,12 @@ namespace Aporia
         return has_been_released(state);
     }
 
+    bool is_flag_set(MouseButton button, InputFlag flag)
+    {
+        const InputState state = get_input_state(button);
+        return is_flag_set(state, flag);
+    }
+
     i32 has_been_pressed(GamepadButton button)
     {
         const InputState state = get_input_state(button);
@@ -183,6 +201,12 @@ namespace Aporia
     {
         const InputState state = get_input_state(button);
         return has_been_released(state);
+    }
+
+    bool is_flag_set(GamepadButton button, InputFlag flag)
+    {
+        const InputState state = get_input_state(button);
+        return is_flag_set(state, flag);
     }
 
     AnalogInputState get_analog_state(MouseWheel wheel)
