@@ -55,7 +55,7 @@ namespace Aporia
             Entity& entity = world.entity_array[idx];
             if (is_flag_set(entity, EntityFlag_Visible))
             {
-                animator_update(entity.animator, frame_time);
+                animation_tick(entity, frame_time);
                 draw_entity(entity);
             }
         }

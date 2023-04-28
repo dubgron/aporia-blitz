@@ -41,8 +41,6 @@ namespace Aporia
 
         // Clean up the new entity and assign the index of the node.
         *new_entity = Entity{};
-        // @TOOD(dubgron): I don't like it. It should be handled differently in the future.
-        new_entity->animator.owner = new_entity;
         new_entity->index = INDEX_IN_ARRAY(free_node, entity_list);
 
         // Assign the new entity to the node and increment the generation.

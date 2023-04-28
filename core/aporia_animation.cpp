@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
 #include "aporia_textures.hpp"
@@ -34,24 +35,25 @@ namespace Aporia
 
         for (auto& animation_data : animation_json["animations"])
         {
-            std::string anim_name = animation_data["name"].get<std::string>();
+            std::string animation_name = animation_data["name"].get<std::string>();
 
             Animation animation;
-            animation.name = push_string(&persistent_arena, anim_name.data());
+            animation.name = push_string(&persistent_arena, animation_name.data());
 
             for (auto& frame_name : animation_data["frames"])
             {
-                AnimationFrameData frame_data;
-                frame_data.texture = get_subtexture(frame_name);
-                animation.frames.push_back(frame_data);
+                AnimationFrame frame;
+                frame.texture = get_subtexture(frame_name);
+                animation.frames.push_back(frame);
             }
 
             animations.push_back(std::move(animation));
         }
     }
 
-    void animator_update(Animator& animator, f32 frame_time)
+    void animation_tick(Entity& entity, f32 frame_time)
     {
+        Animator& animator = entity.animator;
         Animation* animation = animator.current_animation;
         if (!animation)
         {
@@ -77,12 +79,12 @@ namespace Aporia
                     animation->current_frame = 0;
                 }
 
-                animator.owner->texture = animation->frames[animation->current_frame].texture;
+                entity.texture = animation->frames[animation->current_frame].texture;
             }
         }
     }
 
-    void animator_add_animation(Animator& animator, String animation_name)
+    void animation_add(Animator& animator, String animation_name)
     {
         if (Animation* animation = find_animation(animations, animation_name))
         {
