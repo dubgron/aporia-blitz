@@ -31,9 +31,9 @@ layout (location = 1) in vec2 in_tex_coord;
 
 uniform sampler2D u_atlas[32];
 
-layout (location = 0) out vec4 l_color;
+layout (location = 0) out vec4 out_color;
 
 void main()
 {
-    l_color = texture(u_atlas[in_tex_id], in_tex_coord);
+    out_color = texture(u_atlas[in_tex_id], in_tex_coord);
 }

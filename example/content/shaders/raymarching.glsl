@@ -51,7 +51,7 @@ uniform mat4 u_vp_matrix;
 uniform vec2 u_window_size;
 uniform float u_camera_zoom;
 
-layout (location = 0) out vec4 l_color;
+layout (location = 0) out vec4 out_color;
 
 #define MAX_STEPS (100000 / MAX_LIGHTS)
 #define EPS 1e-4
@@ -100,6 +100,6 @@ void main()
 
         float dist = march_shadow(origin, light.range, dir);
 
-        l_color = vec4(dist, 0.0, 0.0, 1.0);
+        out_color = vec4(dist, 0.0, 0.0, 1.0);
     }
 }

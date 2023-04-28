@@ -533,14 +533,8 @@ namespace Aporia
     {
         main_framebuffer.bind();
         main_framebuffer.clear(camera_config.background_color);
-
         flush_rendering_queue();
-
         main_framebuffer.unbind();
-
-        DEBUG_TEXTURE(main_framebuffer.color_buffer);
-
-        flush_framebuffer(main_framebuffer, postprocessing_shader);
 
         if (lighting_enabled)
         {
@@ -578,8 +572,14 @@ namespace Aporia
 
             DEBUG_TEXTURE(raymarching.color_buffer);
 
+            main_framebuffer.bind();
             flush_framebuffer(raymarching, shadowcasting_shader);
+            main_framebuffer.unbind();
         }
+
+        DEBUG_TEXTURE(main_framebuffer.color_buffer);
+
+        flush_framebuffer(main_framebuffer, postprocessing_shader);
 
         unbind_shader();
     }
