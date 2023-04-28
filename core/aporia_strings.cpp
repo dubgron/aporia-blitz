@@ -261,7 +261,7 @@ namespace Aporia
         const String result = push_string(arena, joined_length);
 
         u64 offset = 0;
-        for (const StringNode* node = first; node; node = node->next)
+        for (const StringNode* node = first; node && node->prev != last; node = node->next)
         {
             memcpy(result.data + offset, node->string.data, node->string.length * sizeof(u8));
             offset += node->string.length;
