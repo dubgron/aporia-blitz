@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <unordered_map>
+
 #include "aporia_types.hpp"
 
 namespace Aporia
@@ -33,5 +36,7 @@ namespace Aporia
     };
 
     void load_texture_atlas(std::string_view filepath);
-    const SubTexture& get_subtexture(const std::string& name);
+    const SubTexture* get_subtexture(const std::string& name);
+
+    extern std::unordered_map<std::string, SubTexture> textures;
 }

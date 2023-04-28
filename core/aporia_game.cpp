@@ -4,6 +4,7 @@
     #include <emscripten.h>
 #endif
 
+#include "aporia_animation.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
@@ -51,9 +52,10 @@ namespace Aporia
 
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
-            const Entity& entity = world.entity_array[idx];
+            Entity& entity = world.entity_array[idx];
             if (is_flag_set(entity, EntityFlag_Visible))
             {
+                animator_update(entity.animator, frame_time);
                 draw_entity(entity);
             }
         }

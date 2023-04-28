@@ -36,15 +36,17 @@ namespace Aporia
         free_list = free_list->next;
 
         // Get a new entity from the end of the array.
-        Entity& new_entity = entity_array[entity_count];
+        Entity* new_entity = &entity_array[entity_count];
         entity_count += 1;
 
         // Clean up the new entity and assign the index of the node.
-        new_entity = Entity{};
-        new_entity.index = INDEX_IN_ARRAY(free_node, entity_list);
+        *new_entity = Entity{};
+        // @TOOD(dubgron): I don't like it. It should be handled differently in the future.
+        new_entity->animator.owner = new_entity;
+        new_entity->index = INDEX_IN_ARRAY(free_node, entity_list);
 
         // Assign the new entity to the node and increment the generation.
-        free_node->entity = &new_entity;
+        free_node->entity = new_entity;
         free_node->generation += 1;
 
         // Assign the output entity, if required.
@@ -53,7 +55,7 @@ namespace Aporia
             *out_entity = free_node->entity;
         }
 
-        return EntityID{ new_entity.index, free_node->generation };
+        return EntityID{ new_entity->index, free_node->generation };
     }
 
     void World::remove_entity(EntityID entity_id)

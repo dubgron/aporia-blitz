@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string_view>
+
 #include "aporia_memory.hpp"
 #include "aporia_types.hpp"
 

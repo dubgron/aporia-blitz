@@ -1,6 +1,7 @@
 #pragma once
 
 // Aporia Headers
+#include <aporia_animation.hpp>
 #include <aporia_camera.hpp>
 #include <aporia_config.hpp>
 #include <aporia_debug.hpp>

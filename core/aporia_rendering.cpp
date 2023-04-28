@@ -599,29 +599,36 @@ namespace Aporia
         key.buffer                  = BufferType::Quads;
         key.shader_id               = entity.shader_id;
 
-        const v2 half_pixel_offset  = 0.5f / v2{ entity.texture.source.width, entity.texture.source.height };
-        const v2 tex_coord_u        = entity.texture.u + half_pixel_offset;
-        const v2 tex_coord_v        = entity.texture.v - half_pixel_offset;
-
         key.vertex[0].position      = base_offset;
-        key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
-        key.vertex[0].tex_id        = entity.texture.source.id;
         key.vertex[0].color         = entity.color;
 
         key.vertex[1].position      = base_offset + right_offset;
-        key.vertex[1].tex_coord     = tex_coord_v;
-        key.vertex[1].tex_id        = entity.texture.source.id;
         key.vertex[1].color         = entity.color;
 
         key.vertex[2].position      = base_offset + right_offset + up_offset;
-        key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
-        key.vertex[2].tex_id        = entity.texture.source.id;
         key.vertex[2].color         = entity.color;
 
         key.vertex[3].position      = base_offset + up_offset;
-        key.vertex[3].tex_coord     = tex_coord_u;
-        key.vertex[3].tex_id        = entity.texture.source.id;
         key.vertex[3].color         = entity.color;
+
+        if (entity.texture)
+        {
+            const v2 half_pixel_offset  = 0.5f / v2{ entity.texture->source.width, entity.texture->source.height };
+            const v2 tex_coord_u        = entity.texture->u + half_pixel_offset;
+            const v2 tex_coord_v        = entity.texture->v - half_pixel_offset;
+
+            key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
+            key.vertex[0].tex_id        = entity.texture->source.id;
+
+            key.vertex[1].tex_coord     = tex_coord_v;
+            key.vertex[1].tex_id        = entity.texture->source.id;
+
+            key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
+            key.vertex[2].tex_id        = entity.texture->source.id;
+
+            key.vertex[3].tex_coord     = tex_coord_u;
+            key.vertex[3].tex_id        = entity.texture->source.id;
+        }
 
         rendering_queue.push_back(key);
     }

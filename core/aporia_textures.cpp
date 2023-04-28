@@ -8,7 +8,7 @@
 
 namespace Aporia
 {
-    static std::unordered_map<std::string, SubTexture> textures;
+    std::unordered_map<std::string, SubTexture> textures;
 
     void Image::load(std::string_view filepath)
     {
@@ -99,11 +99,11 @@ namespace Aporia
         APORIA_LOG(Info, "All textures from '{}' loaded successfully", filepath);
     }
 
-    const SubTexture& get_subtexture(const std::string& name)
+    const SubTexture* get_subtexture(const std::string& name)
     {
         APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
             "Failed to find sub texture '{}'!", name);
 
-        return textures.find(name)->second;
+        return &textures.find(name)->second;
     }
 }
