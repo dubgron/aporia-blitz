@@ -1,32 +1,20 @@
-# Aporia Blitz (build LD47)
+# Aporia Blitz
 
-[![Build Status](https://img.shields.io/travis/com/dubgron/aporia-blitz/master?token=3M7zid8xXNCxYNJKxB2L&label=master)](https://travis-ci.com/dubgron/aporia-blitz) 
-[![Build Status](https://img.shields.io/travis/com/dubgron/aporia-blitz/develop?token=3M7zid8xXNCxYNJKxB2L&label=develop)](https://travis-ci.com/dubgron/aporia-blitz)
+[![build](https://github.com/dubgron/aporia-blitz/actions/workflows/build.yml/badge.svg)](https://github.com/dubgron/aporia-blitz/actions/workflows/build.yml)
+[![emscripten](https://github.com/dubgron/aporia-blitz/actions/workflows/emscripten.yml/badge.svg)](https://github.com/dubgron/aporia-blitz/actions/workflows/emscripten.yml)
 
-A **cross-platform**, **lightweight** yet **powerful 2D engine** to **make games in 48 hours** or less.
+A **cross-platform**, **lightweight** yet **powerful 2D engine** to **make games in 48 hours** or less. Still in development.
 
-## Build Instructions
+## Getting Started
 
-1. Clone repository
+1. Clone repository.
     ```sh
     git clone --recursive https://github.com/dubgron/aporia-blitz.git
     ```
 
-2. Generate **gl3w** files
+2. Build with **CMake**.
     ```sh
-    # aporia-blitz/thirdparty/gl3w
-    python -B gl3w_gen.py
-    ```
-
-3. Build with **CMake**
-    ```sh
-    # aporia-blitz
-    mkdir build && cd build
-    cmake -A x64 ..
-    ```
-
-4. Compile
-    ```sh
-    # aporia-blitz/build
-    cmake --build .
+    mkdir build
+    cmake -A x64 -B build .
+    cmake --build build
     ```

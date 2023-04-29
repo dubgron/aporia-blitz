@@ -1,6 +1,8 @@
 set(GLFW_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glfw/include")
 set(GLFW_SOURCE_DIR "${PROJECT_SOURCE_DIR}/thirdparty/glfw/src")
 
+option(GLFW_USE_UNITY_BUILD "Compile glfw using unity build" ON)
+
 add_library(glfw STATIC
     ${GLFW_SOURCE_DIR}/internal.h
     ${GLFW_SOURCE_DIR}/mappings.h
@@ -149,3 +151,26 @@ if (UNIX)
 endif()
 
 target_include_directories(glfw PUBLIC ${GLFW_INCLUDE_DIR})
+
+if (GLFW_USE_UNITY_BUILD AND NOT APPLE)
+    # UNITY_BUILD_BATCH_SIZE of 0 means combining all sources for the target into a single unity file
+    set_target_properties(glfw PROPERTIES
+        UNITY_BUILD             ON
+        UNITY_BUILD_MODE        BATCH
+        UNITY_BUILD_BATCH_SIZE  0)
+
+    # Cocoa code doesn't seem ot work with unity build
+    if (APPLE)
+        set_source_files_properties(
+            ${GLFW_SOURCE_DIR}/cocoa_init.m
+            ${GLFW_SOURCE_DIR}/cocoa_joystick.m
+            ${GLFW_SOURCE_DIR}/cocoa_monitor.m
+            ${GLFW_SOURCE_DIR}/cocoa_window.m
+            ${GLFW_SOURCE_DIR}/cocoa_time.c
+            ${GLFW_SOURCE_DIR}/posix_thread.c
+            ${GLFW_SOURCE_DIR}/nsgl_context.m
+            ${GLFW_SOURCE_DIR}/egl_context.c
+            ${GLFW_SOURCE_DIR}/osmesa_context.c
+            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+    endif()
+endif()

@@ -1,0 +1,39 @@
+{
+    "window_config":
+    {
+        "title":                "Example Game",
+        "width":                1280,
+        "height":               720,
+        "vsync":                false,
+        "icon":                 "assets/icon.png"
+    },
+    "camera_config":
+    {
+        "fov":                  360,
+        "aspect_ratio":         1.7778,
+        "background_color":     [ 80, 80, 102, 255 ],
+        "movement_speed":       100,
+        "rotation_speed":       2,
+        "zoom_speed":           1.5,
+        "movement_key_up":      "W",
+        "movement_key_down":    "S",
+        "movement_key_left":    "A",
+        "movement_key_right":   "D",
+        "rotation_key_left":    "Q",
+        "rotation_key_right":   "E",
+        "zoom_key_in":          "Space",
+        "zoom_key_out":         "LShift",
+        "zoom_max":             20,
+        "zoom_min":             1
+    },
+    "shader_config":
+    {
+        "default_properties":
+        {
+            "blend":            [ "src_alpha", "one_minus_src_alpha" ],
+            "blend_op":         "add",
+            "depth_test":       "lequal",
+            "depth_write":      "on"
+        }
+    }
+}
