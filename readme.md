@@ -3,16 +3,16 @@
 [![build](https://github.com/dubgron/aporia-blitz/actions/workflows/build.yml/badge.svg)](https://github.com/dubgron/aporia-blitz/actions/workflows/build.yml)
 [![emscripten](https://github.com/dubgron/aporia-blitz/actions/workflows/emscripten.yml/badge.svg)](https://github.com/dubgron/aporia-blitz/actions/workflows/emscripten.yml)
 
-A **cross-platform**, **lightweight** yet **powerful 2D engine** to **make games in 48 hours** or less.
+A **cross-platform**, **lightweight** yet **powerful 2D engine** to **make games in 48 hours** or less. Still in development.
 
-## Build Instructions
+## Getting Started
 
-1. Clone repository
+1. Clone repository.
     ```sh
     git clone --recursive https://github.com/dubgron/aporia-blitz.git
     ```
 
-2. Build with **CMake**
+2. Build with **CMake**.
     ```sh
     mkdir build
     cmake -A x64 -B build .
