@@ -131,7 +131,7 @@ namespace Aporia
         RSuper              = 347,  // The right Super key
         Menu                = 348,  // The Menu key
 
-        Count
+        Count,
     };
     DEFINE_ENUM_TO_U64_CAST(Key);
 
@@ -146,11 +146,11 @@ namespace Aporia
         Button7             = 6,    // The button no. 7
         Button8             = 7,    // The button no. 8
 
+        Count,
+
         Left = Button1,             // The left mouse button
         Right = Button2,            // The right mouse button
         Middle = Button3,           // The middle (wheel) mouse button
-
-        Count
     };
     DEFINE_ENUM_TO_U64_CAST(MouseButton);
 
@@ -159,7 +159,7 @@ namespace Aporia
         VerticalWheel       = 0,    // The vertical mouse wheel
         HorizontalWheel     = 1,    // The horizontal mouse wheel
 
-        Count
+        Count,
     };
     DEFINE_ENUM_TO_U64_CAST(MouseWheel);
 
@@ -181,12 +181,12 @@ namespace Aporia
         DPadDown            = 13,   // The d-pad down button
         DPadLeft            = 14,   // The d-pad left button
 
+        Count,
+
         ButtonCross = ButtonA,      // The cross button
         ButtonCircle = ButtonB,     // The circle button
         ButtonSquare = ButtonX,     // The square button
         ButtonTriangle = ButtonY,   // The triangle button
-
-        Count
     };
     DEFINE_ENUM_TO_U64_CAST(GamepadButton);
 
@@ -207,7 +207,7 @@ namespace Aporia
     {
         Released,
         Pressed,
-        Repeat
+        Repeat,
     };
 
     enum InputFlag : u8
@@ -216,7 +216,7 @@ namespace Aporia
         InputFlag_EndedFrameDown    = 0x01,
         InputFlag_WasReleased       = 0x02,
         InputFlag_IsRepeated        = 0x04,
-        InputFlag_WasHandled        = 0x08
+        InputFlag_WasHandled        = 0x08,
     };
 
     struct InputState
@@ -267,4 +267,6 @@ namespace Aporia
     AnalogInputState get_analog_state(GamepadAxis axis);
 
     Key string_to_key(std::string_view string);
+
+    extern Input input;
 }

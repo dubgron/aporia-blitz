@@ -29,8 +29,8 @@ namespace Aporia
 
     enum CameraDirtyFlag : u8
     {
-        CameraDirtyFlag_View        = 0x00,
-        CameraDirtyFlag_Projection  = 0x01,
+        CameraDirtyFlag_View        = 0x01,
+        CameraDirtyFlag_Projection  = 0x02,
     };
 
     struct Camera

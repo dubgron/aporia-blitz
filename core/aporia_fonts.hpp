@@ -60,6 +60,7 @@ namespace Aporia
     struct Text
     {
         v2 position{ 0.f };
+        f32 z = 0.f;
         f32 font_size = 32.f;
         f32 rotation = 0.f;
 

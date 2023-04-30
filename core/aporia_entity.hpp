@@ -35,8 +35,6 @@ namespace Aporia
         u32 shader_id = default_shader;
 
         Animator animator;
-
-        f32 velocity = 0.f;
     };
 
     bool is_flag_set(const Entity& entity, EntityFlag flag);

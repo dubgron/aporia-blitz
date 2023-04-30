@@ -48,7 +48,7 @@ namespace Aporia
         imgui_frame_begin();
         rendering_begin();
 
-        game->draw(frame_time);
+        game->draw(total_time, frame_time);
 
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
@@ -74,7 +74,7 @@ namespace Aporia
         {
             logging_init("aporia");
 
-            persistent_arena.alloc(MEGABYTES(100));
+            persistent_arena.alloc(MEGABYTES(5));
             frame_arena.alloc(KILOBYTES(10));
 
             load_config(game->config_filepath);

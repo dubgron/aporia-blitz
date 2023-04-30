@@ -71,7 +71,7 @@ float sample_shadow(int id, vec2 uv)
  
 vec3 mix_lights(vec2 uv)
 {
-    vec3 ambient = vec3(0.1);
+    vec3 ambient = vec3(0.2);
 
     for (int i = 0; i < u_num_lights; i++)
     {

@@ -138,6 +138,7 @@ namespace Aporia
     void disable_lighting();
 
     void add_light_source(LightSource light_source);
+    u32 light_source_count();
 
     void rendering_init();
     void rendering_deinit();

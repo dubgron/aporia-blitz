@@ -10,7 +10,7 @@
 
 #if defined(APORIA_DEBUGTOOLS)
 
-    #define APORIA_LOG(lvl, fmt, ...)                   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
+    #define APORIA_LOG(lvl, fmt, ...)                   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__); if (lvl == Aporia::Error) APORIA_BREAKPOINT()
 
     #define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...)  do { if (!(expr)) { APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); } } while(0)
     #define APORIA_ASSERT(expr)                         APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '{}' failed!", #expr)

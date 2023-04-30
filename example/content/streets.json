@@ -1,0 +1,10 @@
+{
+    "atlas": "content/streets.png",
+    "textures": [
+        {
+            "name": "streets",
+            "u": [ 0, 0 ],
+            "v": [ 1.0, 1.0 ]
+        }
+    ]
+}

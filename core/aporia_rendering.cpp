@@ -19,9 +19,9 @@
 
 namespace Aporia
 {
-    static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
-    static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
-    static constexpr u64 MAX_LIGHT_SOURCES = 1000;
+    static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 1000;
+    static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 100;
+    static constexpr u64 MAX_LIGHT_SOURCES = 100;
 
     static Framebuffer main_framebuffer;
 
@@ -387,6 +387,11 @@ namespace Aporia
     void add_light_source(LightSource light_source)
     {
         light_sources.push_back(light_source);
+    }
+
+    u32 light_source_count()
+    {
+        return (u32)light_sources.size();
     }
 
     void rendering_init()
@@ -802,25 +807,25 @@ namespace Aporia
                 key.buffer                  = BufferType::Quads;
                 key.shader_id               = text.shader_id;
 
-                key.vertex[0].position      = v3{ base_offset, 0.f };
+                key.vertex[0].position      = v3{ base_offset, text.z };
                 key.vertex[0].tex_id        = font.atlas.source.id;
                 key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
-                key.vertex[1].position      = v3{ base_offset + right_offset, 0.f };
+                key.vertex[1].position      = v3{ base_offset + right_offset, text.z };
                 key.vertex[1].tex_id        = font.atlas.source.id;
                 key.vertex[1].tex_coord     = tex_coord_v;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
-                key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, 0.f };
+                key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, text.z };
                 key.vertex[2].tex_id        = font.atlas.source.id;
                 key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
-                key.vertex[3].position      = v3{ base_offset + up_offset, 0.f };
+                key.vertex[3].position      = v3{ base_offset + up_offset, text.z };
                 key.vertex[3].tex_id        = font.atlas.source.id;
                 key.vertex[3].tex_coord     = tex_coord_u;
                 key.vertex[3].color         = text.color;

@@ -30,7 +30,7 @@ namespace Aporia
         EntityNode* entity_list = nullptr;
         EntityNode* free_list = nullptr;
 
-        void init(u64 in_max_entities = 10000);
+        void init(u64 in_max_entities = 200);
         void deinit();
 
         EntityID create_entity(Entity** out_entity = nullptr);

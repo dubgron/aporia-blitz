@@ -2,17 +2,17 @@
     "window_config":
     {
         "title":                "Example Game",
-        "width":                1280,
-        "height":               720,
+        "width":                1024,
+        "height":               1024,
         "vsync":                false,
         "icon":                 "assets/icon.png"
     },
     "camera_config":
     {
-        "fov":                  360,
-        "aspect_ratio":         1.7778,
+        "fov":                  1024,
+        "aspect_ratio":         1.0,
         "background_color":     [ 80, 80, 102, 255 ],
-        "movement_speed":       100,
+        "movement_speed":       10000,
         "rotation_speed":       2,
         "zoom_speed":           1.5,
         "movement_key_up":      "W",
