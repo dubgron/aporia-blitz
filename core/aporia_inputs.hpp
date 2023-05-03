@@ -263,6 +263,10 @@ namespace Aporia
     bool has_been_released(GamepadButton button);
     bool is_flag_set(GamepadButton button, InputFlag flag);
 
+    i32 has_any_key_been_pressed();
+    i32 has_any_mouse_button_been_pressed();
+    i32 has_any_gamepad_button_been_pressed();
+
     AnalogInputState get_analog_state(MouseWheel wheel);
     AnalogInputState get_analog_state(GamepadAxis axis);
 

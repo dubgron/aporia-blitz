@@ -209,6 +209,39 @@ namespace Aporia
         return is_flag_set(state, flag);
     }
 
+    i32 has_any_key_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +Key::Count; ++idx)
+        {
+            const InputState state = input.keys[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
+    i32 has_any_mouse_button_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +MouseButton::Count; ++idx)
+        {
+            const InputState state = input.mouse[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
+    i32 has_any_gamepad_button_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +GamepadButton::Count; ++idx)
+        {
+            const InputState state = input.buttons[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
     AnalogInputState get_analog_state(MouseWheel wheel)
     {
         const u64 wheel_code = +wheel;
