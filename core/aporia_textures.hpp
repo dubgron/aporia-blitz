@@ -38,5 +38,8 @@ namespace Aporia
     void load_texture_atlas(std::string_view filepath);
     const SubTexture* get_subtexture(const std::string& name);
 
+    f32 get_subtexture_width(const SubTexture& subtexture);
+    f32 get_subtexture_height(const SubTexture& subtexture);
+
     extern std::unordered_map<std::string, SubTexture> textures;
 }

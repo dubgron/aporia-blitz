@@ -108,4 +108,14 @@ namespace Aporia
 
         return &textures.find(name)->second;
     }
+
+    f32 get_subtexture_width(const SubTexture& subtexture)
+    {
+        return (subtexture.v.x - subtexture.u.x) * subtexture.source.width;
+    }
+
+    f32 get_subtexture_height(const SubTexture& subtexture)
+    {
+        return (subtexture.v.y - subtexture.u.y) * subtexture.source.height;
+    }
 }

@@ -17,7 +17,7 @@
 
 // @TODO(dubgron): The list of irritating things:
 //
-// [ ] Setting width and height of Entity with texture.
+// [x] Setting width and height of Entity with texture.
 // [x] Lack of is_any_key_pressed function.
 // [ ] Can't draw centered text.
 // [ ] Can't hot-reload shaders, because they're copied from different directory.

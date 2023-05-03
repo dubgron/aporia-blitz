@@ -16,4 +16,13 @@ namespace Aporia
     {
         entity.flags &= ~flag;
     }
+
+    void entity_ajust_size_to_texture(Entity& entity)
+    {
+        if (entity.texture)
+        {
+            entity.width = get_subtexture_width(*entity.texture);
+            entity.height = get_subtexture_height(*entity.texture);
+        }
+    }
 }

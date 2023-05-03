@@ -42,4 +42,6 @@ namespace Aporia
     bool is_flag_set(const Entity& entity, EntityFlag flag);
     void set_flag(Entity& entity, EntityFlag flag);
     void unset_flag(Entity& entity, EntityFlag flag);
+
+    void entity_ajust_size_to_texture(Entity& entity);
 }
