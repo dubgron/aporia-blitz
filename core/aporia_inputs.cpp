@@ -10,7 +10,7 @@
 
 namespace Aporia
 {
-    Input input;
+    static Input input;
 
     static bool is_flag_set(InputState state, InputFlag flag)
     {

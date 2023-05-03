@@ -43,7 +43,7 @@ namespace Aporia
         APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(atlas_filepath),
             "File '{}' does not open!", filepath);
 
-        static u32 id = 0;
+        u32 id = 0;
         glDeleteTextures(1, &id);
 
         Image atlas_image;
@@ -97,6 +97,8 @@ namespace Aporia
         }
 
         APORIA_LOG(Info, "All textures from '{}' loaded successfully", filepath);
+
+        atlas_image.unload();
     }
 
     const SubTexture* get_subtexture(const std::string& name)

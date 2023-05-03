@@ -5,14 +5,14 @@
 
 // @TODO(dubgron): The list of bugs found during the LD53:
 //
-// [ ] In load_texture_atlas, the id variable is static, so new textures
+// [x] In load_texture_atlas, the id variable is static, so new textures
 //     override old ones because we only use one texture id.
-// [ ] CameraDirtyFlag has invalid flags (e.i. 0x00 and 0x01, it should
+// [x] CameraDirtyFlag has invalid flags (e.i. 0x00 and 0x01, it should
 //     be 0x01 and 0x02).
-// [ ] The order of Count in some Input Enums is wrong, and it return
+// [x] The order of Count in some Input Enums is wrong, and it return
 //     not the last value + 1 but the value of the last alias + 1.
-// [ ] Memory leak in load_texture_atlas! Forgot to call Image::unload.
-// [ ] Missing static specifier in definition of Input input.
+// [x] Memory leak in load_texture_atlas! Forgot to call Image::unload.
+// [x] Missing static specifier in definition of Input input.
 //
 
 // @TODO(dubgron): The list of irritating things:
@@ -20,6 +20,7 @@
 // [ ] Setting width and height of Entity with texture.
 // [ ] Lack of is_any_key_pressed function.
 // [ ] Can't draw centered text.
+// [ ] Can't hot-reload shaders, because they're copied from different directory.
 //
 
 namespace Aporia
