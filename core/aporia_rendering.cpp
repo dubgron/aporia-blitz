@@ -633,7 +633,7 @@ namespace Aporia
         rendering_queue.push_back(key);
     }
 
-    void draw_rectangle(v2 position, f32 width, f32 height, Color color, u32 shader_id)
+    void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = default_shader */)
     {
         const v3 base_offset    = v3{ position, 0.f };
         const v3 right_offset   = v3{ width, 0.f, 0.f };
@@ -662,7 +662,7 @@ namespace Aporia
         rendering_queue.push_back(key);
     }
 
-    void draw_line(v2 begin, v2 end, f32 thickness, Color color, u32 shader_id)
+    void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Color::White */, u32 shader_id /* = line_shader */)
     {
         const v2 direction = glm::normalize(end - begin);
         const v2 normal = v2{ -direction.y, direction.x };
@@ -694,7 +694,7 @@ namespace Aporia
         rendering_queue.push_back(key);
     }
 
-    void draw_circle(v2 position, f32 radius, Color color, u32 shader_id)
+    void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
     {
         const v3 base_offset          = v3{ position, 0.f };
         const v3 right_half_offset    = v3{ -radius, 0.f, 0.f };
@@ -723,8 +723,15 @@ namespace Aporia
         rendering_queue.push_back(key);
     }
 
+    // @TODO(dubgron): The current implementation of aligning text is shitty and hard to read, so it needs refactor.
     void draw_text(const Text& text)
     {
+        const u64 text_length = text.caption.size();
+        if (text_length == 0)
+        {
+            return;
+        }
+
         APORIA_ASSERT(text.font);
         const Font& font = *text.font;
 
@@ -738,15 +745,88 @@ namespace Aporia
         const f32 sin = std::sin(text.rotation);
         const f32 cos = std::cos(text.rotation);
 
-        v2 advance{ 0.f };
-        const u64 length = text.caption.size();
-        for (u64 i = 0; i < length; ++i)
+        u64 line_count = 1;
+        for (u64 idx = 0; idx < text_length; ++idx)
         {
-            const u8 character = text.caption[i];
-
-            if (i > 0)
+            if (text.caption[idx] == '\n')
             {
-                const u8 prev_character = text.caption[i - 1];
+                line_count += 1;
+            }
+        }
+
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+        f32* line_alignments = temp.arena->push_zero<f32>(line_count);
+        f32 max_line_alignment = 0.f;
+
+        // Calculate the alignment of every text line
+        {
+            u64 current_line = 0;
+            for (u64 idx = 0; idx < text_length; ++idx)
+            {
+                const u8 character = text.caption[idx];
+                if (idx > 0)
+                {
+                    const u8 prev_character = text.caption[idx - 1];
+
+                    const std::pair<u8, u8> key = std::make_pair(prev_character, character);
+                    if (font.kerning.contains(key))
+                    {
+                        line_alignments[current_line] += font.kerning.at(key);
+                    }
+
+                    if (font.glyphs.contains(prev_character))
+                    {
+                        line_alignments[current_line] += font.glyphs.at(prev_character).advance;
+                    }
+                }
+
+                if (character == ' ')
+                {
+                    line_alignments[current_line] += font.metrics.em_size / 4.f;
+                }
+                else if (character == '\t')
+                {
+                    line_alignments[current_line] += font.metrics.em_size * 2.f;
+                }
+                else if (character == '\n')
+                {
+                    max_line_alignment = max(max_line_alignment, line_alignments[current_line]);
+                    current_line += 1;
+                }
+            }
+
+            const u8 last_character = text.caption[text_length - 1];
+            if (font.glyphs.contains(last_character))
+            {
+                line_alignments[line_count - 1] += font.glyphs.at(last_character).advance;
+            }
+
+            max_line_alignment = max(max_line_alignment, line_alignments[line_count - 1]);
+
+            static constexpr f32 align_blend[] = { 0.f, 0.5f, 1.f };
+            const u64 alignment_id = static_cast<u64>(text.alignment);
+
+            for (u64 idx = 0; idx < line_count; ++idx)
+            {
+                line_alignments[idx] = (max_line_alignment - line_alignments[idx]) * align_blend[alignment_id];
+            }
+        }
+
+        // @TOOD(dubgron): Fix this. Right now we don't load x-height from font, so we have to approximate it.
+        const f32 x_height = font.metrics.line_height * 0.65f;
+        const f32 total_text_height = (line_count - 1) * font.metrics.line_height + x_height;
+        const v2 center_offset = v2{ max_line_alignment, total_text_height } * text.center_of_rotation;
+
+        u64 current_line = 0;
+        v2 advance{ 0.f, total_text_height - x_height };
+        for (u64 idx = 0; idx < text_length; ++idx)
+        {
+            const u8 character = text.caption[idx];
+
+            if (idx > 0)
+            {
+                const u8 prev_character = text.caption[idx - 1];
 
                 const std::pair<u8, u8> key = std::make_pair(prev_character, character);
                 if (font.kerning.contains(key))
@@ -772,6 +852,8 @@ namespace Aporia
             {
                 advance.x = 0.f;
                 advance.y -= font.metrics.line_height;
+
+                current_line += 1;
             }
             else if (font.glyphs.contains(character))
             {
@@ -789,7 +871,8 @@ namespace Aporia
                 // @NOTE(dubgron): We switch the sign of plane_bounds.bottom because
                 // the plane_bounds lives in a space where the y-axis goes downwards.
                 const v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
-                const v2 line_offset    = advance + plane_offset;
+                const v2 align_offset   = v2{ line_alignments[current_line], 0.f };
+                const v2 line_offset    = advance + plane_offset + align_offset - center_offset;
 
                 const f32 rotated_x     = cos * line_offset.x - sin * line_offset.y;
                 const f32 rotated_y     = sin * line_offset.x + cos * line_offset.y;
@@ -829,6 +912,8 @@ namespace Aporia
                 rendering_queue.push_back(key);
             }
         }
+
+        rollback_scratch_arena(temp);
     }
 
     void resize_framebuffers(u32 width, u32 height)

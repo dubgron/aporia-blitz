@@ -57,17 +57,28 @@ namespace Aporia
         Kerning kerning;
     };
 
+    enum class TextAlignment : u8
+    {
+        Left,
+        Center,
+        Right,
+    };
+
     struct Text
     {
         v2 position{ 0.f };
         f32 font_size = 32.f;
+
         f32 rotation = 0.f;
+        v2 center_of_rotation{ 0.f };
 
         Color color = Color::White;
         u32 shader_id = font_shader;
 
         std::string caption;
         const Font* font = nullptr;
+
+        TextAlignment alignment = TextAlignment::Left;
     };
 
     void load_font(String name, std::filesystem::path filepath);

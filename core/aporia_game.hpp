@@ -19,7 +19,7 @@
 //
 // [x] Setting width and height of Entity with texture.
 // [x] Lack of is_any_key_pressed function.
-// [ ] Can't draw centered text.
+// [x] Can't draw centered text.
 // [ ] Can't hot-reload shaders, because they're copied from different directory.
 //
 
@@ -37,7 +37,7 @@ namespace Aporia
         game_draw_t* draw = nullptr;
         game_terminate_t* terminate = nullptr;
 
-        // @TODO(dubgron): Erradicate all usages of std::string and std::string_view
+        // @TODO(dubgron): Erradicate all usages of std::string and std::string_view.
         std::string_view config_filepath;
     };
 
