@@ -43,8 +43,8 @@ namespace Aporia
     {
         std::string title;
 
-        u32 width = 0;
-        u32 height = 0;
+        i32 width = 0;
+        i32 height = 0;
 
         bool vsync = true;
 
@@ -55,5 +55,5 @@ namespace Aporia
     extern ShaderConfig shader_config;
     extern CameraConfig camera_config;
 
-    void load_config(std::string_view filepath);
+    bool load_config(std::string_view filepath);
 }

@@ -133,6 +133,75 @@ namespace Aporia
         return reinterpret_cast<const char*>(cstring.data);
     }
 
+    i64 String::to_int() const
+    {
+        if (length > 0)
+        {
+            i64 result = 0;
+            i64 running_10s = 1;
+            for (u64 idx = length - 1; idx > 0; --idx)
+            {
+                u8 digit = data[idx] - '0';
+                result += digit * running_10s;
+                running_10s *= 10;
+            }
+
+            if (data[0] == '-')
+            {
+                return -result;
+            }
+            else
+            {
+                u8 digit = data[0] - '0';
+                result += digit * running_10s;
+                return result;
+            }
+        }
+
+        return 0;
+    }
+
+    f32 String::to_float() const
+    {
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        StringList split_number = split(temp.arena, '.');
+
+        String integral_part = split_number.first->string;
+        f32 result = integral_part.to_int();
+
+        if (split_number.node_count == 2)
+        {
+            String fractional_part = split_number.last->string;
+
+            f32 running_10s = 0.1f;
+            for (u64 idx = 0; idx < fractional_part.length; ++idx)
+            {
+                u8 digit = fractional_part.data[idx] - '0';
+                result += digit * running_10s;
+                running_10s /= 10.f;
+            }
+        }
+
+        return result;
+    }
+
+    bool String::to_bool() const
+    {
+        if (*this == "true")
+        {
+            return true;
+        }
+        else if (*this == "false")
+        {
+            return false;
+        }
+        else
+        {
+            APORIA_UNREACHABLE();
+            return false;
+        }
+    }
+
     String create_string(const char* string)
     {
         return String{ (u8*)string, strlen(string) };

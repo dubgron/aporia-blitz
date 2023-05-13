@@ -32,6 +32,10 @@ namespace Aporia
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
         operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), static_cast<size_t>(length) }; }
         const char* to_cstring(MemoryArena* arena) const;
+
+        i64 to_int() const;
+        f32 to_float() const;
+        bool to_bool() const;
     };
 
     String create_string(const char* string);
