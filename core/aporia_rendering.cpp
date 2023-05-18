@@ -613,9 +613,12 @@ namespace Aporia
 
         if (entity.texture)
         {
-            const v2 half_pixel_offset  = 0.5f / v2{ entity.texture->source.width, entity.texture->source.height };
-            const v2 tex_coord_u        = entity.texture->u + half_pixel_offset;
-            const v2 tex_coord_v        = entity.texture->v - half_pixel_offset;
+            // @NOTE(dubgron): Disabled the half pixel offset as it is only useful when dealing with rotated tiles.
+            // const v2 half_pixel_offset  = 0.5f / v2{ entity.texture->source.width, entity.texture->source.height };
+            // const v2 tex_coord_u        = entity.texture->u + half_pixel_offset;
+            // const v2 tex_coord_v        = entity.texture->v - half_pixel_offset;
+            const v2 tex_coord_u        = entity.texture->u;
+            const v2 tex_coord_v        = entity.texture->v;
 
             key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
             key.vertex[0].tex_id        = entity.texture->source.id;
