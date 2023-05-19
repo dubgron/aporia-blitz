@@ -15,6 +15,7 @@ namespace Aporia
 {
     MemoryArena persistent_arena;
     MemoryArena frame_arena;
+    MemoryArena config_arena;
 
     World world;
 
@@ -76,8 +77,9 @@ namespace Aporia
 
             persistent_arena.alloc(MEGABYTES(100));
             frame_arena.alloc(KILOBYTES(10));
+            config_arena.alloc(KILOBYTES(10));
 
-            const bool config_loaded_successfully = load_config(game->config_filepath);
+            const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
             active_camera = create_camera(&persistent_arena);

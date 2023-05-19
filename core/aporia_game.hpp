@@ -43,6 +43,7 @@ namespace Aporia
 
     extern MemoryArena persistent_arena;
     extern MemoryArena frame_arena;
+    extern MemoryArena config_arena;
 
     extern World world;
 

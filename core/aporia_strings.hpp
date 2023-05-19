@@ -39,6 +39,7 @@ namespace Aporia
     };
 
     String create_string(const char* string);
+    String push_string(MemoryArena* arena, String string);
     String push_string(MemoryArena* arena, const char* string);
     String push_string(MemoryArena* arena, u64 length);
 

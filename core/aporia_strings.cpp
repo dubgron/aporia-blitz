@@ -207,6 +207,13 @@ namespace Aporia
         return String{ (u8*)string, strlen(string) };
     }
 
+    String push_string(MemoryArena* arena, String string)
+    {
+        const String result = push_string(arena, string.length);
+        memcpy(result.data, string.data, string.length * sizeof(u8));
+        return result;
+    }
+
     String push_string(MemoryArena* arena, const char* string)
     {
         const u64 length = strlen(string);

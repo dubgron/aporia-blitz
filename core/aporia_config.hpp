@@ -55,5 +55,29 @@ namespace Aporia
     extern ShaderConfig shader_config;
     extern CameraConfig camera_config;
 
-    bool load_config(std::string_view filepath);
+    struct Config_Property
+    {
+        String category;
+        String field;
+        StringList literals;
+    };
+
+    struct Config_PropertyNode
+    {
+        Config_PropertyNode* next = nullptr;
+        Config_Property property;
+    };
+
+    struct Config_PropertyList
+    {
+        Config_PropertyNode* first = nullptr;
+        Config_PropertyNode* last = nullptr;
+        u64 node_count = 0;
+
+        void push_node(MemoryArena* arena, Config_Property property);
+    };
+
+    Config_PropertyList parse_config_file(std::string_view filepath);
+
+    bool load_engine_config(std::string_view filepath);
 }
