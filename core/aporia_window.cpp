@@ -7,6 +7,7 @@
 #include "aporia_debug.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
+#include "aporia_game.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_utils.hpp"
@@ -71,7 +72,7 @@ namespace Aporia
 
     void Window::on_config_reload()
     {
-        glfwSetWindowTitle(handle, window_config.title.c_str());
+        glfwSetWindowTitle(handle, window_config.title.to_cstring(&config_arena));
         glfwSetWindowSize(handle, window_config.width, window_config.height);
         glfwSwapInterval(window_config.vsync);
 
@@ -83,6 +84,8 @@ namespace Aporia
 
     Window* create_window(MemoryArena* arena)
     {
+        APORIA_ASSERT(arena);
+
         glfwSetErrorCallback([](i32 error, const char* description)
         {
             APORIA_LOG(Error, "GLFW Error #{}: {}", error, description);
@@ -99,7 +102,7 @@ namespace Aporia
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, window_config.title.c_str(), nullptr, nullptr);
+        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, window_config.title.to_cstring(&config_arena), nullptr, nullptr);
 
         if (!handle)
         {
@@ -108,7 +111,6 @@ namespace Aporia
             return nullptr;
         }
 
-        APORIA_ASSERT(arena);
         Window* result = arena->push<Window>();
         result->handle = handle;
 

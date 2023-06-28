@@ -41,7 +41,7 @@ namespace Aporia
 
     struct WindowConfig
     {
-        std::string title;
+        String title;
 
         i32 width = 0;
         i32 height = 0;

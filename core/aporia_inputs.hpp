@@ -270,5 +270,5 @@ namespace Aporia
     AnalogInputState get_analog_state(MouseWheel wheel);
     AnalogInputState get_analog_state(GamepadAxis axis);
 
-    Key string_to_key(std::string_view string);
+    Key string_to_key(String string);
 }

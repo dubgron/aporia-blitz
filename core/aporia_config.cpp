@@ -306,6 +306,83 @@ namespace Aporia
         return result;
     }
 
+    enum Config_ValueType
+    {
+        Config_ValueType_String,
+        Config_ValueType_Key,
+        Config_ValueType_ShaderBlend,
+        Config_ValueType_ShaderBlendOp,
+        Config_ValueType_ShaderDepthTest,
+        Config_ValueType_ShaderDepthWrite,
+        Config_ValueType_Float32,
+        Config_ValueType_Float64,
+        Config_ValueType_Int8,
+        Config_ValueType_Int16,
+        Config_ValueType_Int32,
+        Config_ValueType_Int64,
+        Config_ValueType_Uint8,
+        Config_ValueType_Uint16,
+        Config_ValueType_Uint32,
+        Config_ValueType_Uint64,
+        Config_ValueType_Boolean,
+    };
+
+    struct Config_PropertyDefinition
+    {
+        String category;
+        String field;
+
+        Config_ValueType value_type;
+        u64 value_count = 0;
+
+        void* data = nullptr;
+    };
+
+#define str(x) create_string(x)
+
+    static Config_PropertyDefinition defined_properties[] =
+    {
+        { str("window"), str("title"),                  Config_ValueType_String,            1, &window_config.title },
+        { str("window"), str("size"),                   Config_ValueType_Int32,             2, &window_config.width },
+        { str("window"), str("vsync"),                  Config_ValueType_Boolean,           1, &window_config.vsync },
+        { str("window"), str("position"),               Config_ValueType_Int32,             2, &window_config.position },
+
+        { str("camera"), str("fov"),                    Config_ValueType_Float32,           1, &camera_config.fov },
+        { str("camera"), str("aspect_ratio"),           Config_ValueType_Float32,           1, &camera_config.aspect_ratio },
+        { str("camera"), str("background_color"),       Config_ValueType_Uint8,             4, &camera_config.background_color },
+        { str("camera"), str("movement_speed"),         Config_ValueType_Float32,           1, &camera_config.movement_speed },
+        { str("camera"), str("rotation_speed"),         Config_ValueType_Float32,           1, &camera_config.rotation_speed },
+        { str("camera"), str("zoom_speed"),             Config_ValueType_Float32,           1, &camera_config.zoom_speed },
+        { str("camera"), str("movement_key_up"),        Config_ValueType_Key,               1, &camera_config.movement_key_up },
+        { str("camera"), str("movement_key_down"),      Config_ValueType_Key,               1, &camera_config.movement_key_down },
+        { str("camera"), str("movement_key_left"),      Config_ValueType_Key,               1, &camera_config.movement_key_left },
+        { str("camera"), str("movement_key_right"),     Config_ValueType_Key,               1, &camera_config.movement_key_right },
+        { str("camera"), str("rotation_key_left"),      Config_ValueType_Key,               1, &camera_config.rotation_key_left },
+        { str("camera"), str("rotation_key_right"),     Config_ValueType_Key,               1, &camera_config.rotation_key_right },
+        { str("camera"), str("zoom_key_in"),            Config_ValueType_Key,               1, &camera_config.zoom_key_in },
+        { str("camera"), str("zoom_key_out"),           Config_ValueType_Key,               1, &camera_config.zoom_key_out },
+        { str("camera"), str("zoom_max"),               Config_ValueType_Float32,           1, &camera_config.zoom_max },
+        { str("camera"), str("zoom_min"),               Config_ValueType_Float32,           1, &camera_config.zoom_min },
+
+        { str("shader"), str("default.blend"),          Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
+        { str("shader"), str("default.blend_op"),       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
+        { str("shader"), str("default.depth_test"),     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
+        { str("shader"), str("default.depth_write"),    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
+    };
+    static constexpr u64 defined_properties_count = sizeof(defined_properties) / sizeof(Config_PropertyDefinition);
+
+#undef str
+
+#define PROPERTY_HELPER(T, string_to_type) do { \
+        T* property_data = (T*)property_definition.data; \
+        StringNode* value_node = literals.first; \
+        for (u64 value_idx = 0; value_idx < property_definition.value_count; ++value_idx) \
+        { \
+            property_data[value_idx] = string_to_type(value_node->string); \
+            value_node = value_node->next; \
+        } \
+    } while(0)
+
     bool load_engine_config(std::string_view filepath)
     {
         Config_PropertyList parsed_config = parse_config_file(filepath);
@@ -314,7 +391,7 @@ namespace Aporia
         {
             return false;
         }
-
+        
         for (Config_PropertyNode* property_node = parsed_config.first; property_node; property_node = property_node->next)
         {
             String category = property_node->property.category;
@@ -322,123 +399,45 @@ namespace Aporia
             StringList literals = property_node->property.literals;
 
             // Applying properties
-            if (category == "window")
+            // @TODO(dubgron): The big-O notation of this solution is not great. Use a hash map to improve it.
+            for (u64 idx = 0; idx < defined_properties_count; ++idx)
             {
-                if (field == "title")
+                const Config_PropertyDefinition& property_definition = defined_properties[idx];
+                if (property_definition.category == category && property_definition.field == field)
                 {
-                    window_config.title = literals.get_node_at_index(0)->string;
-                }
-                else if (field == "size")
-                {
-                    window_config.width = literals.get_node_at_index(0)->string.to_int();
-                    window_config.height = literals.get_node_at_index(1)->string.to_int();
-                }
-                else if (field == "vsync")
-                {
-                    window_config.vsync = literals.get_node_at_index(0)->string.to_bool();
-                }
-                else if (field == "position")
-                {
-                    window_config.position->x = literals.get_node_at_index(0)->string.to_int();
-                    window_config.position->y = literals.get_node_at_index(1)->string.to_int();
-                }
-            }
-            else if (category == "camera")
-            {
-                if (field == "fov")
-                {
-                    camera_config.fov = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "aspect_ratio")
-                {
-                    camera_config.aspect_ratio = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "background_color")
-                {
-                    camera_config.background_color.r = literals.get_node_at_index(0)->string.to_int();
-                    camera_config.background_color.g = literals.get_node_at_index(1)->string.to_int();
-                    camera_config.background_color.b = literals.get_node_at_index(2)->string.to_int();
-                    camera_config.background_color.a = literals.get_node_at_index(3)->string.to_int();
-                }
-                else if (field == "movement_speed")
-                {
-                    camera_config.movement_speed = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "rotation_speed")
-                {
-                    camera_config.rotation_speed = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "zoom_speed")
-                {
-                    camera_config.zoom_speed = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "movement_key_up")
-                {
-                    camera_config.movement_key_up = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "movement_key_down")
-                {
-                    camera_config.movement_key_down = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "movement_key_left")
-                {
-                    camera_config.movement_key_left = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "movement_key_down")
-                {
-                    camera_config.movement_key_down = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "movement_key_right")
-                {
-                    camera_config.movement_key_right = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "rotation_key_left")
-                {
-                    camera_config.rotation_key_left = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "rotation_key_right")
-                {
-                    camera_config.rotation_key_right = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "zoom_key_in")
-                {
-                    camera_config.zoom_key_in = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "zoom_key_out")
-                {
-                    camera_config.zoom_key_out = string_to_key(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "zoom_max")
-                {
-                    camera_config.zoom_max = literals.get_node_at_index(0)->string.to_float();
-                }
-                else if (field == "zoom_min")
-                {
-                    camera_config.zoom_min = literals.get_node_at_index(0)->string.to_float();
-                }
-            }
-            else if (category == "shader")
-            {
-                if (field == "default.blend")
-                {
-                    shader_config.default_properties.blend[0] = string_to_shader_blend(literals.get_node_at_index(0)->string);
-                    shader_config.default_properties.blend[1] = string_to_shader_blend(literals.get_node_at_index(1)->string);
-                }
-                else if (field == "default.blend_op")
-                {
-                    shader_config.default_properties.blend_op = string_to_shader_blend_op(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "default.depth_test")
-                {
-                    shader_config.default_properties.depth_test = string_to_shader_depth_test(literals.get_node_at_index(0)->string);
-                }
-                else if (field == "default.depth_write")
-                {
-                    shader_config.default_properties.depth_write = string_to_shader_depth_write(literals.get_node_at_index(0)->string);
+                    if (literals.node_count != property_definition.value_count)
+                    {
+                        // @TODO(dubgron): Better logging.
+                        APORIA_LOG(Error, "Field has a literal count mismatch!");
+                        continue;
+                    }
+
+                    switch (property_definition.value_type)
+                    {
+                        case Config_ValueType_String:           { PROPERTY_HELPER(String, );                                        } break;
+                        case Config_ValueType_Key:              { PROPERTY_HELPER(Key, string_to_key);                              } break;
+                        case Config_ValueType_ShaderBlend:      { PROPERTY_HELPER(ShaderBlend, string_to_shader_blend);             } break;
+                        case Config_ValueType_ShaderBlendOp:    { PROPERTY_HELPER(ShaderBlendOp, string_to_shader_blend_op);        } break;
+                        case Config_ValueType_ShaderDepthTest:  { PROPERTY_HELPER(ShaderDepthTest, string_to_shader_depth_test);    } break;
+                        case Config_ValueType_ShaderDepthWrite: { PROPERTY_HELPER(ShaderDepthWrite, string_to_shader_depth_write);  } break;
+                        case Config_ValueType_Float32:          { PROPERTY_HELPER(f32, string_to_float);                            } break;
+                        case Config_ValueType_Float64:          { PROPERTY_HELPER(f64, string_to_float);                            } break;
+                        case Config_ValueType_Int8:             { PROPERTY_HELPER(i8, string_to_int);                               } break;
+                        case Config_ValueType_Int16:            { PROPERTY_HELPER(i16, string_to_int);                              } break;
+                        case Config_ValueType_Int32:            { PROPERTY_HELPER(i32, string_to_int);                              } break;
+                        case Config_ValueType_Int64:            { PROPERTY_HELPER(i64, string_to_int);                              } break;
+                        case Config_ValueType_Uint8:            { PROPERTY_HELPER(u8, string_to_int);                               } break;
+                        case Config_ValueType_Uint16:           { PROPERTY_HELPER(u16, string_to_int);                              } break;
+                        case Config_ValueType_Uint32:           { PROPERTY_HELPER(u32, string_to_int);                              } break;
+                        case Config_ValueType_Uint64:           { PROPERTY_HELPER(u64, string_to_int);                              } break;
+                        case Config_ValueType_Boolean:          { PROPERTY_HELPER(bool, string_to_bool);                            } break;
+                    }
                 }
             }
         }
 
         return true;
     }
+
+#undef PROPERTY_HELPER
 }

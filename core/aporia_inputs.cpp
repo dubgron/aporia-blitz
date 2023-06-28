@@ -256,7 +256,7 @@ namespace Aporia
         return input.axes[axis_code];
     }
 
-    Key string_to_key(std::string_view string)
+    Key string_to_key(String string)
     {
         if (string == "Unknown")        return Key::Unknown;
         if (string == "Space")          return Key::Space;
