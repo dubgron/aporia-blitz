@@ -288,8 +288,14 @@ namespace Aporia
                 {
                     property.literals.push_node(temp.arena, copied_token_text);
 
-                    const bool next_token_is_part_of_current_field = token_node->next && token_node->next->token.type & expected_tokens_table(Config_TokenType_Field);
-                    if (!next_token_is_part_of_current_field)
+                    // Skip the comment tokens between or after literals.
+                    while (token_node->next && token_node->next->token.type == Config_TokenType_Comment)
+                    {
+                        token_node = token_node->next;
+                    }
+
+                    // If there is no more literals, submit the property and clear the list of literals.
+                    if (token_node->next == nullptr || token_node->next->token.type != Config_TokenType_Literal)
                     {
                         result.push_node(&config_arena, property);
 
@@ -408,7 +414,7 @@ namespace Aporia
                     if (literals.node_count != property_definition.value_count)
                     {
                         // @TODO(dubgron): Better logging.
-                        APORIA_LOG(Error, "Field has a literal count mismatch!");
+                        APORIA_LOG(Error, "Field {}.{} has a literal count mismatch (expected: {}, received: {})!", category, field, property_definition.value_count, literals.node_count);
                         continue;
                     }
 
