@@ -76,9 +76,9 @@ namespace Aporia
         glfwSetWindowSize(handle, window_config.width, window_config.height);
         glfwSwapInterval(window_config.vsync);
 
-        if (window_config.position)
+        if (window_config.position != WindowConfig::INVALID_POSITION)
         {
-            glfwSetWindowPos(handle, window_config.position->x, window_config.position->y);
+            glfwSetWindowPos(handle, window_config.position.x, window_config.position.y);
         }
     }
 
@@ -118,9 +118,9 @@ namespace Aporia
         glfwSetWindowUserPointer(handle, result);
         glfwSwapInterval(window_config.vsync);
 
-        if (window_config.position)
+        if (window_config.position != WindowConfig::INVALID_POSITION)
         {
-            glfwSetWindowPos(handle, window_config.position->x, window_config.position->y);
+            glfwSetWindowPos(handle, window_config.position.x, window_config.position.y);
         }
 
         glfwSetWindowCloseCallback(handle, [](GLFWwindow* handle)

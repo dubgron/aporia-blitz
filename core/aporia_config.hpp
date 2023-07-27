@@ -48,7 +48,9 @@ namespace Aporia
 
         bool vsync = true;
 
-        std::optional<v2_i32> position = std::nullopt;
+        v2_i32 position = INVALID_POSITION;
+
+        static constexpr v2_i32 INVALID_POSITION{ -1 };
     };
 
     extern WindowConfig window_config;
