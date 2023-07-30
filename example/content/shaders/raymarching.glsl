@@ -69,13 +69,10 @@ float march_shadow(vec2 origin, float range, vec2 dir)
         vec2 ray = dir * total_step * range_scaled;
         vec2 dest = origin + ray;
 
-        // if (dest.x > 0.0 && dest.x < 1.0 && dest.y > 0.0 && dest.y < 1.0)
+        float collision = texture(u_masking, dest).a;
+        if (collision > EPS)
         {
-            float collision = texture(u_masking, dest).a;
-            if (collision > EPS)
-            {
-                return length(total_step);
-            }
+            return length(total_step);
         }
 
         total_step += step;

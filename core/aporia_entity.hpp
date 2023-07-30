@@ -31,7 +31,7 @@ namespace Aporia
         v2 scale{ 1.f };
 
         const SubTexture* texture = nullptr;
-        Color color;
+        Color color = Color::White;
         u32 shader_id = default_shader;
 
         Animator animator;

@@ -62,7 +62,7 @@ vec4 draw_grid(vec2 uv)
         vec2 derivative = fwidth(coord);
 
         // Draw XY axes
-        vec2 axes = abs(coord) / derivative / thick_thickness;
+        vec2 axes = abs(coord) / derivative / axis_thickness;
         vec2 axis_line = 1.0 - min(axes.yx, 1.0);
 
         color += vec3(1.0, -1.0, -1.0) * axis_line.x * axis_brightness;
@@ -70,7 +70,7 @@ vec4 draw_grid(vec2 uv)
 
         // Draw thicker grid
         vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
-        float line = min(grid.x, grid.y) / axis_thickness;
+        float line = min(grid.x, grid.y) / thick_thickness;
 
         color += vec3(1.0 - min(line, 1.0)) * thick_brightness;
     }
