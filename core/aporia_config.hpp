@@ -34,6 +34,11 @@ namespace Aporia
         f32 zoom_min = 1.f;
     };
 
+    struct EditorConfig
+    {
+        bool display_editor_grid = false;
+    };
+
     struct ShaderConfig
     {
         ShaderProperties default_properties;
@@ -55,6 +60,7 @@ namespace Aporia
 
     extern WindowConfig window_config;
     extern ShaderConfig shader_config;
+    extern EditorConfig editor_config;
     extern CameraConfig camera_config;
 
     struct Config_Property

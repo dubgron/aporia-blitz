@@ -344,7 +344,7 @@ namespace Aporia
     {
         constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
-        for (Vertex vertex : framebuffer.vertex)
+        for (const Vertex& vertex : framebuffer.vertex)
         {
             vertex_buffer.data.push_back( vertex );
         }
@@ -474,6 +474,9 @@ namespace Aporia
         raymarching_shader = create_shader("content/shaders/raymarching.glsl");
         shadowcasting_shader = create_shader("content/shaders/shadowcasting.glsl");
 
+        // Setup editor grid shaders
+        editor_grid_shader = create_shader("content/shaders/editor_grid.glsl");
+
         unbind_shader();
     }
 
@@ -495,6 +498,12 @@ namespace Aporia
     void rendering_begin()
     {
         light_sources.clear();
+    }
+
+    void rendering_end()
+    {
+        main_framebuffer.bind();
+        main_framebuffer.clear(camera_config.background_color);
 
         const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
         const f32 camera_zoom = 1.f / active_camera->projection.zoom;
@@ -526,13 +535,22 @@ namespace Aporia
         shader_set_float("u_camera_zoom", camera_zoom);
         shader_set_float2("u_window_size", window_size);
 
-        unbind_shader();
-    }
+        if (editor_config.display_editor_grid)
+        {
+            bind_shader(editor_grid_shader);
+            shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
-    void rendering_end()
-    {
-        main_framebuffer.bind();
-        main_framebuffer.clear(camera_config.background_color);
+            VertexArray& quad_vertex_array = vertex_arrays[(u64)BufferType::Quads];
+
+            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{ -1.f, -1.f, 0.f } });
+            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{  1.f, -1.f, 0.f } });
+            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{  1.f,  1.f, 0.f } });
+            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{ -1.f,  1.f, 0.f } });
+
+            bind_shader(editor_grid_shader);
+            quad_vertex_array.render();
+        }
+
         flush_rendering_queue();
         main_framebuffer.unbind();
 

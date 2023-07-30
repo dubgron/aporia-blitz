@@ -12,6 +12,7 @@ namespace Aporia
 {
     WindowConfig window_config;
     ShaderConfig shader_config;
+    EditorConfig editor_config;
     CameraConfig camera_config;
 
     static u8 comment_token = ';';
@@ -374,6 +375,8 @@ namespace Aporia
         { str("shader"), str("default.blend_op"),       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
         { str("shader"), str("default.depth_test"),     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
         { str("shader"), str("default.depth_write"),    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
+
+        { str("editor"), str("display_editor_grid"),    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
     };
     static constexpr u64 defined_properties_count = sizeof(defined_properties) / sizeof(Config_PropertyDefinition);
 

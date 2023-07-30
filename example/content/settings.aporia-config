@@ -22,10 +22,13 @@
     zoom_key_in             "Space"
     zoom_key_out            "LShift"
     zoom_max                20
-    zoom_min                1
+    zoom_min                0.25
 
 [shader]
     default.blend           "src_alpha" "one_minus_src_alpha"
     default.blend_op        "add"
     default.depth_test      "lequal"
     default.depth_write     "on"
+
+[editor]
+    display_editor_grid     true

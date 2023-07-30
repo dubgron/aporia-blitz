@@ -157,4 +157,6 @@ namespace Aporia
     extern u32 postprocessing_shader;
     extern u32 raymarching_shader;
     extern u32 shadowcasting_shader;
+
+    extern u32 editor_grid_shader;
 }

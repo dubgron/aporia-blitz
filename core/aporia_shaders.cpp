@@ -15,6 +15,8 @@ namespace Aporia
     u32 raymarching_shader = 0;
     u32 shadowcasting_shader = 0;
 
+    u32 editor_grid_shader = 0;
+
     static std::unordered_map<u32, ShaderInfo> shaders;
     static u32 active_shader_id = 0;
     static ShaderProperties default_shader_properties;
