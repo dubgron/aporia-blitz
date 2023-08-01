@@ -81,7 +81,7 @@ if (NOT APORIA_EMSCRIPTEN)
         OpenGL::GL)
 endif()
 
-target_compile_features(core PUBLIC cxx_std_23)
+target_compile_features(core PUBLIC cxx_std_20)
 
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
 

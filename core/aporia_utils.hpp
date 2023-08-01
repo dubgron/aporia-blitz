@@ -85,4 +85,10 @@ namespace Aporia
     i32 random_range(i32 min, i32 max);
     i64 random_range(i64 min, i64 max);
     f32 random_range(f32 min, f32 max);
+
+    template<typename E, typename T = std::underlying_type_t<E>> requires std::is_enum_v<E>
+    constexpr T to_underlying(E enum_value)
+    {
+        return static_cast<T>(enum_value);
+    }
 }

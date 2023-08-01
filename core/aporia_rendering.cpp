@@ -300,7 +300,7 @@ namespace Aporia
     {
         bind_shader(shader_id);
 
-        const u8 buffer_index = std::to_underlying(buffer);
+        const u8 buffer_index = to_underlying(buffer);
         vertex_arrays[buffer_index].render();
     }
 
@@ -318,7 +318,7 @@ namespace Aporia
                     flush_buffer(prev_key.buffer, prev_key.shader_id);
                 }
 
-                const u8 buffer_index = std::to_underlying(key.buffer);
+                const u8 buffer_index = to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
 
                 if (vertex_buffer.data.size() + vertex_buffer.vertex_count > vertex_buffer.max_size)
@@ -342,7 +342,7 @@ namespace Aporia
 
     static void flush_framebuffer(const Framebuffer& framebuffer, u32 shader_id)
     {
-        constexpr u8 buffer_index = std::to_underlying(BufferType::Quads);
+        constexpr u8 buffer_index = to_underlying(BufferType::Quads);
         VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
         for (const Vertex& vertex : framebuffer.vertex)
         {
