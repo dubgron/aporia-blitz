@@ -5,6 +5,7 @@
 #include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
+#include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
 
 namespace Aporia
@@ -23,26 +24,25 @@ namespace Aporia
         return nullptr;
     }
 
-    void load_animations(std::string_view filepath)
+    void load_animations(String filepath)
     {
-        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(filepath),
-            "File '{}' does not open!", filepath);
-
-        std::string data = read_file(filepath);
+        const String data = read_file(&persistent_arena, filepath);
+        APORIA_ASSERT(data.is_valid());
 
         using json = nlohmann::json;
-        json animation_json = json::parse(data);
+        const json animation_json = json::parse<std::string_view>(data);
 
         for (auto& animation_data : animation_json["animations"])
         {
-            std::string animation_name = animation_data["name"].get<std::string>();
+            const String animation_name = animation_data["name"].get<std::string_view>();
 
             Animation animation;
-            animation.name = push_string(&persistent_arena, animation_name.data());
+            animation.name = push_string(&persistent_arena, animation_name);
 
-            for (auto& frame_name : animation_data["frames"])
+            for (auto& frame_name_str : animation_data["frames"])
             {
                 AnimationFrame frame;
+                const String frame_name = frame_name_str.get<std::string_view>();
                 frame.texture = get_subtexture(frame_name);
                 animation.frames.push_back(frame);
             }

@@ -1,11 +1,9 @@
 #pragma once
 
-#include <optional>
-#include <string>
-
 #include "aporia_entity.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
+#include "aporia_strings.hpp"
 
 namespace Aporia
 {
@@ -85,7 +83,7 @@ namespace Aporia
         void push_node(MemoryArena* arena, Config_Property property);
     };
 
-    Config_PropertyList parse_config_file(std::string_view filepath);
+    Config_PropertyList parse_config_file(String filepath);
 
-    bool load_engine_config(std::string_view filepath);
+    bool load_engine_config(String filepath);
 }

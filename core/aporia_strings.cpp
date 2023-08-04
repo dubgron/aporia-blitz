@@ -6,17 +6,22 @@
 
 namespace Aporia
 {
+    bool String::is_valid() const
+    {
+        return data != nullptr;
+    }
+
     void String::clear()
     {
         data = nullptr;
         length = 0;
     }
 
-    String String::substr(u64 offset, u64 count) const
+    String String::substr(u64 offset, u64 count /* = -1 */) const
     {
         APORIA_ASSERT(data);
-        APORIA_ASSERT(length > offset);
-        return String{ data + offset, clamp<u64>(count, 0, length - offset) };
+        APORIA_ASSERT(length >= offset);
+        return String{ data + offset, min<u64>(count, length - offset) };
     }
 
     String String::trim() const
@@ -82,24 +87,91 @@ namespace Aporia
         return result;
     }
 
-    bool String::contains(String substring) const
+    u64 String::find(u8 character, u64 offset /* = 0 */) const
     {
-        if (substring.length > length)
+        if (offset >= length)
         {
-            return false;
+            return INVALID_INDEX;
         }
 
-        const u64 substr_num = length - substring.length + 1;
-        for (u64 offset = 0; offset < substr_num; ++offset)
+        APORIA_ASSERT(data);
+
+        for (u64 off = offset; off < length; ++off)
         {
-            const String temp = substr(offset, substring.length);
-            if (substring == temp)
+            if (data[off] == character)
             {
-                return true;
+                return off;
             }
         }
 
-        return false;
+        return INVALID_INDEX;
+    }
+
+    u64 String::find(String substring, u64 offset /* = 0 */) const
+    {
+        if (substring.length + offset >= length)
+        {
+            return INVALID_INDEX;
+        }
+
+        const u64 substr_num = length - substring.length + 1;
+        for (u64 off = offset; off < substr_num; ++off)
+        {
+            const String temp = substr(off, substring.length);
+            if (substring == temp)
+            {
+                return off;
+            }
+        }
+
+        return INVALID_INDEX;
+    }
+
+    static bool is_eol(u8 ch)
+    {
+        return ch == '\r' || ch == '\n';
+    }
+
+    u64 String::find_eol(u64 offset /* = 0 */) const
+    {
+        if (offset >= length)
+        {
+            return INVALID_INDEX;
+        }
+
+        u64 eol_begin = INVALID_INDEX;
+        for (u64 off = offset; off < length; ++off)
+        {
+            if (is_eol(data[off]))
+            {
+                return off;
+                eol_begin = off;
+                break;
+            }
+        }
+
+        u64 eol_end = INVALID_INDEX;
+        for (u64 off = eol_begin + 1; off < length; ++off)
+        {
+            if (!is_eol(data[off]))
+            {
+                eol_end = off - 1;
+                break;
+            }
+        }
+
+        return eol_end;
+    }
+
+    bool String::contains(String substring) const
+    {
+        return find(substring) != INVALID_INDEX;
+    }
+
+    bool String::starts_with(String substring) const
+    {
+        const String temp = substr(0, substring.length);
+        return substring == temp;
     }
 
     bool String::operator==(String string) const
@@ -122,20 +194,7 @@ namespace Aporia
 
     bool String::operator==(const char* string) const
     {
-        return *this == create_string(string);
-    }
-
-    const char* String::to_cstring(MemoryArena* arena) const
-    {
-        String cstring = push_string(arena, length + 1);
-        memcpy(cstring.data, data, length);
-        cstring.data[length] = '\0';
-        return reinterpret_cast<const char*>(cstring.data);
-    }
-
-    String create_string(const char* string)
-    {
-        return String{ (u8*)string, strlen(string) };
+        return *this == String{ string };
     }
 
     String push_string(MemoryArena* arena, String string)
@@ -160,7 +219,8 @@ namespace Aporia
         if (length > 0)
         {
             result.length = length;
-            result.data = arena->push<u8>(length);
+            result.data = arena->push<u8>(length + 1);
+            result.data[length] = '\0';
         }
         return result;
     }
@@ -325,7 +385,7 @@ namespace Aporia
         return result;
     }
 
-    String StringList::join(MemoryArena* arena, String delim) const
+    String StringList::join(MemoryArena* arena, String delim /* = "" */) const
     {
         if (node_count == 0)
         {

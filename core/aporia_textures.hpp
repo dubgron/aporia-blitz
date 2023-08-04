@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
 #include <unordered_map>
 
+#include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
 namespace Aporia
@@ -15,8 +15,10 @@ namespace Aporia
         i32 height = 0;
         i32 channels = 0;
 
-        void load(std::string_view filepath);
+        void load(String filepath);
         void unload();
+
+        bool is_valid() const;
     };
 
     struct Texture
@@ -35,11 +37,11 @@ namespace Aporia
         Texture source;
     };
 
-    void load_texture_atlas(std::string_view filepath);
-    const SubTexture* get_subtexture(const std::string& name);
+    void load_texture_atlas(String filepath);
+    const SubTexture* get_subtexture(String name);
 
     f32 get_subtexture_width(const SubTexture& subtexture);
     f32 get_subtexture_height(const SubTexture& subtexture);
 
-    extern std::unordered_map<std::string, SubTexture> textures;
+    extern std::unordered_map<String, SubTexture> textures;
 }

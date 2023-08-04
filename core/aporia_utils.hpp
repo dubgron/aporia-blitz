@@ -3,11 +3,14 @@
 #include <chrono>
 #include <random>
 
+#include "aporia_memory.hpp"
+#include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
 namespace Aporia
 {
-    std::string read_file(std::string_view filepath);
+    String read_file(MemoryArena* arena, String filepath);
+    String replace_extension(MemoryArena* arena, String filepath, String ext);
 
     struct Color
     {

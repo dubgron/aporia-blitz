@@ -75,12 +75,12 @@ namespace Aporia
         Color color = Color::White;
         u32 shader_id = font_shader;
 
-        std::string caption;
+        String caption;
         const Font* font = nullptr;
 
         TextAlignment alignment = TextAlignment::Left;
     };
 
-    void load_font(String name, std::filesystem::path filepath);
+    void load_font(String name, String filepath);
     const Font& get_font(String name);
 }

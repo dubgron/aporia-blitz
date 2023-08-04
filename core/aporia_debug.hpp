@@ -87,7 +87,7 @@ namespace Aporia
         Off         = spdlog::level::off
     };
 
-    void logging_init(const std::string& name);
+    void logging_init(String name);
 
     template<typename... Args>
     static void log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)

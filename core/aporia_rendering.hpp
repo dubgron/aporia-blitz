@@ -96,9 +96,9 @@ namespace Aporia
         u32 id = 0;
         u32 max_size = 0;
         u32 binding_index = 0;
-        std::string block_name;
+        String block_name;
 
-        void init(u32 in_max_size, u32 in_binding_index, std::string_view in_block_name);
+        void init(u32 in_max_size, u32 in_binding_index, String in_block_name);
         void deinit();
 
         void bind_to_shader(u32 shader_id);

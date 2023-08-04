@@ -189,7 +189,7 @@ namespace Aporia
         vertex_buffer.data.clear();
     }
 
-    void UniformBuffer::init(u32 in_max_size, u32 in_binding_index, std::string_view in_block_name)
+    void UniformBuffer::init(u32 in_max_size, u32 in_binding_index, String in_block_name)
     {
         max_size = in_max_size;
         binding_index = in_binding_index;
@@ -211,7 +211,7 @@ namespace Aporia
 
     void UniformBuffer::bind_to_shader(u32 shader_id)
     {
-        const u32 buffer_index = glGetUniformBlockIndex(shader_id, block_name.data());
+        const u32 buffer_index = glGetUniformBlockIndex(shader_id, *block_name);
         glUniformBlockBinding(shader_id, buffer_index, binding_index);
     }
 
@@ -747,8 +747,7 @@ namespace Aporia
     // @TODO(dubgron): The current implementation of aligning text is shitty and hard to read, so it needs refactor.
     void draw_text(const Text& text)
     {
-        const u64 text_length = text.caption.size();
-        if (text_length == 0)
+        if (text.caption.length == 0)
         {
             return;
         }
@@ -767,9 +766,9 @@ namespace Aporia
         const f32 cos = std::cos(text.rotation);
 
         u64 line_count = 1;
-        for (u64 idx = 0; idx < text_length; ++idx)
+        for (u64 idx = 0; idx < text.caption.length; ++idx)
         {
-            if (text.caption[idx] == '\n')
+            if (text.caption.data[idx] == '\n')
             {
                 line_count += 1;
             }
@@ -783,12 +782,12 @@ namespace Aporia
         // Calculate the alignment of every text line
         {
             u64 current_line = 0;
-            for (u64 idx = 0; idx < text_length; ++idx)
+            for (u64 idx = 0; idx < text.caption.length; ++idx)
             {
-                const u8 character = text.caption[idx];
+                const u8 character = text.caption.data[idx];
                 if (idx > 0)
                 {
-                    const u8 prev_character = text.caption[idx - 1];
+                    const u8 prev_character = text.caption.data[idx - 1];
 
                     const std::pair<u8, u8> key = std::make_pair(prev_character, character);
                     if (font.kerning.contains(key))
@@ -817,7 +816,7 @@ namespace Aporia
                 }
             }
 
-            const u8 last_character = text.caption[text_length - 1];
+            const u8 last_character = text.caption.data[text.caption.length - 1];
             if (font.glyphs.contains(last_character))
             {
                 line_alignments[line_count - 1] += font.glyphs.at(last_character).advance;
@@ -841,13 +840,13 @@ namespace Aporia
 
         u64 current_line = 0;
         v2 advance{ 0.f, total_text_height - x_height };
-        for (u64 idx = 0; idx < text_length; ++idx)
+        for (u64 idx = 0; idx < text.caption.length; ++idx)
         {
-            const u8 character = text.caption[idx];
+            const u8 character = text.caption.data[idx];
 
             if (idx > 0)
             {
-                const u8 prev_character = text.caption[idx - 1];
+                const u8 prev_character = text.caption.data[idx - 1];
 
                 const std::pair<u8, u8> key = std::make_pair(prev_character, character);
                 if (font.kerning.contains(key))

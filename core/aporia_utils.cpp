@@ -1,19 +1,53 @@
 #include "aporia_utils.hpp"
 
 #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 
 namespace Aporia
 {
-    std::string read_file(std::string_view filepath)
+    String read_file(MemoryArena* arena, String filepath)
     {
-        APORIA_ASSERT(std::filesystem::exists(filepath));
+        FILE* file = fopen(*filepath, "rb");
 
-        std::ifstream file{ filepath.data(), std::ios::in };
-        APORIA_LOG(Info, "Opened '{}' successfully!", filepath);
+        if (file == nullptr)
+        {
+            APORIA_LOG(Error, "Failed to open file '{}'!", filepath);
+            return String{};
+        }
 
-        return std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+        APORIA_LOG(Info, "Opened file '{}' successfully!", filepath);
+        fseek(file, 0, SEEK_END);
+
+        u64 length = ftell(file);
+        u8* data = arena->push<u8>(length + 1);
+
+        fseek(file, 0, SEEK_SET);
+        fread(data, length, 1, file);
+        data[length] = '\0';
+
+        fclose(file);
+
+        return String{ data, length };
+    }
+
+    String replace_extension(MemoryArena* arena, String filepath, String ext)
+    {
+        // @NOTE(dubgron): Better approach to do this would be to implement String::rfind, and do something like so:
+        //      u64 last_fullstop = filepath.rfind('.');
+        //      String filename = filepath.substr(0, last_fullstop + 1);
+        //      String new_filepath = filepath.append(arena, ext);
+        StringList file_list = filepath.split(arena, '.');
+        if (file_list.node_count > 1)
+        {
+            file_list = file_list.pop_node();
+        }
+        file_list.push_node(arena, ext);
+
+        return file_list.join(arena, ".");
     }
 
     const Color Color::Black       = Color{  0,   0,   0,  255 };

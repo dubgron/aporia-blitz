@@ -10,9 +10,8 @@ namespace Aporia
     {
         ScratchArena scratch = create_scratch_arena(&persistent_arena);
 
-        const String library_ext = create_string(".dll");
-        const String library_full_name = library_name.append(&frame_arena, library_ext);
-        HMODULE library = LoadLibrary(library_full_name.to_cstring(scratch.arena));
+        const String library_full_name = library_name.append(scratch.arena, ".dll");
+        HMODULE library = LoadLibrary(*library_full_name);
 
         rollback_scratch_arena(scratch);
 
@@ -26,10 +25,7 @@ namespace Aporia
 
     void* load_symbol(void* library_handle, String symbol_name)
     {
-        ScratchArena scratch = create_scratch_arena(&persistent_arena);
-        FARPROC symbol = GetProcAddress((HMODULE)library_handle, symbol_name.to_cstring(scratch.arena));
-        rollback_scratch_arena(scratch);
-
+        FARPROC symbol = GetProcAddress((HMODULE)library_handle, *symbol_name);
         return symbol;
     }
 

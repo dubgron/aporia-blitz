@@ -135,22 +135,22 @@ namespace Aporia
         StringList valid_token_types;
         if (flag & Config_TokenType_Comment)
         {
-            valid_token_types.push_node(arena, create_string("Comment"));
+            valid_token_types.push_node(arena, "Comment");
         }
         if (flag & Config_TokenType_Category)
         {
-            valid_token_types.push_node(arena, create_string("Category"));
+            valid_token_types.push_node(arena, "Category");
         }
         if (flag & Config_TokenType_Field)
         {
-            valid_token_types.push_node(arena, create_string("Field"));
+            valid_token_types.push_node(arena, "Field");
         }
         if (flag & Config_TokenType_Literal)
         {
-            valid_token_types.push_node(arena, create_string("Literal"));
+            valid_token_types.push_node(arena, "Literal");
         }
 
-        return valid_token_types.join(arena, create_string(" or "));
+        return valid_token_types.join(arena, " or ");
     }
 
     void Config_PropertyList::push_node(MemoryArena* arena, Config_Property property)
@@ -171,12 +171,11 @@ namespace Aporia
         node_count += 1;
     }
 
-    Config_PropertyList parse_config_file(std::string_view filepath)
+    Config_PropertyList parse_config_file(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
 
-        std::string config_contents_str = read_file(filepath);
-        String config_contents = String{ (u8*)config_contents_str.data(), config_contents_str.size() };
+        String config_contents = read_file(temp.arena, filepath);
 
         // Tokenizing
         String buffer = config_contents;
@@ -300,7 +299,7 @@ namespace Aporia
                     {
                         result.push_node(&config_arena, property);
 
-                        APORIA_LOG(Debug, "{} -> {} = {}", property.category, property.field, property.literals.join(temp.arena, create_string(", ")));
+                        APORIA_LOG(Debug, "{} -> {} = {}", property.category, property.field, property.literals.join(temp.arena, ", "));
                         property.literals.clear();
                     }
                 }
@@ -345,42 +344,38 @@ namespace Aporia
         void* data = nullptr;
     };
 
-#define str(x) create_string(x)
-
     static Config_PropertyDefinition defined_properties[] =
     {
-        { str("window"), str("title"),                  Config_ValueType_String,            1, &window_config.title },
-        { str("window"), str("size"),                   Config_ValueType_Int32,             2, &window_config.width },
-        { str("window"), str("vsync"),                  Config_ValueType_Boolean,           1, &window_config.vsync },
-        { str("window"), str("position"),               Config_ValueType_Int32,             2, &window_config.position },
+        { "window", "title",                  Config_ValueType_String,            1, &window_config.title },
+        { "window", "size",                   Config_ValueType_Int32,             2, &window_config.width },
+        { "window", "vsync",                  Config_ValueType_Boolean,           1, &window_config.vsync },
+        { "window", "position",               Config_ValueType_Int32,             2, &window_config.position },
 
-        { str("camera"), str("fov"),                    Config_ValueType_Float32,           1, &camera_config.fov },
-        { str("camera"), str("aspect_ratio"),           Config_ValueType_Float32,           1, &camera_config.aspect_ratio },
-        { str("camera"), str("background_color"),       Config_ValueType_Uint8,             4, &camera_config.background_color },
-        { str("camera"), str("movement_speed"),         Config_ValueType_Float32,           1, &camera_config.movement_speed },
-        { str("camera"), str("rotation_speed"),         Config_ValueType_Float32,           1, &camera_config.rotation_speed },
-        { str("camera"), str("zoom_speed"),             Config_ValueType_Float32,           1, &camera_config.zoom_speed },
-        { str("camera"), str("movement_key_up"),        Config_ValueType_Key,               1, &camera_config.movement_key_up },
-        { str("camera"), str("movement_key_down"),      Config_ValueType_Key,               1, &camera_config.movement_key_down },
-        { str("camera"), str("movement_key_left"),      Config_ValueType_Key,               1, &camera_config.movement_key_left },
-        { str("camera"), str("movement_key_right"),     Config_ValueType_Key,               1, &camera_config.movement_key_right },
-        { str("camera"), str("rotation_key_left"),      Config_ValueType_Key,               1, &camera_config.rotation_key_left },
-        { str("camera"), str("rotation_key_right"),     Config_ValueType_Key,               1, &camera_config.rotation_key_right },
-        { str("camera"), str("zoom_key_in"),            Config_ValueType_Key,               1, &camera_config.zoom_key_in },
-        { str("camera"), str("zoom_key_out"),           Config_ValueType_Key,               1, &camera_config.zoom_key_out },
-        { str("camera"), str("zoom_max"),               Config_ValueType_Float32,           1, &camera_config.zoom_max },
-        { str("camera"), str("zoom_min"),               Config_ValueType_Float32,           1, &camera_config.zoom_min },
+        { "camera", "fov",                    Config_ValueType_Float32,           1, &camera_config.fov },
+        { "camera", "aspect_ratio",           Config_ValueType_Float32,           1, &camera_config.aspect_ratio },
+        { "camera", "background_color",       Config_ValueType_Uint8,             4, &camera_config.background_color },
+        { "camera", "movement_speed",         Config_ValueType_Float32,           1, &camera_config.movement_speed },
+        { "camera", "rotation_speed",         Config_ValueType_Float32,           1, &camera_config.rotation_speed },
+        { "camera", "zoom_speed",             Config_ValueType_Float32,           1, &camera_config.zoom_speed },
+        { "camera", "movement_key_up",        Config_ValueType_Key,               1, &camera_config.movement_key_up },
+        { "camera", "movement_key_down",      Config_ValueType_Key,               1, &camera_config.movement_key_down },
+        { "camera", "movement_key_left",      Config_ValueType_Key,               1, &camera_config.movement_key_left },
+        { "camera", "movement_key_right",     Config_ValueType_Key,               1, &camera_config.movement_key_right },
+        { "camera", "rotation_key_left",      Config_ValueType_Key,               1, &camera_config.rotation_key_left },
+        { "camera", "rotation_key_right",     Config_ValueType_Key,               1, &camera_config.rotation_key_right },
+        { "camera", "zoom_key_in",            Config_ValueType_Key,               1, &camera_config.zoom_key_in },
+        { "camera", "zoom_key_out",           Config_ValueType_Key,               1, &camera_config.zoom_key_out },
+        { "camera", "zoom_max",               Config_ValueType_Float32,           1, &camera_config.zoom_max },
+        { "camera", "zoom_min",               Config_ValueType_Float32,           1, &camera_config.zoom_min },
 
-        { str("shader"), str("default.blend"),          Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
-        { str("shader"), str("default.blend_op"),       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
-        { str("shader"), str("default.depth_test"),     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
-        { str("shader"), str("default.depth_write"),    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
+        { "shader", "default.blend",          Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
+        { "shader", "default.blend_op",       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
+        { "shader", "default.depth_test",     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
+        { "shader", "default.depth_write",    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
 
-        { str("editor"), str("display_editor_grid"),    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
+        { "editor", "display_editor_grid",    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
     };
     static constexpr u64 defined_properties_count = sizeof(defined_properties) / sizeof(Config_PropertyDefinition);
-
-#undef str
 
 #define PROPERTY_HELPER(T, string_to_type) do { \
         T* property_data = (T*)property_definition.data; \
@@ -392,7 +387,7 @@ namespace Aporia
         } \
     } while(0)
 
-    bool load_engine_config(std::string_view filepath)
+    bool load_engine_config(String filepath)
     {
         Config_PropertyList parsed_config = parse_config_file(filepath);
 

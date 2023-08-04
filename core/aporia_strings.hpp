@@ -14,6 +14,7 @@ namespace Aporia
         u8* data = nullptr;
         u64 length = 0;
 
+        bool is_valid() const;
         void clear();
 
         String substr(u64 offset, u64 count = -1) const;
@@ -24,17 +25,30 @@ namespace Aporia
 
         StringList split(MemoryArena* arena, u8 delim) const;
 
+        u64 find(u8 character, u64 offset = 0) const;
+        u64 find(String substring, u64 offset = 0) const;
+        u64 find_eol(u64 offset = 0) const;
+
         bool contains(String substring) const;
+        bool starts_with(String substring) const;
 
         bool operator==(String string) const;
         bool operator==(const char* string) const;
 
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
+        // @NOTE(dubgron): Currently we use std::string only in logger, and std::string_view only in json.
         operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), static_cast<size_t>(length) }; }
-        const char* to_cstring(MemoryArena* arena) const;
+        const char* operator*() const { return reinterpret_cast<const char*>(data); }
+
+        // @HACK(dubgron): Cringe constructors to handle conversion from C-strings and std::string_views.
+        String() = default;
+        String(u8* data, u64 length) : data(data), length(length) {}
+        String(const char* string) : data( (u8*)string ), length( strlen(string) ) {}
+        String(std::string_view string) : data( (u8*)string.data() ), length( string.length() ) {}
+
+        static constexpr u64 INVALID_INDEX = -1;
     };
 
-    String create_string(const char* string);
     String push_string(MemoryArena* arena, String string);
     String push_string(MemoryArena* arena, const char* string);
     String push_string(MemoryArena* arena, u64 length);
@@ -67,7 +81,7 @@ namespace Aporia
 
         StringNode* get_node_at_index(u64 index) const;
 
-        String join(MemoryArena* arena, String delim) const;
+        String join(MemoryArena* arena, String delim = "") const;
     };
 }
 

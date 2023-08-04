@@ -38,7 +38,7 @@ namespace Aporia
         game_terminate_t* terminate = nullptr;
 
         // @TODO(dubgron): Erradicate all usages of std::string and std::string_view.
-        std::string_view config_filepath;
+        String config_filepath;
     };
 
     extern MemoryArena persistent_arena;

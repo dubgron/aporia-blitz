@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
 namespace Aporia
@@ -14,7 +14,7 @@ namespace Aporia
         Fragment,
         Vertex
     };
-    SubShaderType string_to_subshader_type(std::string_view type);
+    SubShaderType string_to_subshader_type(String type);
     u32 to_opengl_type(SubShaderType type);
 
     enum class ShaderBlend : u8
@@ -41,7 +41,7 @@ namespace Aporia
         Src1Alpha,
         OneMinusSrc1Alpha
     };
-    ShaderBlend string_to_shader_blend(std::string_view blend);
+    ShaderBlend string_to_shader_blend(String blend);
     u32 to_opengl_type(ShaderBlend blend);
 
     enum class ShaderBlendOp : u8
@@ -53,7 +53,7 @@ namespace Aporia
         Min,
         Max
     };
-    ShaderBlendOp string_to_shader_blend_op(std::string_view blend_op);
+    ShaderBlendOp string_to_shader_blend_op(String blend_op);
     u32 to_opengl_type(ShaderBlendOp blend_op);
 
     enum class ShaderDepthTest : u8
@@ -69,7 +69,7 @@ namespace Aporia
         Equal,
         NotEqual
     };
-    ShaderDepthTest string_to_shader_depth_test(std::string_view depth_test);
+    ShaderDepthTest string_to_shader_depth_test(String depth_test);
     u32 to_opengl_type(ShaderDepthTest depth_test);
 
     enum class ShaderDepthWrite : u8
@@ -78,13 +78,13 @@ namespace Aporia
         On,
         Off
     };
-    ShaderDepthWrite string_to_shader_depth_write(std::string_view depth_write);
+    ShaderDepthWrite string_to_shader_depth_write(String depth_write);
     u32 to_opengl_type(ShaderDepthWrite depth_write);
 
     struct SubShaderData
     {
         SubShaderType type{ SubShaderType::Invalid };
-        std::string contents;
+        String contents;
     };
 
     struct ShaderProperties
@@ -103,14 +103,14 @@ namespace Aporia
 
     struct ShaderInfo
     {
-        std::string source;
+        String source;
         ShaderProperties properties;
-        std::unordered_map<std::string, i32> locations;
+        std::unordered_map<String, i32> locations;
     };
 
     void shaders_init();
 
-    u32 create_shader(std::string_view filepath);
+    u32 create_shader(String filepath);
     void remove_shader(u32 shader_id);
     void remove_all_shaders();
 
@@ -119,35 +119,35 @@ namespace Aporia
     void bind_shader(u32 shader_id);
     void unbind_shader();
 
-    void shader_set_float(const std::string& name, f32 value);
-    void shader_set_float2(const std::string& name, v2 value);
-    void shader_set_float3(const std::string& name, v3 value);
-    void shader_set_float4(const std::string& name, v4 value);
-    void shader_set_float_array(const std::string& name, f32* value, i32 count);
+    void shader_set_float(String name, f32 value);
+    void shader_set_float2(String name, v2 value);
+    void shader_set_float3(String name, v3 value);
+    void shader_set_float4(String name, v4 value);
+    void shader_set_float_array(String name, f32* value, i32 count);
 
 #if !defined(APORIA_EMSCRIPTEN)
-    void shader_set_double(const std::string& name, f64 value);
-    void shader_set_double2(const std::string& name, v2_f64 value);
-    void shader_set_double3(const std::string& name, v3_f64 value);
-    void shader_set_double4(const std::string& name, v4_f64 value);
-    void shader_set_double_array(const std::string& name, f64* value, i32 count);
+    void shader_set_double(String name, f64 value);
+    void shader_set_double2(String name, v2_f64 value);
+    void shader_set_double3(String name, v3_f64 value);
+    void shader_set_double4(String name, v4_f64 value);
+    void shader_set_double_array(String name, f64* value, i32 count);
 #endif
 
-    void shader_set_int(const std::string& name, i32 value);
-    void shader_set_int2(const std::string& name, v2_i32 value);
-    void shader_set_int3(const std::string& name, v3_i32 value);
-    void shader_set_int4(const std::string& name, v4_i32 value);
-    void shader_set_int_array(const std::string& name, i32* value, i32 count);
+    void shader_set_int(String name, i32 value);
+    void shader_set_int2(String name, v2_i32 value);
+    void shader_set_int3(String name, v3_i32 value);
+    void shader_set_int4(String name, v4_i32 value);
+    void shader_set_int_array(String name, i32* value, i32 count);
 
-    void shader_set_uint(const std::string& name, u32 value);
-    void shader_set_uint2(const std::string& name, v2_u32 value);
-    void shader_set_uint3(const std::string& name, v3_u32 value);
-    void shader_set_uint4(const std::string& name, v4_u32 value);
-    void shader_set_uint_array(const std::string& name, u32* value, i32 count);
+    void shader_set_uint(String name, u32 value);
+    void shader_set_uint2(String name, v2_u32 value);
+    void shader_set_uint3(String name, v3_u32 value);
+    void shader_set_uint4(String name, v4_u32 value);
+    void shader_set_uint_array(String name, u32* value, i32 count);
 
-    void shader_set_mat2(const std::string& name, m2 value, bool transpose = false, i32 count = 1);
-    void shader_set_mat3(const std::string& name, m3 value, bool transpose = false, i32 count = 1);
-    void shader_set_mat4(const std::string& name, m4 value, bool transpose = false, i32 count = 1);
+    void shader_set_mat2(String name, m2 value, bool transpose = false, i32 count = 1);
+    void shader_set_mat3(String name, m3 value, bool transpose = false, i32 count = 1);
+    void shader_set_mat4(String name, m4 value, bool transpose = false, i32 count = 1);
 
     // Predefined shaders
     extern u32 default_shader;

@@ -72,7 +72,7 @@ namespace Aporia
 
     void Window::on_config_reload()
     {
-        glfwSetWindowTitle(handle, window_config.title.to_cstring(&config_arena));
+        glfwSetWindowTitle(handle, *window_config.title);
         glfwSetWindowSize(handle, window_config.width, window_config.height);
         glfwSwapInterval(window_config.vsync);
 
@@ -102,7 +102,7 @@ namespace Aporia
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, window_config.title.to_cstring(&config_arena), nullptr, nullptr);
+        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, *window_config.title, nullptr, nullptr);
 
         if (!handle)
         {

@@ -4,13 +4,14 @@
 #include <stb_image.h>
 
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia
 {
-    std::unordered_map<std::string, SubTexture> textures;
+    std::unordered_map<String, SubTexture> textures;
 
-    void Image::load(std::string_view filepath)
+    void Image::load(String filepath)
     {
         if (pixels)
         {
@@ -18,8 +19,16 @@ namespace Aporia
             unload();
         }
 
-        pixels = stbi_load(filepath.data(), &width, &height, &channels, 4);
-        APORIA_LOG(Info, "Image '{}' loaded successfully!", filepath);
+        pixels = stbi_load(*filepath, &width, &height, &channels, 4);
+
+        if (pixels)
+        {
+            APORIA_LOG(Info, "Image '{}' loaded successfully!", filepath);
+        }
+        else
+        {
+            APORIA_LOG(Info, "Failed to load image '{}'!", filepath);
+        }
     }
 
     void Image::unload()
@@ -28,26 +37,28 @@ namespace Aporia
         pixels = nullptr;
     }
 
-    void load_texture_atlas(std::string_view filepath)
+    bool Image::is_valid() const
     {
-        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(filepath),
-            "File '{}' does not open!", filepath);
+        return pixels != nullptr;
+    }
 
-        std::string data = read_file(filepath);
+    void load_texture_atlas(String filepath)
+    {
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+        String data = read_file(temp.arena, filepath);
 
         using json = nlohmann::json;
-        json texture_json = json::parse(data);
+        json texture_json = json::parse<std::string_view>(data);
 
-        const std::string atlas_filepath = texture_json["atlas"];
-
-        APORIA_ASSERT_WITH_MESSAGE(std::filesystem::exists(atlas_filepath),
-            "File '{}' does not open!", filepath);
+        const String atlas_filepath = texture_json["atlas"].get<std::string_view>();
 
         u32 id = 0;
         glDeleteTextures(1, &id);
 
         Image atlas_image;
         atlas_image.load(atlas_filepath);
+        APORIA_ASSERT(atlas_image.is_valid());
 
 #if defined(APORIA_EMSCRIPTEN)
         glGenTextures(1, &id);
@@ -83,7 +94,7 @@ namespace Aporia
         const Texture atlas_texture{ id, atlas_image.width, atlas_image.height, atlas_image.channels };
         for (auto& texture : texture_json["textures"])
         {
-            std::string name = texture["name"];
+            String name = push_string(&persistent_arena, texture["name"].get<std::string_view>());
 
             if (textures.contains(name))
             {
@@ -101,7 +112,7 @@ namespace Aporia
         atlas_image.unload();
     }
 
-    const SubTexture* get_subtexture(const std::string& name)
+    const SubTexture* get_subtexture(String name)
     {
         APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
             "Failed to find sub texture '{}'!", name);

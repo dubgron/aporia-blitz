@@ -2,6 +2,7 @@
 
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 #include "platform/aporia_opengl.hpp"
 
@@ -21,12 +22,12 @@ namespace Aporia
     static u32 active_shader_id = 0;
     static ShaderProperties default_shader_properties;
 
-    SubShaderType string_to_subshader_type(std::string_view type)
+    SubShaderType string_to_subshader_type(String type)
     {
         if (type == "fragment")     return SubShaderType::Fragment;
         if (type == "vertex")       return SubShaderType::Vertex;
 
-        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len: {}.", type, type.length());
+        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len: {}.", type, type.length);
         APORIA_UNREACHABLE();
         return SubShaderType::Invalid;
     }
@@ -41,7 +42,7 @@ namespace Aporia
         }
     }
 
-    ShaderBlend string_to_shader_blend(std::string_view blend)
+    ShaderBlend string_to_shader_blend(String blend)
     {
         if (blend == "off")                        return ShaderBlend::Off;
         if (blend == "zero")                       return ShaderBlend::Zero;
@@ -64,7 +65,7 @@ namespace Aporia
         if (blend == "src_1_alpha")                return ShaderBlend::Src1Alpha;
         if (blend == "one_minus_src_1_alpha")      return ShaderBlend::OneMinusSrc1Alpha;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len: {}.", blend, blend.length());
+        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len: {}.", blend, blend.length);
         APORIA_UNREACHABLE();
         return ShaderBlend::Default;
     }
@@ -98,7 +99,7 @@ namespace Aporia
         }
     }
 
-    ShaderBlendOp string_to_shader_blend_op(std::string_view blend_op)
+    ShaderBlendOp string_to_shader_blend_op(String blend_op)
     {
         if (blend_op == "add")      return ShaderBlendOp::Add;
         if (blend_op == "sub")      return ShaderBlendOp::Subtract;
@@ -106,7 +107,7 @@ namespace Aporia
         if (blend_op == "min")      return ShaderBlendOp::Min;
         if (blend_op == "max")      return ShaderBlendOp::Max;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len: {}.", blend_op, blend_op.length());
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len: {}.", blend_op, blend_op.length);
         APORIA_UNREACHABLE();
         return ShaderBlendOp::Default;
     }
@@ -124,7 +125,7 @@ namespace Aporia
         }
     }
 
-    ShaderDepthTest string_to_shader_depth_test(std::string_view depth_test)
+    ShaderDepthTest string_to_shader_depth_test(String depth_test)
     {
         if (depth_test == "off")       return ShaderDepthTest::Off;
         if (depth_test == "always")    return ShaderDepthTest::Always;
@@ -136,7 +137,7 @@ namespace Aporia
         if (depth_test == "equal")     return ShaderDepthTest::Equal;
         if (depth_test == "notequal")  return ShaderDepthTest::NotEqual;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len: {}.", depth_test, depth_test.length());
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len: {}.", depth_test, depth_test.length);
         APORIA_UNREACHABLE();
         return ShaderDepthTest::Default;
     }
@@ -157,12 +158,12 @@ namespace Aporia
         }
     }
 
-    ShaderDepthWrite string_to_shader_depth_write(std::string_view depth_write)
+    ShaderDepthWrite string_to_shader_depth_write(String depth_write)
     {
         if (depth_write == "on")   return ShaderDepthWrite::On;
         if (depth_write == "off")  return ShaderDepthWrite::Off;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len: {}.", depth_write, depth_write.length());
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len: {}.", depth_write, depth_write.length);
         APORIA_UNREACHABLE();
         return ShaderDepthWrite::Default;
     }
@@ -177,7 +178,7 @@ namespace Aporia
         }
     }
 
-    static ShaderData parse_shader(std::string_view contents)
+    static ShaderData parse_shader(String contents)
     {
         ShaderData result;
 
@@ -185,67 +186,72 @@ namespace Aporia
         result.subshaders.reserve(2);
 
         u64 line_begin = 0;
-        u64 line_end = contents.find('\n', line_begin);
+        u64 line_end = contents.find_eol(line_begin);
 
-        while (line_end != std::string::npos)
+        while (line_end != String::INVALID_INDEX)
         {
-            const std::string_view line = contents.substr(line_begin, line_end - line_begin);
+            const String line = contents.substr(line_begin, line_end - line_begin);
 
-            const u64 params_begin = line.find(' ') + 1;
-            const std::string_view params = line.substr(params_begin, line_end - params_begin);
-
-            if (line.starts_with("#blend "))
+            if (line.length > 0)
             {
-                const u64 delim = params.find(' ');
-                if (delim != std::string::npos)
+                const u64 params_begin = line.find(' ') + 1;
+                const String params = line.substr(params_begin, line_end - params_begin);
+
+                if (line.starts_with("#blend "))
                 {
-                    result.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
-                    result.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
+                    const u64 delim = params.find(' ');
+                    if (delim != String::INVALID_INDEX)
+                    {
+                        result.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
+                        result.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
+                    }
+                    else
+                    {
+                        result.properties.blend[0] = string_to_shader_blend(params);
+                    }
                 }
-                else
+                else if (line.starts_with("#blend_op "))
                 {
-                    result.properties.blend[0] = string_to_shader_blend(params);
+                    result.properties.blend_op = string_to_shader_blend_op(params);
                 }
-            }
-            else if (line.starts_with("#blend_op "))
-            {
-                result.properties.blend_op = string_to_shader_blend_op(params);
-            }
-            else if (line.starts_with("#depth_test "))
-            {
-                result.properties.depth_test = string_to_shader_depth_test(params);
-            }
-            else if (line.starts_with("#depth_write "))
-            {
-                result.properties.depth_write = string_to_shader_depth_write(params);
-            }
-            else if (line.starts_with("#type "))
-            {
-                const u64 subshader_begin = line_end + 1;
-                const u64 subshader_end = contents.find("#type ", subshader_begin);
+                else if (line.starts_with("#depth_test "))
+                {
+                    result.properties.depth_test = string_to_shader_depth_test(params);
+                }
+                else if (line.starts_with("#depth_write "))
+                {
+                    result.properties.depth_write = string_to_shader_depth_write(params);
+                }
+                else if (line.starts_with("#type "))
+                {
+                    const u64 subshader_begin = line_end + 1;
+                    const u64 subshader_end = contents.find("#type ", subshader_begin);
 
-                SubShaderData subshader;
-                subshader.type = string_to_subshader_type(params);
-                subshader.contents = contents.substr(subshader_begin, subshader_end - subshader_begin);
-                result.subshaders.push_back( std::move(subshader) );
+                    SubShaderData subshader;
+                    subshader.type = string_to_subshader_type(params);
+                    subshader.contents = contents.substr(subshader_begin, subshader_end - subshader_begin);
+                    result.subshaders.push_back( std::move(subshader) );
 
-                line_end = subshader_end - 1;
+                    line_end = subshader_end - 1;
+                }
             }
 
             line_begin = line_end + 1;
-            line_end = contents.find('\n', line_begin);
+            line_end = contents.find_eol(line_begin);
         }
 
         return result;
     }
 
-    static u32 load_subshader(const std::string& contents, SubShaderType type)
+    static u32 load_subshader(String contents, SubShaderType type)
     {
         const u32 opengl_type = to_opengl_type(type);
-        const char* subshader_code = contents.c_str();
+
+        const char* shader_code = (const char*)contents.data;
+        const i32 shader_length = contents.length;
 
         const u32 subshader_id = glCreateShader(opengl_type);
-        glShaderSource(subshader_id, 1, &subshader_code, nullptr);
+        glShaderSource(subshader_id, 1, &shader_code, &shader_length);
         glCompileShader(subshader_id);
 
         i32 results;
@@ -260,7 +266,7 @@ namespace Aporia
 
             glDeleteProgram(subshader_id);
 
-            APORIA_LOG(Error, std::string{ msg.data() });
+            APORIA_LOG(Error, String{ msg.data() });
 
             return 0;
         }
@@ -341,24 +347,25 @@ namespace Aporia
         }
     }
 
-    static i32 get_uniform_location(const std::string& name)
+    static i32 get_uniform_location(String name)
     {
         APORIA_ASSERT_WITH_MESSAGE(shaders.contains(active_shader_id),
             "No active shader!");
 
         ShaderInfo& shader_info = shaders.at(active_shader_id);
-        std::unordered_map<std::string, i32>& locations_dict = shader_info.locations;
+        std::unordered_map<String, i32>& locations_dict = shader_info.locations;
 
         i32 location;
         if (!locations_dict.contains(name))
         {
-            location = glGetUniformLocation(active_shader_id, name.c_str());
+            location = glGetUniformLocation(active_shader_id, *name);
             if (location == -1)
             {
                 APORIA_LOG(Error, "'{}' does not correspond to an active uniform variable in shader {}!", name, active_shader_id);
             }
             else
             {
+                name = push_string(&persistent_arena, name);
                 locations_dict.emplace(name, location);
             }
         }
@@ -375,14 +382,14 @@ namespace Aporia
         default_shader_properties = shader_config.default_properties;
     }
 
-    u32 create_shader(std::string_view filepath)
+    u32 create_shader(String filepath)
     {
         u32 shader_id = glCreateProgram();
 
         std::vector<u32> loaded_subshaders;
         loaded_subshaders.reserve(2);
 
-        const std::string shader_contents = read_file(filepath);
+        const String shader_contents = read_file(&persistent_arena, filepath);
         ShaderData shader_data = parse_shader(shader_contents);
         for (const SubShaderData& data : shader_data.subshaders)
         {
@@ -435,7 +442,7 @@ namespace Aporia
         APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
             "Shader (with ID: {}) is not valid!", shader_id);
 
-        const std::string shader_source = shaders.at(shader_id).source;
+        const String shader_source = shaders.at(shader_id).source;
 
         glDeleteProgram(shader_id);
         shaders.erase(shader_id);
@@ -458,119 +465,119 @@ namespace Aporia
         active_shader_id = 0;
     }
 
-    void shader_set_float(const std::string& name, f32 value)
+    void shader_set_float(String name, f32 value)
     {
         glUniform1f(get_uniform_location(name), value);
     }
 
-    void shader_set_float2(const std::string& name, v2 value)
+    void shader_set_float2(String name, v2 value)
     {
         glUniform2f(get_uniform_location(name), value.x, value.y);
     }
 
-    void shader_set_float3(const std::string& name, v3 value)
+    void shader_set_float3(String name, v3 value)
     {
         glUniform3f(get_uniform_location(name), value.x, value.y, value.z);
     }
 
-    void shader_set_float4(const std::string& name, v4 value)
+    void shader_set_float4(String name, v4 value)
     {
         glUniform4f(get_uniform_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void shader_set_float_array(const std::string& name, f32* value, i32 count)
+    void shader_set_float_array(String name, f32* value, i32 count)
     {
         glUniform1fv(get_uniform_location(name), count, value);
     }
 
 #if !defined(APORIA_EMSCRIPTEN)
-    void shader_set_double(const std::string& name, f64 value)
+    void shader_set_double(String name, f64 value)
     {
         glUniform1d(get_uniform_location(name), value);
     }
 
-    void shader_set_double2(const std::string& name, v2_f64 value)
+    void shader_set_double2(String name, v2_f64 value)
     {
         glUniform2d(get_uniform_location(name), value.x, value.y);
     }
 
-    void shader_set_double3(const std::string& name, v3_f64 value)
+    void shader_set_double3(String name, v3_f64 value)
     {
         glUniform3d(get_uniform_location(name), value.x, value.y, value.z);
     }
 
-    void shader_set_double4(const std::string& name, v4_f64 value)
+    void shader_set_double4(String name, v4_f64 value)
     {
         glUniform4d(get_uniform_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void shader_set_double_array(const std::string& name, f64* value, i32 count)
+    void shader_set_double_array(String name, f64* value, i32 count)
     {
         glUniform1dv(get_uniform_location(name), count, value);
     }
 #endif
 
-    void shader_set_int(const std::string& name, i32 value)
+    void shader_set_int(String name, i32 value)
     {
         glUniform1i(get_uniform_location(name), value);
     }
 
-    void shader_set_int2(const std::string& name, v2_i32 value)
+    void shader_set_int2(String name, v2_i32 value)
     {
         glUniform2i(get_uniform_location(name), value.x, value.y);
     }
 
-    void shader_set_int3(const std::string& name, v3_i32 value)
+    void shader_set_int3(String name, v3_i32 value)
     {
         glUniform3i(get_uniform_location(name), value.x, value.y, value.z);
     }
 
-    void shader_set_int4(const std::string& name, v4_i32 value)
+    void shader_set_int4(String name, v4_i32 value)
     {
         glUniform4i(get_uniform_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void shader_set_int_array(const std::string& name, i32* value, i32 count)
+    void shader_set_int_array(String name, i32* value, i32 count)
     {
         glUniform1iv(get_uniform_location(name), count, value);
     }
 
-    void shader_set_uint(const std::string& name, u32 value)
+    void shader_set_uint(String name, u32 value)
     {
         glUniform1ui(get_uniform_location(name), value);
     }
 
-    void shader_set_uint2(const std::string& name, v2_u32 value)
+    void shader_set_uint2(String name, v2_u32 value)
     {
         glUniform2ui(get_uniform_location(name), value.x, value.y);
     }
 
-    void shader_set_uint3(const std::string& name, v3_u32 value)
+    void shader_set_uint3(String name, v3_u32 value)
     {
         glUniform3ui(get_uniform_location(name), value.x, value.y, value.z);
     }
 
-    void shader_set_uint4(const std::string& name, v4_u32 value)
+    void shader_set_uint4(String name, v4_u32 value)
     {
         glUniform4ui(get_uniform_location(name), value.x, value.y, value.z, value.w);
     }
 
-    void shader_set_uint_array(const std::string& name, u32* value, i32 count)
+    void shader_set_uint_array(String name, u32* value, i32 count)
     {
         glUniform1uiv(get_uniform_location(name), count, value);
     }
 
-    void shader_set_mat2(const std::string& name, m2 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void shader_set_mat2(String name, m2 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix2fv(get_uniform_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void shader_set_mat3(const std::string& name, m3 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void shader_set_mat3(String name, m3 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix3fv(get_uniform_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }
 
-    void shader_set_mat4(const std::string& name, m4 value, bool transpose /* = false */, i32 count /* = 1 */)
+    void shader_set_mat4(String name, m4 value, bool transpose /* = false */, i32 count /* = 1 */)
     {
         glUniformMatrix4fv(get_uniform_location(name), count, transpose ? GL_TRUE : GL_FALSE, &value[0][0]);
     }

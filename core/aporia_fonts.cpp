@@ -1,33 +1,29 @@
 #include "aporia_fonts.hpp"
 
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia
 {
     static std::unordered_map<String, Font> fonts;
 
-    void load_font(String name, std::filesystem::path filepath)
+    void load_font(String name, String filepath)
     {
-        std::filesystem::path png_filepath = filepath.replace_extension("png");
-        std::filesystem::path json_filepath = filepath.replace_extension("json");
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+        String png_filepath = replace_extension(temp.arena, filepath, "png");
+        String json_filepath = replace_extension(temp.arena, filepath, "json");
 
         if (fonts.contains(name))
         {
             APORIA_LOG(Warning, "Already loaded font named '{}'!", name);
         }
-        else if (!std::filesystem::exists(png_filepath))
-        {
-            APORIA_LOG(Error, "Can't open '{}' file!", png_filepath.relative_path().string());
-        }
-        else if (!std::filesystem::exists(json_filepath))
-        {
-            APORIA_LOG(Error, "Can't open '{}' file!", json_filepath.relative_path().string());
-        }
         else
         {
             Image atlas;
-            atlas.load(png_filepath.string());
+            atlas.load(png_filepath);
+            APORIA_ASSERT(atlas.is_valid());
 
             // @TODO(dubgron): Move the OpenGL part of creating texture to a separate function.
             u32 id = 0;
@@ -54,8 +50,10 @@ namespace Aporia
 
             using json = nlohmann::json;
 
-            std::string data = read_file(json_filepath.string());
-            json font = json::parse(data);
+            String data = read_file(temp.arena, json_filepath);
+            APORIA_ASSERT(data.is_valid());
+
+            json font = json::parse<std::string_view>(data);
 
             result.atlas.font_size                  = font["atlas"]["size"];
             result.atlas.distance_range             = font["atlas"]["distanceRange"];
@@ -100,6 +98,8 @@ namespace Aporia
 
             fonts.emplace(name, std::move(result));
         }
+
+        rollback_scratch_arena(temp);
     }
 
     const Font& get_font(String name)

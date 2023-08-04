@@ -69,13 +69,13 @@ namespace Aporia
 
     static APORIA_COMMANDLINE_FUNCTION(print_string)
     {
-        const String result = args.join(&command_arena, create_string(" "));
+        const String result = args.join(&command_arena, " ");
         APORIA_LOG(Info, result);
 
         return CommandlineResult
         {
             .return_code = 0,
-            .output = create_string("String printed successfully!")
+            .output = "String printed successfully!"
         };
     }
 
@@ -86,7 +86,7 @@ namespace Aporia
             return CommandlineResult
             {
                 .return_code = 1,
-                .output = create_string("Too few arguments!")
+                .output = "Too few arguments!"
             };
         }
 
@@ -98,7 +98,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 0,
-                    .output = create_string("Enabled lighting successfully!")
+                    .output = "Enabled lighting successfully!"
                 };
             }
             else
@@ -106,7 +106,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 1,
-                    .output = create_string("Lighting already enabled!")
+                    .output = "Lighting already enabled!"
                 };
             }
         }
@@ -118,7 +118,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 0,
-                    .output = create_string("Disabled lighting successfully!")
+                    .output = "Disabled lighting successfully!"
                 };
             }
             else
@@ -126,7 +126,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 1,
-                    .output = create_string("Lighting already disabled!")
+                    .output = "Lighting already disabled!"
                 };
             }
         }
@@ -134,7 +134,7 @@ namespace Aporia
         return CommandlineResult
         {
             .return_code = 1,
-            .output = create_string("Invalid argument!")
+            .output = "Invalid argument!"
         };
     }
 
@@ -181,13 +181,13 @@ namespace Aporia
         temp_arena.alloc(KILOBYTES(10));
 
         commands.push_back(CommandlineCommand{
-            .display_name = create_string("print"),
-            .description = create_string("Prints strings\nUsage: print string1 [string2...]\n"),
+            .display_name = "print",
+            .description = "Prints strings\nUsage: print string1 [string2...]\n",
             .func = print_string });
 
         commands.push_back(CommandlineCommand{
-            .display_name = create_string("lights.enable"),
-            .description = create_string("Enable lights\nUsage: lights.enable 0|1|true|false\n"),
+            .display_name = "lights.enable",
+            .description = "Enable lights\nUsage: lights.enable 0|1|true|false\n",
             .func = enable_lights });
     }
 
@@ -286,7 +286,7 @@ namespace Aporia
 
         if (input_state == ConsoleInputState::Typing)
         {
-            const String current_command = create_string(data->Buf);
+            const String current_command = data->Buf;
             suggestions = find_matching_commands(current_command, 10);
         }
 
@@ -394,7 +394,7 @@ namespace Aporia
         {
             if (command_history.node_count > 0)
             {
-                const String history = command_history.join(&temp_arena, create_string("\n"));
+                const String history = command_history.join(&temp_arena, "\n");
                 ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
             }
 

@@ -73,11 +73,11 @@ namespace Aporia
 
         // Init
         {
-            logging_init("aporia");
-
             persistent_arena.alloc(MEGABYTES(100));
             frame_arena.alloc(KILOBYTES(10));
             config_arena.alloc(KILOBYTES(10));
+
+            logging_init("aporia");
 
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
