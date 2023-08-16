@@ -131,8 +131,19 @@ namespace Aporia
 
         glfwSetKeyCallback(handle, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
         {
+            const Key key = static_cast<Key>(key_code);
             const InputAction input_action = static_cast<InputAction>(action);
-            process_input_action(input.keys[key_code], input_action);
+
+            if (key != Key::Unknown)
+            {
+                process_input_action(input.keys[key_code], input_action);
+            }
+            else switch (input_action)
+            {
+                case InputAction::Released: APORIA_LOG(Warning, "The unknown key has been released!");  break;
+                case InputAction::Pressed:  APORIA_LOG(Warning, "The unknown key has been pressed!");   break;
+                case InputAction::Repeat:   APORIA_LOG(Warning, "The unknown key has been held!");      break;
+            }
         });
 
         glfwSetMouseButtonCallback(handle, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
