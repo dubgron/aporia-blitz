@@ -86,8 +86,9 @@ namespace Aporia
             active_window = create_window(&persistent_arena);
 
             opengl_init();
-            shaders_init();
-            rendering_init();
+            shaders_init(&persistent_arena);
+            rendering_init(&persistent_arena);
+            animations_init(&persistent_arena);
 
             world.init();
 

@@ -9,8 +9,9 @@ namespace Aporia
     void World::init(u64 in_max_entities /* = 10000 */)
     {
         max_entities = in_max_entities;
+        entity_count = 0;
 
-        // @TODO(dubgron): The size of the world arena should be more planned out.
+        // @TODO(dubgron): The count of the world arena should be more planned out.
         const u64 world_arena_size = 2 * max_entities * (sizeof(Entity) + sizeof(EntityNode));
         world_arena.alloc(world_arena_size);
         APORIA_LOG(Info, "World has allocated {} B of memory.", world_arena_size);
@@ -50,7 +51,7 @@ namespace Aporia
         // Assign the output entity, if required.
         if (out_entity)
         {
-            *out_entity = free_node->entity;
+            *out_entity = new_entity;
         }
 
         return EntityID{ new_entity->index, free_node->generation };

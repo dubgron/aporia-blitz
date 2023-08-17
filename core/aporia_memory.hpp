@@ -41,6 +41,13 @@ namespace Aporia
             const u64 size = count * sizeof(T);
             return reinterpret_cast<T*>( push_zero(size) );
         }
+
+        template<typename T, u64 N>
+        void make_from_array(T (&array)[N])
+        {
+            memory = array;
+            max = N * sizeof(T);
+        }
     };
 
     struct ScratchArena

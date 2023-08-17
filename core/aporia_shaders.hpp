@@ -1,7 +1,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <vector>
 
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
@@ -12,7 +11,9 @@ namespace Aporia
     {
         Invalid,
         Fragment,
-        Vertex
+        Vertex,
+
+        Count,
     };
     SubShaderType string_to_subshader_type(String type);
     u32 to_opengl_type(SubShaderType type);
@@ -39,7 +40,7 @@ namespace Aporia
         Src1Color,
         OneMinusSrc1Color,
         Src1Alpha,
-        OneMinusSrc1Alpha
+        OneMinusSrc1Alpha,
     };
     ShaderBlend string_to_shader_blend(String blend);
     u32 to_opengl_type(ShaderBlend blend);
@@ -51,7 +52,7 @@ namespace Aporia
         Subtract,
         ReverseSubtract,
         Min,
-        Max
+        Max,
     };
     ShaderBlendOp string_to_shader_blend_op(String blend_op);
     u32 to_opengl_type(ShaderBlendOp blend_op);
@@ -67,7 +68,7 @@ namespace Aporia
         Greater,
         GEqual,
         Equal,
-        NotEqual
+        NotEqual,
     };
     ShaderDepthTest string_to_shader_depth_test(String depth_test);
     u32 to_opengl_type(ShaderDepthTest depth_test);
@@ -76,7 +77,7 @@ namespace Aporia
     {
         Default,
         On,
-        Off
+        Off,
     };
     ShaderDepthWrite string_to_shader_depth_write(String depth_write);
     u32 to_opengl_type(ShaderDepthWrite depth_write);
@@ -97,20 +98,23 @@ namespace Aporia
 
     struct ShaderData
     {
-        std::vector<SubShaderData> subshaders;
+        SubShaderData* subshaders;
+        u64 subshaders_count = 0;
+
         ShaderProperties properties;
     };
 
     struct ShaderInfo
     {
-        String source;
+        u32 shader_id = 0;
         ShaderProperties properties;
+        String source;
         std::unordered_map<String, i32> locations;
     };
 
-    void shaders_init();
+    void shaders_init(MemoryArena* arena);
 
-    u32 create_shader(String filepath);
+    u32 create_shader(String filepath, u64 subshaders_count = 2);
     void remove_shader(u32 shader_id);
     void remove_all_shaders();
 

@@ -1,7 +1,7 @@
 #include "aporia_rendering.hpp"
 
 #include "aporia_camera.hpp"
-#include <aporia_config.hpp>
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 #include "aporia_utils.hpp"
@@ -17,32 +17,162 @@
     #define DEBUG_TEXTURE(...)
 #endif
 
+#define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
+
 namespace Aporia
 {
+#if defined(APORIA_EMSCRIPTEN)
+    using texture_id = f32;
+#else
+    using texture_id = u32;
+#endif
+
+    struct Vertex
+    {
+        v3 position{ 0.f };
+
+        Color color = Color::White;
+
+        texture_id tex_id = 0;
+        v2 tex_coord{ 0.f };
+
+        f32 additional = 0.f;
+    };
+
+    struct IndexBuffer
+    {
+        u32 id = 0;
+        u32 max_size = 0;
+        u32 index_count = 0;
+
+        void init(u32 max_objects, u32 count, const u32* indices);
+        void deinit();
+
+        void bind() const;
+        void unbind() const;
+    };
+
+    struct VertexBuffer
+    {
+        u32 id = 0;
+        u32 vertex_count = 0;
+        u64 max_size = 0;
+
+        Vertex* data = nullptr;
+        u64 count = 0;
+
+        void init(MemoryArena* arena, u32 max_objects, u32 in_count);
+        void deinit();
+
+        void bind() const;
+        void unbind() const;
+
+        void add_layout();
+
+        void flush() const;
+    };
+
+    struct VertexArray
+    {
+        u32 id = 0;
+        u32 mode = 0;
+
+        VertexBuffer vertex_buffer;
+        IndexBuffer index_buffer;
+
+        void init(u32 vertex_count, u32 index_count);
+        void deinit();
+
+        void bind() const;
+        void unbind() const;
+
+        void render();
+    };
+
+    struct UniformBuffer
+    {
+        u32 id = 0;
+        u32 max_size = 0;
+        u32 binding_index = 0;
+        String block_name;
+
+        void init(u32 in_max_size, u32 in_binding_index, String in_block_name);
+        void deinit();
+
+        void bind_to_shader(u32 shader_id);
+        void set_data(const void* data, u64 size);
+    };
+
+    struct Framebuffer
+    {
+        u32 framebuffer_id = 0;
+        u32 renderbuffer_id = 0;
+
+        Texture color_buffer;
+        Vertex vertex[4];
+
+        void create(i32 width, i32 height);
+        void destroy();
+
+        void bind() const;
+        void unbind() const;
+
+        // @TODO(dubgron): Make clear more customizable.
+        void clear(Color color = Color::Black);
+    };
+
+    // Index for VertexArray in Renderer
+    enum class BufferType : u8
+    {
+        Quads = 0,
+        Lines = 1
+    };
+
+    struct RenderQueueKey
+    {
+        BufferType buffer = BufferType::Quads;
+        u32 shader_id = 0;
+
+        Vertex vertex[4];
+    };
+
+    struct RenderQueue
+    {
+        RenderQueueKey* data = nullptr;
+        u64 max_count = 0;
+        u64 count = 0;
+
+        void init(MemoryArena* arena, u64 in_count);
+        void add(const RenderQueueKey& key);
+    };
+
     static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
     static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
     static Framebuffer main_framebuffer;
 
-    static std::vector<RenderQueueKey> rendering_queue;
-    static std::vector<VertexArray> vertex_arrays;
+    static RenderQueue rendering_queue;
+    static VertexArray vertex_arrays[2];
 
     // @TODO(dubgron): Move the lighting code to the separate file.
     static bool lighting_enabled = false;
     static Framebuffer masking;
     static Framebuffer raymarching;
-    static std::vector<LightSource> light_sources;
     static UniformBuffer lights_uniform_buffer;
 
-    bool operator<(const RenderQueueKey& key1, const RenderQueueKey& key2) noexcept
+    struct LightSources
     {
-        return key1.vertex[0].position.z < key2.vertex[0].position.z ||
-            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer < key2.buffer) ||
-            (key1.vertex[0].position.z == key2.vertex[0].position.z && key1.buffer == key2.buffer && key1.shader_id < key2.shader_id);
-    }
+        LightSource* data = nullptr;
+        u64 max_count = 0;
+        u64 count = 0;
 
-    void IndexBuffer::init(u32 max_objects, u32 count, const std::vector<u32>& indices)
+        void init(MemoryArena* arena, u64 in_count);
+    };
+
+    static LightSources light_sources;
+
+    void IndexBuffer::init(u32 max_objects, u32 count, const u32* indices)
     {
         max_size = max_objects * count;
         index_count = count;
@@ -53,7 +183,7 @@ namespace Aporia
 #if defined(APORIA_EMSCRIPTEN)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_size * sizeof(u32), indices.data(), GL_STATIC_DRAW);
 #else
-        glNamedBufferData(id, max_size * sizeof(u32), indices.data(), GL_STATIC_DRAW);
+        glNamedBufferData(id, max_size * sizeof(u32), indices, GL_STATIC_DRAW);
 #endif
     }
 
@@ -72,21 +202,23 @@ namespace Aporia
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::init(u32 max_objects, u32 count)
+    void VertexBuffer::init(MemoryArena* arena, u32 max_objects, u32 in_count)
     {
-        max_size = max_objects * count;
-        vertex_count = count;
+        max_size = max_objects * in_count;
+        vertex_count = in_count;
 
-        glGenBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
 
 #if defined(APORIA_EMSCRIPTEN)
+        glGenBuffers(1, &id);
+        glBindBuffer(GL_ARRAY_BUFFER, id);
         glBufferData(GL_ARRAY_BUFFER, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #else
+        glCreateBuffers(1, &id);
         glNamedBufferData(id, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 #endif
 
-        data.reserve(max_size);
+        data = arena->push<Vertex>(max_size);
+        count = 0;
     }
 
     void VertexBuffer::deinit()
@@ -135,10 +267,10 @@ namespace Aporia
     {
 #if defined(APORIA_EMSCRIPTEN)
         bind();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, data.size() * sizeof(Vertex), data.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Vertex), data);
         unbind();
 #else
-        glNamedBufferSubData(id, 0, data.size() * sizeof(Vertex), data.data());
+        glNamedBufferSubData(id, 0, count * sizeof(Vertex), data);
 #endif
     }
 
@@ -180,13 +312,13 @@ namespace Aporia
         this->bind();
         index_buffer.bind();
 
-        const u32 count = index_buffer.index_count * vertex_buffer.data.size() / vertex_buffer.vertex_count;
+        const u32 count = index_buffer.index_count * vertex_buffer.count / vertex_buffer.vertex_count;
         glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
 
         index_buffer.unbind();
         this->unbind();
 
-        vertex_buffer.data.clear();
+        vertex_buffer.count = 0;
     }
 
     void UniformBuffer::init(u32 in_max_size, u32 in_binding_index, String in_block_name)
@@ -296,6 +428,27 @@ namespace Aporia
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    void RenderQueue::init(MemoryArena* arena, u64 in_count)
+    {
+        data = arena->push<RenderQueueKey>(in_count);
+        max_count = in_count;
+        count = 0;
+    }
+
+    void RenderQueue::add(const RenderQueueKey& key)
+    {
+        APORIA_ASSERT(count < max_count);
+        data[count] = key;
+        count += 1;
+    }
+
+    void LightSources::init(MemoryArena* arena, u64 in_count)
+    {
+        data = arena->push<LightSource>(in_count);
+        max_count = in_count;
+        count = 0;
+    }
+
     static void flush_buffer(BufferType buffer, u32 shader_id)
     {
         bind_shader(shader_id);
@@ -306,13 +459,33 @@ namespace Aporia
 
     static void flush_rendering_queue()
     {
-        if (!rendering_queue.empty())
+        if (rendering_queue.count > 0)
         {
-            std::sort(rendering_queue.begin(), rendering_queue.end());
+            qsort(rendering_queue.data, rendering_queue.count, sizeof(RenderQueueKey),
+                [](const void* elem1, const void* elem2) -> i32
+                {
+                    const RenderQueueKey& key1 = *reinterpret_cast<const RenderQueueKey*>(elem1);
+                    const RenderQueueKey& key2 = *reinterpret_cast<const RenderQueueKey*>(elem2);
 
-            RenderQueueKey prev_key = rendering_queue[0];
-            for (RenderQueueKey& key : rendering_queue)
+                    f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
+                    if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
+                    {
+                        i32 buffer_diff = (i32)key1.buffer - (i32)key2.buffer;
+                        if (buffer_diff == 0)
+                        {
+                            i32 shader_diff = key1.shader_id - key2.shader_id;
+                            return shader_diff;
+                        }
+                        return buffer_diff;
+                    }
+                    return z_diff;
+                });
+
+            RenderQueueKey prev_key = rendering_queue.data[0];
+            for (u64 idx = 0; idx < rendering_queue.count; ++idx)
             {
+                RenderQueueKey& key = rendering_queue.data[idx];
+
                 if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
                 {
                     flush_buffer(prev_key.buffer, prev_key.shader_id);
@@ -321,14 +494,15 @@ namespace Aporia
                 const u8 buffer_index = to_underlying(key.buffer);
                 VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
 
-                if (vertex_buffer.data.size() + vertex_buffer.vertex_count > vertex_buffer.max_size)
+                if (vertex_buffer.count + vertex_buffer.vertex_count > vertex_buffer.max_size)
                 {
                     flush_buffer(key.buffer, key.shader_id);
                 }
 
                 for (u64 i = 0; i < vertex_buffer.vertex_count; ++i)
                 {
-                    vertex_buffer.data.push_back( key.vertex[i] );
+                    vertex_buffer.data[vertex_buffer.count] = key.vertex[i];
+                    vertex_buffer.count += 1;
                 }
 
                 prev_key = key;
@@ -336,7 +510,7 @@ namespace Aporia
 
             flush_buffer(prev_key.buffer, prev_key.shader_id);
 
-            rendering_queue.clear();
+            rendering_queue.count = 0;
         }
     }
 
@@ -346,7 +520,8 @@ namespace Aporia
         VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
         for (const Vertex& vertex : framebuffer.vertex)
         {
-            vertex_buffer.data.push_back( vertex );
+            vertex_buffer.data[vertex_buffer.count] = vertex;
+            vertex_buffer.count += 1;
         }
 
         flush_buffer(BufferType::Quads, shader_id);
@@ -367,7 +542,10 @@ namespace Aporia
         masking.create(width, height);
         raymarching.create(width, height);
 
-        light_sources.reserve(MAX_LIGHT_SOURCES);
+        if (light_sources.data == nullptr)
+        {
+            light_sources.init(&persistent_arena, MAX_LIGHT_SOURCES);
+        }
 
         lights_uniform_buffer.init(MAX_LIGHT_SOURCES * sizeof(LightSource), 0, "Lights");
         lights_uniform_buffer.bind_to_shader(raymarching_shader);
@@ -381,31 +559,33 @@ namespace Aporia
         masking.destroy();
         raymarching.destroy();
 
+        light_sources.count = 0;
+
         lights_uniform_buffer.deinit();
     }
 
-    void add_light_source(LightSource light_source)
+    void add_light_source(LightSource source)
     {
-        light_sources.push_back(light_source);
+        APORIA_ASSERT(light_sources.count < light_sources.max_count);
+        light_sources.data[light_sources.count] = source;
+        light_sources.count += 1;
     }
 
-    void rendering_init()
+    void rendering_init(MemoryArena* arena)
     {
-        rendering_queue.reserve(MAX_RENDERING_QUEUE_SIZE);
-
-        vertex_arrays.reserve(2);
+        rendering_queue.init(arena, MAX_RENDERING_QUEUE_SIZE);
 
         // Set VertexArray for opaque Quads
-        VertexArray& quads = vertex_arrays.emplace_back();
+        VertexArray& quads = vertex_arrays[0];
         quads.init(4, 6);
         quads.bind();
 
         VertexBuffer quads_vbo;
-        quads_vbo.init(MAX_OBJECTS_PER_DRAW_CALL, 4);
+        quads_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 4);
         quads_vbo.add_layout();
-        quads.vertex_buffer = std::move(quads_vbo);
+        quads.vertex_buffer = quads_vbo;
 
-        std::vector<u32> quad_indices(MAX_OBJECTS_PER_DRAW_CALL * 6);
+        u32* quad_indices = arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 6);
         for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
         {
             quad_indices[  i  ] = offset + 0;
@@ -419,21 +599,21 @@ namespace Aporia
 
         IndexBuffer quads_ibo;
         quads_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
-        quads.index_buffer = std::move(quads_ibo);
+        quads.index_buffer = quads_ibo;
 
         quads.unbind();
 
         // Set VertexArray for Lines
-        VertexArray& lines = vertex_arrays.emplace_back();
+        VertexArray& lines = vertex_arrays[1];
         lines.init(2, 2);
         lines.bind();
 
         VertexBuffer lines_vbo;
-        lines_vbo.init(MAX_OBJECTS_PER_DRAW_CALL, 2);
+        lines_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 2);
         lines_vbo.add_layout();
-        lines.vertex_buffer = std::move(lines_vbo);
+        lines.vertex_buffer = lines_vbo;
 
-        std::vector<u32> line_indices(MAX_OBJECTS_PER_DRAW_CALL * 2);
+        u32* line_indices = arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 2);
         for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
         {
             line_indices[i] = i;
@@ -441,7 +621,7 @@ namespace Aporia
 
         IndexBuffer lines_ibo;
         lines_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 2, line_indices);
-        lines.index_buffer = std::move(lines_ibo);
+        lines.index_buffer = lines_ibo;
 
         lines.unbind();
 
@@ -482,9 +662,9 @@ namespace Aporia
 
     void rendering_deinit()
     {
-        for (VertexArray& vao : vertex_arrays)
+        for (u64 idx = 0; idx < ARRAY_COUNT(vertex_arrays); ++idx)
         {
-            vao.deinit();
+            vertex_arrays[idx].deinit();
         }
 
         main_framebuffer.destroy();
@@ -497,7 +677,7 @@ namespace Aporia
 
     void rendering_begin()
     {
-        light_sources.clear();
+        light_sources.count = 0;
     }
 
     void rendering_end()
@@ -542,10 +722,12 @@ namespace Aporia
 
             VertexArray& quad_vertex_array = vertex_arrays[(u64)BufferType::Quads];
 
-            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{ -1.f, -1.f, 0.f } });
-            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{  1.f, -1.f, 0.f } });
-            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{  1.f,  1.f, 0.f } });
-            quad_vertex_array.vertex_buffer.data.push_back(Vertex{ v3{ -1.f,  1.f, 0.f } });
+            const u64 idx = quad_vertex_array.vertex_buffer.count;
+            quad_vertex_array.vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, 0.f } };
+            quad_vertex_array.vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, 0.f } };
+            quad_vertex_array.vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, 0.f } };
+            quad_vertex_array.vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, 0.f } };
+            quad_vertex_array.vertex_buffer.count += 4;
 
             bind_shader(editor_grid_shader);
             quad_vertex_array.render();
@@ -556,15 +738,13 @@ namespace Aporia
 
         if (lighting_enabled)
         {
-            const u32 num_lights = static_cast<u32>(light_sources.size());
-
-            lights_uniform_buffer.set_data(light_sources.data(), num_lights * sizeof(LightSource));
+            lights_uniform_buffer.set_data(light_sources.data, light_sources.count * sizeof(LightSource));
 
             bind_shader(raymarching_shader);
-            shader_set_uint("u_num_lights", num_lights);
+            shader_set_uint("u_num_lights", light_sources.count);
 
             bind_shader(shadowcasting_shader);
-            shader_set_uint("u_num_lights", num_lights);
+            shader_set_uint("u_num_lights", light_sources.count);
 
             masking.bind();
             masking.clear(Color::Transparent);
@@ -651,7 +831,7 @@ namespace Aporia
             key.vertex[3].tex_id        = entity.texture->source.id;
         }
 
-        rendering_queue.push_back(key);
+        rendering_queue.add(key);
     }
 
     void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = default_shader */)
@@ -680,7 +860,7 @@ namespace Aporia
         key.vertex[3].color     = color;
         key.vertex[3].tex_coord = v2{ 0.f, 1.f };
 
-        rendering_queue.push_back(key);
+        rendering_queue.add(key);
     }
 
     void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Color::White */, u32 shader_id /* = line_shader */)
@@ -712,7 +892,7 @@ namespace Aporia
         key.vertex[3].color         = color;
         key.vertex[3].additional    = thickness;
 
-        rendering_queue.push_back(key);
+        rendering_queue.add(key);
     }
 
     void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
@@ -741,7 +921,7 @@ namespace Aporia
         key.vertex[3].color         = color;
         key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
 
-        rendering_queue.push_back(key);
+        rendering_queue.add(key);
     }
 
     // @TODO(dubgron): The current implementation of aligning text is shitty and hard to read, so it needs refactor.
@@ -929,7 +1109,7 @@ namespace Aporia
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;
 
-                rendering_queue.push_back(key);
+                rendering_queue.add(key);
             }
         }
 

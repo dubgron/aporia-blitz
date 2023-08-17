@@ -1,6 +1,5 @@
 #include "aporia_utils.hpp"
 
-#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 

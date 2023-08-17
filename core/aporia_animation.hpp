@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
 
@@ -18,20 +16,25 @@ namespace Aporia
     {
         String name;
 
-        std::vector<AnimationFrame> frames;
+        AnimationFrame* frames = nullptr;
+        u64 frames_count = 0;
+
         u64 current_frame = 0;
         f32 frame_length = 0.1f;
     };
 
     struct Animator
     {
-        std::vector<Animation> animations;
+        Animation* animations = nullptr;
+        u64 animations_count = 0;
 
         Animation* current_animation = nullptr;
         Animation* requested_animation = nullptr;
 
         f32 elapsed_time = 0.f;
     };
+
+    void animations_init(MemoryArena* arena);
 
     void load_animations(String filepath);
 

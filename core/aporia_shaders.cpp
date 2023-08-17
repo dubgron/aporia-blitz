@@ -18,9 +18,10 @@ namespace Aporia
 
     u32 editor_grid_shader = 0;
 
-    static std::unordered_map<u32, ShaderInfo> shaders;
+    static constexpr u64 MAX_SHADERS = 32;
+
+    static ShaderInfo* shaders = nullptr;
     static u32 active_shader_id = 0;
-    static ShaderProperties default_shader_properties;
 
     SubShaderType string_to_subshader_type(String type)
     {
@@ -178,77 +179,12 @@ namespace Aporia
         }
     }
 
-    static ShaderData parse_shader(String contents)
+    static u32 compile_subshader(const SubShaderData& subshader)
     {
-        ShaderData result;
+        const u32 opengl_type = to_opengl_type(subshader.type);
 
-        // Most common case - parsing vertex and fragment subshaders
-        result.subshaders.reserve(2);
-
-        u64 line_begin = 0;
-        u64 line_end = contents.find_eol(line_begin);
-
-        while (line_end != String::INVALID_INDEX)
-        {
-            const String line = contents.substr(line_begin, line_end - line_begin);
-
-            if (line.length > 0)
-            {
-                const u64 params_begin = line.find(' ') + 1;
-                const String params = line.substr(params_begin, line_end - params_begin);
-
-                if (line.starts_with("#blend "))
-                {
-                    const u64 delim = params.find(' ');
-                    if (delim != String::INVALID_INDEX)
-                    {
-                        result.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
-                        result.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
-                    }
-                    else
-                    {
-                        result.properties.blend[0] = string_to_shader_blend(params);
-                    }
-                }
-                else if (line.starts_with("#blend_op "))
-                {
-                    result.properties.blend_op = string_to_shader_blend_op(params);
-                }
-                else if (line.starts_with("#depth_test "))
-                {
-                    result.properties.depth_test = string_to_shader_depth_test(params);
-                }
-                else if (line.starts_with("#depth_write "))
-                {
-                    result.properties.depth_write = string_to_shader_depth_write(params);
-                }
-                else if (line.starts_with("#type "))
-                {
-                    const u64 subshader_begin = line_end + 1;
-                    const u64 subshader_end = contents.find("#type ", subshader_begin);
-
-                    SubShaderData subshader;
-                    subshader.type = string_to_subshader_type(params);
-                    subshader.contents = contents.substr(subshader_begin, subshader_end - subshader_begin);
-                    result.subshaders.push_back( std::move(subshader) );
-
-                    line_end = subshader_end - 1;
-                }
-            }
-
-            line_begin = line_end + 1;
-            line_end = contents.find_eol(line_begin);
-        }
-
-        return result;
-    }
-
-    static u32 load_subshader(String contents, SubShaderType type)
-    {
-        const u32 opengl_type = to_opengl_type(type);
-
-        const char* shader_code = (const char*)contents.data;
-        const i32 shader_length = contents.length;
+        const char* shader_code = (const char*)subshader.contents.data;
+        const i32 shader_length = subshader.contents.length;
 
         const u32 subshader_id = glCreateShader(opengl_type);
         glShaderSource(subshader_id, 1, &shader_code, &shader_length);
@@ -261,12 +197,15 @@ namespace Aporia
             i32 length;
             glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
 
-            std::vector<GLchar> msg(length);
-            glGetShaderInfoLog(subshader_id, length, &length, msg.data());
+            ScratchArena temp = create_scratch_arena(&persistent_arena);
+            {
+                GLchar* error_message = temp.arena->push<GLchar>(length);
+                glGetShaderInfoLog(subshader_id, length, &length, error_message);
+                APORIA_LOG(Error, error_message);
+            }
+            rollback_scratch_arena(temp);
 
             glDeleteProgram(subshader_id);
-
-            APORIA_LOG(Error, String{ msg.data() });
 
             return 0;
         }
@@ -274,54 +213,17 @@ namespace Aporia
         return subshader_id;
     }
 
-    static void link_shaders(u32 shader_id, const std::vector<u32>& loaded_subshaders)
+    static bool is_shader_valid(u32 shader_id)
     {
-        for (const u32 subshader_id : loaded_subshaders)
-        {
-            glAttachShader(shader_id, subshader_id);
-        }
-
-        glLinkProgram(shader_id);
-        glValidateProgram(shader_id);
-
-        for (const u32 subshader_id : loaded_subshaders)
-        {
-            glDetachShader(shader_id, subshader_id);
-            glDeleteShader(subshader_id);
-        }
-    }
-
-    static void apply_shader_defaults(ShaderProperties& properties)
-    {
-        if (properties.blend[0] == ShaderBlend::Default)
-        {
-            properties.blend[0] = default_shader_properties.blend[0];
-            properties.blend[1] = default_shader_properties.blend[1];
-        }
-
-        if (properties.blend_op == ShaderBlendOp::Default)
-        {
-            properties.blend_op = default_shader_properties.blend_op;
-        }
-
-        if (properties.depth_test == ShaderDepthTest::Default)
-        {
-            properties.depth_test = default_shader_properties.depth_test;
-        }
-
-        if (properties.depth_write == ShaderDepthWrite::Default)
-        {
-            properties.depth_write = default_shader_properties.depth_write;
-        }
+        return shader_id < MAX_SHADERS && shaders[shader_id].shader_id != 0;
     }
 
     static void apply_shader_properties(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
             "Shader (with ID: {}) is not valid!", shader_id);
 
-        const ShaderInfo& shader_info = shaders.at(shader_id);
-        const ShaderProperties& properties = shader_info.properties;
+        const ShaderProperties& properties = shaders[shader_id].properties;
 
         if (properties.blend[0] != ShaderBlend::Off)
         {
@@ -349,14 +251,13 @@ namespace Aporia
 
     static i32 get_uniform_location(String name)
     {
-        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(active_shader_id),
+        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(active_shader_id),
             "No active shader!");
 
-        ShaderInfo& shader_info = shaders.at(active_shader_id);
-        std::unordered_map<String, i32>& locations_dict = shader_info.locations;
+        std::unordered_map<String, i32>& locations_dict = shaders[active_shader_id].locations;
 
         i32 location;
-        if (!locations_dict.contains(name))
+        if (locations_dict.empty() || !locations_dict.contains(name))
         {
             location = glGetUniformLocation(active_shader_id, *name);
             if (location == -1)
@@ -377,77 +278,189 @@ namespace Aporia
         return location;
     }
 
-    void shaders_init()
+    void shaders_init(MemoryArena* arena)
     {
-        default_shader_properties = shader_config.default_properties;
+        shaders = arena->push_zero<ShaderInfo>(MAX_SHADERS);
     }
 
-    u32 create_shader(String filepath)
+    u32 create_shader(String filepath, u64 subshaders_count /* = 2 */)
     {
-        u32 shader_id = glCreateProgram();
-
-        std::vector<u32> loaded_subshaders;
-        loaded_subshaders.reserve(2);
-
         const String shader_contents = read_file(&persistent_arena, filepath);
-        ShaderData shader_data = parse_shader(shader_contents);
-        for (const SubShaderData& data : shader_data.subshaders)
+
+        //////////////////////////////////////////////////////////////////////
+        // Parse the shader file
+
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+        ShaderData shader_data;
+        shader_data.subshaders = temp.arena->push_zero<SubShaderData>(subshaders_count);
+
+        u64 line_begin = 0;
+        u64 line_end = shader_contents.find_eol(line_begin);
+
+        while (line_end != String::INVALID_INDEX)
         {
-            if (u32 shader_id = load_subshader(data.contents, data.type))
+            const String line = shader_contents.substr(line_begin, line_end - line_begin);
+
+            if (line.length > 0)
             {
-                loaded_subshaders.push_back(shader_id);
+                const u64 params_begin = line.find(' ') + 1;
+                const String params = line.substr(params_begin, line_end - params_begin);
+
+                if (line.starts_with("#blend "))
+                {
+                    const u64 delim = params.find(' ');
+                    if (delim != String::INVALID_INDEX)
+                    {
+                        shader_data.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
+                        shader_data.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));
+                    }
+                    else
+                    {
+                        shader_data.properties.blend[0] = string_to_shader_blend(params);
+                    }
+                }
+                else if (line.starts_with("#blend_op "))
+                {
+                    shader_data.properties.blend_op = string_to_shader_blend_op(params);
+                }
+                else if (line.starts_with("#depth_test "))
+                {
+                    shader_data.properties.depth_test = string_to_shader_depth_test(params);
+                }
+                else if (line.starts_with("#depth_write "))
+                {
+                    shader_data.properties.depth_write = string_to_shader_depth_write(params);
+                }
+                else if (line.starts_with("#type "))
+                {
+                    const u64 subshader_begin = line_end + 1;
+                    const u64 subshader_end = shader_contents.find("#type ", subshader_begin);
+
+                    SubShaderData subshader;
+                    subshader.type = string_to_subshader_type(params);
+                    subshader.contents = shader_contents.substr(subshader_begin, subshader_end - subshader_begin);
+
+                    shader_data.subshaders[shader_data.subshaders_count] = subshader;
+                    shader_data.subshaders_count += 1;
+
+                    line_end = subshader_end - 1;
+                }
+            }
+
+            line_begin = line_end + 1;
+            line_end = shader_contents.find_eol(line_begin);
+        }
+
+        APORIA_ASSERT(shader_data.subshaders_count == subshaders_count);
+
+        //////////////////////////////////////////////////////////////////////
+        // Compile and link subshaders
+
+        u32* compiled_subshaders = temp.arena->push_zero<u32>(subshaders_count);
+        u64 compiled_subshaders_count = 0;
+
+        for (u64 idx = 0; idx < shader_data.subshaders_count; ++idx)
+        {
+            if (u32 subshader_id = compile_subshader( shader_data.subshaders[idx] ))
+            {
+                compiled_subshaders[idx] = subshader_id;
+                compiled_subshaders_count += 1;
             }
         }
 
-        if (loaded_subshaders.empty())
+        if (compiled_subshaders_count < shader_data.subshaders_count)
         {
-            glDeleteProgram(shader_id);
+            APORIA_LOG(Error, "Failed to compile all subshaders of shader '{}'! Compiled: {}, Requested: {}. Creating shaders aborted!", filepath, compiled_subshaders_count, subshaders_count);
             return 0;
         }
 
-        link_shaders(shader_id, loaded_subshaders);
+        u32 shader_id = glCreateProgram();
 
-        apply_shader_defaults(shader_data.properties);
+        for (u64 idx = 0; idx < compiled_subshaders_count; ++idx)
+        {
+            glAttachShader(shader_id, compiled_subshaders[idx]);
+        }
 
-        ShaderInfo shader_info;
+        glLinkProgram(shader_id);
+        glValidateProgram(shader_id);
+
+        for (u64 idx = 0; idx < compiled_subshaders_count; ++idx)
+        {
+            glDetachShader(shader_id, compiled_subshaders[idx]);
+            glDeleteShader(compiled_subshaders[idx]);
+        }
+
+        ShaderInfo& shader_info = shaders[shader_id];
+        shader_info.shader_id = shader_id;
         shader_info.source = filepath;
         shader_info.properties = shader_data.properties;
 
-        shaders.emplace(shader_id, std::move(shader_info));
+        // @HACK(dubgron): Because arenas malloc the memory, they don't call
+        // the constructors, and STD classes (like std::unordered_map) need
+        // their constructors to be called otherwise they don't work, so we
+        // need to call the constructor manually using "placement new" syntax.
+        // I know it's stupid, but it is how it is :(
+        new(&shader_info.locations) std::unordered_map<String, i32>;
+
+        rollback_scratch_arena(temp);
+
+        //////////////////////////////////////////////////////////////////////
+        // Apply default properties
+
+        if (shader_info.properties.blend[0] == ShaderBlend::Default)
+        {
+            shader_info.properties.blend[0] = shader_config.default_properties.blend[0];
+            shader_info.properties.blend[1] = shader_config.default_properties.blend[1];
+        }
+
+        if (shader_info.properties.blend_op == ShaderBlendOp::Default)
+        {
+            shader_info.properties.blend_op = shader_config.default_properties.blend_op;
+        }
+
+        if (shader_info.properties.depth_test == ShaderDepthTest::Default)
+        {
+            shader_info.properties.depth_test = shader_config.default_properties.depth_test;
+        }
+
+        if (shader_info.properties.depth_write == ShaderDepthWrite::Default)
+        {
+            shader_info.properties.depth_write = shader_config.default_properties.depth_write;
+        }
 
         return shader_id;
     }
 
     void remove_shader(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
             "Shader (with ID: {}) is not valid!", shader_id);
 
         glDeleteProgram(shader_id);
-        shaders.erase(shader_id);
+        shaders[shader_id].shader_id = 0;
     }
 
     void remove_all_shaders()
     {
-        for (const auto&[shader_id, shader_info] : shaders)
+        for (u64 idx = 0; idx < MAX_SHADERS; ++idx)
         {
-            glDeleteProgram(shader_id);
+            glDeleteProgram( shaders[idx].shader_id );
+            shaders[idx].shader_id = 0;
         }
-
-        shaders.clear();
     }
 
     void reload_shader(u32 shader_id)
     {
-        APORIA_ASSERT_WITH_MESSAGE(shaders.contains(shader_id),
+        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
             "Shader (with ID: {}) is not valid!", shader_id);
 
-        const String shader_source = shaders.at(shader_id).source;
+        const String shader_source = shaders[shader_id].source;
 
         glDeleteProgram(shader_id);
-        shaders.erase(shader_id);
+        shaders[shader_id].shader_id = 0;
 
-        create_shader(shader_source);
+        create_shader(shader_source, 2);
     }
 
     void bind_shader(u32 shader_id)

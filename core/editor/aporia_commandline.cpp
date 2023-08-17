@@ -7,6 +7,8 @@
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 
+#include <imgui.h>
+
 #define APORIA_COMMANDLINE_FUNCTION(name) CommandlineResult name(StringList args)
 
 namespace Aporia
@@ -35,7 +37,10 @@ namespace Aporia
     static ConsoleInputState input_state = ConsoleInputState::Empty;
 
     static MemoryArena command_arena;
-    static MemoryArena temp_arena;
+    static MemoryArena suggestion_arena;
+
+    static constexpr u64 MAX_SUGGESTIONS = 10;
+    static StringNode suggestion_memory[MAX_SUGGESTIONS];
 
     struct CommandlineResult
     {
@@ -52,12 +57,22 @@ namespace Aporia
         commandline_function* func = nullptr;
     };
 
-    std::vector<CommandlineCommand> commands;
+    static constexpr u64 MAX_COMMANDS = 1000;
+    static CommandlineCommand* commands = nullptr;
+    static u64 command_count = 0;
+
+    static void add_command(CommandlineCommand command)
+    {
+        APORIA_ASSERT(command_count < MAX_COMMANDS);
+        commands[command_count] = command;
+        command_count += 1;
+    }
 
     static CommandlineCommand* find_command(String command_name)
     {
-        for (CommandlineCommand& command : commands)
+        for (u64 idx = 0; idx < command_count; ++idx)
         {
+            CommandlineCommand& command = commands[idx];
             if (command.display_name == command_name)
             {
                 return &command;
@@ -144,48 +159,61 @@ namespace Aporia
         u64 match_score = 0;
     };
 
-    static StringList find_matching_commands(String command_prefix, u64 max_count = -1)
+    static StringList find_matching_commands(String command_prefix)
     {
         if (command_prefix.length == 0)
         {
             return StringList{};
         }
 
-        std::vector<CommandMatch> matches;
-        matches.reserve(commands.size());
-        for (const CommandlineCommand& command : commands)
+        ScratchArena temp = create_scratch_arena(&command_arena);
+
+        CommandMatch* matches = temp.arena->push<CommandMatch>(command_count);
+        u64 match_count = 0;
+
+        for (u64 idx = 0; idx < command_count; ++idx)
         {
+            CommandlineCommand& command = commands[idx];
             if (command.display_name.contains(command_prefix))
             {
-                matches.push_back(CommandMatch{ command.display_name, command.display_name.length });
+                matches[match_count] = CommandMatch{ command.display_name, command.display_name.length };
+                match_count += 1;
             }
         }
-        std::sort(matches.begin(), matches.end(),
-            [](const CommandMatch& m1, const CommandMatch& m2)
+
+        qsort(matches, match_count, sizeof(CommandMatch),
+            [](const void* elem1, const void* elem2)->i32
             {
-                return m1.match_score < m2.match_score;
+                const CommandMatch& m1 = *reinterpret_cast<const CommandMatch*>(elem1);
+                const CommandMatch& m2 = *reinterpret_cast<const CommandMatch*>(elem2);
+                return m1.match_score - m2.match_score;
             });
 
         StringList result;
-        const u64 result_num = min<u64>(max_count, matches.size());
+        const u64 result_num = min<u64>(MAX_SUGGESTIONS, match_count);
         for (i64 i = 0; i < result_num; ++i)
         {
-            result.push_node(&temp_arena, matches[i].command_name);
+            result.push_node(&suggestion_arena, matches[i].command_name);
         }
+
+        rollback_scratch_arena(temp);
+
         return result;
     }
 
     static void commandline_init()
     {
         command_arena.alloc(MEGABYTES(1));
-        temp_arena.alloc(KILOBYTES(10));
+        suggestion_arena.make_from_array(suggestion_memory);
 
-        commands.push_back(CommandlineCommand{
+        commands = command_arena.push_zero<CommandlineCommand>(MAX_COMMANDS);
+
+        add_command(CommandlineCommand{
             .display_name = "print",
             .description = "Prints strings\nUsage: print string1 [string2...]\n",
             .func = print_string });
 
-        commands.push_back(CommandlineCommand{
+        add_command(CommandlineCommand{
             .display_name = "lights.enable",
             .description = "Enable lights\nUsage: lights.enable 0|1|true|false\n",
             .func = enable_lights });
@@ -287,7 +315,7 @@ namespace Aporia
         if (input_state == ConsoleInputState::Typing)
         {
             const String current_command = data->Buf;
-            suggestions = find_matching_commands(current_command, 10);
+            suggestions = find_matching_commands(current_command);
         }
 
         return 0;
@@ -320,8 +348,6 @@ namespace Aporia
 
     static void commandline_draw()
     {
-        temp_arena.clear();
-
         ImGuiViewport* viewport = ImGui::GetMainViewport();
 
         const f32 target_small = viewport->Size.y * 0.2f;
@@ -394,8 +420,12 @@ namespace Aporia
         {
             if (command_history.node_count > 0)
             {
-                const String history = command_history.join(&temp_arena, "\n");
-                ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
+                ScratchArena temp = create_scratch_arena(&command_arena);
+                {
+                    const String history = command_history.join(temp.arena, "\n");
+                    ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
+                }
+                rollback_scratch_arena(temp);
             }
 
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -437,6 +467,7 @@ namespace Aporia
                 }
                 input_buffer[0] = '\0';
                 suggestions.clear();
+                suggestion_arena.clear();
                 input_state = ConsoleInputState::Empty;
                 selected_command = command_hist_help.node_count;
             }
@@ -445,6 +476,7 @@ namespace Aporia
         {
             input_state = ConsoleInputState::Empty;
             suggestions.clear();
+            suggestion_arena.clear();
         }
 
         ImGui::PopItemWidth();

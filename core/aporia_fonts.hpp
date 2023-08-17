@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <map>
 
 #include "aporia_entity.hpp"
