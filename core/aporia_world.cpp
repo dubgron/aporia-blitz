@@ -89,13 +89,17 @@ namespace Aporia
     void World::clear_entities()
     {
         entity_count = 0;
-
         free_list = entity_list;
-        for (u64 idx = 0; idx < max_entities - 1; ++idx)
+
+        const u64 last_idx = max_entities - 1;
+        for (u64 idx = 0; idx < last_idx; ++idx)
         {
             entity_list[idx].next = &entity_list[idx + 1];
             entity_list[idx].entity = nullptr;
         }
+
+        entity_list[last_idx].next = nullptr;
+        entity_list[last_idx].entity = nullptr;
     }
 
     Entity* World::get_entity(EntityID entity_id) const
