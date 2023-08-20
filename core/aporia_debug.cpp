@@ -42,7 +42,10 @@ namespace Aporia
 #endif
 
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_level(spdlog::level::debug);
+
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile);
+        file_sink->set_level(spdlog::level::trace);
 
         name = push_string(temp.arena, name);
 
@@ -58,7 +61,7 @@ namespace Aporia
 
         logger = std::make_shared<spdlog::logger>(std::string{ name }, spdlog::sinks_init_list{ std::move(console_sink), std::move(file_sink) });
         logger->set_pattern(std::string{ logger_pattern });
-        logger->set_level(spdlog::level::debug);
+        logger->set_level(spdlog::level::trace);
         logger->flush_on(spdlog::level::debug);
 
         rollback_scratch_arena(temp);
