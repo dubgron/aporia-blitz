@@ -60,6 +60,11 @@ namespace Aporia
         return result;
     }
 
+    String String::append_front(MemoryArena* arena, String string) const
+    {
+        return string.append(arena, *this);
+    }
+
     StringList String::split(MemoryArena* arena, u8 delim) const
     {
         StringList result;
@@ -139,28 +144,17 @@ namespace Aporia
             return INVALID_INDEX;
         }
 
-        u64 eol_begin = INVALID_INDEX;
+        u64 eol = INVALID_INDEX;
         for (u64 off = offset; off < length; ++off)
         {
             if (is_eol(data[off]))
             {
-                return off;
-                eol_begin = off;
+                eol = off;
                 break;
             }
         }
 
-        u64 eol_end = INVALID_INDEX;
-        for (u64 off = eol_begin + 1; off < length; ++off)
-        {
-            if (!is_eol(data[off]))
-            {
-                eol_end = off - 1;
-                break;
-            }
-        }
-
-        return eol_end;
+        return eol;
     }
 
     bool String::contains(String substring) const
@@ -214,7 +208,6 @@ namespace Aporia
 
     String push_string(MemoryArena* arena, u64 length)
     {
-        APORIA_ASSERT(arena);
         String result;
         if (length > 0)
         {
@@ -304,19 +297,18 @@ namespace Aporia
 
     void StringList::push_node(MemoryArena* arena, String string)
     {
-        APORIA_ASSERT(arena);
         StringNode* node = arena->push_zero<StringNode>();
         node->string = string;
 
         if (node_count > 0)
         {
-            APORIA_ASSERT(last);
+            APORIA_ASSERT(first && last);
             last->next = node;
             node->prev = last;
         }
         else
         {
-            APORIA_ASSERT(!first);
+            APORIA_ASSERT(!first && !last);
             first = node;
         }
 
@@ -328,18 +320,18 @@ namespace Aporia
 
     void StringList::push_node_front(MemoryArena* arena, String string)
     {
-        APORIA_ASSERT(arena);
         StringNode* node = arena->push_zero<StringNode>();
         node->string = string;
 
         if (node_count > 0)
         {
-            APORIA_ASSERT(first);
+            APORIA_ASSERT(first && last);
             first->prev = node;
             node->next = first;
         }
         else
         {
+            APORIA_ASSERT(!first && !last);
             last = node;
         }
 

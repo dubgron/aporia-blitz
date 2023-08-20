@@ -22,7 +22,9 @@ namespace Aporia
         String trim() const;
         String trim_left() const;
         String trim_right() const;
+
         String append(MemoryArena* arena, String string) const;
+        String append_front(MemoryArena* arena, String string) const;
 
         StringList split(MemoryArena* arena, u8 delim) const;
 
