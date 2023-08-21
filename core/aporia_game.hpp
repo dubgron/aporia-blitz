@@ -3,18 +3,6 @@
 #include "aporia_memory.hpp"
 #include "aporia_world.hpp"
 
-// @TODO(dubgron): The list of bugs found during the LD53:
-//
-// [x] In load_texture_atlas, the id variable is static, so new textures
-//     override old ones because we only use one texture id.
-// [x] CameraDirtyFlag has invalid flags (e.i. 0x00 and 0x01, it should
-//     be 0x01 and 0x02).
-// [x] The order of Count in some Input Enums is wrong, and it return
-//     not the last value + 1 but the value of the last alias + 1.
-// [x] Memory leak in load_texture_atlas! Forgot to call Image::unload.
-// [x] Missing static specifier in definition of Input input.
-//
-
 // @TODO(dubgron): The list of irritating things:
 //
 // [x] Setting width and height of Entity with texture.
@@ -37,7 +25,6 @@ namespace Aporia
         game_draw_t* draw = nullptr;
         game_terminate_t* terminate = nullptr;
 
-        // @TODO(dubgron): Erradicate all usages of std::string and std::string_view.
         String config_filepath;
     };
 

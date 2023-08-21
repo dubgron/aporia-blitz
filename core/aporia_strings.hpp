@@ -23,20 +23,20 @@ namespace Aporia
         String trim_left() const;
         String trim_right() const;
 
-        String append(MemoryArena* arena, String string) const;
-        String append_front(MemoryArena* arena, String string) const;
+        String append(MemoryArena* arena, String other) const;
+        String append_front(MemoryArena* arena, String other) const;
 
         StringList split(MemoryArena* arena, u8 delim) const;
 
         u64 find(u8 character, u64 offset = 0) const;
-        u64 find(String substring, u64 offset = 0) const;
+        u64 find(String other, u64 offset = 0) const;
         u64 find_eol(u64 offset = 0) const;
 
-        bool contains(String substring) const;
-        bool starts_with(String substring) const;
+        bool contains(String other) const;
+        bool starts_with(String other) const;
 
-        bool operator==(String string) const;
-        bool operator==(const char* string) const;
+        bool operator==(String other) const;
+        bool operator==(const char* other) const;
 
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
         // @NOTE(dubgron): Currently we use std::string only in logger, and std::string_view only in json.
@@ -78,6 +78,8 @@ namespace Aporia
 
         void push_node(MemoryArena* arena, String string);
         void push_node_front(MemoryArena* arena, String string);
+
+        void append(StringList other);
 
         StringList pop_node() const;
         StringList pop_node_front() const;

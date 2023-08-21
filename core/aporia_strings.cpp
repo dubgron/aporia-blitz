@@ -52,17 +52,17 @@ namespace Aporia
         return result;
     }
 
-    String String::append(MemoryArena* arena, String string) const
+    String String::append(MemoryArena* arena, String other) const
     {
-        String result = push_string(arena, length + string.length);
+        String result = push_string(arena, length + other.length);
         memcpy(result.data, data, length);
-        memcpy(result.data + length, string.data, string.length);
+        memcpy(result.data + length, other.data, other.length);
         return result;
     }
 
-    String String::append_front(MemoryArena* arena, String string) const
+    String String::append_front(MemoryArena* arena, String other) const
     {
-        return string.append(arena, *this);
+        return other.append(arena, *this);
     }
 
     StringList String::split(MemoryArena* arena, u8 delim) const
@@ -112,18 +112,18 @@ namespace Aporia
         return INVALID_INDEX;
     }
 
-    u64 String::find(String substring, u64 offset /* = 0 */) const
+    u64 String::find(String other, u64 offset /* = 0 */) const
     {
-        if (substring.length + offset >= length)
+        if (other.length + offset >= length)
         {
             return INVALID_INDEX;
         }
 
-        const u64 substr_num = length - substring.length + 1;
+        const u64 substr_num = length - other.length + 1;
         for (u64 off = offset; off < substr_num; ++off)
         {
-            const String temp = substr(off, substring.length);
-            if (substring == temp)
+            const String temp = substr(off, other.length);
+            if (other == temp)
             {
                 return off;
             }
@@ -157,27 +157,27 @@ namespace Aporia
         return eol;
     }
 
-    bool String::contains(String substring) const
+    bool String::contains(String other) const
     {
-        return find(substring) != INVALID_INDEX;
+        return find(other) != INVALID_INDEX;
     }
 
-    bool String::starts_with(String substring) const
+    bool String::starts_with(String other) const
     {
-        const String temp = substr(0, substring.length);
-        return substring == temp;
+        const String temp = substr(0, other.length);
+        return other == temp;
     }
 
-    bool String::operator==(String string) const
+    bool String::operator==(String other) const
     {
-        if (length != string.length)
+        if (length != other.length)
         {
             return false;
         }
 
         for (u64 i = 0; i < length; ++i)
         {
-            if (data[i] != string.data[i])
+            if (data[i] != other.data[i])
             {
                 return false;
             }
@@ -186,9 +186,9 @@ namespace Aporia
         return true;
     }
 
-    bool String::operator==(const char* string) const
+    bool String::operator==(const char* other) const
     {
-        return *this == String{ string };
+        return *this == String{ other };
     }
 
     String push_string(MemoryArena* arena, String string)
@@ -339,6 +339,21 @@ namespace Aporia
 
         node_count += 1;
         total_length += string.length;
+    }
+
+    void StringList::append(StringList other)
+    {
+        if (node_count > 0)
+        {
+            APORIA_ASSERT(other.first && other.last);
+
+            last->next = other.first;
+            last->next->prev = last;
+            last = other.last;
+
+            node_count += other.node_count;
+            total_length += other.total_length;
+        }
     }
 
     StringList StringList::pop_node() const

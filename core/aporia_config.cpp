@@ -150,7 +150,7 @@ namespace Aporia
         return token;
     }
 
-    static String print_token_type_flag(MemoryArena* arena, u8 flag)
+    static String token_type_flag_to_string(MemoryArena* arena, u8 flag)
     {
         StringList valid_token_types;
         if (flag & Config_TokenType_Comment)
@@ -181,16 +181,17 @@ namespace Aporia
         return valid_token_types.join(arena, " or ");
     }
 
-#if !defined(APORIA_PERFORMANCE)
-    static void print_literals_list(StringList* out, MemoryArena* arena, const Config_LiteralsList& list)
+    static StringList literals_list_to_string_list(MemoryArena* arena, const Config_LiteralsList& list)
     {
+        StringList result;
         for (Config_LiteralsNode* node = list.first; node; node = node->next)
         {
             if (node->array != nullptr)
             {
-                StringNode* before_array = out->last;
+                StringNode* before_array = result.last;
 
-                print_literals_list(out, arena, *node->array);
+                StringList array_literals = literals_list_to_string_list(arena, *node->array);
+                result.append(array_literals);
 
                 if (before_array)
                 {
@@ -199,27 +200,27 @@ namespace Aporia
                 }
                 else
                 {
-                    APORIA_ASSERT(out->first);
-                    out->first->string = out->first->string.append_front(arena, "(");
+                    APORIA_ASSERT(result.first);
+                    result.first->string = result.first->string.append_front(arena, "(");
                 }
 
-                APORIA_ASSERT(out->last);
-                out->last->string = out->last->string.append(arena, ")");
-                out->total_length += 2;
+                APORIA_ASSERT(result.last);
+                result.last->string = result.last->string.append(arena, ")");
+                result.total_length += 2;
             }
             else
             {
-                out->push_node(arena, node->literal);
+                result.push_node(arena, node->literal);
             }
 
-            if (node->next && out->last)
+            if (node->next && result.last)
             {
-                out->last->string = out->last->string.append(arena, ",");
-                out->total_length += 1;
+                result.last->string = result.last->string.append(arena, ",");
+                result.total_length += 1;
             }
         }
+        return result;
     }
-#endif
 
     Config_LiteralsNode* Config_LiteralsList::push_node(MemoryArena* arena)
     {
@@ -264,6 +265,18 @@ namespace Aporia
         last = node;
         node_count += 1;
     }
+
+#define PRINT_TOKEN(arena, token) do { \
+        ScratchArena temp = create_scratch_arena(arena); \
+        APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", token_type_flag_to_string(temp.arena, token.type), token.text); \
+        rollback_scratch_arena(temp); \
+    } while(0)
+
+#define PRINT_PROPERTY(arena, property) do { \
+        ScratchArena temp = create_scratch_arena(arena); \
+        APORIA_LOG(Verbose, "{}.{} = {}", property.category, property.field, literals_list_to_string_list(temp.arena, property.literals).join(temp.arena, " ")); \
+        rollback_scratch_arena(temp); \
+    } while (0)
 
     Config_PropertyList parse_config_file(MemoryArena* arena, String filepath)
     {
@@ -339,19 +352,13 @@ namespace Aporia
 
                 ScratchArena temp = create_scratch_arena(arena);
                 APORIA_LOG(Error, "Syntax error at line: {}, column: {}. Expected token type: {}, but got: >>> {} <<<!",
-                    line, column, print_token_type_flag(temp.arena, expected_tokens), token_string);
+                    line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
                 rollback_scratch_arena(temp);
 
                 return Config_PropertyList{};
             }
-#if !defined(APORIA_PERFORMANCE)
-            else
-            {
-                ScratchArena temp = create_scratch_arena(arena);
-                APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", print_token_type_flag(temp.arena, token.type), token.text);
-                rollback_scratch_arena(temp);
-            }
-#endif
+
+            PRINT_TOKEN(arena, token);
 
             token_list.push_node(arena, token);
             expected_tokens = expected_tokens_table(token.type);
@@ -439,15 +446,7 @@ namespace Aporia
                         property.literals = *property.literals.first->array;
                     }
 
-#if !defined(APORIA_PERFORMANCE)
-                    ScratchArena temp = create_scratch_arena(arena);
-                    {
-                        StringList printed_literals;
-                        print_literals_list(&printed_literals, temp.arena, property.literals);
-                        APORIA_LOG(Verbose, "{}.{} = {}", property.category, property.field, printed_literals.join(temp.arena, " "));
-                    }
-                    rollback_scratch_arena(temp);
-#endif
+                    PRINT_PROPERTY(arena, property);
 
                     property_list.push_node(&config_arena, property);
 
