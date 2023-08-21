@@ -61,11 +61,33 @@ namespace Aporia
     extern EditorConfig editor_config;
     extern CameraConfig camera_config;
 
+    struct Config_LiteralsNode
+    {
+        Config_LiteralsNode* next = nullptr;
+
+        struct Config_LiteralsList* array = nullptr;
+        String literal;
+    };
+
+    struct Config_LiteralsList
+    {
+        Config_LiteralsList* next = nullptr;
+        Config_LiteralsList* prev = nullptr;
+
+        Config_LiteralsNode* first = nullptr;
+        Config_LiteralsNode* last = nullptr;
+        u64 node_count = 0;
+
+        Config_LiteralsNode* push_node(MemoryArena* arena);
+
+        void clear();
+    };
+
     struct Config_Property
     {
         String category;
         String field;
-        StringList literals;
+        Config_LiteralsList literals;
     };
 
     struct Config_PropertyNode
@@ -83,7 +105,8 @@ namespace Aporia
         void push_node(MemoryArena* arena, Config_Property property);
     };
 
-    Config_PropertyList parse_config_file(String filepath);
+    // @TODO(dubgron): Add better syntax error handling.
+    Config_PropertyList parse_config_file(MemoryArena* arena, String filepath);
 
     bool load_engine_config(String filepath);
 }
