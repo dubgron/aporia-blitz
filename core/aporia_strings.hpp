@@ -41,7 +41,7 @@ namespace Aporia
         // @TODO(dubgron): Remove this in the future once we replace all usages of std.
         // @NOTE(dubgron): Currently we use std::string only in logger, and std::string_view only in json.
         operator std::string_view() const { return std::string_view{ reinterpret_cast<char*>(data), static_cast<size_t>(length) }; }
-        const char* operator*() const { return reinterpret_cast<const char*>(data); }
+        const char* operator*() const; // @NOTE(dubgron): This allocates a temporary null-terminated string on the frame arena.
 
         // @HACK(dubgron): Cringe constructors to handle conversion from C-strings and std::string_views.
         String() = default;

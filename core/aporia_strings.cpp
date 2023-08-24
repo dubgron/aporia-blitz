@@ -191,6 +191,14 @@ namespace Aporia
         return *this == String{ other };
     }
 
+    const char* String::operator*() const
+    {
+        String result = push_string(&frame_arena, length + 1);
+        memcpy(result.data, data, length * sizeof(u8));
+        result.data[length] = '\0';
+        return reinterpret_cast<const char*>(result.data);
+    }
+
     String push_string(MemoryArena* arena, String string)
     {
         const String result = push_string(arena, string.length);
@@ -211,9 +219,8 @@ namespace Aporia
         String result;
         if (length > 0)
         {
+            result.data = arena->push<u8>(length);
             result.length = length;
-            result.data = arena->push<u8>(length + 1);
-            result.data[length] = '\0';
         }
         return result;
     }
