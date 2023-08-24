@@ -350,8 +350,13 @@ namespace Aporia
 
     void StringList::append(StringList other)
     {
-        if (node_count > 0)
+        if (node_count == 0)
         {
+            *this = other;
+        }
+        else if (other.node_count > 0)
+        {
+            APORIA_ASSERT(first && last);
             APORIA_ASSERT(other.first && other.last);
 
             last->next = other.first;
