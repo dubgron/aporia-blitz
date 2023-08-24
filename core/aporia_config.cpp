@@ -278,7 +278,7 @@ namespace Aporia
         rollback_scratch_arena(temp); \
     } while (0)
 
-    Config_PropertyList parse_config_file(MemoryArena* arena, String filepath)
+    Config_PropertyList parse_config_from_file(MemoryArena* arena, String filepath)
     {
         String config_contents = read_file(arena, filepath);
 
@@ -396,7 +396,7 @@ namespace Aporia
 
                 case Config_TokenType_Literal:
                 {
-                    Config_LiteralsNode* new_literal = active_literals->push_node(&config_arena);
+                    Config_LiteralsNode* new_literal = active_literals->push_node(arena);
 
                     new_literal->literal = token.text;
                 }
@@ -404,7 +404,7 @@ namespace Aporia
 
                 case Config_TokenType_ArrayBegin:
                 {
-                    Config_LiteralsNode* new_literal = active_literals->push_node(&config_arena);
+                    Config_LiteralsNode* new_literal = active_literals->push_node(arena);
 
                     new_literal->array = arena->push_zero<Config_LiteralsList>();
 
@@ -448,7 +448,7 @@ namespace Aporia
 
                     PRINT_PROPERTY(arena, property);
 
-                    property_list.push_node(&config_arena, property);
+                    property_list.push_node(arena, property);
 
                     property.literals.clear();
                 }
@@ -539,7 +539,7 @@ namespace Aporia
     bool load_engine_config(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
-        Config_PropertyList parsed_config = parse_config_file(temp.arena, filepath);
+        Config_PropertyList parsed_config = parse_config_from_file(temp.arena, filepath);
 
         if (parsed_config.node_count == 0)
         {

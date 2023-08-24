@@ -106,7 +106,7 @@ namespace Aporia
     };
 
     // @TODO(dubgron): Add better syntax error handling.
-    Config_PropertyList parse_config_file(MemoryArena* arena, String filepath);
+    Config_PropertyList parse_config_from_file(MemoryArena* arena, String filepath);
 
     bool load_engine_config(String filepath);
 }
