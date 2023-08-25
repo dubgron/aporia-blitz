@@ -1,7 +1,6 @@
 #include "aporia_animation.hpp"
 
-#include <nlohmann/json.hpp>
-
+#include <aporia_config.hpp>
 #include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
@@ -26,28 +25,27 @@ namespace Aporia
     void load_animations(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
+        Config_PropertyList parsed_file = parse_config_from_file(temp.arena, filepath);
 
-        const String data = read_file(temp.arena, filepath);
-        APORIA_ASSERT(data.is_valid());
-
-        using json = nlohmann::json;
-        const json animation_json = json::parse<std::string_view>(data);
-
-        rollback_scratch_arena(temp);
-
-        for (auto& animation_data : animation_json["animations"])
+        for (Config_PropertyNode* property_node = parsed_file.first; property_node; property_node = property_node->next)
         {
-            const String animation_name = animation_data["name"].get<std::string_view>();
-            const u64 frames_count = animation_data["frames"].size();
+            const Config_Property& property = property_node->property;
+            if (property.category != "animations")
+            {
+                continue;
+            }
+
+            const String animation_name = property.field;
+            const u64 frames_count = property.literals.node_count;
 
             Animation animation;
             animation.name = push_string(&persistent_arena, animation_name);
             animation.frames = persistent_arena.push<AnimationFrame>(frames_count);
 
-            for (auto& frame_name_str : animation_data["frames"])
+            for (const Config_LiteralsNode* frame_node = property.literals.first; frame_node; frame_node = frame_node->next)
             {
                 AnimationFrame frame;
-                const String frame_name = frame_name_str.get<std::string_view>();
+                const String frame_name = frame_node->literal;
                 frame.texture = get_subtexture(frame_name);
 
                 animation.frames[animation.frames_count] = frame;
@@ -58,6 +56,8 @@ namespace Aporia
             all_animations[all_animations_count] = animation;
             all_animations_count += 1;
         }
+
+        rollback_scratch_arena(temp);
     }
 
     void animation_tick(Entity& entity, f32 frame_time)

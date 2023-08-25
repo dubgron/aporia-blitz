@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 #include "aporia_utils.hpp"
@@ -45,13 +46,16 @@ namespace Aporia
     void load_texture_atlas(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
+        Config_PropertyList parsed_file = parse_config_from_file(temp.arena, filepath);
 
-        String data = read_file(temp.arena, filepath);
+        const Config_Property* filepath_property = parsed_file.get_property("meta", "filepath");
+        if (!filepath_property)
+        {
+            APORIA_LOG(Error, "Failed to get [meta.filepath] property from %s", filepath);
+            return;
+        }
 
-        using json = nlohmann::json;
-        json texture_json = json::parse<std::string_view>(data);
-
-        const String atlas_filepath = texture_json["atlas"].get<std::string_view>();
+        const String atlas_filepath = filepath_property->literals.first->literal;
 
         u32 id = 0;
         glDeleteTextures(1, &id);
@@ -92,17 +96,22 @@ namespace Aporia
 #endif
 
         const Texture atlas_texture{ id, atlas_image.width, atlas_image.height, atlas_image.channels };
-        for (auto& texture : texture_json["textures"])
+        for (Config_PropertyNode* property_node = parsed_file.first; property_node; property_node = property_node->next)
         {
-            String name = push_string(&persistent_arena, texture["name"].get<std::string_view>());
+            const Config_Property& property = property_node->property;
+            if (property.category != "subtextures")
+            {
+                continue;
+            }
 
+            String name = push_string(&persistent_arena, property.field);
             if (textures.contains(name))
             {
                 APORIA_LOG(Warning, "There are two textures named '{}'! One of them will be overwritten!", name);
             }
 
-            const v2 u{ texture["u"][0], texture["u"][1] };
-            const v2 v{ texture["v"][0], texture["v"][1] };
+            const v2 u{ string_to_float(property.literals.first->array->first->literal), string_to_float(property.literals.first->array->last->literal) };
+            const v2 v{ string_to_float(property.literals.last->array->first->literal), string_to_float(property.literals.last->array->last->literal) };
 
             textures.try_emplace(name, SubTexture{ u, v, atlas_texture });
         }

@@ -266,6 +266,19 @@ namespace Aporia
         node_count += 1;
     }
 
+    const Config_Property* Config_PropertyList::get_property(String category, String field) const
+    {
+        for (Config_PropertyNode* property_node = first; property_node; property_node = property_node->next)
+        {
+            if (property_node->property.category == category && property_node->property.field == field)
+            {
+                return &property_node->property;
+            }
+        }
+
+        return nullptr;
+    }
+
 #define PRINT_TOKEN(arena, token) do { \
         ScratchArena temp = create_scratch_arena(arena); \
         APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", token_type_flag_to_string(temp.arena, token.type), token.text); \
@@ -563,7 +576,7 @@ namespace Aporia
                     if (literals.node_count != property_definition.value_count)
                     {
                         // @TODO(dubgron): Better logging.
-                        APORIA_LOG(Error, "Field {}.{} has a literal count mismatch (expected: {}, received: {})!", category, field, property_definition.value_count, literals.node_count);
+                        APORIA_LOG(Error, "Property {}.{} has a literal count mismatch (expected: {}, received: {})!", category, field, property_definition.value_count, literals.node_count);
                         continue;
                     }
 

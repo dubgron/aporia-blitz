@@ -103,6 +103,8 @@ namespace Aporia
         u64 node_count = 0;
 
         void push_node(MemoryArena* arena, Config_Property property);
+
+        const Config_Property* get_property(String category, String field) const;
     };
 
     // @TODO(dubgron): Add better syntax error handling.
