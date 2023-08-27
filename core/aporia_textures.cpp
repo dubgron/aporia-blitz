@@ -46,16 +46,23 @@ namespace Aporia
     void load_texture_atlas(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
-        Config_PropertyList parsed_file = parse_config_from_file(temp.arena, filepath);
+        Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
-        const Config_Property* filepath_property = parsed_file.get_property("meta", "filepath");
-        if (!filepath_property)
+        String atlas_filepath;
+        for (Config_Property* property = parsed_file; property; property = property->next)
+        {
+            if (property->category == "meta" && property->field == "filepath")
+            {
+                atlas_filepath = property->literals.first->string;
+                break;
+            }
+        }
+
+        if (atlas_filepath.length == 0)
         {
             APORIA_LOG(Error, "Failed to get [meta.filepath] property from %s", filepath);
             return;
         }
-
-        const String atlas_filepath = filepath_property->literals.first->literal;
 
         u32 id = 0;
         glDeleteTextures(1, &id);
@@ -96,22 +103,21 @@ namespace Aporia
 #endif
 
         const Texture atlas_texture{ id, atlas_image.width, atlas_image.height, atlas_image.channels };
-        for (Config_PropertyNode* property_node = parsed_file.first; property_node; property_node = property_node->next)
+        for (Config_Property* property = parsed_file; property; property = property->next)
         {
-            const Config_Property& property = property_node->property;
-            if (property.category != "subtextures")
+            if (property->category != "subtextures")
             {
                 continue;
             }
 
-            String name = push_string(&persistent_arena, property.field);
+            String name = push_string(&persistent_arena, property->field);
             if (textures.contains(name))
             {
                 APORIA_LOG(Warning, "There are two textures named '{}'! One of them will be overwritten!", name);
             }
 
-            const v2 u{ string_to_float(property.literals.first->array->first->literal), string_to_float(property.literals.first->array->last->literal) };
-            const v2 v{ string_to_float(property.literals.last->array->first->literal), string_to_float(property.literals.last->array->last->literal) };
+            const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
+            const v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
 
             textures.try_emplace(name, SubTexture{ u, v, atlas_texture });
         }

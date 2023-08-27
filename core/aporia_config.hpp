@@ -61,54 +61,21 @@ namespace Aporia
     extern EditorConfig editor_config;
     extern CameraConfig camera_config;
 
-    struct Config_LiteralsNode
-    {
-        Config_LiteralsNode* next = nullptr;
-
-        struct Config_LiteralsList* array = nullptr;
-        String literal;
-    };
-
-    struct Config_LiteralsList
-    {
-        Config_LiteralsList* next = nullptr;
-        Config_LiteralsList* prev = nullptr;
-
-        Config_LiteralsNode* first = nullptr;
-        Config_LiteralsNode* last = nullptr;
-        u64 node_count = 0;
-
-        Config_LiteralsNode* push_node(MemoryArena* arena);
-
-        void clear();
-    };
-
     struct Config_Property
     {
+        Config_Property* next = nullptr;
+        Config_Property* prev = nullptr;
+
         String category;
         String field;
-        Config_LiteralsList literals;
-    };
 
-    struct Config_PropertyNode
-    {
-        Config_PropertyNode* next = nullptr;
-        Config_Property property;
-    };
-
-    struct Config_PropertyList
-    {
-        Config_PropertyNode* first = nullptr;
-        Config_PropertyNode* last = nullptr;
-        u64 node_count = 0;
-
-        void push_node(MemoryArena* arena, Config_Property property);
-
-        const Config_Property* get_property(String category, String field) const;
+        Config_Property* outer = nullptr;
+        Config_Property* inner = nullptr;
+        StringList literals;
     };
 
     // @TODO(dubgron): Add better syntax error handling.
-    Config_PropertyList parse_config_from_file(MemoryArena* arena, String filepath);
+    Config_Property* parse_config_from_file(MemoryArena* arena, String filepath);
 
     bool load_engine_config(String filepath);
 }

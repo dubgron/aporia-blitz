@@ -25,28 +25,26 @@ namespace Aporia
     void load_animations(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
-        Config_PropertyList parsed_file = parse_config_from_file(temp.arena, filepath);
+        Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
-        for (Config_PropertyNode* property_node = parsed_file.first; property_node; property_node = property_node->next)
+        for (const Config_Property* property = parsed_file; property; property = property->next)
         {
-            const Config_Property& property = property_node->property;
-            if (property.category != "animations")
+            if (property->category != "animations")
             {
                 continue;
             }
 
-            const String animation_name = property.field;
-            const u64 frames_count = property.literals.node_count;
+            const String animation_name = property->field;
+            const u64 frames_count = property->literals.node_count;
 
             Animation animation;
             animation.name = push_string(&persistent_arena, animation_name);
             animation.frames = persistent_arena.push<AnimationFrame>(frames_count);
 
-            for (const Config_LiteralsNode* frame_node = property.literals.first; frame_node; frame_node = frame_node->next)
+            for (const StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
             {
                 AnimationFrame frame;
-                const String frame_name = frame_node->literal;
-                frame.texture = get_subtexture(frame_name);
+                frame.texture = get_subtexture(frame_node->string);
 
                 animation.frames[animation.frames_count] = frame;
                 animation.frames_count += 1;

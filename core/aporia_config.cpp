@@ -1,11 +1,7 @@
 #include "aporia_config.hpp"
 
 #include "aporia_debug.hpp"
-#include "aporia_entity.hpp"
 #include "aporia_game.hpp"
-#include "aporia_inputs.hpp"
-#include "aporia_shaders.hpp"
-#include "aporia_strings.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia
@@ -15,21 +11,22 @@ namespace Aporia
     EditorConfig editor_config;
     CameraConfig camera_config;
 
-    static u8 comment_token     = ';';
-    static u8 array_begin_token = '(';
-    static u8 array_end_token   = ')';
+    static u8 comment_token                 = ';';
+    static u8 inner_property_begin_token    = '(';
+    static u8 inner_property_end_token      = ')';
 
     enum Config_TokenType : u8
     {
-        Config_TokenType_None       = 0x00,
-        Config_TokenType_Comment    = 0x01,
-        Config_TokenType_Category   = 0x02,
-        Config_TokenType_Field      = 0x04,
-        Config_TokenType_Literal    = 0x08,
-        Config_TokenType_ArrayBegin = 0x10,
-        Config_TokenType_ArrayEnd   = 0x20,
+        Config_TokenType_None               = 0x00,
 
-        Config_TokenType_Any        = 0xff,
+        Config_TokenType_Comment            = 0x01,
+        Config_TokenType_Category           = 0x02,
+        Config_TokenType_Field              = 0x04,
+        Config_TokenType_Literal            = 0x08,
+        Config_TokenType_InnerPropertyBegin = 0x10,
+        Config_TokenType_InnerPropertyEnd   = 0x20,
+
+        Config_TokenType_Any                = 0xff,
     };
 
     struct Config_Token
@@ -75,14 +72,13 @@ namespace Aporia
     {
         switch (token)
         {
-            case Config_TokenType_None:         return Config_TokenType_Comment | Config_TokenType_Category;
-            case Config_TokenType_Comment:      return Config_TokenType_Any;
-            case Config_TokenType_Category:     return Config_TokenType_Comment | Config_TokenType_Field;
-            case Config_TokenType_Field:        return Config_TokenType_Comment | Config_TokenType_Literal | Config_TokenType_ArrayBegin;
-            case Config_TokenType_Literal:      return Config_TokenType_Any;
-            // @NOTE(dubgron): The following line forbids empty arrays.
-            case Config_TokenType_ArrayBegin:   return Config_TokenType_Comment | Config_TokenType_Literal | Config_TokenType_ArrayBegin;
-            case Config_TokenType_ArrayEnd:     return Config_TokenType_Any;
+            case Config_TokenType_None:                 return Config_TokenType_Comment | Config_TokenType_Category;
+            case Config_TokenType_Comment:              return Config_TokenType_Any;
+            case Config_TokenType_Category:             return Config_TokenType_Comment | Config_TokenType_Field;
+            case Config_TokenType_Field:                return Config_TokenType_Comment | Config_TokenType_Literal | Config_TokenType_InnerPropertyBegin;
+            case Config_TokenType_Literal:              return Config_TokenType_Comment | Config_TokenType_Category | Config_TokenType_Field | Config_TokenType_Literal | Config_TokenType_InnerPropertyEnd;
+            case Config_TokenType_InnerPropertyBegin:   return Config_TokenType_Comment | Config_TokenType_Field;
+            case Config_TokenType_InnerPropertyEnd:     return Config_TokenType_Comment | Config_TokenType_Category | Config_TokenType_Field | Config_TokenType_InnerPropertyEnd;
 
             default: APORIA_UNREACHABLE(); return Config_TokenType_None;
         }
@@ -113,7 +109,7 @@ namespace Aporia
     {
         constexpr auto is_special_token = [](u8 chr)
         {
-            return chr == comment_token || chr == array_begin_token || chr == array_end_token;
+            return chr == comment_token || chr == inner_property_begin_token || chr == inner_property_end_token;
         };
 
         if (is_special_token(buffer->data[0]))
@@ -169,129 +165,19 @@ namespace Aporia
         {
             valid_token_types.push_node(arena, "Literal");
         }
-        if (flag & Config_TokenType_ArrayBegin)
+        if (flag & Config_TokenType_InnerPropertyBegin)
         {
-            valid_token_types.push_node(arena, "ArrayBegin");
+            valid_token_types.push_node(arena, "InnerPropertyBegin");
         }
-        if (flag & Config_TokenType_ArrayEnd)
+        if (flag & Config_TokenType_InnerPropertyEnd)
         {
-            valid_token_types.push_node(arena, "ArrayEnd");
+            valid_token_types.push_node(arena, "InnerPropertyEnd");
         }
 
         return valid_token_types.join(arena, " or ");
     }
 
-    static StringList literals_list_to_string_list(MemoryArena* arena, const Config_LiteralsList& list)
-    {
-        StringList result;
-        for (Config_LiteralsNode* node = list.first; node; node = node->next)
-        {
-            if (node->array != nullptr)
-            {
-                StringNode* before_array = result.last;
-
-                StringList array_literals = literals_list_to_string_list(arena, *node->array);
-                result.append(array_literals);
-
-                if (before_array)
-                {
-                    APORIA_ASSERT(before_array->next);
-                    before_array->next->string = before_array->next->string.append_front(arena, "(");
-                }
-                else
-                {
-                    APORIA_ASSERT(result.first);
-                    result.first->string = result.first->string.append_front(arena, "(");
-                }
-
-                APORIA_ASSERT(result.last);
-                result.last->string = result.last->string.append(arena, ")");
-                result.total_length += 2;
-            }
-            else
-            {
-                result.push_node(arena, node->literal);
-            }
-
-            if (node->next && result.last)
-            {
-                result.last->string = result.last->string.append(arena, ",");
-                result.total_length += 1;
-            }
-        }
-        return result;
-    }
-
-    Config_LiteralsNode* Config_LiteralsList::push_node(MemoryArena* arena)
-    {
-        Config_LiteralsNode* node = arena->push_zero<Config_LiteralsNode>();
-
-        if (node_count > 0)
-        {
-            last->next = node;
-        }
-        else
-        {
-            first = node;
-        }
-
-        last = node;
-        node_count += 1;
-
-        return node;
-    }
-
-    void Config_LiteralsList::clear()
-    {
-        next = prev = nullptr;
-        first = last = nullptr;
-        node_count = 0;
-    }
-
-    void Config_PropertyList::push_node(MemoryArena* arena, Config_Property property)
-    {
-        Config_PropertyNode* node = arena->push_zero<Config_PropertyNode>();
-        node->property = property;
-
-        if (node_count > 0)
-        {
-            last->next = node;
-        }
-        else
-        {
-            first = node;
-        }
-
-        last = node;
-        node_count += 1;
-    }
-
-    const Config_Property* Config_PropertyList::get_property(String category, String field) const
-    {
-        for (Config_PropertyNode* property_node = first; property_node; property_node = property_node->next)
-        {
-            if (property_node->property.category == category && property_node->property.field == field)
-            {
-                return &property_node->property;
-            }
-        }
-
-        return nullptr;
-    }
-
-#define PRINT_TOKEN(arena, token) do { \
-        ScratchArena temp = create_scratch_arena(arena); \
-        APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", token_type_flag_to_string(temp.arena, token.type), token.text); \
-        rollback_scratch_arena(temp); \
-    } while(0)
-
-#define PRINT_PROPERTY(arena, property) do { \
-        ScratchArena temp = create_scratch_arena(arena); \
-        APORIA_LOG(Verbose, "{}.{} = {}", property.category, property.field, literals_list_to_string_list(temp.arena, property.literals).join(temp.arena, " ")); \
-        rollback_scratch_arena(temp); \
-    } while (0)
-
-    Config_PropertyList parse_config_from_file(MemoryArena* arena, String filepath)
+    Config_Property* parse_config_from_file(MemoryArena* arena, String filepath)
     {
         String config_contents = read_file(arena, filepath);
 
@@ -299,6 +185,9 @@ namespace Aporia
         String buffer = config_contents;
         consume_whitespace(&buffer);
 
+        // @TODO(dubgron): Enforcing the order of tokens using expected_tokens
+        // should be probably done in the parsing stage as it will make giving
+        // better syntax error messages more convinient.
         u8 expected_tokens = expected_tokens_table(Config_TokenType_None);
 
         Config_TokenList token_list;
@@ -334,13 +223,13 @@ namespace Aporia
             {
                 token.type = Config_TokenType_Literal;
             }
-            else if ((expected_tokens & Config_TokenType_ArrayBegin) && token_string == "(")
+            else if ((expected_tokens & Config_TokenType_InnerPropertyBegin) && token_string == "(")
             {
-                token.type = Config_TokenType_ArrayBegin;
+                token.type = Config_TokenType_InnerPropertyBegin;
             }
-            else if ((expected_tokens & Config_TokenType_ArrayEnd) && token_string == ")")
+            else if ((expected_tokens & Config_TokenType_InnerPropertyEnd) && token_string == ")")
             {
-                token.type = Config_TokenType_ArrayEnd;
+                token.type = Config_TokenType_InnerPropertyEnd;
             }
             else if (expected_tokens & Config_TokenType_Field)
             {
@@ -368,10 +257,12 @@ namespace Aporia
                     line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
                 rollback_scratch_arena(temp);
 
-                return Config_PropertyList{};
+                return nullptr;
             }
 
-            PRINT_TOKEN(arena, token);
+            ScratchArena temp = create_scratch_arena(arena);
+            APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", token_type_flag_to_string(temp.arena, token.type), token.text);
+            rollback_scratch_arena(temp);
 
             token_list.push_node(arena, token);
             expected_tokens = expected_tokens_table(token.type);
@@ -382,14 +273,37 @@ namespace Aporia
         APORIA_LOG(Debug, "Tokenization completed! Processed {} tokens!", token_list.node_count);
 
         // Parsing
-        Config_PropertyList property_list;
+        Config_Property* result = arena->push_zero<Config_Property>();
 
-        Config_Property property;
-        Config_LiteralsList* active_literals = &property.literals;
+        Config_Property* property = result;
+        u64 total_property_count = 0;
 
-        for (Config_TokenNode* token_node = token_list.first; token_node; token_node = token_node->next)
+        Config_TokenNode* token_node = token_list.first;
+        while (token_node != nullptr)
         {
-            Config_Token token = token_node->token;
+            const Config_Token& token = token_node->token;
+
+            if (property->inner != nullptr || property->literals.node_count > 0)
+            {
+                APORIA_ASSERT(token.type != Config_TokenType_InnerPropertyBegin);
+
+                // If property->inner is not null (meaning we've just encountered
+                // an InnerPropertyEnd token), the next token can't be a Literal.
+                APORIA_ASSERT(property->inner == nullptr || token.type != Config_TokenType_Literal);
+
+                // The next token is either a Category or a Field, a new property is needed.
+                if (token.type & (Config_TokenType_Category | Config_TokenType_Field))
+                {
+                    property->next = arena->push_zero<Config_Property>();
+                    property->next->category = property->category;
+                    property->next->outer = property->outer;
+
+                    property->next->prev = property;
+                    property = property->next;
+
+                    total_property_count += 1;
+                }
+            }
 
             switch (token.type)
             {
@@ -397,81 +311,47 @@ namespace Aporia
 
                 case Config_TokenType_Category:
                 {
-                    property.category = token.text;
+                    property->category = token.text;
                 }
                 break;
 
                 case Config_TokenType_Field:
                 {
-                    property.field = token.text;
+                    property->field = token.text;
                 }
                 break;
 
                 case Config_TokenType_Literal:
                 {
-                    Config_LiteralsNode* new_literal = active_literals->push_node(arena);
-
-                    new_literal->literal = token.text;
+                    property->literals.push_node(arena, token.text);
                 }
                 break;
 
-                case Config_TokenType_ArrayBegin:
+                case Config_TokenType_InnerPropertyBegin:
                 {
-                    Config_LiteralsNode* new_literal = active_literals->push_node(arena);
+                    property->inner = arena->push_zero<Config_Property>();
+                    property->inner->outer = property;
 
-                    new_literal->array = arena->push_zero<Config_LiteralsList>();
-
-                    new_literal->array->prev = active_literals;
-                    active_literals = new_literal->array;
+                    property = property->inner;
                 }
                 break;
 
-                case Config_TokenType_ArrayEnd:
+                case Config_TokenType_InnerPropertyEnd:
                 {
-                    APORIA_ASSERT(active_literals->prev != nullptr);
+                    APORIA_ASSERT(property->outer != nullptr);
 
-                    // Flatten the array, if it only has one element.
-                    if (active_literals->node_count == 1)
-                    {
-                        APORIA_ASSERT(active_literals->prev->last->array == active_literals);
-                        *active_literals->prev->last = *active_literals->first;
-                    }
-
-                    active_literals = active_literals->prev;
-                    active_literals->next = nullptr;
+                    property = property->outer;
                 }
                 break;
             }
 
-            // If in process of adding literals, let's check if we should stop and submit.
-            if (property.literals.node_count > 0)
-            {
-                constexpr u8 tokens_allowed_in_literals = Config_TokenType_Comment | Config_TokenType_Literal | Config_TokenType_ArrayBegin | Config_TokenType_ArrayEnd;
-
-                // If there is no more literals, submit the property and clear the list of literals.
-                if (!token_node->next || !(token_node->next->token.type & tokens_allowed_in_literals))
-                {
-                    APORIA_ASSERT(active_literals == &property.literals);
-
-                    // Remove an outer array, if needed.
-                    if (property.literals.node_count == 1 && property.literals.first->array != nullptr)
-                    {
-                        property.literals = *property.literals.first->array;
-                    }
-
-                    PRINT_PROPERTY(arena, property);
-
-                    property_list.push_node(arena, property);
-
-                    property.literals.clear();
-                }
-
-            }
+            token_node = token_node->next;
         }
 
-        APORIA_LOG(Debug, "Parsing completed! Processed {} properties!", property_list.node_count);
+        APORIA_ASSERT(property != nullptr && property->outer == nullptr);
+        APORIA_LOG(Debug, "Parsing completed! Processed {} properties!", total_property_count);
 
-        return property_list;
+        return result;
     }
 
     enum Config_ValueType
@@ -541,10 +421,10 @@ namespace Aporia
 
 #define PROPERTY_HELPER(T, string_to_type) do { \
         T* property_data = (T*)property_definition.data; \
-        Config_LiteralsNode* literal_node = literals.first; \
+        StringNode* literal_node = property->literals.first; \
         for (u64 value_idx = 0; value_idx < property_definition.value_count; ++value_idx) \
         { \
-            property_data[value_idx] = string_to_type(literal_node->literal); \
+            property_data[value_idx] = string_to_type(literal_node->string); \
             literal_node = literal_node->next; \
         } \
     } while(0)
@@ -552,31 +432,28 @@ namespace Aporia
     bool load_engine_config(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
-        Config_PropertyList parsed_config = parse_config_from_file(temp.arena, filepath);
+        Config_Property* parsed_config = parse_config_from_file(temp.arena, filepath);
 
-        if (parsed_config.node_count == 0)
+        if (!parsed_config)
         {
             rollback_scratch_arena(temp);
             return false;
         }
 
-        for (Config_PropertyNode* property_node = parsed_config.first; property_node; property_node = property_node->next)
+        for (Config_Property* property = parsed_config; property; property = property->next)
         {
-            String category = property_node->property.category;
-            String field = property_node->property.field;
-            Config_LiteralsList literals = property_node->property.literals;
-
             // Applying properties
             // @TODO(dubgron): The big-O notation of this solution is not great. Use a hash map to improve it.
             for (u64 idx = 0; idx < defined_properties_count; ++idx)
             {
                 const Config_PropertyDefinition& property_definition = defined_properties[idx];
-                if (property_definition.category == category && property_definition.field == field)
+                if (property_definition.category == property->category && property_definition.field == property->field)
                 {
-                    if (literals.node_count != property_definition.value_count)
+                    if (property->literals.node_count != property_definition.value_count)
                     {
                         // @TODO(dubgron): Better logging.
-                        APORIA_LOG(Error, "Property {}.{} has a literal count mismatch (expected: {}, received: {})!", category, field, property_definition.value_count, literals.node_count);
+                        APORIA_LOG(Error, "Property {}.{} has a literal count mismatch (expected: {}, received: {})!",
+                            property->category, property->field, property_definition.value_count, property->literals.node_count);
                         continue;
                     }
 
