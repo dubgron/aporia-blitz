@@ -1,6 +1,6 @@
 #include "aporia_animation.hpp"
 
-#include <aporia_config.hpp>
+#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
