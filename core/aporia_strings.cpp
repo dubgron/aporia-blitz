@@ -255,24 +255,38 @@ namespace Aporia
 
     f32 string_to_float(String string)
     {
+        f32 result = 0.f;
+
         ScratchArena temp = create_scratch_arena(&persistent_arena);
-        StringList split_number = string.split(temp.arena, '.');
-
-        String integral_part = split_number.first->string;
-        f32 result = string_to_int(integral_part);
-
-        if (split_number.node_count == 2)
         {
-            String fractional_part = split_number.last->string;
+            StringList split_number = string.split(temp.arena, '.');
 
-            f32 running_10s = 0.1f;
-            for (u64 idx = 0; idx < fractional_part.length; ++idx)
+            if (split_number.node_count == 2)
             {
-                u8 digit = fractional_part.data[idx] - '0';
-                result += digit * running_10s;
-                running_10s /= 10.f;
+                String fractional_part = split_number.last->string;
+
+                f32 running_10s = 0.1f;
+                for (u64 idx = 0; idx < fractional_part.length; ++idx)
+                {
+                    u8 digit = fractional_part.data[idx] - '0';
+                    result += digit * running_10s;
+                    running_10s /= 10.f;
+                }
+            }
+
+            String integral_part = split_number.first->string;
+            i64 result_int = string_to_int(integral_part);
+
+            if (result_int != 0)
+            {
+                result += (f32)result_int;
+            }
+            else if (integral_part.data[0] == '-')
+            {
+                result = -result;
             }
         }
+        rollback_scratch_arena(temp);
 
         return result;
     }
