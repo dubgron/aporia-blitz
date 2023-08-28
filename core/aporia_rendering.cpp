@@ -936,7 +936,6 @@ namespace Aporia
         const Font& font = *text.font;
 
         const v2 texture_size           = v2{ font.atlas.source.width, font.atlas.source.height };
-        const v2 half_pixel_offset      = 0.5f / texture_size;
 
         // Adjust text scaling by the predefined atlas font size
         const f32 effective_font_size   = text.font_size / font.atlas.font_size;
@@ -1062,13 +1061,13 @@ namespace Aporia
                 const GlyphBounds& atlas_bounds = glyph.atlas_bounds;
                 const GlyphBounds& plane_bounds = glyph.plane_bounds;
 
-                const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.bottom } / texture_size + half_pixel_offset;
-                const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.top } / texture_size - half_pixel_offset;
+                const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
+                const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
 
                 const f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
-                const f32 height        = (atlas_bounds.top - atlas_bounds.bottom) * effective_font_size;
+                const f32 height        = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
 
-                // @NOTE(dubgron): We switch the sign of plane_bounds.bottom because
+                // @NOTE(dubgron): We flpi the sign of plane_bounds.bottom because
                 // the plane_bounds lives in a space where the y-axis goes downwards.
                 const v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
                 const v2 align_offset   = v2{ line_alignments[current_line], 0.f };
