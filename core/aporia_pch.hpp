@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <random>
 #include <string_view>
 #include <unordered_map>
@@ -17,8 +18,6 @@
 
 // Third-Party Libraries
 #include <spdlog/spdlog.h>
-
-#include <nlohmann/json.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>

@@ -6,7 +6,6 @@ option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
 
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
-find_package(nlohmann_json REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(stb REQUIRED)
 
@@ -71,7 +70,6 @@ target_link_libraries(core
     glfw
     glm
     imgui
-    nlohmann_json
     spdlog
     stb)
 
