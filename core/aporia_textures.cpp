@@ -45,7 +45,7 @@ namespace Aporia
 
     void load_texture_atlas(String filepath)
     {
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = create_scratch_arena(&frame_arena);
         Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
         String atlas_filepath;
