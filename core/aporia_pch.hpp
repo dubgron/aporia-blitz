@@ -1,8 +1,11 @@
 #pragma once
 
 // Standard Library
+#include <array>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
+#include <ctime>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -10,15 +13,8 @@
 #include <string_view>
 #include <unordered_map>
 
-#if defined(__cpp_lib_format)
-    #include <format>
-#else
-    #include <ctime>
-#endif
 
 // Third-Party Libraries
-#include <spdlog/spdlog.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -31,5 +27,15 @@
     #include <emscripten.h>
 #endif
 
+
 // Platform
 #include "platform/aporia_opengl.hpp"
+
+#if defined(APORIA_WINDOWS)
+    #include <windows.h>
+#elif defined(APORIA_UNIX)
+    #include <dlfcn.h>
+    #include <sys/time.h>
+#else
+    #error OS not supported!
+#endif

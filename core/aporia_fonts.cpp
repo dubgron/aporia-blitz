@@ -19,7 +19,7 @@ namespace Aporia
 
         if (fonts.contains(name))
         {
-            APORIA_LOG(Warning, "Already loaded font named '{}'!", name);
+            APORIA_LOG(Warning, "Already loaded font named '%'!", name);
             rollback_scratch_arena(temp);
             return;
         }
@@ -189,7 +189,7 @@ namespace Aporia
     const Font& get_font(String name)
     {
         APORIA_ASSERT_WITH_MESSAGE(fonts.contains(name),
-            "Failed to find font '{}'!", name);
+            "Failed to find font '%'!", name);
 
         return fonts.find(name)->second;
     }

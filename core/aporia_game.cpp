@@ -77,7 +77,7 @@ namespace Aporia
             frame_arena.alloc(KILOBYTES(10));
             config_arena.alloc(KILOBYTES(10));
 
-            logging_init("aporia");
+            logging_init(&persistent_arena, "aporia");
 
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
@@ -119,6 +119,12 @@ namespace Aporia
             rendering_deinit();
 
             destroy_active_window();
+
+            logging_deinit();
+
+            persistent_arena.dealloc();
+            frame_arena.dealloc();
+            config_arena.dealloc();
         }
     }
 }

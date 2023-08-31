@@ -126,7 +126,7 @@ namespace Aporia
 
         if (animator.requested_animation == nullptr)
         {
-            APORIA_LOG(Error, "Failed to find animation '{}'!", animation_name);
+            APORIA_LOG(Error, "Failed to find animation '%'!", animation_name);
         }
     }
 }

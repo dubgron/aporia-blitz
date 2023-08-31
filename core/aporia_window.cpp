@@ -86,7 +86,7 @@ namespace Aporia
 
         glfwSetErrorCallback([](i32 error, const char* description)
         {
-            APORIA_LOG(Error, "GLFW Error #{}: {}", error, description);
+            APORIA_LOG(Error, "GLFW Error #%: %", error, description);
         });
 
         if (!glfwInit())

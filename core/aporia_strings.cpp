@@ -1,5 +1,8 @@
 #include "aporia_strings.hpp"
 
+#define STB_SPRINTF_IMPLEMENTATION
+#include <stb_sprintf.h>
+
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 #include "aporia_utils.hpp"
@@ -191,12 +194,17 @@ namespace Aporia
         return *this == String{ other };
     }
 
-    const char* String::operator*() const
+    const char* String::cstring(MemoryArena* arena) const
     {
-        String result = push_string(&frame_arena, length + 1);
+        String result = push_string(arena, length + 1);
         memcpy(result.data, data, length * sizeof(u8));
         result.data[length] = '\0';
         return reinterpret_cast<const char*>(result.data);
+    }
+
+    const char* String::operator*() const
+    {
+        return cstring(&frame_arena);
     }
 
     String push_string(MemoryArena* arena, String string)
@@ -444,5 +452,147 @@ namespace Aporia
 
         APORIA_ASSERT(joined_length == offset);
         return result;
+    }
+
+    template<typename... Ts>
+    static String sprintf_cstyle(MemoryArena* arena, String format, Ts&&... args)
+    {
+        char log_buffer[1024];
+        stbsp_sprintf(log_buffer, *format, std::forward<Ts>(args)...);
+        return push_string(arena, log_buffer);
+    }
+
+    String to_string(MemoryArena* arena, i64 value)
+    {
+        return sprintf_cstyle(arena, "%lld", value);
+    }
+
+    String to_string(MemoryArena* arena, i32 value)
+    {
+        return sprintf_cstyle(arena, "%d", value);
+    }
+
+    String to_string(MemoryArena* arena, i16 value)
+    {
+        return sprintf_cstyle(arena, "%hd", value);
+    }
+
+    String to_string(MemoryArena* arena, i8 value)
+    {
+        return sprintf_cstyle(arena, "%c", value);
+    }
+
+    String to_string(MemoryArena* arena, u64 value)
+    {
+        return sprintf_cstyle(arena, "%llu", value);
+    }
+
+    String to_string(MemoryArena* arena, u32 value)
+    {
+        return sprintf_cstyle(arena, "%u", value);
+    }
+
+    String to_string(MemoryArena* arena, u16 value)
+    {
+        return sprintf_cstyle(arena, "%hu", value);
+    }
+
+    String to_string(MemoryArena* arena, u8 value)
+    {
+        return sprintf_cstyle(arena, "%c", value);
+    }
+
+    String to_string(MemoryArena* arena, f64 value)
+    {
+        return sprintf_cstyle(arena, "%f", value);
+    }
+
+    String to_string(MemoryArena* arena, f32 value)
+    {
+        return sprintf_cstyle(arena, "%f", value);
+    }
+
+    String to_string(MemoryArena* arena, const v4& value)
+    {
+        return sprintf_cstyle(arena, "(%f, %f, %f, %f)", value.x, value.y, value.z, value.w);
+    }
+
+    String to_string(MemoryArena* arena, const v3& value)
+    {
+        return sprintf_cstyle(arena, "(%f, %f, %f)", value.x, value.y, value.z);
+    }
+
+    String to_string(MemoryArena* arena, const v2& value)
+    {
+        return sprintf_cstyle(arena, "(%f, %f)", value.x, value.y);
+    }
+
+    String to_string(MemoryArena* arena, const v4_i32& value)
+    {
+        return sprintf_cstyle(arena, "(%d, %d, %d, %d)", value.x, value.y, value.z, value.w);
+    }
+
+    String to_string(MemoryArena* arena, const v3_i32& value)
+    {
+        return sprintf_cstyle(arena, "(%d, %d, %d)", value.x, value.y, value.z);
+    }
+
+    String to_string(MemoryArena* arena, const v2_i32& value)
+    {
+        return sprintf_cstyle(arena, "(%d, %d)", value.x, value.y);
+    }
+
+    String to_string(MemoryArena* arena, const v4_u32& value)
+    {
+        return sprintf_cstyle(arena, "(%u, %u, %u, %u)", value.x, value.y, value.z, value.w);
+    }
+
+    String to_string(MemoryArena* arena, const v3_u32& value)
+    {
+        return sprintf_cstyle(arena, "(%u, %u, %u)", value.x, value.y, value.z);
+    }
+
+    String to_string(MemoryArena* arena, const v2_u32& value)
+    {
+        return sprintf_cstyle(arena, "(%u, %u)", value.x, value.y);
+    }
+
+    String to_string(MemoryArena* arena, const m4& value)
+    {
+        return sprintf_cstyle(arena, "( (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f), (%f, %f, %f, %f) )",
+            value[0][0], value[0][1], value[0][2], value[0][3],
+            value[1][0], value[1][1], value[1][2], value[1][3],
+            value[2][0], value[2][1], value[2][2], value[2][3],
+            value[3][0], value[3][1], value[3][2], value[3][3]);
+    }
+
+    String to_string(MemoryArena* arena, const m3& value)
+    {
+        return sprintf_cstyle(arena, "( (%f, %f, %f), (%f, %f, %f), (%f, %f, %f) )",
+            value[0][0], value[0][1], value[0][2],
+            value[1][0], value[1][1], value[1][2],
+            value[2][0], value[2][1], value[2][2]);
+    }
+
+    String to_string(MemoryArena* arena, const m2& value)
+    {
+        return sprintf_cstyle(arena, "( (%f, %f), (%f, %f) )",
+            value[0][0], value[0][1],
+            value[1][0], value[1][1]);
+    }
+
+    String to_string(MemoryArena* arena, bool value)
+    {
+        return push_string(arena, value ? "true" : "false");
+    }
+
+    String to_string(MemoryArena* arena, String value)
+    {
+        return value;
+    }
+
+    String to_string(MemoryArena* arena, const char* value)
+    {
+        return push_string(arena, value);
     }
 }

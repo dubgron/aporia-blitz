@@ -1,7 +1,5 @@
 #include "aporia_os.hpp"
 
-#include <windows.h>
-
 #include "aporia_game.hpp"
 
 namespace Aporia

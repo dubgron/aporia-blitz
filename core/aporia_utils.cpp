@@ -1,8 +1,5 @@
 #include "aporia_utils.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 
@@ -14,11 +11,11 @@ namespace Aporia
 
         if (file == nullptr)
         {
-            APORIA_LOG(Error, "Failed to open file '{}'!", filepath);
+            APORIA_LOG(Error, "Failed to open file '%'!", filepath);
             return String{};
         }
 
-        APORIA_LOG(Info, "Opened file '{}' successfully!", filepath);
+        APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
         fseek(file, 0, SEEK_END);
 
         u64 length = ftell(file);

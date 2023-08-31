@@ -357,7 +357,7 @@ namespace Aporia
     void Framebuffer::create(i32 width, i32 height)
     {
         APORIA_ASSERT_WITH_MESSAGE(width > 0 && height > 0,
-            "Invalid framebuffer dimensions! Width: {}, Height: {}", width, height);
+            "Invalid framebuffer dimensions! Width: %, Height: %", width, height);
 
         // Delete potential previous buffers and textures
         destroy();

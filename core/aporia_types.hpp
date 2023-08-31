@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include <glm/glm.hpp>
 
 using i8 = int8_t;

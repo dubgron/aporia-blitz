@@ -39,10 +39,11 @@ namespace Aporia
     {
         const u64 space_left = max - pos;
         APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= space_left,
-            "Can't allocate {} B! Pos: {} B, Max: {} B, Left: {} B", size, pos, max, space_left);
+            "Can't allocate % B! Pos: % B, Max: % B, Left: % B", size, pos, max, space_left);
 
         const u64 result = PTR_TO_INT(memory) + pos;
         pos = next_aligned(pos + size, align);
+
         return INT_TO_PTR(result);
     }
 

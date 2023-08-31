@@ -253,7 +253,7 @@ namespace Aporia
                 }
 
                 ScratchArena temp = create_scratch_arena(arena);
-                APORIA_LOG(Error, "Syntax error at line: {}, column: {}. Expected token type: {}, but got: >>> {} <<<!",
+                APORIA_LOG(Error, "Syntax error at line: %, column: %. Expected token type: %, but got: >>> % <<<!",
                     line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
                 rollback_scratch_arena(temp);
 
@@ -261,7 +261,7 @@ namespace Aporia
             }
 
             ScratchArena temp = create_scratch_arena(arena);
-            APORIA_LOG(Verbose, "Type: {:12} Token: '{}'", token_type_flag_to_string(temp.arena, token.type), token.text);
+            APORIA_LOG(Verbose, "Type: % Token: '%'", token_type_flag_to_string(temp.arena, token.type), token.text);
             rollback_scratch_arena(temp);
 
             token_list.push_node(arena, token);
@@ -270,7 +270,7 @@ namespace Aporia
             consume_whitespace(&buffer);
         }
 
-        APORIA_LOG(Debug, "Tokenization completed! Processed {} tokens!", token_list.node_count);
+        APORIA_LOG(Debug, "Tokenization completed! Processed % tokens!", token_list.node_count);
 
         // Parsing
         Config_Property* result = arena->push_zero<Config_Property>();
@@ -349,7 +349,7 @@ namespace Aporia
         }
 
         APORIA_ASSERT(property != nullptr && property->outer == nullptr);
-        APORIA_LOG(Debug, "Parsing completed! Processed {} properties!", total_property_count);
+        APORIA_LOG(Debug, "Parsing completed! Processed % properties!", total_property_count);
 
         return result;
     }
@@ -452,7 +452,7 @@ namespace Aporia
                     if (property->literals.node_count != property_definition.value_count)
                     {
                         // @TODO(dubgron): Better logging.
-                        APORIA_LOG(Error, "Property {}.{} has a literal count mismatch (expected: {}, received: {})!",
+                        APORIA_LOG(Error, "Property %.% has a literal count mismatch (expected: %, received: %)!",
                             property->category, property->field, property_definition.value_count, property->literals.node_count);
                         continue;
                     }

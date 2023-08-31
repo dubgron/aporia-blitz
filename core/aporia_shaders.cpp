@@ -28,7 +28,7 @@ namespace Aporia
         if (type == "fragment")     return SubShaderType::Fragment;
         if (type == "vertex")       return SubShaderType::Vertex;
 
-        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '{}', len: {}.", type, type.length);
+        APORIA_LOG(Critical, "Wrong Shader Type! Expected 'fragment' or 'vertex'. Got '%', len: %.", type, type.length);
         APORIA_UNREACHABLE();
         return SubShaderType::Invalid;
     }
@@ -66,7 +66,7 @@ namespace Aporia
         if (blend == "src_1_alpha")                return ShaderBlend::Src1Alpha;
         if (blend == "one_minus_src_1_alpha")      return ShaderBlend::OneMinusSrc1Alpha;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '{}', len: {}.", blend, blend.length);
+        APORIA_LOG(Critical, "Wrong Shader Blend! Expected 'off', 'zero', 'one', 'src_color', 'one_minus_src_color', 'dst_color', 'one_minus_dst_color', 'src_alpha', 'one_minus_src_alpha', 'dst_alpha', 'one_minus_dst_alpha', 'constant_color', 'one_minus_constant_alpha', 'constant_alpha', 'one_minus_constant_alpha', 'src_alpha_saturate', 'src_1_color', 'one_minus_src_1_color', 'src_1_alpha' or 'one_minus_src_1_alpha'. Got '%', len: %.", blend, blend.length);
         APORIA_UNREACHABLE();
         return ShaderBlend::Default;
     }
@@ -108,7 +108,7 @@ namespace Aporia
         if (blend_op == "min")      return ShaderBlendOp::Min;
         if (blend_op == "max")      return ShaderBlendOp::Max;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '{}', len: {}.", blend_op, blend_op.length);
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'add', 'sub', 'rev_sub', 'min' or 'max'. Got '%', len: %.", blend_op, blend_op.length);
         APORIA_UNREACHABLE();
         return ShaderBlendOp::Default;
     }
@@ -138,7 +138,7 @@ namespace Aporia
         if (depth_test == "equal")     return ShaderDepthTest::Equal;
         if (depth_test == "notequal")  return ShaderDepthTest::NotEqual;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '{}', len: {}.", depth_test, depth_test.length);
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'off', 'always', 'never', 'less', 'lequal', 'greater', 'gequal', 'equal' or 'notequal'. Got '%', len: %.", depth_test, depth_test.length);
         APORIA_UNREACHABLE();
         return ShaderDepthTest::Default;
     }
@@ -164,7 +164,7 @@ namespace Aporia
         if (depth_write == "on")   return ShaderDepthWrite::On;
         if (depth_write == "off")  return ShaderDepthWrite::Off;
 
-        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '{}', len: {}.", depth_write, depth_write.length);
+        APORIA_LOG(Critical, "Wrong Shader Blend Operation! Expected 'on' or 'off'. Got '%', len: %.", depth_write, depth_write.length);
         APORIA_UNREACHABLE();
         return ShaderDepthWrite::Default;
     }
@@ -221,7 +221,7 @@ namespace Aporia
     static void apply_shader_properties(u32 shader_id)
     {
         APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
-            "Shader (with ID: {}) is not valid!", shader_id);
+            "Shader (with ID: %) is not valid!", shader_id);
 
         const ShaderProperties& properties = shaders[shader_id].properties;
 
@@ -262,7 +262,7 @@ namespace Aporia
             location = glGetUniformLocation(active_shader_id, *name);
             if (location == -1)
             {
-                APORIA_LOG(Error, "'{}' does not correspond to an active uniform variable in shader {}!", name, active_shader_id);
+                APORIA_LOG(Error, "'%' does not correspond to an active uniform variable in shader %!", name, active_shader_id);
             }
             else
             {
@@ -371,7 +371,7 @@ namespace Aporia
 
         if (compiled_subshaders_count < shader_data.subshaders_count)
         {
-            APORIA_LOG(Error, "Failed to compile all subshaders of shader '{}'! Compiled: {}, Requested: {}. Creating shaders aborted!", filepath, compiled_subshaders_count, subshaders_count);
+            APORIA_LOG(Error, "Failed to compile all subshaders of shader '%'! Compiled: %, Requested: %. Creating shaders aborted!", filepath, compiled_subshaders_count, subshaders_count);
             return 0;
         }
 
@@ -435,7 +435,7 @@ namespace Aporia
     void remove_shader(u32 shader_id)
     {
         APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
-            "Shader (with ID: {}) is not valid!", shader_id);
+            "Shader (with ID: %) is not valid!", shader_id);
 
         glDeleteProgram(shader_id);
         shaders[shader_id].shader_id = 0;
@@ -453,7 +453,7 @@ namespace Aporia
     void reload_shader(u32 shader_id)
     {
         APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
-            "Shader (with ID: {}) is not valid!", shader_id);
+            "Shader (with ID: %) is not valid!", shader_id);
 
         const String shader_source = shaders[shader_id].source;
 

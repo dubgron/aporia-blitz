@@ -14,7 +14,7 @@ namespace Aporia
         // @TODO(dubgron): The count of the world arena should be more planned out.
         const u64 world_arena_size = 2 * max_entities * (sizeof(Entity) + sizeof(EntityNode));
         world_arena.alloc(world_arena_size);
-        APORIA_LOG(Info, "World has allocated {} B of memory.", world_arena_size);
+        APORIA_LOG(Info, "World has allocated % B of memory.", world_arena_size);
 
         entity_array = world_arena.push_zero<Entity>(max_entities);
         entity_list = world_arena.push_zero<EntityNode>(max_entities);
@@ -63,16 +63,16 @@ namespace Aporia
         const u64 generation = entity_id.generation;
 
         APORIA_ASSERT_WITH_MESSAGE(index < max_entities && generation > 0,
-            "Invalid Entity ID (index: {}, generation: {})!", index, generation);
+            "Invalid Entity ID (index: %, generation: %)!", index, generation);
 
         EntityNode* entity_node = &entity_list[index];
 
         APORIA_ASSERT_WITH_MESSAGE(entity_node->generation == generation,
-            "Generation mismatch! Tried to remove Entity with ID (index: {}, generation: {}), but only found ID (index: {}, generation: {})!",
+            "Generation mismatch! Tried to remove Entity with ID (index: %, generation: %), but only found ID (index: %, generation: %)!",
             index, generation, index, entity_node->generation);
 
         APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
-            "Entity with ID (index: {}, generation: {}) is null!", index, generation);
+            "Entity with ID (index: %, generation: %) is null!", index, generation);
 
         // Swap the removed entity with the end of the entity array and redirect its node.
         const Entity* last_entity = &entity_array[entity_count - 1];
@@ -108,7 +108,7 @@ namespace Aporia
         const u64 generation = entity_id.generation;
 
         APORIA_ASSERT_WITH_MESSAGE(index < max_entities && generation > 0,
-            "Invalid EntityID (index: {}, generation: {})!", index, generation);
+            "Invalid EntityID (index: %, generation: %)!", index, generation);
 
         const EntityNode* entity_node = &entity_list[index];
         if (entity_node->generation != generation)

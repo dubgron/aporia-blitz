@@ -1,10 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <string_view>
-
-#include <spdlog/logger.h>
-
+#include "aporia_game.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
@@ -13,7 +9,7 @@
     #define APORIA_LOG(lvl, fmt, ...)                   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
 
     #define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...)  do { if (!(expr)) { APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); } } while(0)
-    #define APORIA_ASSERT(expr)                         APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '{}' failed!", #expr)
+    #define APORIA_ASSERT(expr)                         APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '%' failed!", #expr)
     #define APORIA_UNREACHABLE()                        APORIA_ASSERT_WITH_MESSAGE(false, "Unreachable!")
 
     #if defined(__has_builtin) && !defined(__ibmxl__)
@@ -78,22 +74,29 @@ namespace Aporia
 {
     enum LogLevel
     {
-        Verbose     = spdlog::level::trace,
-        Debug       = spdlog::level::debug,
-        Info        = spdlog::level::info,
-        Warning     = spdlog::level::warn,
-        Error       = spdlog::level::err,
-        Critical    = spdlog::level::critical,
-        Off         = spdlog::level::off
+        Verbose,
+        Debug,
+        Info,
+        Warning,
+        Error,
+        Critical,
+        Off,
     };
 
-    void logging_init(String name);
+    void logging_init(MemoryArena* arena, String name);
+    void logging_deinit();
 
-    template<typename... Args>
-    static void log(const char* file, i32 line, const char* func, LogLevel lvl, std::string_view fmt, Args&&... args)
+    void log(String file, i32 line, String function, LogLevel level, String message);
+
+    template<typename... Ts>
+    static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
     {
-        extern std::shared_ptr<spdlog::logger> logger;
-        logger->log(spdlog::source_loc{ file, line, func }, static_cast<spdlog::level::level_enum>(lvl), fmt, std::forward<Args>(args)...);
+        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        {
+            String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
+            log(file, line, function, level, formatted_message);
+        }
+        rollback_scratch_arena(temp);
     }
 
     void imgui_init();

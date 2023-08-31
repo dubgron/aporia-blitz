@@ -16,7 +16,7 @@ namespace Aporia
     {
         if (pixels)
         {
-            APORIA_LOG(Info, "Image '{}' has already been loaded! Unloading first!", filepath);
+            APORIA_LOG(Info, "Image '%' has already been loaded! Unloading first!", filepath);
             unload();
         }
 
@@ -24,11 +24,11 @@ namespace Aporia
 
         if (pixels)
         {
-            APORIA_LOG(Info, "Image '{}' loaded successfully!", filepath);
+            APORIA_LOG(Info, "Image '%' loaded successfully!", filepath);
         }
         else
         {
-            APORIA_LOG(Info, "Failed to load image '{}'!", filepath);
+            APORIA_LOG(Info, "Failed to load image '%'!", filepath);
         }
     }
 
@@ -113,7 +113,7 @@ namespace Aporia
             String name = push_string(&persistent_arena, property->field);
             if (textures.contains(name))
             {
-                APORIA_LOG(Warning, "There are two textures named '{}'! One of them will be overwritten!", name);
+                APORIA_LOG(Warning, "There are two textures named '%'! One of them will be overwritten!", name);
             }
 
             const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
@@ -122,7 +122,7 @@ namespace Aporia
             textures.try_emplace(name, SubTexture{ u, v, atlas_texture });
         }
 
-        APORIA_LOG(Info, "All textures from '{}' loaded successfully", filepath);
+        APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
 
         atlas_image.unload();
     }
@@ -130,7 +130,7 @@ namespace Aporia
     const SubTexture* get_subtexture(String name)
     {
         APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
-            "Failed to find sub texture '{}'!", name);
+            "Failed to find sub texture '%'!", name);
 
         return &textures.find(name)->second;
     }
