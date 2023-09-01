@@ -47,7 +47,7 @@
 #define BG_BRIGHT_GRAY      107
 
 #define STRINGIFY(x) #x
-#define CONSOLE_STYLIZE(text, style) "\033[" STRINGIFY(style) "m" text "\033[0m"
+#define CONSOLE_STYLIZED_FORMAT(style) "\033[" STRINGIFY(style) "m" "%" "\033[0m"
 
 static i64 get_milliseconds()
 {
@@ -86,12 +86,13 @@ namespace Aporia
         return buffer.length + string.length > buffer.max_length;
     }
 
-    static void buffer_append(LogBuffer& buffer, String string)
+    static void buffer_add_line(LogBuffer& buffer, String string)
     {
         APORIA_ASSERT(!will_buffer_overflow_after_append(buffer, string));
 
         memcpy(buffer.data + buffer.length, string.data, string.length);
-        buffer.length += string.length;
+        buffer.data[buffer.length + string.length] = '\n';
+        buffer.length += string.length + 1;
     }
 
     static void buffer_clear(LogBuffer& buffer)
@@ -136,21 +137,6 @@ namespace Aporia
         return result;
     }
 
-    static String to_string_stylized(LogLevel level)
-    {
-        switch (level)
-        {
-            case Verbose:   return CONSOLE_STYLIZE("Verbose",   FG_BRIGHT_BLACK);
-            case Debug:     return CONSOLE_STYLIZE("Debug",     FG_CYAN);
-            case Info:      return CONSOLE_STYLIZE("Info",      FG_GREEN);
-            case Warning:   return CONSOLE_STYLIZE("Warning",   FG_BRIGHT_YELLOW);
-            case Error:     return CONSOLE_STYLIZE("Error",     FG_RED);
-            case Critical:  return CONSOLE_STYLIZE("Critical",  BG_RED);
-
-            default: APORIA_UNREACHABLE(); return String{};
-        }
-    }
-
     static String to_string(LogLevel level)
     {
         switch (level)
@@ -163,6 +149,21 @@ namespace Aporia
             case Critical:  return "Critical";
 
             default: APORIA_UNREACHABLE(); return String{};
+        }
+    }
+
+    static String log_level_color_format(LogLevel level)
+    {
+        switch (level)
+        {
+            case Verbose:   return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_BLACK);
+            case Debug:     return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_BLUE);
+            case Info:      return CONSOLE_STYLIZED_FORMAT(FG_RESET);
+            case Warning:   return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_YELLOW);
+            case Error:     return CONSOLE_STYLIZED_FORMAT(FG_RED);
+            case Critical:  return CONSOLE_STYLIZED_FORMAT(BG_RED);
+
+            default: APORIA_UNREACHABLE(); return "%";
         }
     }
 
@@ -243,19 +244,22 @@ namespace Aporia
 
         ScratchArena temp = create_scratch_arena(&persistent_arena);
         {
-            String current_timestamp = format_timestamp(temp.arena, "%Y-%m-%d %H:%M:%S.%%");
+            String current_timestamp = format_timestamp(temp.arena, "%H:%M:%S.%%");
+            String filename = extract_filename(file);
+
+            String formatted_message = sprintf(temp.arena, "[%] (%@%:%) %: %",
+                current_timestamp, filename, function, line, to_string(level), message);
 
             // Log to console
             {
-                String formatted_message = sprintf(temp.arena, "[%] [%] [%] (%:%@%) : %\n",
-                    current_timestamp, log_name, to_string_stylized(level), file, function, line, message);
+                String console_message = sprintf(temp.arena, log_level_color_format(level), formatted_message);
 
-                if (will_buffer_overflow_after_append(console_buffer, formatted_message))
+                if (will_buffer_overflow_after_append(console_buffer, console_message))
                 {
                     flush_logs_to_console();
                 }
 
-                buffer_append(console_buffer, formatted_message);
+                buffer_add_line(console_buffer, console_message);
 
                 if (level >= flush_to_console_level)
                 {
@@ -265,15 +269,12 @@ namespace Aporia
 
             // Log to file
             {
-                String formatted_message = sprintf(temp.arena, "[%] [%] [%] (%:%@%) : %\n",
-                    current_timestamp, log_name, to_string(level), file, function, line, message);
-
                 if (will_buffer_overflow_after_append(file_buffer, formatted_message))
                 {
                     flush_logs_to_file();
                 }
 
-                buffer_append(file_buffer, formatted_message);
+                buffer_add_line(file_buffer, formatted_message);
 
                 if (level >= flush_to_file_level)
                 {

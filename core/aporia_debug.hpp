@@ -88,6 +88,12 @@ namespace Aporia
 
     void log(String file, i32 line, String function, LogLevel level, String message);
 
+    template<typename T>
+    static void log(String file, i32 line, String function, LogLevel level, T&& arg)
+    {
+        log(file, line, function, level, "%", std::forward<T>(arg));
+    }
+
     template<typename... Ts>
     static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
     {

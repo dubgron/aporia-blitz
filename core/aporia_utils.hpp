@@ -11,6 +11,7 @@ namespace Aporia
 {
     String read_file(MemoryArena* arena, String filepath);
     String replace_extension(MemoryArena* arena, String filepath, String ext);
+    String extract_filename(String filepath);
 
     struct Color
     {

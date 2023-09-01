@@ -63,11 +63,6 @@ namespace Aporia
         return result;
     }
 
-    String String::append_front(MemoryArena* arena, String other) const
-    {
-        return other.append(arena, *this);
-    }
-
     StringList String::split(MemoryArena* arena, u8 delim) const
     {
         StringList result;
@@ -102,8 +97,6 @@ namespace Aporia
             return INVALID_INDEX;
         }
 
-        APORIA_ASSERT(data);
-
         for (u64 off = offset; off < length; ++off)
         {
             if (data[off] == character)
@@ -117,7 +110,7 @@ namespace Aporia
 
     u64 String::find(String other, u64 offset /* = 0 */) const
     {
-        if (other.length + offset >= length)
+        if (other.length + offset > length)
         {
             return INVALID_INDEX;
         }
@@ -147,17 +140,52 @@ namespace Aporia
             return INVALID_INDEX;
         }
 
-        u64 eol = INVALID_INDEX;
         for (u64 off = offset; off < length; ++off)
         {
             if (is_eol(data[off]))
             {
-                eol = off;
-                break;
+                return off;
             }
         }
 
-        return eol;
+        return INVALID_INDEX;
+    }
+
+    u64 String::rfind(u8 character, u64 offset /* = -1 */) const
+    {
+        offset = min(offset, length - 1);
+        for (i64 off = offset; off >= 0; --off)
+        {
+            if (data[off] == character)
+            {
+                return off;
+            }
+        }
+        return INVALID_INDEX;
+    }
+
+    u64 String::rfind(String other, u64 offset /* = -1 */) const
+    {
+        if (length < other.length || other.length == 0)
+        {
+            return INVALID_INDEX;
+        }
+
+        // There is no point in starting the search at offset greater than
+        // this.length - other.length as the other string would be longer
+        // than the substring between offset and this.length - 1.
+        offset = min(offset, length - other.length);
+
+        for (i64 off = offset; off >= 0; --off)
+        {
+            const String temp = substr(off, other.length);
+            if (temp == other)
+            {
+                return off;
+            }
+        }
+
+        return INVALID_INDEX;
     }
 
     bool String::contains(String other) const

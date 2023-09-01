@@ -23,13 +23,14 @@ namespace Aporia
         String trim_right() const;
 
         String append(MemoryArena* arena, String other) const;
-        String append_front(MemoryArena* arena, String other) const;
-
         StringList split(MemoryArena* arena, u8 delim) const;
 
         u64 find(u8 character, u64 offset = 0) const;
         u64 find(String other, u64 offset = 0) const;
         u64 find_eol(u64 offset = 0) const;
+
+        u64 rfind(u8 character, u64 offset = -1) const;
+        u64 rfind(String other, u64 offset = -1) const;
 
         bool contains(String other) const;
         bool starts_with(String other) const;

@@ -32,18 +32,32 @@ namespace Aporia
 
     String replace_extension(MemoryArena* arena, String filepath, String ext)
     {
-        // @NOTE(dubgron): Better approach to do this would be to implement String::rfind, and do something like so:
-        //      u64 last_fullstop = filepath.rfind('.');
-        //      String filename = filepath.substr(0, last_fullstop + 1);
-        //      String new_filepath = filepath.append(arena, ext);
-        StringList file_list = filepath.split(arena, '.');
-        if (file_list.node_count > 1)
-        {
-            file_list = file_list.pop_node();
-        }
-        file_list.push_node(arena, ext);
+        u64 last_fullstop = filepath.rfind('.');
+        filepath = filepath.substr(0, last_fullstop);
 
-        return file_list.join(arena, ".");
+        String result = push_string(arena, filepath.length + ext.length + 1);
+        memcpy(result.data, filepath.data, filepath.length);
+        result.data[filepath.length] = '.';
+        memcpy(result.data + filepath.length + 1, ext.data, ext.length);
+        return result;
+    }
+
+    String extract_filename(String filepath)
+    {
+        u64 last_slash = filepath.rfind('/');
+        if (last_slash == String::INVALID_INDEX)
+        {
+            last_slash = filepath.rfind('\\');
+        }
+
+        if (last_slash == String::INVALID_INDEX)
+        {
+            return filepath;
+        }
+        else
+        {
+            return filepath.substr(last_slash + 1);
+        }
     }
 
     const Color Color::Black       = Color{  0,   0,   0,  255 };
