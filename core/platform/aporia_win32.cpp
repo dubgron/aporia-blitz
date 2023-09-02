@@ -27,7 +27,7 @@ namespace Aporia
         return symbol;
     }
 
-    String get_library_error()
+    String get_last_error()
     {
         DWORD error_message_id = GetLastError();
         if (error_message_id == 0)
@@ -35,13 +35,12 @@ namespace Aporia
             return String{};
         }
 
-        String message_buffer = push_string(&frame_arena, 128);
+        char buff[256];
+        u64 size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, error_message_id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff, ARRAY_COUNT(buff), NULL);
 
-        size_t size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, error_message_id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&message_buffer.data, 0, NULL);
+        String message{ (u8*)buff, size };
 
-        message_buffer.length = size;
-
-        return message_buffer;
+        return push_string(&frame_arena, message);
     }
 }

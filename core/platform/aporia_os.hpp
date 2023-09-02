@@ -10,5 +10,5 @@ namespace Aporia
 
     void* load_symbol(void* library_handle, String symbol_name);
 
-    String get_library_error();
+    String get_last_error();
 }

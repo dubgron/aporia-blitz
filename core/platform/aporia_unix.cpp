@@ -23,11 +23,10 @@ namespace Aporia
 
     void* load_symbol(void* library_handle, String symbol_name)
     {
-        void* symbol = dlsym(library_handle, *symbol_name);
-        return symbol;
+        return dlsym(library_handle, *symbol_name);
     }
 
-    String get_library_error()
+    String get_last_error()
     {
         return dlerror();
     }
