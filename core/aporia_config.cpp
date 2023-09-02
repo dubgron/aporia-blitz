@@ -417,7 +417,7 @@ namespace Aporia
 
         { "editor", "display_editor_grid",    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
     };
-    static constexpr u64 defined_properties_count = sizeof(defined_properties) / sizeof(Config_PropertyDefinition);
+    static constexpr u64 defined_properties_count = ARRAY_COUNT(defined_properties);
 
 #define PROPERTY_HELPER(T, string_to_type) do { \
         T* property_data = (T*)property_definition.data; \

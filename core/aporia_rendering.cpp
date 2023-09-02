@@ -17,8 +17,6 @@
     #define DEBUG_TEXTURE(...)
 #endif
 
-#define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
-
 namespace Aporia
 {
 #if defined(APORIA_EMSCRIPTEN)
@@ -206,7 +204,6 @@ namespace Aporia
     {
         max_size = max_objects * in_count;
         vertex_count = in_count;
-
 
 #if defined(APORIA_EMSCRIPTEN)
         glGenBuffers(1, &id);

@@ -7,6 +7,8 @@
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
+#define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
+
 namespace Aporia
 {
     String read_file(MemoryArena* arena, String filepath);
