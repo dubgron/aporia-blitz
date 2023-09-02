@@ -11,4 +11,7 @@ namespace Aporia
     void* load_symbol(void* library_handle, String symbol_name);
 
     String get_last_error();
+
+    bool does_directory_exist(String path);
+    bool make_directory(String path);
 }

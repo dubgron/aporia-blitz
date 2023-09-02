@@ -43,4 +43,15 @@ namespace Aporia
 
         return push_string(&frame_arena, message);
     }
+
+    bool does_directory_exist(String path)
+    {
+        DWORD attrib = GetFileAttributes(*path);
+        return (attrib != INVALID_FILE_ATTRIBUTES) && (attrib & FILE_ATTRIBUTE_DIRECTORY);
+    }
+
+    bool make_directory(String path)
+    {
+        return CreateDirectory(*path, NULL);
+    }
 }

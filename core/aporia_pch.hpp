@@ -36,7 +36,9 @@
     #include <windows.h>
 #elif defined(APORIA_UNIX)
     #include <dlfcn.h>
+    #include <sys/stat.h>
     #include <sys/time.h>
+    #include <sys/types.h>
 #else
     #error OS not supported!
 #endif

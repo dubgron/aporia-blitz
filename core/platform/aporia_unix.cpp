@@ -30,4 +30,17 @@ namespace Aporia
     {
         return dlerror();
     }
+
+    bool does_directory_exist(String path)
+    {
+        struct stat st;
+        i32 return_code = stat(*path, &st);
+        return return_code != -1;
+    }
+
+    bool make_directory(String dir_path)
+    {
+        i32 return_code = mkdir(*dir_path, S_IREAD | S_IWRITE | S_IEXEC);
+        return return_code != -1;
+    }
 }

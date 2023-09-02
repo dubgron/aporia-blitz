@@ -5,6 +5,7 @@
 
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
+#include "platform/aporia_os.hpp"
 
 #define STYLE_RESET         0
 
@@ -198,6 +199,11 @@ namespace Aporia
 
     void logging_init(MemoryArena* arena, String name)
     {
+        if (!does_directory_exist("logs/"))
+        {
+            make_directory("logs/");
+        }
+
         log_name = push_string(arena, name);
         log_timestamp = format_timestamp(arena, "%Y-%m-%d_%H-%M-%S");
 
