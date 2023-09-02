@@ -3,14 +3,6 @@
 #include "aporia_memory.hpp"
 #include "aporia_world.hpp"
 
-// @TODO(dubgron): The list of irritating things:
-//
-// [x] Setting width and height of Entity with texture.
-// [x] Lack of is_any_key_pressed function.
-// [x] Can't draw centered text.
-// [ ] Can't hot-reload shaders, because they're copied from different directory.
-//
-
 namespace Aporia
 {
     typedef void game_init_t();

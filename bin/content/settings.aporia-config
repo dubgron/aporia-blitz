@@ -4,7 +4,7 @@
     title                   "Example Game"
     size                    1280 720
     vsync                   false
-    icon                    "assets/icon.png"
+    icon                    "content/icon.png"
 
 [camera]
     fov                     360

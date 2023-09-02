@@ -136,9 +136,7 @@ source_group(core               "core/.+\.[cht]pp")
 source_group(core/editor        "core/editor/.+\.[cht]pp")
 source_group(core/platform      "core/platform/.+\.[cht]pp")
 
-set_target_properties(core PROPERTIES
-    USE_FOLDERS     ON
-    OUTPUT_NAME     "aporia-blitz")
+set_target_properties(core PROPERTIES USE_FOLDERS ON)
 
 if (APORIA_USE_UNITY_BUILD)
     # UNITY_BUILD_BATCH_SIZE of 0 means combining all sources for the target into a single unity file
@@ -146,11 +144,4 @@ if (APORIA_USE_UNITY_BUILD)
         UNITY_BUILD             ON
         UNITY_BUILD_MODE        BATCH
         UNITY_BUILD_BATCH_SIZE  0)
-endif()
-
-if (NOT APORIA_EMSCRIPTEN)
-    set_target_properties(core PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
-        RUNTIME_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
-        VS_DEBUGGER_WORKING_DIRECTORY     "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core")
 endif()
