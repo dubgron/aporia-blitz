@@ -1,5 +1,7 @@
 #include "aporia_debug.hpp"
 
+#if defined(APORIA_DEBUGTOOLS)
+
 #include <imgui.h>
 #include <stb_sprintf.h>
 
@@ -347,3 +349,5 @@ namespace Aporia
         }
     }
 }
+
+#endif

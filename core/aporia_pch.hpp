@@ -2,6 +2,7 @@
 
 // Standard Library
 #include <array>
+#include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -20,9 +21,13 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include <imgui.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#if defined(APORIA_DEBUGTOOLS)
+    #include <imgui.h>
+    #include <backends/imgui_impl_glfw.h>
+    #include <backends/imgui_impl_opengl3.h>
+#else
+    #define IMGUI_DISABLE 1
+#endif
 
 #if defined(APORIA_EMSCRIPTEN)
     #include <emscripten.h>

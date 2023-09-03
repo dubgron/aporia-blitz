@@ -1,3 +1,5 @@
+#if defined(APORIA_DEBUGTOOLS)
+
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_inputs.hpp"
@@ -6,8 +8,6 @@
 #include "aporia_types.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
-
-#include <imgui.h>
 
 #define APORIA_COMMANDLINE_FUNCTION(name) CommandlineResult name(StringList args)
 
@@ -525,3 +525,5 @@ namespace Aporia
         ImGui::End();
     }
 }
+
+#endif

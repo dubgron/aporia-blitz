@@ -7,7 +7,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-22.04, macos-12]
-        build-type: [RelWithDebInfo, Release]
+        build-type: [Debug, Release]
+        debug-tools: [On, Off]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -24,7 +25,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake .
+          cmake . -DAPORIA_DEBUGTOOLS=${{ matrix.debug-tools }}
 
       - name: Build
         run: |

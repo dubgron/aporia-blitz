@@ -46,7 +46,7 @@ namespace Aporia
             inputs_clear();
         }
 
-        imgui_frame_begin();
+        IMGUI_FRAME_BEGIN();
         rendering_begin();
 
         game->draw(frame_time);
@@ -62,7 +62,7 @@ namespace Aporia
         }
 
         rendering_end();
-        imgui_frame_end();
+        IMGUI_FRAME_END();
 
         active_window->display();
     }
@@ -74,10 +74,10 @@ namespace Aporia
         // Init
         {
             persistent_arena.alloc(MEGABYTES(100));
-            frame_arena.alloc(KILOBYTES(10));
+            frame_arena.alloc(MEGABYTES(1));
             config_arena.alloc(KILOBYTES(10));
 
-            logging_init(&persistent_arena, "aporia");
+            LOGGING_INIT(&persistent_arena, "aporia");
 
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
@@ -92,7 +92,7 @@ namespace Aporia
 
             world.init();
 
-            imgui_init();
+            IMGUI_INIT();
 
             game->init();
         }
@@ -114,13 +114,13 @@ namespace Aporia
         {
             game->terminate();
 
-            imgui_deinit();
+            IMGUI_DEINIT();
             world.deinit();
             rendering_deinit();
 
             destroy_active_window();
 
-            logging_deinit();
+            LOGGING_DEINIT();
 
             persistent_arena.dealloc();
             frame_arena.dealloc();
