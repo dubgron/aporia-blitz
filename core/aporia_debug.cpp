@@ -144,6 +144,7 @@ namespace Aporia
     {
         switch (level)
         {
+            case Garbage:   return "Garbage";
             case Verbose:   return "Verbose";
             case Debug:     return "Debug";
             case Info:      return "Info";
@@ -159,6 +160,7 @@ namespace Aporia
     {
         switch (level)
         {
+            case Garbage:   return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_BLACK);
             case Verbose:   return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_BLACK);
             case Debug:     return CONSOLE_STYLIZED_FORMAT(FG_BRIGHT_BLUE);
             case Info:      return CONSOLE_STYLIZED_FORMAT(FG_RESET);

@@ -26,7 +26,7 @@ namespace Aporia
             case GL_DEBUG_SEVERITY_HIGH:                return LogLevel::Error;
             case GL_DEBUG_SEVERITY_MEDIUM:              return LogLevel::Warning;
             case GL_DEBUG_SEVERITY_LOW:                 return LogLevel::Info;
-            case GL_DEBUG_SEVERITY_NOTIFICATION:        return LogLevel::Verbose;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:        return LogLevel::Garbage;
             default:                                    return LogLevel::Critical;
         }
     }

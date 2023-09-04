@@ -73,8 +73,9 @@
 
 namespace Aporia
 {
-    enum LogLevel
+    enum LogLevel : u8
     {
+        Garbage,
         Verbose,
         Debug,
         Info,
