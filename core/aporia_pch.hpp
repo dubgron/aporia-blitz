@@ -35,9 +35,8 @@
 
 
 // Platform
-#include "platform/aporia_opengl.hpp"
-
 #if defined(APORIA_WINDOWS)
+    #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
 #elif defined(APORIA_UNIX)
     #include <dlfcn.h>
@@ -47,3 +46,5 @@
 #else
     #error OS not supported!
 #endif
+
+#include "platform/aporia_opengl.hpp"
