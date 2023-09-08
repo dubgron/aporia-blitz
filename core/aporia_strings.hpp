@@ -139,18 +139,25 @@ namespace Aporia
         }
 
         String before_args = format.substr(0, args_begin);
-        result.push_node(arena, before_args);
+        if (before_args.length > 0)
+        {
+            result.push_node(arena, before_args);
+        }
 
         if (args_begin < format.length)
         {
             result.push_node(arena, to_string(arena, arg));
 
             String after_args = format.substr(args_begin + 1);
-            if constexpr (sizeof...(args) > 0)
+            if (after_args.length > 0)
             {
-                after_args = sprintf(arena, after_args, std::forward<Ts>(args)...);
+                if constexpr (sizeof...(args) > 0)
+                {
+                    after_args = sprintf(arena, after_args, std::forward<Ts>(args)...);
+                }
+
+                result.push_node(arena, after_args);
             }
-            result.push_node(arena, after_args);
         }
 
         return result.join(arena);
