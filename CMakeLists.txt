@@ -13,3 +13,6 @@ if (APORIA_BUILD_EXAMPLE)
     add_subdirectory(example)
     set_directory_properties(PROPERTIES VS_STARTUP_PROJECT example)
 endif()
+
+file(GLOB APORIA_GIT_HOOKS "${PROJECT_SOURCE_DIR}/.githooks/*")
+file(COPY ${APORIA_GIT_HOOKS} DESTINATION "${PROJECT_SOURCE_DIR}/.git/hooks/")
