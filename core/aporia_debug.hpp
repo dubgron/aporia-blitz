@@ -12,8 +12,9 @@
         APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
     } } while(0)
 
-#define APORIA_ASSERT(expr)     APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '%' failed!", #expr)
-#define APORIA_UNREACHABLE()    APORIA_ASSERT_WITH_MESSAGE(false, "Unreachable!")
+#define APORIA_ASSERT(expr)         APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '%' failed!", #expr)
+#define APORIA_UNREACHABLE()        APORIA_ASSERT_WITH_MESSAGE(false, "Unreachable!")
+#define APORIA_NOT_IMPLEMENTED()    APORIA_ASSERT_WITH_MESSAGE(false, "Not Implemented!")
 
 #if defined(__has_builtin) && !defined(__ibmxl__)
     #if __has_builtin(__builtin_debugtrap)
@@ -120,6 +121,7 @@ namespace Aporia
 #define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) assert(expr)
 #define APORIA_ASSERT(expr) assert(expr)
 #define APORIA_UNREACHABLE() assert(!"Unreachable!")
+#define APORIA_NOT_IMPLEMENTED() assert(!"Not Implemented!")
 #define APORIA_BREAKPOINT()
 
 #define LOGGING_INIT(...)
