@@ -572,55 +572,67 @@ namespace Aporia
     {
         rendering_queue.init(arena, MAX_RENDERING_QUEUE_SIZE);
 
-        // Set VertexArray for opaque Quads
-        VertexArray& quads = vertex_arrays[0];
-        quads.init(4, 6);
-        quads.bind();
-
-        VertexBuffer quads_vbo;
-        quads_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 4);
-        quads_vbo.add_layout();
-        quads.vertex_buffer = quads_vbo;
-
-        u32* quad_indices = arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 6);
-        for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
+        // Set VertexArray for Quads
         {
-            quad_indices[  i  ] = offset + 0;
-            quad_indices[i + 1] = offset + 1;
-            quad_indices[i + 2] = offset + 2;
+            VertexArray& quads = vertex_arrays[0];
+            quads.init(4, 6);
+            quads.bind();
 
-            quad_indices[i + 3] = offset + 2;
-            quad_indices[i + 4] = offset + 3;
-            quad_indices[i + 5] = offset + 0;
+            VertexBuffer quads_vbo;
+            quads_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 4);
+            quads_vbo.add_layout();
+            quads.vertex_buffer = quads_vbo;
+
+            ScratchArena temp = create_scratch_arena(arena);
+
+            u32* quad_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 6);
+            for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
+            {
+                quad_indices[  i  ] = offset + 0;
+                quad_indices[i + 1] = offset + 1;
+                quad_indices[i + 2] = offset + 2;
+
+                quad_indices[i + 3] = offset + 2;
+                quad_indices[i + 4] = offset + 3;
+                quad_indices[i + 5] = offset + 0;
+            }
+
+            IndexBuffer quads_ibo;
+            quads_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
+            quads.index_buffer = quads_ibo;
+
+            quads.unbind();
+
+            rollback_scratch_arena(temp);
         }
-
-        IndexBuffer quads_ibo;
-        quads_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
-        quads.index_buffer = quads_ibo;
-
-        quads.unbind();
 
         // Set VertexArray for Lines
-        VertexArray& lines = vertex_arrays[1];
-        lines.init(2, 2);
-        lines.bind();
-
-        VertexBuffer lines_vbo;
-        lines_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 2);
-        lines_vbo.add_layout();
-        lines.vertex_buffer = lines_vbo;
-
-        u32* line_indices = arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 2);
-        for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
         {
-            line_indices[i] = i;
+            VertexArray& lines = vertex_arrays[1];
+            lines.init(2, 2);
+            lines.bind();
+
+            VertexBuffer lines_vbo;
+            lines_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 2);
+            lines_vbo.add_layout();
+            lines.vertex_buffer = lines_vbo;
+
+            ScratchArena temp = create_scratch_arena(arena);
+
+            u32* line_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 2);
+            for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
+            {
+                line_indices[i] = i;
+            }
+
+            IndexBuffer lines_ibo;
+            lines_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 2, line_indices);
+            lines.index_buffer = lines_ibo;
+
+            lines.unbind();
+
+            rollback_scratch_arena(temp);
         }
-
-        IndexBuffer lines_ibo;
-        lines_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 2, line_indices);
-        lines.index_buffer = lines_ibo;
-
-        lines.unbind();
 
         // Setup Framebuffer
         main_framebuffer.create(window_config.width, window_config.height);
@@ -962,15 +974,22 @@ namespace Aporia
                 {
                     const u8 prev_character = text.caption.data[idx - 1];
 
-                    const std::pair<u8, u8> key = std::make_pair(prev_character, character);
-                    if (font.kerning.contains(key))
+                    for (u64 idx = 0; idx < font.kerning_count; ++idx)
                     {
-                        line_alignments[current_line] += font.kerning.at(key);
+                        const Kerning& kerning = font.kerning[idx];
+                        if (kerning.unicode_1 == prev_character && kerning.unicode_2 == character)
+                        {
+                            line_alignments[current_line] += kerning.advance;
+                        }
                     }
 
-                    if (font.glyphs.contains(prev_character))
+                    for (u64 idx = 0; idx < font.glyphs_count; ++idx)
                     {
-                        line_alignments[current_line] += font.glyphs.at(prev_character).advance;
+                        const Glyph& glyph = font.glyphs[idx];
+                        if (glyph.unicode == prev_character)
+                        {
+                            line_alignments[current_line] += glyph.advance;
+                        }
                     }
                 }
 
@@ -990,9 +1009,13 @@ namespace Aporia
             }
 
             const u8 last_character = text.caption.data[text.caption.length - 1];
-            if (font.glyphs.contains(last_character))
+            for (u64 idx = 0; idx < font.glyphs_count; ++idx)
             {
-                line_alignments[line_count - 1] += font.glyphs.at(last_character).advance;
+                const Glyph& glyph = font.glyphs[idx];
+                if (glyph.unicode == last_character)
+                {
+                    line_alignments[line_count - 1] += glyph.advance;
+                }
             }
 
             max_line_alignment = max(max_line_alignment, line_alignments[line_count - 1]);
@@ -1021,15 +1044,22 @@ namespace Aporia
             {
                 const u8 prev_character = text.caption.data[idx - 1];
 
-                const std::pair<u8, u8> key = std::make_pair(prev_character, character);
-                if (font.kerning.contains(key))
+                for (u64 idx = 0; idx < font.kerning_count; ++idx)
                 {
-                    advance.x += font.kerning.at(key);
+                    const Kerning& kerning = font.kerning[idx];
+                    if (kerning.unicode_1 == prev_character && kerning.unicode_2 == character)
+                    {
+                        advance.x += kerning.advance;
+                    }
                 }
 
-                if (font.glyphs.contains(prev_character))
+                for (u64 idx = 0; idx < font.glyphs_count; ++idx)
                 {
-                    advance.x += font.glyphs.at(prev_character).advance;
+                    const Glyph& glyph = font.glyphs[idx];
+                    if (glyph.unicode == prev_character)
+                    {
+                        advance.x += glyph.advance;
+                    }
                 }
             }
 
@@ -1048,12 +1078,25 @@ namespace Aporia
 
                 current_line += 1;
             }
-            else if (font.glyphs.contains(character))
+            else
             {
-                const Glyph& glyph = font.glyphs.at(character);
+                const Glyph* glyph = nullptr;
+                for (u64 idx = 0; idx < font.glyphs_count; ++idx)
+                {
+                    if (font.glyphs[idx].unicode == character)
+                    {
+                        glyph = &font.glyphs[idx];
+                        break;
+                    }
+                }
 
-                const GlyphBounds& atlas_bounds = glyph.atlas_bounds;
-                const GlyphBounds& plane_bounds = glyph.plane_bounds;
+                if (!glyph)
+                {
+                    break;
+                }
+
+                const GlyphBounds& atlas_bounds = glyph->atlas_bounds;
+                const GlyphBounds& plane_bounds = glyph->plane_bounds;
 
                 const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
                 const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;

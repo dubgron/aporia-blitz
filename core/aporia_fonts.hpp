@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include "aporia_shaders.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
@@ -26,6 +24,7 @@ namespace Aporia
 
     struct Glyph
     {
+        u32 unicode = 0;
         f32 advance = 0.f;
 
         GlyphBounds plane_bounds;
@@ -44,15 +43,25 @@ namespace Aporia
         f32 underline_thickness = 0.f;
     };
 
+    struct Kerning
+    {
+        u32 unicode_1 = 0;
+        u32 unicode_2 = 0;
+        f32 advance = 0.f;
+    };
+
     struct Font
     {
-        using Glyphs = std::map<u8, Glyph>;
-        using Kerning = std::map<std::pair<u8, u8>, f32>;
-
+        String name;
         FontAtlas atlas;
-        Glyphs glyphs;
+
+        Glyph* glyphs = nullptr;
+        u64 glyphs_count = 0;
+
         FontMetrics metrics;
-        Kerning kerning;
+
+        Kerning* kerning = nullptr;
+        u64 kerning_count = 0;
     };
 
     enum class TextAlignment : u8
@@ -80,5 +89,5 @@ namespace Aporia
     };
 
     void load_font(String name, String filepath);
-    const Font& get_font(String name);
+    const Font* get_font(String name);
 }

@@ -255,25 +255,11 @@ namespace Aporia
         APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(active_shader_id),
             "No active shader!");
 
-        std::unordered_map<String, i32>& locations_dict = shaders[active_shader_id].locations;
+        i32 location = glGetUniformLocation(active_shader_id, *name);
 
-        i32 location;
-        if (locations_dict.empty() || !locations_dict.contains(name))
+        if (location == -1)
         {
-            location = glGetUniformLocation(active_shader_id, *name);
-            if (location == -1)
-            {
-                APORIA_LOG(Error, "'%' does not correspond to an active uniform variable in shader %!", name, active_shader_id);
-            }
-            else
-            {
-                name = push_string(&persistent_arena, name);
-                locations_dict.emplace(name, location);
-            }
-        }
-        else
-        {
-            location = locations_dict.at(name);
+            APORIA_LOG(Error, "'%' does not correspond to an active uniform variable in shader %!", name, active_shader_id);
         }
 
         return location;
@@ -393,18 +379,11 @@ namespace Aporia
             glDeleteShader(compiled_subshaders[idx]);
         }
 
-        ShaderInfo& shader_info = shaders[shader_id];
+        ShaderInfo shader_info;
         shader_info.shader_id = shader_id;
         shader_info.subshaders_count = subshaders_count;
         shader_info.source_file = filepath;
         shader_info.properties = shader_data.properties;
-
-        // @HACK(dubgron): Because arenas malloc the memory, they don't call
-        // the constructors, and STD classes (like std::unordered_map) need
-        // their constructors to be called otherwise they don't work, so we
-        // need to call the constructor manually using "placement new" syntax.
-        // I know it's stupid, but it is how it is :(
-        new(&shader_info.locations) std::unordered_map<String, i32>;
 
         rollback_scratch_arena(temp);
 
@@ -431,6 +410,8 @@ namespace Aporia
         {
             shader_info.properties.depth_write = shader_config.default_properties.depth_write;
         }
+
+        shaders[shader_id] = shader_info;
 
         return shader_id;
     }

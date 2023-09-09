@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstring>
-#include <string_view>
 
 #include "aporia_memory.hpp"
 #include "aporia_types.hpp"
@@ -163,14 +162,3 @@ namespace Aporia
         return result.join(arena);
     }
 }
-
-// @TODO(dubgron): Remove this in the future once we replace all usages of std.
-template <>
-struct std::hash<Aporia::String>
-{
-    std::size_t operator()(const Aporia::String& str) const
-    {
-        const string_view sv{ (char*)str.data, (size_t)str.length };
-        return hash<string_view>()(sv);
-    }
-};

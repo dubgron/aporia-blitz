@@ -109,7 +109,6 @@ namespace Aporia
         u32 subshaders_count = 0;
         ShaderProperties properties;
         String source_file;
-        std::unordered_map<String, i32> locations;
     };
 
     void shaders_init(MemoryArena* arena);
