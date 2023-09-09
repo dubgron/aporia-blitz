@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aporia_assets.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
@@ -105,18 +106,21 @@ namespace Aporia
     struct ShaderInfo
     {
         u32 shader_id = 0;
+        u32 subshaders_count = 0;
         ShaderProperties properties;
-        String source;
+        String source_file;
         std::unordered_map<String, i32> locations;
     };
 
     void shaders_init(MemoryArena* arena);
 
-    u32 create_shader(String filepath, u64 subshaders_count = 2);
+    u32 load_shader(String filepath, u64 subshaders_count = 2);
+
+    bool reload_shader_asset(Asset* shader_asset);
+    bool reload_shader(u32 shader_id);
+
     void remove_shader(u32 shader_id);
     void remove_all_shaders();
-
-    void reload_shader(u32 shader_id);
 
     void bind_shader(u32 shader_id);
     void unbind_shader();

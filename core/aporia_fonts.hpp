@@ -2,7 +2,6 @@
 
 #include <map>
 
-#include "aporia_entity.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
@@ -11,10 +10,10 @@ namespace Aporia
 {
     struct FontAtlas
     {
-        Texture source;
-
         f32 font_size = 64.f;
         f32 distance_range = 2.f;
+
+        Texture* source;
     };
 
     struct GlyphBounds

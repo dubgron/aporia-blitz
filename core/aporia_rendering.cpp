@@ -625,34 +625,21 @@ namespace Aporia
         // Setup Framebuffer
         main_framebuffer.create(window_config.width, window_config.height);
 
-        // Initialize texture sampler
-        std::array<i32, OPENGL_MAX_TEXTURE_UNITS> sampler{};
-        std::iota(sampler.begin(), sampler.end(), 0);
-
         // Setup default shaders
-        default_shader = create_shader("content/shaders/default.glsl");
-        circle_shader = create_shader("content/shaders/circle.glsl");
-        line_shader = create_shader("content/shaders/line.glsl");
-        font_shader = create_shader("content/shaders/font.glsl");
-
-        bind_shader(default_shader);
-        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
-
-        bind_shader(font_shader);
-        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
+        default_shader = load_shader("content/shaders/default.glsl");
+        circle_shader = load_shader("content/shaders/circle.glsl");
+        line_shader = load_shader("content/shaders/line.glsl");
+        font_shader = load_shader("content/shaders/font.glsl");
 
         // Setup post-processing shaders
-        postprocessing_shader = create_shader("content/shaders/postprocessing.glsl");
-
-        bind_shader(postprocessing_shader);
-        shader_set_int_array("u_atlas", sampler.data(), OPENGL_MAX_TEXTURE_UNITS);
+        postprocessing_shader = load_shader("content/shaders/postprocessing.glsl");
 
         // Setup lighting shaders
-        raymarching_shader = create_shader("content/shaders/raymarching.glsl");
-        shadowcasting_shader = create_shader("content/shaders/shadowcasting.glsl");
+        raymarching_shader = load_shader("content/shaders/raymarching.glsl");
+        shadowcasting_shader = load_shader("content/shaders/shadowcasting.glsl");
 
         // Setup editor grid shaders
-        editor_grid_shader = create_shader("content/shaders/editor_grid.glsl");
+        editor_grid_shader = load_shader("content/shaders/editor_grid.glsl");
 
         unbind_shader();
     }
@@ -685,7 +672,12 @@ namespace Aporia
         const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
         const f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
+        // Initialize texture sampler
+        static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+
         bind_shader(default_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
         bind_shader(line_shader);
@@ -695,8 +687,12 @@ namespace Aporia
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
         bind_shader(font_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_float("u_camera_zoom", camera_zoom);
+
+        bind_shader(postprocessing_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
 
         v2 window_size = v2{ active_window->get_size() };
 
@@ -806,26 +802,22 @@ namespace Aporia
         key.vertex[3].position      = base_offset + up_offset;
         key.vertex[3].color         = entity.color;
 
-        if (entity.texture)
+        if (entity.texture && entity.texture->source)
         {
-            // @NOTE(dubgron): Disabled the half pixel offset as it is only useful when dealing with rotated tiles.
-            // const v2 half_pixel_offset  = 0.5f / v2{ entity.texture->source.width, entity.texture->source.height };
-            // const v2 tex_coord_u        = entity.texture->u + half_pixel_offset;
-            // const v2 tex_coord_v        = entity.texture->v - half_pixel_offset;
             const v2 tex_coord_u        = entity.texture->u;
             const v2 tex_coord_v        = entity.texture->v;
 
             key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
-            key.vertex[0].tex_id        = entity.texture->source.id;
+            key.vertex[0].tex_id        = entity.texture->source->id;
 
             key.vertex[1].tex_coord     = tex_coord_v;
-            key.vertex[1].tex_id        = entity.texture->source.id;
+            key.vertex[1].tex_id        = entity.texture->source->id;
 
             key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
-            key.vertex[2].tex_id        = entity.texture->source.id;
+            key.vertex[2].tex_id        = entity.texture->source->id;
 
             key.vertex[3].tex_coord     = tex_coord_u;
-            key.vertex[3].tex_id        = entity.texture->source.id;
+            key.vertex[3].tex_id        = entity.texture->source->id;
         }
 
         rendering_queue.add(key);
@@ -932,7 +924,12 @@ namespace Aporia
         APORIA_ASSERT(text.font);
         const Font& font = *text.font;
 
-        const v2 texture_size           = v2{ font.atlas.source.width, font.atlas.source.height };
+        if (!font.atlas.source)
+        {
+            return;
+        }
+
+        const v2 texture_size = v2{ font.atlas.source->width, font.atlas.source->height };
 
         // Adjust text scaling by the predefined atlas font size
         const f32 effective_font_size   = text.font_size / font.atlas.font_size;
@@ -1009,7 +1006,7 @@ namespace Aporia
             }
         }
 
-        // @TOOD(dubgron): Fix this. Right now we don't load x-height from font, so we have to approximate it.
+        // @TODO(dubgron): Fix this. Right now we don't load x-height from font, so we have to approximate it.
         const f32 x_height = font.metrics.line_height * 0.65f;
         const f32 total_text_height = (line_count - 1) * font.metrics.line_height + x_height;
         const v2 center_offset = v2{ max_line_alignment, total_text_height } * text.center_of_rotation;
@@ -1082,25 +1079,25 @@ namespace Aporia
                 key.shader_id               = text.shader_id;
 
                 key.vertex[0].position      = v3{ base_offset, 0.f };
-                key.vertex[0].tex_id        = font.atlas.source.id;
+                key.vertex[0].tex_id        = font.atlas.source->id;
                 key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
                 key.vertex[1].position      = v3{ base_offset + right_offset, 0.f };
-                key.vertex[1].tex_id        = font.atlas.source.id;
+                key.vertex[1].tex_id        = font.atlas.source->id;
                 key.vertex[1].tex_coord     = tex_coord_v;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
                 key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, 0.f };
-                key.vertex[2].tex_id        = font.atlas.source.id;
+                key.vertex[2].tex_id        = font.atlas.source->id;
                 key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
                 key.vertex[3].position      = v3{ base_offset + up_offset, 0.f };
-                key.vertex[3].tex_id        = font.atlas.source.id;
+                key.vertex[3].tex_id        = font.atlas.source->id;
                 key.vertex[3].tex_coord     = tex_coord_u;
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;

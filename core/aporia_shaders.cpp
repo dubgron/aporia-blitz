@@ -1,5 +1,6 @@
 #include "aporia_shaders.hpp"
 
+#include "aporia_assets.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
@@ -283,7 +284,7 @@ namespace Aporia
         shaders = arena->push_zero<ShaderInfo>(MAX_SHADERS);
     }
 
-    u32 create_shader(String filepath, u64 subshaders_count /* = 2 */)
+    static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     {
         const String shader_contents = read_file(&persistent_arena, filepath);
 
@@ -362,7 +363,7 @@ namespace Aporia
 
         for (u64 idx = 0; idx < shader_data.subshaders_count; ++idx)
         {
-            if (u32 subshader_id = compile_subshader( shader_data.subshaders[idx] ))
+            if (u32 subshader_id = compile_subshader(shader_data.subshaders[idx]))
             {
                 compiled_subshaders[idx] = subshader_id;
                 compiled_subshaders_count += 1;
@@ -371,7 +372,8 @@ namespace Aporia
 
         if (compiled_subshaders_count < shader_data.subshaders_count)
         {
-            APORIA_LOG(Error, "Failed to compile all subshaders of shader '%'! Compiled: %, Requested: %. Creating shaders aborted!", filepath, compiled_subshaders_count, subshaders_count);
+            APORIA_LOG(Error, "Failed to compile all subshaders of shader '%'! Compiled: %, Requested: %. Creating shaders aborted!",
+                filepath, compiled_subshaders_count, subshaders_count);
             return 0;
         }
 
@@ -393,7 +395,8 @@ namespace Aporia
 
         ShaderInfo& shader_info = shaders[shader_id];
         shader_info.shader_id = shader_id;
-        shader_info.source = filepath;
+        shader_info.subshaders_count = subshaders_count;
+        shader_info.source_file = filepath;
         shader_info.properties = shader_data.properties;
 
         // @HACK(dubgron): Because arenas malloc the memory, they don't call
@@ -432,6 +435,49 @@ namespace Aporia
         return shader_id;
     }
 
+    u32 load_shader(String filepath, u64 subshaders_count /* = 2 */)
+    {
+        u32 shader_id = load_shader_from_file(filepath, subshaders_count);
+
+        Asset* shader_asset = register_asset(filepath, AssetType::Shader);
+        shader_asset->status = (shader_id > 0) ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+
+        return shader_id;
+    }
+
+    bool reload_shader_asset(Asset* shader_asset)
+    {
+        APORIA_ASSERT(shader_asset->type == AssetType::Shader);
+
+        for (u64 idx = 0; idx < MAX_SHADERS; ++idx)
+        {
+            ShaderInfo* shader = &shaders[idx];
+            if (shader->source_file == shader_asset->source_file)
+            {
+                bool reloaded_successfully = reload_shader(shader->shader_id);
+                shader_asset->status = reloaded_successfully ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+
+                return reloaded_successfully;
+            }
+        }
+
+        APORIA_LOG(Warning, "Failed to find shader with source file: '%'!", shader_asset->source_file);
+        return false;
+    }
+
+    bool reload_shader(u32 shader_id)
+    {
+        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
+            "Shader (with ID: %) is not valid!", shader_id);
+
+        ShaderInfo* shader = &shaders[shader_id];
+
+        glDeleteProgram(shader->shader_id);
+        shader->shader_id = 0;
+
+        return load_shader_from_file(shader->source_file, shader->subshaders_count) > 0;
+    }
+
     void remove_shader(u32 shader_id)
     {
         APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
@@ -445,22 +491,9 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < MAX_SHADERS; ++idx)
         {
-            glDeleteProgram( shaders[idx].shader_id );
+            glDeleteProgram(shaders[idx].shader_id);
             shaders[idx].shader_id = 0;
         }
-    }
-
-    void reload_shader(u32 shader_id)
-    {
-        APORIA_ASSERT_WITH_MESSAGE(is_shader_valid(shader_id),
-            "Shader (with ID: %) is not valid!", shader_id);
-
-        const String shader_source = shaders[shader_id].source;
-
-        glDeleteProgram(shader_id);
-        shaders[shader_id].shader_id = 0;
-
-        create_shader(shader_source, 2);
     }
 
     void bind_shader(u32 shader_id)

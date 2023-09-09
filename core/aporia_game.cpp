@@ -5,6 +5,7 @@
 #endif
 
 #include "aporia_animation.hpp"
+#include "aporia_assets.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
@@ -33,6 +34,8 @@ namespace Aporia
         total_time += frame_time;
 
         frame_arena.clear();
+
+        assets_reload_if_dirty();
 
         active_window->poll_events();
         poll_gamepad_inputs();
@@ -79,6 +82,8 @@ namespace Aporia
 
             LOGGING_INIT(&persistent_arena, "aporia");
 
+            assets_init();
+
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
@@ -119,6 +124,8 @@ namespace Aporia
             rendering_deinit();
 
             destroy_active_window();
+
+            assets_deinit();
 
             LOGGING_DEINIT();
 

@@ -25,4 +25,6 @@ namespace Aporia
     bool mutex_lock(Mutex* mutex);
     bool mutex_unlock(Mutex* mutex);
     bool mutex_destroy(Mutex* mutex);
+
+    void watch_project_directory();
 }

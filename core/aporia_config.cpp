@@ -429,7 +429,7 @@ namespace Aporia
         } \
     } while(0)
 
-    bool load_engine_config(String filepath)
+    static bool load_engine_config_from_file(String filepath)
     {
         ScratchArena temp = create_scratch_arena(&persistent_arena);
         Config_Property* parsed_config = parse_config_from_file(temp.arena, filepath);
@@ -489,4 +489,26 @@ namespace Aporia
     }
 
 #undef PROPERTY_HELPER
+
+    bool reload_config_asset(Asset* config_asset)
+    {
+        APORIA_ASSERT(config_asset->type == AssetType::Config);
+
+        config_arena.clear();
+
+        bool success = load_engine_config_from_file(config_asset->source_file);
+        config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;
+
+        return success;
+    }
+
+    bool load_engine_config(String filepath)
+    {
+        bool success = load_engine_config_from_file(filepath);
+
+        Asset* config_asset = register_asset(filepath, AssetType::Config);
+        config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;
+
+        return success;
+    }
 }

@@ -24,34 +24,18 @@ namespace Aporia
             return;
         }
 
-        Image atlas;
-        atlas.load(png_filepath);
-        APORIA_ASSERT(atlas.is_valid());
+        Font result;
+        result.atlas.source = find_or_load_texture(png_filepath);
 
-        // @TODO(dubgron): Move the OpenGL part of creating texture to a separate function.
-        u32 id = 0;
-        glGenTextures(1, &id);
-
-        glActiveTexture(GL_TEXTURE0 + id);
-        glBindTexture(GL_TEXTURE_2D, id);
-
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, atlas.width, atlas.height);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas.width, atlas.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas.pixels);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        // @HACK(dubgron): By default, we set the filter texture parameter to
+        // GL_NEAREST, as it works best with pixelart, but fonts look better
+        // with linear filtering. Choosing filter should not require to overwrite
+        // it after loading the texture.
+        glBindTexture(GL_TEXTURE_2D, result.atlas.source->id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        Font result;
-        result.atlas.source.id = id;
-        result.atlas.source.width = atlas.width;
-        result.atlas.source.height = atlas.height;
-        result.atlas.source.channels = atlas.channels;
-
-        Config_Property* parsed_file = parse_config_from_file(&persistent_arena, config_filepath);
+        Config_Property* parsed_file = parse_config_from_file(temp.arena, config_filepath);
 
         for (Config_Property* property = parsed_file; property; property = property->next)
         {

@@ -15,6 +15,9 @@ namespace Aporia
     String replace_extension(MemoryArena* arena, String filepath, String ext);
     String extract_filename(String filepath);
 
+    // @NOTE(dubgron): Careful! It's an 'in place' transformation.
+    void fix_path_slashes(String* filepath);
+
     struct Color
     {
         u8 r = 255;

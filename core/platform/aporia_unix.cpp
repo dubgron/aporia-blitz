@@ -74,4 +74,9 @@ namespace Aporia
         free(mutex->handle);
         return return_code == 0;
     }
+
+    void watch_project_directory()
+    {
+        APORIA_LOG(Warning, "This feature is not supported on Unix!");
+    }
 }

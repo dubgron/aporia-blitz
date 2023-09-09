@@ -1,9 +1,10 @@
 #pragma once
 
-#include "aporia_entity.hpp"
+#include "aporia_assets.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_strings.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {
@@ -77,5 +78,6 @@ namespace Aporia
     // @TODO(dubgron): Add better syntax error handling.
     Config_Property* parse_config_from_file(MemoryArena* arena, String filepath);
 
+    bool reload_config_asset(Asset* config_asset);
     bool load_engine_config(String filepath);
 }

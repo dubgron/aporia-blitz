@@ -82,4 +82,73 @@ namespace Aporia
     {
         return CloseHandle(mutex->handle);
     }
+
+    static DWORD internal_watch_project_directory(void* data)
+    {
+        // @NOTE(dubgron): Initially I intended to use SHChangeNotifyRegister as
+        // it seemed to be more robust, but it turned out that in order to capture
+        // the user message it sends, we'd need to have an access to the window
+        // procedure's message dispatch. Because we use GLFW, which has their own
+        // window procedure, we would have to modify its source_file code. Therefore
+        // it's easier to use ReadDirectoryChangesW.
+
+        HANDLE directory_handle = CreateFile(".", FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+        if (directory_handle == INVALID_HANDLE_VALUE)
+        {
+            printf("%s\n", *get_last_error());
+            return 1;
+        }
+
+        constexpr u64 size = KILOBYTES(1);
+        FILE_NOTIFY_INFORMATION file_notifies[size];
+
+        for (;;)
+        {
+            memset(file_notifies, 0, size);
+            DWORD bytes_returned;
+
+            bool success = ReadDirectoryChangesW(directory_handle, file_notifies, size, true,
+                FILE_NOTIFY_CHANGE_LAST_WRITE, &bytes_returned, NULL, NULL);
+
+            if (!success || bytes_returned == 0)
+            {
+                printf("%s\n", *get_last_error());
+                continue;
+            }
+
+            u64 idx = 0;
+            while (idx < bytes_returned)
+            {
+                char buff[256];
+                u64 size = WideCharToMultiByte(CP_UTF8, 0, file_notifies[idx].FileName,
+                    file_notifies[idx].FileNameLength / sizeof(WCHAR), buff, ARRAY_COUNT(buff), NULL, NULL);
+
+                String changed_file{ (u8*)buff, size };
+                fix_path_slashes(&changed_file);
+
+                if (Asset* changed_asset = get_asset_by_source_file(changed_file))
+                {
+                    asset_change_status(changed_asset, AssetStatus::NeedsReload);
+                }
+
+                if (file_notifies[idx].NextEntryOffset == 0)
+                {
+                    break;
+                }
+
+                idx += file_notifies[idx].NextEntryOffset;
+            }
+        }
+
+        return 0;
+    }
+
+    void watch_project_directory()
+    {
+        DWORD thread_id;
+        HANDLE thread_handle = CreateThread(NULL, 0, internal_watch_project_directory, NULL, 0, &thread_id);
+        CloseHandle(thread_handle);
+    }
 }

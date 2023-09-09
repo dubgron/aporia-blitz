@@ -60,6 +60,17 @@ namespace Aporia
         }
     }
 
+    void fix_path_slashes(String* filepath)
+    {
+        for (u64 idx = 0; idx < filepath->length; ++idx)
+        {
+            if (filepath->data[idx] == '\\')
+            {
+                filepath->data[idx] = '/';
+            }
+        }
+    }
+
     const Color Color::Black       = Color{  0,   0,   0,  255 };
     const Color Color::White       = Color{ 255, 255, 255, 255 };
     const Color Color::Red         = Color{ 255,  0,   0,  255 };

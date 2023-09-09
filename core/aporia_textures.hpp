@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "aporia_assets.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_types.hpp"
 
@@ -28,20 +29,26 @@ namespace Aporia
         i32 width = 0;
         i32 height = 0;
         i32 channels = 0;
+
+        String source_file;
     };
 
     struct SubTexture
     {
+        String name;
+
         v2 u{ 0.f };
         v2 v{ 0.f };
-        Texture source;
+        Texture* source = nullptr;
     };
 
-    void load_texture_atlas(String filepath);
-    const SubTexture* get_subtexture(String name);
+    // @NOTE(dubgron): Atlas refers to the config file describing the subtextures inside a texture.
+    bool load_texture_atlas(String filepath);
 
+    Texture* find_or_load_texture(String filepath);
+    bool reload_texture_asset(Asset* texture_asset);
+
+    const SubTexture* get_subtexture(String name);
     f32 get_subtexture_width(const SubTexture& subtexture);
     f32 get_subtexture_height(const SubTexture& subtexture);
-
-    extern std::unordered_map<String, SubTexture> textures;
 }

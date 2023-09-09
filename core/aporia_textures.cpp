@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "aporia_assets.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
@@ -10,13 +11,21 @@
 
 namespace Aporia
 {
-    std::unordered_map<String, SubTexture> textures;
+    static constexpr u64 MAX_TEXTURES = 10;
+    static constexpr u64 MAX_SUBTEXTURES = 1000;
 
+    static Texture textures[MAX_TEXTURES];
+    static i64 last_valid_texture_idx = 0;
+
+    static SubTexture subtextures[MAX_SUBTEXTURES];
+    static i64 last_valid_subtexture_idx = 0;
+
+    // @TODO(dubgron): Make it into free functions, it will be more convenient to use.
     void Image::load(String filepath)
     {
         if (pixels)
         {
-            APORIA_LOG(Info, "Image '%' has already been loaded! Unloading first!", filepath);
+            APORIA_LOG(Warning, "Image '%' has already been loaded! Unloading first!", filepath);
             unload();
         }
 
@@ -28,7 +37,7 @@ namespace Aporia
         }
         else
         {
-            APORIA_LOG(Info, "Failed to load image '%'!", filepath);
+            APORIA_LOG(Error, "Failed to load image '%'!", filepath);
         }
     }
 
@@ -43,33 +52,120 @@ namespace Aporia
         return pixels != nullptr;
     }
 
-    void load_texture_atlas(String filepath)
+    static void add_subtexture(const SubTexture& subtexture)
     {
-        ScratchArena temp = create_scratch_arena(&frame_arena);
-        Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
-
-        String atlas_filepath;
-        for (Config_Property* property = parsed_file; property; property = property->next)
+        SubTexture* found_spot = nullptr;
+        for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
         {
-            if (property->category == "meta" && property->field == "filepath")
+            if (subtextures[idx].name.length == 0)
             {
-                atlas_filepath = property->literals.first->string;
+                found_spot = &subtextures[idx];
                 break;
             }
         }
 
-        if (atlas_filepath.length == 0)
+        if (!found_spot)
+        {
+            APORIA_ASSERT(last_valid_subtexture_idx < MAX_SUBTEXTURES);
+            found_spot = &subtextures[last_valid_subtexture_idx];
+            last_valid_subtexture_idx += 1;
+        }
+
+        APORIA_ASSERT(found_spot);
+        *found_spot = subtexture;
+    }
+
+    bool load_texture_atlas(String filepath)
+    {
+        ScratchArena temp = create_scratch_arena(&frame_arena);
+        Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
+
+        String texture_filepath;
+        for (Config_Property* property = parsed_file; property; property = property->next)
+        {
+            if (property->category == "meta" && property->field == "filepath")
+            {
+                texture_filepath = property->literals.first->string;
+                break;
+            }
+        }
+
+        if (texture_filepath.length == 0)
         {
             APORIA_LOG(Error, "Failed to get [meta.filepath] property from %s", filepath);
-            return;
+            return false;
+        }
+
+        Texture* atlas_texture = find_or_load_texture(texture_filepath);
+
+        for (Config_Property* property = parsed_file; property; property = property->next)
+        {
+            if (property->category != "subtextures")
+            {
+                continue;
+            }
+
+            String name = push_string(&persistent_arena, property->field);
+
+            for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
+            {
+                if (subtextures[idx].name == name)
+                {
+                   APORIA_LOG(Warning, "There is more than one subtexture named '%'! One of them will be overwritten!", name);
+                }
+            }
+
+            const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
+            const v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
+
+            SubTexture subtexture;
+            subtexture.name = name;
+            subtexture.u = u;
+            subtexture.v = v;
+            subtexture.source = atlas_texture;
+            add_subtexture(subtexture);
+        }
+
+        APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
+
+        return true;
+    }
+
+    static Texture* add_texture(const Texture& texture)
+    {
+        Texture* found_spot = nullptr;
+        for (i64 idx = 0; idx < last_valid_texture_idx; ++idx)
+        {
+            if (textures[idx].id == 0)
+            {
+                found_spot = &textures[idx];
+                break;
+            }
+        }
+
+        if (!found_spot)
+        {
+            APORIA_ASSERT(last_valid_texture_idx < MAX_TEXTURES);
+            found_spot = &textures[last_valid_texture_idx];
+            last_valid_texture_idx += 1;
+        }
+
+        APORIA_ASSERT(found_spot);
+        *found_spot = texture;
+
+        return found_spot;
+    }
+
+    static Texture* load_texture_from_file(String filepath)
+    {
+        Image image;
+        image.load(filepath);
+        if (!image.is_valid())
+        {
+            return nullptr;
         }
 
         u32 id = 0;
-        glDeleteTextures(1, &id);
-
-        Image atlas_image;
-        atlas_image.load(atlas_filepath);
-        APORIA_ASSERT(atlas_image.is_valid());
 
 #if defined(APORIA_EMSCRIPTEN)
         glGenTextures(1, &id);
@@ -77,8 +173,8 @@ namespace Aporia
         glActiveTexture(GL_TEXTURE0 + id);
         glBindTexture(GL_TEXTURE_2D, id);
 
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, atlas_image.width, atlas_image.height);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas_image.width, atlas_image.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas_image.pixels);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, image.width, image.height);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -91,9 +187,10 @@ namespace Aporia
 
         glBindTextureUnit(id, id);
 
-        glTextureStorage2D(id, 1, GL_RGBA8, atlas_image.width, atlas_image.height);
-        glTextureSubImage2D(id, 0, 0, 0, atlas_image.width, atlas_image.height, GL_RGBA, GL_UNSIGNED_BYTE, atlas_image.pixels);
+        glTextureStorage2D(id, 1, GL_RGBA8, image.width, image.height);
+        glTextureSubImage2D(id, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels);
 
+        // @TODO(dubgron): Texture parameters should be parameterizable.
         glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -102,46 +199,87 @@ namespace Aporia
         glGenerateTextureMipmap(id);
 #endif
 
-        const Texture atlas_texture{ id, atlas_image.width, atlas_image.height, atlas_image.channels };
-        for (Config_Property* property = parsed_file; property; property = property->next)
+        image.unload();
+
+        if (!id)
         {
-            if (property->category != "subtextures")
-            {
-                continue;
-            }
-
-            String name = push_string(&persistent_arena, property->field);
-            if (textures.contains(name))
-            {
-                APORIA_LOG(Warning, "There are two textures named '%'! One of them will be overwritten!", name);
-            }
-
-            const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
-            const v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
-
-            textures.try_emplace(name, SubTexture{ u, v, atlas_texture });
+            APORIA_LOG(Error, "Failed to create OpenGL texture from '%'!", filepath);
+            return nullptr;
         }
 
-        APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
+        Texture texture;
+        texture.id = id;
+        texture.width = image.width;
+        texture.height = image.height;
+        texture.channels = image.channels;
+        texture.source_file = filepath;
+        return add_texture(texture);
+    }
 
-        atlas_image.unload();
+    Texture* find_or_load_texture(String filepath)
+    {
+        for (i64 idx = 0; idx < last_valid_texture_idx; ++idx)
+        {
+            // Texture already loaded.
+            if (textures[idx].source_file == filepath)
+            {
+                return &textures[idx];
+            }
+        }
+
+        // Failed to find the texture, we need to load it.
+        Texture* texture = load_texture_from_file(filepath);
+
+        Asset* texture_asset = register_asset(filepath, AssetType::Texture);
+        texture_asset->status = texture ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+
+        return texture;
+    }
+
+    bool reload_texture_asset(Asset* texture_asset)
+    {
+        APORIA_ASSERT(texture_asset->type == AssetType::Texture);
+
+        for (i64 idx = 0; idx < last_valid_texture_idx; ++idx)
+        {
+            Texture* texture = &textures[idx];
+            if (texture->source_file == texture_asset->source_file)
+            {
+                glDeleteTextures(1, &texture->id);
+                texture->id = 0;
+
+                bool reloaded_successfully = load_texture_from_file(texture_asset->source_file) != nullptr;
+                texture_asset->status = reloaded_successfully ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+
+                return reloaded_successfully;
+            }
+        }
+
+        APORIA_LOG(Warning, "Failed to find texture with source file: '%'!", texture_asset->source_file);
+        return false;
     }
 
     const SubTexture* get_subtexture(String name)
     {
-        APORIA_ASSERT_WITH_MESSAGE(textures.contains(name),
-            "Failed to find sub texture '%'!", name);
+        for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
+        {
+            if (subtextures[idx].name == name)
+            {
+                return &subtextures[idx];
+            }
+        }
 
-        return &textures.find(name)->second;
+        APORIA_LOG(Error, "Failed to find subtexture '%'!", name);
+        return nullptr;
     }
 
     f32 get_subtexture_width(const SubTexture& subtexture)
     {
-        return (subtexture.v.x - subtexture.u.x) * subtexture.source.width;
+        return subtexture.source ? (subtexture.v.x - subtexture.u.x) * subtexture.source->width : 0.f;
     }
 
     f32 get_subtexture_height(const SubTexture& subtexture)
     {
-        return (subtexture.v.y - subtexture.u.y) * subtexture.source.height;
+        return subtexture.source ? (subtexture.v.y - subtexture.u.y) * subtexture.source->height : 0.f;
     }
 }

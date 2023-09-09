@@ -18,6 +18,8 @@ add_library(core STATIC
     "aporia.hpp"
     "aporia_animation.cpp"
     "aporia_animation.hpp"
+    "aporia_assets.cpp"
+    "aporia_assets.hpp"
     "aporia_camera.cpp"
     "aporia_camera.hpp"
     "aporia_config.cpp"
