@@ -291,7 +291,7 @@ namespace Aporia
                 // an InnerPropertyEnd token), the next token can't be a Literal.
                 APORIA_ASSERT(property->inner == nullptr || token.type != Config_TokenType_Literal);
 
-                // The next token is either a Category or a Field, a new property is needed.
+                // If the next token is either a Category or a Field, a new property is needed.
                 if (token.type & (Config_TokenType_Category | Config_TokenType_Field))
                 {
                     property->next = arena->push_zero<Config_Property>();

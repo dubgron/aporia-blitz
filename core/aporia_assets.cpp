@@ -9,15 +9,14 @@
 namespace Aporia
 {
     static MemoryArena assets_arena;
+    static Mutex assets_mutex;
 
-    static constexpr u64 MAX_ASSET_COUNT = 100;
+    static constexpr u64 MAX_ASSETS = 100;
 
-    static Asset assets[MAX_ASSET_COUNT];
-    static i64 asset_count = 0;
+    static Asset assets[MAX_ASSETS];
+    static i64 assets_count = 0;
 
     static Asset* free_list = nullptr;
-
-    static Mutex config_mutex;
 
     static String asset_type_to_string(AssetType type)
     {
@@ -50,10 +49,10 @@ namespace Aporia
         // @TODO(dubgron): The size of this arena should be more planned out.
         assets_arena.alloc(KILOBYTES(100));
 
-        config_mutex = mutex_create();
+        assets_mutex = mutex_create();
 
         free_list = assets;
-        for (i64 idx = 0; idx < MAX_ASSET_COUNT - 1; ++idx)
+        for (i64 idx = 0; idx < MAX_ASSETS - 1; ++idx)
         {
             assets[idx].next = &assets[idx + 1];
         }
@@ -61,17 +60,17 @@ namespace Aporia
 
     void assets_deinit()
     {
-        mutex_destroy(&config_mutex);
+        mutex_destroy(&assets_mutex);
     }
 
     void assets_reload_if_dirty()
     {
-        if (!mutex_try_lock(&config_mutex))
+        if (!mutex_try_lock(&assets_mutex))
         {
             return;
         }
 
-        for (i64 idx = 0; idx < asset_count; ++idx)
+        for (i64 idx = 0; idx < assets_count; ++idx)
         {
             Asset* asset = &assets[idx];
             if (asset->status == AssetStatus::NeedsReload)
@@ -85,7 +84,7 @@ namespace Aporia
             }
         }
 
-        mutex_unlock(&config_mutex);
+        mutex_unlock(&assets_mutex);
     }
 
     Asset* register_asset(String source_file, AssetType type)
@@ -115,7 +114,7 @@ namespace Aporia
 
         *new_created = result;
 
-        asset_count += 1;
+        assets_count += 1;
         next_id += 1;
 
         APORIA_LOG(Info, "Registered asset '%' of type %", source_file, asset_type_to_string(type));
@@ -132,17 +131,17 @@ namespace Aporia
             return false;
         }
 
-        if (asset_count > 1)
+        if (assets_count > 1)
         {
-            *asset = assets[asset_count - 1];
-            asset = &assets[asset_count - 1];
+            *asset = assets[assets_count - 1];
+            asset = &assets[assets_count - 1];
         }
 
         *asset = Asset{};
         asset->next = free_list;
         free_list = asset;
 
-        asset_count -= 1;
+        assets_count -= 1;
 
         return true;
     }
@@ -155,7 +154,7 @@ namespace Aporia
             return result;
         }
 
-        for (i64 idx = 0; idx < asset_count; ++idx)
+        for (i64 idx = 0; idx < assets_count; ++idx)
         {
             if (assets[idx].id == id)
             {
@@ -169,7 +168,7 @@ namespace Aporia
     Asset* get_asset_by_source_file(String source_file)
     {
         Asset* result = nullptr;
-        for (i64 idx = 0; idx < asset_count; ++idx)
+        for (i64 idx = 0; idx < assets_count; ++idx)
         {
             if (assets[idx].source_file == source_file)
             {
@@ -182,9 +181,9 @@ namespace Aporia
 
     void asset_change_status(Asset* asset, AssetStatus status)
     {
-        mutex_lock(&config_mutex);
+        mutex_lock(&assets_mutex);
         asset->status = status;
-        mutex_unlock(&config_mutex);
+        mutex_unlock(&assets_mutex);
     }
 
 #if defined(APORIA_DEBUGTOOLS)
@@ -213,7 +212,7 @@ namespace Aporia
         }
         ImGui::Separator();
 
-        if (asset_count > 0)
+        if (assets_count > 0)
         {
             static i32 selected_id = Asset::INVALID_ID;
 
@@ -238,7 +237,7 @@ namespace Aporia
                 ImGui::TableSetupColumn("Type");
                 ImGui::TableSetupColumn("Status");
                 ImGui::TableHeadersRow();
-                for (i64 idx = 0; idx < asset_count; ++idx)
+                for (i64 idx = 0; idx < assets_count; ++idx)
                 {
                     Asset* asset = &assets[idx];
 
