@@ -40,6 +40,7 @@
     #include <windows.h>
 #elif defined(APORIA_UNIX)
     #include <dlfcn.h>
+    #include <pthread.h>
     #include <sys/stat.h>
     #include <sys/time.h>
     #include <sys/types.h>

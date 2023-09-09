@@ -1,5 +1,7 @@
 #include "aporia_os.hpp"
 
+#include "aporia_assets.hpp"
+#include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 
 namespace Aporia
@@ -23,8 +25,7 @@ namespace Aporia
 
     void* load_symbol(void* library_handle, String symbol_name)
     {
-        FARPROC symbol = GetProcAddress((HMODULE)library_handle, *symbol_name);
-        return symbol;
+        return GetProcAddress((HMODULE)library_handle, *symbol_name);
     }
 
     String get_last_error()
@@ -53,5 +54,32 @@ namespace Aporia
     bool make_directory(String path)
     {
         return CreateDirectory(*path, NULL);
+    }
+
+    Mutex mutex_create()
+    {
+        Mutex result;
+        result.handle = CreateMutex(0, false, NULL);
+        return result;
+    }
+
+    bool mutex_try_lock(Mutex* mutex)
+    {
+        return WaitForSingleObject(mutex->handle, 0) == WAIT_OBJECT_0;
+    }
+
+    bool mutex_lock(Mutex* mutex)
+    {
+        return WaitForSingleObject(mutex->handle, INFINITE) == WAIT_OBJECT_0;
+    }
+
+    bool mutex_unlock(Mutex* mutex)
+    {
+        return ReleaseMutex(mutex->handle);
+    }
+
+    bool mutex_destroy(Mutex* mutex)
+    {
+        return CloseHandle(mutex->handle);
     }
 }

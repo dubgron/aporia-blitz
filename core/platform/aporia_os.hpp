@@ -14,4 +14,15 @@ namespace Aporia
 
     bool does_directory_exist(String path);
     bool make_directory(String path);
+
+    struct Mutex
+    {
+        void* handle = nullptr;
+    };
+
+    Mutex mutex_create();
+    bool mutex_try_lock(Mutex* mutex);
+    bool mutex_lock(Mutex* mutex);
+    bool mutex_unlock(Mutex* mutex);
+    bool mutex_destroy(Mutex* mutex);
 }
