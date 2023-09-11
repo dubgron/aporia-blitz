@@ -14,9 +14,7 @@ namespace Aporia
         u8* data = nullptr;
         u64 length = 0;
 
-        bool is_valid() const;
         bool is_empty() const;
-        void clear();
 
         [[nodiscard]] String substr(u64 offset, u64 count = -1) const;
         String trim() const;

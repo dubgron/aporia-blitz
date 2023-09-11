@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aporia_memory.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 
 namespace Aporia
 {

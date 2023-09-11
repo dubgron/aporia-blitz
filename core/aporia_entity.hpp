@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aporia_animation.hpp"
+#include "aporia_animations.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"

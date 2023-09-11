@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
 #define DEFINE_ENUM_TO_U64_CAST(enum_name) \

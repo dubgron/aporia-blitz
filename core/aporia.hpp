@@ -1,7 +1,7 @@
 #pragma once
 
 // Aporia Headers
-#include <aporia_animation.hpp>
+#include <aporia_animations.hpp>
 #include <aporia_assets.hpp>
 #include <aporia_camera.hpp>
 #include <aporia_config.hpp>
@@ -14,7 +14,7 @@
 #include <aporia_memory.hpp>
 #include <aporia_rendering.hpp>
 #include <aporia_shaders.hpp>
-#include <aporia_strings.hpp>
+#include <aporia_string.hpp>
 #include <aporia_textures.hpp>
 #include <aporia_types.hpp>
 #include <aporia_utils.hpp>

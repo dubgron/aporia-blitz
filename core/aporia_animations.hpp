@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_textures.hpp"
 
 namespace Aporia

@@ -4,7 +4,7 @@
 #include "aporia_debug.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"

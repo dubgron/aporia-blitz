@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aporia_game.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
 #if defined(APORIA_DEBUGTOOLS)

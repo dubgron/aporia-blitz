@@ -16,8 +16,8 @@ endif()
 
 add_library(core STATIC
     "aporia.hpp"
-    "aporia_animation.cpp"
-    "aporia_animation.hpp"
+    "aporia_animations.cpp"
+    "aporia_animations.hpp"
     "aporia_assets.cpp"
     "aporia_assets.hpp"
     "aporia_camera.cpp"
@@ -42,8 +42,8 @@ add_library(core STATIC
     "aporia_rendering.hpp"
     "aporia_shaders.cpp"
     "aporia_shaders.hpp"
-    "aporia_strings.cpp"
-    "aporia_strings.hpp"
+    "aporia_string.cpp"
+    "aporia_string.hpp"
     "aporia_textures.cpp"
     "aporia_textures.hpp"
     "aporia_types.hpp"

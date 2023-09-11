@@ -1,11 +1,11 @@
-#include "aporia_animation.hpp"
+#include "aporia_animations.hpp"
 
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
 #include "aporia_hash_table.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_textures.hpp"
 
 namespace Aporia
@@ -85,7 +85,7 @@ namespace Aporia
                 APORIA_ASSERT(animation);
 
                 animator.current_animation = animator.requested_animation;
-                animator.requested_animation.clear();
+                animator.requested_animation = String{};
             }
 
             // Increment the current frame and wrap, if necessary.

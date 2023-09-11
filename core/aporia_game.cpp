@@ -4,7 +4,7 @@
     #include <emscripten.h>
 #endif
 
-#include "aporia_animation.hpp"
+#include "aporia_animations.hpp"
 #include "aporia_assets.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"

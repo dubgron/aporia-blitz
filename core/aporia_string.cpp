@@ -1,4 +1,4 @@
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 
 #define STB_SPRINTF_IMPLEMENTATION
 #include <stb_sprintf.h>
@@ -9,20 +9,9 @@
 
 namespace Aporia
 {
-    bool String::is_valid() const
-    {
-        return data != nullptr;
-    }
-
     bool String::is_empty() const
     {
         return length == 0;
-    }
-
-    void String::clear()
-    {
-        data = nullptr;
-        length = 0;
     }
 
     String String::substr(u64 offset, u64 count /* = -1 */) const

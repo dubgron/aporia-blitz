@@ -3,7 +3,7 @@
 #include "aporia_assets.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_shaders.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia

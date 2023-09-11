@@ -4,7 +4,7 @@
 #include <random>
 
 #include "aporia_memory.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
 #define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
