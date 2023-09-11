@@ -71,6 +71,18 @@ namespace Aporia
         }
     }
 
+    // TODO(dubgron): Provide a better hashing function.
+    // NOTE(dubgron): This hashing function is called djb2.
+    u32 hash(String string)
+    {
+        u32 hash = 5381;
+        for (u64 idx = 0; idx < string.length; ++idx)
+        {
+            hash = ((hash << 5) + hash) + string.data[idx];
+        }
+        return hash;
+    }
+
     const Color Color::Black       = Color{  0,   0,   0,  255 };
     const Color Color::White       = Color{ 255, 255, 255, 255 };
     const Color Color::Red         = Color{ 255,  0,   0,  255 };

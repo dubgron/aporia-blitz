@@ -9,6 +9,7 @@
 #include <aporia_entity.hpp>
 #include <aporia_fonts.hpp>
 #include <aporia_game.hpp>
+#include <aporia_hash_table.hpp>
 #include <aporia_inputs.hpp>
 #include <aporia_memory.hpp>
 #include <aporia_rendering.hpp>

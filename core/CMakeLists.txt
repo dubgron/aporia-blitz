@@ -33,6 +33,7 @@ add_library(core STATIC
     "aporia_fonts.hpp"
     "aporia_game.cpp"
     "aporia_game.hpp"
+    "aporia_hash_table.hpp"
     "aporia_inputs.cpp"
     "aporia_inputs.hpp"
     "aporia_memory.cpp"

@@ -18,6 +18,8 @@ namespace Aporia
     // @NOTE(dubgron): Careful! It's an 'in place' transformation.
     void fix_path_slashes(String* filepath);
 
+    u32 hash(String string);
+
     struct Color
     {
         u8 r = 255;
