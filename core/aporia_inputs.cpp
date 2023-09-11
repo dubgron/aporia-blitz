@@ -133,8 +133,8 @@ namespace Aporia
         clear_input_state(input.mouse, +MouseButton::Count);
         clear_input_state(input.buttons, +GamepadButton::Count);
 
-        memset(input.wheels, 0.f, ARRAY_COUNT(input.wheels));
-        memset(input.axes, 0.f, ARRAY_COUNT(input.axes));
+        memset(input.wheels, 0.f, sizeof(input.wheels));
+        memset(input.axes, 0.f, sizeof(input.axes));
     }
 
     i32 has_been_pressed(Key key)

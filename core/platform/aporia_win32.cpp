@@ -38,7 +38,7 @@ namespace Aporia
 
         char buff[256];
         u64 size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, error_message_id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff, ARRAY_COUNT(buff), NULL);
+            NULL, error_message_id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff, sizeof(buff), NULL);
 
         String message{ (u8*)buff, size };
 
@@ -123,7 +123,7 @@ namespace Aporia
             {
                 char buff[256];
                 u64 size = WideCharToMultiByte(CP_UTF8, 0, file_notifies[idx].FileName,
-                    file_notifies[idx].FileNameLength / sizeof(WCHAR), buff, ARRAY_COUNT(buff), NULL, NULL);
+                    file_notifies[idx].FileNameLength / sizeof(WCHAR), buff, sizeof(buff), NULL, NULL);
 
                 String changed_file{ (u8*)buff, size };
                 fix_path_slashes(&changed_file);

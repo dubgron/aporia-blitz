@@ -119,7 +119,7 @@ namespace Aporia
         tm* now_tm = localtime(&time_in_seconds);
 
         char buff[30];
-        u64 length = strftime(buff, ARRAY_COUNT(buff), (const char*)format.data, now_tm);
+        u64 length = strftime(buff, sizeof(buff), (const char*)format.data, now_tm);
 
         String result{ (u8*)buff, length };
 

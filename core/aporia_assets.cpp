@@ -198,7 +198,7 @@ namespace Aporia
         static u8 type = 0;
         static bool selected = false;
 
-        ImGui::InputText("Asset Source File", buff, ARRAY_COUNT(buff));
+        ImGui::InputText("Asset Source File", buff, sizeof(buff));
 
         SELECTABLE_ASSET_TYPE(AssetType::Invalid);
         SELECTABLE_ASSET_TYPE(AssetType::Config);
