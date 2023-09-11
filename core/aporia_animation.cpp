@@ -4,21 +4,25 @@
 #include "aporia_debug.hpp"
 #include "aporia_entity.hpp"
 #include "aporia_game.hpp"
+#include "aporia_hash_table.hpp"
 #include "aporia_strings.hpp"
 #include "aporia_textures.hpp"
 
 namespace Aporia
 {
-    static constexpr u64 MAX_ANIMATIONS = 100;
-    static constexpr u64 MAX_ANIMATIONS_PER_ENTITY = 10;
+    static constexpr u64 MAX_ANIMATIONS = 128;
+    static HashTable<Animation> all_animations;
 
-    static Animation* all_animations = nullptr;
-    static u64 all_animations_count = 0;
+    static bool operator==(const Animation& animation1, const Animation& animation2)
+    {
+        return animation1.frames == animation2.frames
+            && animation1.frame_count == animation2.frame_count
+            && animation1.frame_length == animation2.frame_length;
+    }
 
     void animations_init(MemoryArena* arena)
     {
-        all_animations = arena->push_zero<Animation>(MAX_ANIMATIONS);
-        all_animations_count = 0;
+        all_animations = hash_table_create<Animation>(arena, MAX_ANIMATIONS);
     }
 
     // @TODO(dubgron): The arena should be parameterized in the future.
@@ -34,25 +38,24 @@ namespace Aporia
                 continue;
             }
 
-            const String animation_name = property->field;
-            const u64 frames_count = property->literals.node_count;
+            const String animation_name = push_string(&persistent_arena, property->field);
+            const u64 frame_count = property->literals.node_count;
 
             Animation animation;
-            animation.name = push_string(&persistent_arena, animation_name);
-            animation.frames = persistent_arena.push<AnimationFrame>(frames_count);
+            animation.frames = persistent_arena.push<AnimationFrame>(frame_count);
 
             for (const StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
             {
                 AnimationFrame frame;
                 frame.texture = get_subtexture(frame_node->string);
 
-                animation.frames[animation.frames_count] = frame;
-                animation.frames_count += 1;
+                animation.frames[animation.frame_count] = frame;
+                animation.frame_count += 1;
             }
 
-            APORIA_ASSERT(all_animations_count < MAX_ANIMATIONS);
-            all_animations[all_animations_count] = animation;
-            all_animations_count += 1;
+            hash_table_insert(&all_animations, animation_name, animation);
+
+            APORIA_ASSERT(*hash_table_find(&all_animations, animation_name) == animation);
         }
 
         rollback_scratch_arena(temp);
@@ -61,72 +64,50 @@ namespace Aporia
     void animation_tick(Entity& entity, f32 frame_time)
     {
         Animator& animator = entity.animator;
-        Animation* animation = animator.current_animation;
-        if (!animation)
+
+        if (animator.current_animation.is_empty())
         {
-            animator.current_animation = animator.requested_animation;
+            return;
         }
 
-        if (animation)
+        Animation* animation = hash_table_find(&all_animations, animator.current_animation);
+        APORIA_ASSERT(animation);
+
+        animator.elapsed_time += frame_time;
+        while (animator.elapsed_time >= animation->frame_length)
         {
-            animator.elapsed_time += frame_time;
-            while (animator.elapsed_time >= animation->frame_length)
+            animator.elapsed_time -= animation->frame_length;
+
+            // The current frame is over. If other animation has been requested, play it.
+            if (!animator.requested_animation.is_empty())
             {
-                animator.elapsed_time -= animation->frame_length;
+                animation = hash_table_find(&all_animations, animator.requested_animation);
+                APORIA_ASSERT(animation);
 
-                if (animator.requested_animation)
-                {
-                    animator.current_animation = animator.requested_animation;
-                    animator.requested_animation = nullptr;
-                }
-
-                animation->current_frame += 1;
-                if (animation->current_frame > animation->frames_count - 1)
-                {
-                    animation->current_frame = 0;
-                }
-
-                entity.texture = animation->frames[animation->current_frame].texture;
+                animator.current_animation = animator.requested_animation;
+                animator.requested_animation.clear();
             }
+
+            // Increment the current frame and wrap, if necessary.
+            animator.current_frame += 1;
+            if (animator.current_frame > animation->frame_count - 1)
+            {
+                animator.current_frame = 0;
+            }
+
+            entity.texture = animation->frames[animator.current_frame].texture;
         }
     }
 
-    // @TODO(dubgron): The arena should be parameterized in the future.
-    void animation_add(Animator& animator, String animation_name)
+    void animation_request(Animator& animator, String animation)
     {
-        // Init the animator
-        if (animator.animations == nullptr)
+        if (animator.current_animation.is_empty())
         {
-            animator.animations = persistent_arena.push<Animation>(MAX_ANIMATIONS_PER_ENTITY);
-            animator.animations_count = 0;
+            animator.current_animation = animation;
         }
-
-        for (u64 idx = 0; idx < all_animations_count; ++idx)
+        else if (animator.current_animation != animation)
         {
-            if (all_animations[idx].name == animation_name)
-            {
-                APORIA_ASSERT(animator.animations_count < MAX_ANIMATIONS_PER_ENTITY);
-                animator.animations[animator.animations_count] = all_animations[idx];
-                animator.animations_count += 1;
-                break;
-            }
-        }
-    }
-
-    void animation_request(Animator& animator, String animation_name)
-    {
-        for (u64 idx = 0; idx < animator.animations_count; ++idx)
-        {
-            if (animator.animations[idx].name == animation_name)
-            {
-                animator.requested_animation = &animator.animations[idx];
-                break;
-            }
-        }
-
-        if (animator.requested_animation == nullptr)
-        {
-            APORIA_LOG(Error, "Failed to find animation '%'!", animation_name);
+            animator.requested_animation = animation;
         }
     }
 }

@@ -33,8 +33,6 @@ namespace Aporia
 
     struct SubTexture
     {
-        String name;
-
         v2 u{ 0.f };
         v2 v{ 0.f };
         Texture* source = nullptr;

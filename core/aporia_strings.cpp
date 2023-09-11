@@ -14,6 +14,11 @@ namespace Aporia
         return data != nullptr;
     }
 
+    bool String::is_empty() const
+    {
+        return length == 0;
+    }
+
     void String::clear()
     {
         data = nullptr;

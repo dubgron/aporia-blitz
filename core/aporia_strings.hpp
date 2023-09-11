@@ -15,6 +15,7 @@ namespace Aporia
         u64 length = 0;
 
         bool is_valid() const;
+        bool is_empty() const;
         void clear();
 
         [[nodiscard]] String substr(u64 offset, u64 count = -1) const;

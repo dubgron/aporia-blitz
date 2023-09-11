@@ -7,18 +7,20 @@
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
+#include "aporia_hash_table.hpp"
 #include "aporia_utils.hpp"
 
 namespace Aporia
 {
     static constexpr u64 MAX_TEXTURES = 10;
-    static constexpr u64 MAX_SUBTEXTURES = 1000;
+    static constexpr u64 MAX_SUBTEXTURES = 512;
 
+    // @NOTE(dubgron): The number of textures would be low, so we don'tneed to use
+    // hash tables. Using a non-resizable array also gives us pointer stability.
     static Texture textures[MAX_TEXTURES];
-    static i64 last_valid_texture_idx = 0;
+    static u64 last_valid_texture_idx = 0;
 
-    static SubTexture subtextures[MAX_SUBTEXTURES];
-    static i64 last_valid_subtexture_idx = 0;
+    static HashTable<SubTexture> subtextures;
 
     // @TODO(dubgron): Make it into free functions, it will be more convenient to use.
     void Image::load(String filepath)
@@ -52,27 +54,9 @@ namespace Aporia
         return pixels != nullptr;
     }
 
-    static void add_subtexture(const SubTexture& subtexture)
+    static bool operator==(const SubTexture& subtexture1, const SubTexture& subtexture2)
     {
-        SubTexture* found_spot = nullptr;
-        for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
-        {
-            if (subtextures[idx].name.length == 0)
-            {
-                found_spot = &subtextures[idx];
-                break;
-            }
-        }
-
-        if (!found_spot)
-        {
-            APORIA_ASSERT(last_valid_subtexture_idx < MAX_SUBTEXTURES);
-            found_spot = &subtextures[last_valid_subtexture_idx];
-            last_valid_subtexture_idx += 1;
-        }
-
-        APORIA_ASSERT(found_spot);
-        *found_spot = subtexture;
+        return subtexture1.u == subtexture2.u && subtexture1.v == subtexture2.v && subtexture1.source == subtexture2.source;
     }
 
     bool load_texture_atlas(String filepath)
@@ -98,6 +82,11 @@ namespace Aporia
 
         Texture* atlas_texture = find_or_load_texture(texture_filepath);
 
+        if (!hash_table_is_created(&subtextures))
+        {
+            subtextures = hash_table_create<SubTexture>(&persistent_arena, MAX_SUBTEXTURES);
+        }
+
         for (Config_Property* property = parsed_file; property; property = property->next)
         {
             if (property->category != "subtextures")
@@ -107,26 +96,26 @@ namespace Aporia
 
             String name = push_string(&persistent_arena, property->field);
 
-            for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
+            if (hash_table_find(&subtextures, name) != nullptr)
             {
-                if (subtextures[idx].name == name)
-                {
-                   APORIA_LOG(Warning, "There is more than one subtexture named '%'! One of them will be overwritten!", name);
-                }
+                APORIA_LOG(Warning, "There is more than one subtexture named '%'! One of them will be overwritten!", name);
             }
 
             const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
             const v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
 
             SubTexture subtexture;
-            subtexture.name = name;
             subtexture.u = u;
             subtexture.v = v;
             subtexture.source = atlas_texture;
-            add_subtexture(subtexture);
+            hash_table_insert(&subtextures, name, subtexture);
+
+            APORIA_ASSERT(*hash_table_find(&subtextures, name) == subtexture);
         }
 
         APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
+
+        rollback_scratch_arena(temp);
 
         return true;
     }
@@ -134,7 +123,7 @@ namespace Aporia
     static Texture* add_texture(const Texture& texture)
     {
         Texture* found_spot = nullptr;
-        for (i64 idx = 0; idx < last_valid_texture_idx; ++idx)
+        for (u64 idx = 0; idx < last_valid_texture_idx; ++idx)
         {
             if (textures[idx].id == 0)
             {
@@ -261,16 +250,12 @@ namespace Aporia
 
     const SubTexture* get_subtexture(String name)
     {
-        for (i64 idx = 0; idx < last_valid_subtexture_idx; ++idx)
+        SubTexture* subtexture = hash_table_find(&subtextures, name);
+        if (!subtexture)
         {
-            if (subtextures[idx].name == name)
-            {
-                return &subtextures[idx];
-            }
+            APORIA_LOG(Error, "Failed to find subtexture '%'!", name);
         }
-
-        APORIA_LOG(Error, "Failed to find subtexture '%'!", name);
-        return nullptr;
+        return subtexture;
     }
 
     f32 get_subtexture_width(const SubTexture& subtexture)
