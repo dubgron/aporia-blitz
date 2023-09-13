@@ -100,6 +100,9 @@ namespace Aporia
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+
         GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, *window_config.title, nullptr, nullptr);
 
         if (!handle)
@@ -163,14 +166,18 @@ namespace Aporia
 
         glfwSetFramebufferSizeCallback(handle, [](GLFWwindow* handle, i32 width, i32 height)
         {
-            if (width > 0 && height > 0)
+            if (width <= 0 || height <= 0)
             {
-                resize_framebuffers(width, height);
-                if (active_camera)
-                {
-                    active_camera->on_window_resize(width, height);
-                }
+                return;
             }
+
+            if (active_camera)
+            {
+                active_camera->on_window_resize(width, height);
+            }
+
+            // @NOTE(dubgron): The windows is not resizable, so this should not happen very often.
+            resize_framebuffers(width, height);
             glViewport(0, 0, width, height);
         });
 
