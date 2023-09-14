@@ -144,7 +144,7 @@ namespace Aporia
 
         while (hash_table->keys[index].distance_from_desired_bucket > 0)
         {
-            u64[prev_index] = decrement_index(hash_table->bucket_count, index);
+            u64 prev_index = decrement_index(hash_table->bucket_count, index);
 
             hash_table->keys[prev_index] = hash_table->keys[index];
             hash_table->keys[prev_index].distance_from_desired_bucket -= 1;
