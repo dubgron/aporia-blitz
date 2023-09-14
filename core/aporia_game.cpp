@@ -87,8 +87,8 @@ namespace Aporia
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
-            active_camera = create_camera(&persistent_arena);
             active_window = create_window(&persistent_arena);
+            active_camera = create_camera(&persistent_arena);
 
             opengl_init();
             shaders_init(&persistent_arena);

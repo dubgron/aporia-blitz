@@ -35,5 +35,7 @@ namespace Aporia
     void draw_circle(v2 position, f32 radius, Color color = Color::White, u32 shader_id = circle_shader);
     void draw_text(const Text& text);
 
-    void resize_framebuffers(u32 width, u32 height);
+    void get_size_of_render_surface(i32* width, i32* height);
+
+    void refresh_framebuffers();
 }

@@ -3,6 +3,7 @@
 #include "aporia_debug.hpp"
 #include "aporia_config.hpp"
 #include "aporia_inputs.hpp"
+#include "aporia_rendering.hpp"
 
 namespace Aporia
 {
@@ -190,19 +191,27 @@ namespace Aporia
         move(to_move);
     }
 
-    void Camera::on_window_resize(u32 width, u32 height)
+    void Camera::apply_config()
     {
-        APORIA_ASSERT(width > 0 && height > 0);
-        const f32 aspect_ratio = static_cast<f32>(width) / static_cast<f32>(height);
-        set_aspect_ratio(aspect_ratio);
+        refresh_aspect_ratio();
+        projection.fov = camera_config.fov;
+    }
+
+    void Camera::refresh_aspect_ratio()
+    {
+        i32 render_width, render_height;
+        get_size_of_render_surface(&render_width, &render_height);
+
+        mark_as_dirty(CameraDirtyFlag_Projection);
+        projection.aspect_ratio = (f32)render_width / (f32)render_height;
     }
 
     Camera* create_camera(MemoryArena* arena)
     {
-        APORIA_ASSERT(arena);
         Camera* result = arena->push<Camera>();
         *result = Camera{};
-        result->projection = CameraProjection{ .fov = camera_config.fov, .aspect_ratio = camera_config.aspect_ratio };
+        result->apply_config();
+
         return result;
     }
 }

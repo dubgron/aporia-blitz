@@ -1,12 +1,16 @@
 #include "aporia_config.hpp"
 
+#include "aporia_camera.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
+#include "aporia_rendering.hpp"
 #include "aporia_utils.hpp"
+#include "aporia_window.hpp"
 
 namespace Aporia
 {
     WindowConfig window_config;
+    RenderingConfig rendering_config;
     ShaderConfig shader_config;
     EditorConfig editor_config;
     CameraConfig camera_config;
@@ -394,7 +398,6 @@ namespace Aporia
         { "window", "position",               Config_ValueType_Int32,             2, &window_config.position },
 
         { "camera", "fov",                    Config_ValueType_Float32,           1, &camera_config.fov },
-        { "camera", "aspect_ratio",           Config_ValueType_Float32,           1, &camera_config.aspect_ratio },
         { "camera", "background_color",       Config_ValueType_Uint8,             4, &camera_config.background_color },
         { "camera", "movement_speed",         Config_ValueType_Float32,           1, &camera_config.movement_speed },
         { "camera", "rotation_speed",         Config_ValueType_Float32,           1, &camera_config.rotation_speed },
@@ -414,6 +417,8 @@ namespace Aporia
         { "shader", "default.blend_op",       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
         { "shader", "default.depth_test",     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
         { "shader", "default.depth_write",    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
+
+        { "rendering", "custom_resolution",   Config_ValueType_Int32,             2, &rendering_config.custom_resolution_width },
 
         { "editor", "display_editor_grid",    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
     };
@@ -496,8 +501,19 @@ namespace Aporia
 
         config_arena.clear();
 
+        // Reset configs to perform a clean reload.
+        window_config = {};
+        rendering_config = {};
+        shader_config = {};
+        editor_config = {};
+        camera_config = {};
+
         bool success = load_engine_config_from_file(config_asset->source_file);
         config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;
+
+        active_window->apply_config();
+        active_camera->apply_config();
+        refresh_framebuffers();
 
         return success;
     }

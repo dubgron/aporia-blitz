@@ -68,8 +68,13 @@ namespace Aporia
         return world_position;
     }
 
-    void Window::on_config_reload()
+    void Window::apply_config()
     {
+        APORIA_ASSERT(window_config.width > 0 && window_config.height > 0);
+
+        active_window->width = width;
+        active_window->height = height;
+
         glfwSetWindowTitle(handle, *window_config.title);
         glfwSetWindowSize(handle, window_config.width, window_config.height);
         glfwSwapInterval(window_config.vsync);
@@ -82,8 +87,6 @@ namespace Aporia
 
     Window* create_window(MemoryArena* arena)
     {
-        APORIA_ASSERT(arena);
-
         glfwSetErrorCallback([](i32 error, const char* description)
         {
             APORIA_LOG(Error, "GLFW Error #%: %", error, description);
@@ -102,7 +105,6 @@ namespace Aporia
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-
         GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, *window_config.title, nullptr, nullptr);
 
         if (!handle)
@@ -114,6 +116,8 @@ namespace Aporia
 
         Window* result = arena->push<Window>();
         result->handle = handle;
+        result->width = window_config.width;
+        result->height = window_config.height;
 
         glfwMakeContextCurrent(handle);
         glfwSetWindowUserPointer(handle, result);
@@ -166,19 +170,15 @@ namespace Aporia
 
         glfwSetFramebufferSizeCallback(handle, [](GLFWwindow* handle, i32 width, i32 height)
         {
-            if (width <= 0 || height <= 0)
+            if (width > 0 && height > 0)
             {
-                return;
-            }
+                active_window->width = width;
+                active_window->height = height;
 
-            if (active_camera)
-            {
-                active_camera->on_window_resize(width, height);
-            }
+                active_camera->refresh_aspect_ratio();
 
-            // @NOTE(dubgron): The windows is not resizable, so this should not happen very often.
-            resize_framebuffers(width, height);
-            glViewport(0, 0, width, height);
+                refresh_framebuffers();
+            }
         });
 
         return result;

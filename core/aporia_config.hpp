@@ -11,7 +11,6 @@ namespace Aporia
     struct CameraConfig
     {
         f32 fov = 1.f;
-        f32 aspect_ratio = 1.f;
         Color background_color;
 
         f32 movement_speed = 0.f;
@@ -43,6 +42,17 @@ namespace Aporia
         ShaderProperties default_properties;
     };
 
+    struct RenderingConfig
+    {
+        i32 custom_resolution_width = 0;
+        i32 custom_resolution_height = 0;
+
+        bool is_using_custom_resolution() const
+        {
+            return custom_resolution_width > 0 && custom_resolution_height > 0;
+        }
+    };
+
     struct WindowConfig
     {
         String title;
@@ -58,6 +68,7 @@ namespace Aporia
     };
 
     extern WindowConfig window_config;
+    extern RenderingConfig rendering_config;
     extern ShaderConfig shader_config;
     extern EditorConfig editor_config;
     extern CameraConfig camera_config;

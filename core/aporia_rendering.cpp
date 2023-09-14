@@ -7,11 +7,18 @@
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 
+// @NOTE(dubgron): We need to set the uvs to (0, 1) and (1, 0), because
+// ImGui expects them to be the coordinates of the top-left corner and
+// the bottom-right corner of the texture (respectively). The default
+// uvs of (0, 0) and (1, 1) are fine for the screen coordinates (where
+// the point (0, 0) is in the top-left corner, and the y axis grows
+// downwards), but an OpenGL texture has its origin at the bottom-left
+// corner of the screen and the y axis grows upwards.
 #if defined(APORIA_DEBUG)
     #define DEBUG_TEXTURE(texture) \
         ImGui::Begin("DEBUG | Textures"); \
-        ImGui::Text("ID: %d, Size: %d x %d", texture.id, texture.width, texture.height); \
-        ImGui::Image((void*)(u64)texture.id, ImVec2{ (f32)texture.width, (f32)texture.height }, ImVec2{ 0.f, 1.f }, ImVec2{ 1.f, 0.f }); \
+        ImGui::Text("ID: %d, Size: %d x %d", (texture).id, (texture).width, (texture).height); \
+        ImGui::Image((void*)(u64)(texture).id, ImVec2{ (f32)(texture).width, (f32)(texture).height }, ImVec2{ 0.f, 1.f }, ImVec2{ 1.f, 0.f }); \
         ImGui::End();
 #else
     #define DEBUG_TEXTURE(...)
@@ -149,6 +156,7 @@ namespace Aporia
     static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 
     static Framebuffer main_framebuffer;
+    static Framebuffer temp_framebuffer;
 
     static RenderQueue rendering_queue;
     static VertexArray vertex_arrays[2];
@@ -533,11 +541,8 @@ namespace Aporia
     {
         lighting_enabled = true;
 
-        const i32 width = main_framebuffer.color_buffer.width;
-        const i32 height = main_framebuffer.color_buffer.height;
-
-        masking.create(width, height);
-        raymarching.create(width, height);
+        masking.create(active_window->width, active_window->height);
+        raymarching.create(active_window->width, active_window->height);
 
         if (light_sources.data == nullptr)
         {
@@ -563,9 +568,12 @@ namespace Aporia
 
     void add_light_source(LightSource source)
     {
-        APORIA_ASSERT(light_sources.count < light_sources.max_count);
-        light_sources.data[light_sources.count] = source;
-        light_sources.count += 1;
+        if (lighting_enabled)
+        {
+            APORIA_ASSERT(light_sources.count < light_sources.max_count);
+            light_sources.data[light_sources.count] = source;
+            light_sources.count += 1;
+        }
     }
 
     void rendering_init(MemoryArena* arena)
@@ -634,8 +642,8 @@ namespace Aporia
             rollback_scratch_arena(temp);
         }
 
-        // Setup Framebuffer
-        main_framebuffer.create(window_config.width, window_config.height);
+        // Setup Framebuffers
+        refresh_framebuffers();
 
         // Setup default shaders
         default_shader = load_shader("content/shaders/default.glsl");
@@ -751,6 +759,10 @@ namespace Aporia
             bind_shader(shadowcasting_shader);
             shader_set_uint("u_num_lights", light_sources.count);
 
+            // @NOTE(dubgron): Resize the viewport to the size of the window
+            // before rendering the lights to keep the highest fidelity.
+            glViewport(0, 0, active_window->width, active_window->height);
+
             masking.bind();
             masking.clear(Color::Transparent);
 
@@ -775,6 +787,9 @@ namespace Aporia
 
             DEBUG_TEXTURE(raymarching.color_buffer);
 
+            // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
+            glViewport(0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height);
+
             main_framebuffer.bind();
             flush_framebuffer(raymarching, shadowcasting_shader);
             main_framebuffer.unbind();
@@ -782,7 +797,17 @@ namespace Aporia
 
         DEBUG_TEXTURE(main_framebuffer.color_buffer);
 
+        // @NOTE(dubgron): The temporary framebuffer is here to avoid FBO's Feedback Loop.
+        // See https://www.khronos.org/opengl/wiki/Framebuffer_Object#Feedback_Loops.
+        temp_framebuffer.bind();
         flush_framebuffer(main_framebuffer, postprocessing_shader);
+        temp_framebuffer.unbind();
+
+        // @TODO(dubgron): Rescale and copy the rendered frame straight into the default framebuffer.
+        glBlitNamedFramebuffer(temp_framebuffer.framebuffer_id, 0,
+            0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
+            0, 0, active_window->width, active_window->height,
+            GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         unbind_shader();
     }
@@ -1152,13 +1177,37 @@ namespace Aporia
         rollback_scratch_arena(temp);
     }
 
-    void resize_framebuffers(u32 width, u32 height)
+    void get_size_of_render_surface(i32* width, i32* height)
     {
-        main_framebuffer.create(width, height);
+        if (rendering_config.is_using_custom_resolution())
+        {
+            *width = rendering_config.custom_resolution_width;
+            *height = rendering_config.custom_resolution_height;
+        }
+        else
+        {
+            APORIA_ASSERT(active_window);
+            *width = active_window->width;
+            *height = active_window->height;
+        }
+
+        APORIA_ASSERT(*width > 0 && *height > 0);
+    }
+
+    void refresh_framebuffers()
+    {
+        i32 render_width, render_height;
+        get_size_of_render_surface(&render_width, &render_height);
+
+        main_framebuffer.create(render_width, render_height);
+        temp_framebuffer.create(render_width, render_height);
+
+        glViewport(0, 0, render_width, render_height);
+
         if (lighting_enabled)
         {
-            masking.create(width, height);
-            raymarching.create(width, height);
+            masking.create(active_window->width, active_window->height);
+            raymarching.create(active_window->width, active_window->height);
         }
     }
 }

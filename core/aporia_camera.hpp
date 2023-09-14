@@ -62,7 +62,8 @@ namespace Aporia
         void control_zoom(f32 delta_time);
         void follow(v2 to_follow, f32 delta_time);
 
-        void on_window_resize(u32 width, u32 height);
+        void apply_config();
+        void refresh_aspect_ratio();
     };
 
     Camera* create_camera(MemoryArena* arena);
