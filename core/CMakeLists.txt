@@ -148,3 +148,7 @@ if (APORIA_USE_UNITY_BUILD)
         UNITY_BUILD_MODE        BATCH
         UNITY_BUILD_BATCH_SIZE  0)
 endif()
+
+if (MSVC)
+    target_sources(core PRIVATE "${PROJECT_SOURCE_DIR}/misc/aporia_core.natvis")
+endif()
