@@ -803,16 +803,41 @@ namespace Aporia
         flush_framebuffer(main_framebuffer, postprocessing_shader);
         temp_framebuffer.unbind();
 
+        f32 render_aspect_ratio = (f32)temp_framebuffer.color_buffer.width / (f32)temp_framebuffer.color_buffer.height;
+        f32 window_aspect_ratio = (f32)active_window->width / (f32)active_window->height;
+
+        i32 offset_x, offset_y, render_width, render_height;
+
+        if (render_aspect_ratio > window_aspect_ratio)
+        {
+            render_width = active_window->width;
+            render_height = active_window->width / render_aspect_ratio;
+
+            offset_x = 0;
+            offset_y = (active_window->height - render_height) / 2;
+        }
+        else
+        {
+            render_width = active_window->height * render_aspect_ratio;
+            render_height = active_window->height;
+
+            offset_x = (active_window->width - render_width) / 2;
+            offset_y = 0;
+        }
+
+        glClearColor(0.f, 0.f, 0.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 #if defined(APORIA_EMSCRIPTEN)
         glBindFramebuffer(GL_READ_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
-            0, 0, active_window->width, active_window->height,
+            offset_x, offset_y, offset_x + render_width, offset_y + render_height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
         glBlitNamedFramebuffer(temp_framebuffer.framebuffer_id, 0,
             0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
-            0, 0, active_window->width, active_window->height,
+            offset_x, offset_y, offset_x + render_width, offset_y + render_height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #endif
 
