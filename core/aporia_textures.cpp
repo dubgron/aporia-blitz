@@ -201,7 +201,10 @@ namespace Aporia
         texture.width = image.width;
         texture.height = image.height;
         texture.channels = image.channels;
+        // @NOTE(dubgron): The texture doesn't take an ownership over the filepath.
+        // We have to make sure the texture doesn't outlive it.
         texture.source_file = filepath;
+
         return add_texture(texture);
     }
 
@@ -217,12 +220,12 @@ namespace Aporia
         }
 
         // Failed to find the texture, we need to load it.
-        Texture* texture = load_texture_from_file(filepath);
-
         Asset* texture_asset = register_asset(filepath, AssetType::Texture);
-        texture_asset->status = texture ? AssetStatus::Loaded : AssetStatus::NotLoaded;
 
-        return texture;
+        Texture* result = load_texture_from_file(texture_asset->source_file);
+        texture_asset->status = result ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+
+        return result;
     }
 
     bool reload_texture_asset(Asset* texture_asset)
@@ -237,10 +240,12 @@ namespace Aporia
                 glDeleteTextures(1, &texture->id);
                 texture->id = 0;
 
-                bool reloaded_successfully = load_texture_from_file(texture_asset->source_file) != nullptr;
-                texture_asset->status = reloaded_successfully ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+                // @NOTE(dubgron): This should reload the new texture into the
+                // same spot as an old one because its ID has been zeroed out.
+                Texture* reloaded_texture = load_texture_from_file(texture_asset->source_file);
+                texture_asset->status = reloaded_texture ? AssetStatus::Loaded : AssetStatus::NotLoaded;
 
-                return reloaded_successfully;
+                return reloaded_texture != nullptr;
             }
         }
 
