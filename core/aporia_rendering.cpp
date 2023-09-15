@@ -803,11 +803,18 @@ namespace Aporia
         flush_framebuffer(main_framebuffer, postprocessing_shader);
         temp_framebuffer.unbind();
 
-        // @TODO(dubgron): Rescale and copy the rendered frame straight into the default framebuffer.
+#if defined(APORIA_EMSCRIPTEN)
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
+            0, 0, active_window->width, active_window->height,
+            GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#else
         glBlitNamedFramebuffer(temp_framebuffer.framebuffer_id, 0,
             0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
             0, 0, active_window->width, active_window->height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#endif
 
         unbind_shader();
     }
