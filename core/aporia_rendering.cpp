@@ -26,6 +26,9 @@
 
 namespace Aporia
 {
+    static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
+    static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
+
 #if defined(APORIA_EMSCRIPTEN)
     using texture_id = f32;
 #else
@@ -47,203 +50,98 @@ namespace Aporia
     struct IndexBuffer
     {
         u32 id = 0;
-        u32 max_size = 0;
-        u32 index_count = 0;
-
-        void init(u32 max_objects, u32 count, const u32* indices);
-        void deinit();
-
-        void bind() const;
-        void unbind() const;
+        u32 max_count = 0;
+        u32 index_per_object = 0;
     };
 
-    struct VertexBuffer
+    static IndexBuffer indexbuffer_create(u32 max_count, u32 index_per_object, const u32* indices)
     {
-        u32 id = 0;
-        u32 vertex_count = 0;
-        u64 max_size = 0;
+        IndexBuffer result;
+        result.max_count = max_count;
+        result.index_per_object = index_per_object;
 
-        Vertex* data = nullptr;
-        u64 count = 0;
-
-        void init(MemoryArena* arena, u32 max_objects, u32 in_count);
-        void deinit();
-
-        void bind() const;
-        void unbind() const;
-
-        void add_layout();
-
-        void flush() const;
-    };
-
-    struct VertexArray
-    {
-        u32 id = 0;
-        u32 mode = 0;
-
-        VertexBuffer vertex_buffer;
-        IndexBuffer index_buffer;
-
-        void init(u32 vertex_count, u32 index_count);
-        void deinit();
-
-        void bind() const;
-        void unbind() const;
-
-        void render();
-    };
-
-    struct UniformBuffer
-    {
-        u32 id = 0;
-        u32 max_size = 0;
-        u32 binding_index = 0;
-        String block_name;
-
-        void init(u32 in_max_size, u32 in_binding_index, String in_block_name);
-        void deinit();
-
-        void bind_to_shader(u32 shader_id);
-        void set_data(const void* data, u64 size);
-    };
-
-    struct Framebuffer
-    {
-        u32 framebuffer_id = 0;
-        u32 renderbuffer_id = 0;
-
-        Texture color_buffer;
-        Vertex vertex[4];
-
-        void create(i32 width, i32 height);
-        void destroy();
-
-        void bind() const;
-        void unbind() const;
-
-        // @TODO(dubgron): Make clear more customizable.
-        void clear(Color color = Color::Black);
-    };
-
-    // Index for VertexArray in Renderer
-    enum class BufferType : u8
-    {
-        Quads = 0,
-        Lines = 1
-    };
-
-    struct RenderQueueKey
-    {
-        BufferType buffer = BufferType::Quads;
-        u32 shader_id = 0;
-
-        Vertex vertex[4];
-    };
-
-    struct RenderQueue
-    {
-        RenderQueueKey* data = nullptr;
-        u64 max_count = 0;
-        u64 count = 0;
-
-        void init(MemoryArena* arena, u64 in_count);
-        void add(const RenderQueueKey& key);
-    };
-
-    static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
-    static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
-    static constexpr u64 MAX_LIGHT_SOURCES = 1000;
-
-    static Framebuffer main_framebuffer;
-    static Framebuffer temp_framebuffer;
-
-    static RenderQueue rendering_queue;
-    static VertexArray vertex_arrays[2];
-
-    // @TODO(dubgron): Move the lighting code to the separate file.
-    static bool lighting_enabled = false;
-    static Framebuffer masking;
-    static Framebuffer raymarching;
-    static UniformBuffer lights_uniform_buffer;
-
-    struct LightSources
-    {
-        LightSource* data = nullptr;
-        u64 max_count = 0;
-        u64 count = 0;
-
-        void init(MemoryArena* arena, u64 in_count);
-    };
-
-    static LightSources light_sources;
-
-    void IndexBuffer::init(u32 max_objects, u32 count, const u32* indices)
-    {
-        max_size = max_objects * count;
-        index_count = count;
-
-        glGenBuffers(1, &id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        i64 size = result.max_count * sizeof(u32);
 
 #if defined(APORIA_EMSCRIPTEN)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, max_size * sizeof(u32), indices, GL_STATIC_DRAW);
+        glGenBuffers(1, &result.id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.id);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
 #else
-        glNamedBufferData(id, max_size * sizeof(u32), indices, GL_STATIC_DRAW);
+        glCreateBuffers(1, &result.id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.id);
+        glNamedBufferData(result.id, size, indices, GL_STATIC_DRAW);
 #endif
+
+        return result;
     }
 
-    void IndexBuffer::deinit()
+    static void indexbuffer_destroy(IndexBuffer* index_buffer)
     {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &index_buffer->id);
     }
 
-    void IndexBuffer::bind() const
+    static void indexbuffer_bind(IndexBuffer* index_buffer)
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer->id);
     }
 
-    void IndexBuffer::unbind() const
+    static void indexbuffer_unbind()
     {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::init(MemoryArena* arena, u32 max_objects, u32 in_count)
+    struct VertexBuffer
     {
-        max_size = max_objects * in_count;
-        vertex_count = in_count;
+        u32 id = 0;
+        u32 max_count = 0;
+        u32 vertex_per_object = 0;
+
+        Vertex* data = nullptr;
+        u64 count = 0;
+    };
+
+    static VertexBuffer vertexbuffer_create(MemoryArena* arena, u32 max_count, u32 vertex_per_object)
+    {
+        VertexBuffer result;
+        result.max_count = max_count;
+        result.vertex_per_object = vertex_per_object;
+
+        result.data = arena->push<Vertex>(result.max_count);
+        result.count = 0;
+
+        i64 size = result.max_count * sizeof(Vertex);
 
 #if defined(APORIA_EMSCRIPTEN)
-        glGenBuffers(1, &id);
-        glBindBuffer(GL_ARRAY_BUFFER, id);
-        glBufferData(GL_ARRAY_BUFFER, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+        glGenBuffers(1, &result.id);
+        glBindBuffer(GL_ARRAY_BUFFER, result.id);
+        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 #else
-        glCreateBuffers(1, &id);
-        glNamedBufferData(id, max_size * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
+        glCreateBuffers(1, &result.id);
+        glBindBuffer(GL_ARRAY_BUFFER, result.id);
+        glNamedBufferData(result.id, size, nullptr, GL_DYNAMIC_DRAW);
 #endif
 
-        data = arena->push<Vertex>(max_size);
-        count = 0;
+        return result;
     }
 
-    void VertexBuffer::deinit()
+    static void vertexbuffer_destroy(VertexBuffer* vertex_buffer)
     {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &vertex_buffer->id);
     }
 
-    void VertexBuffer::bind() const
+    static void vertexbuffer_bind(VertexBuffer* vertex_buffer)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, id);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
     }
 
-    void VertexBuffer::unbind() const
+    static void vertexbuffer_unbind()
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::add_layout()
+    static void vertexbuffer_add_layout(VertexBuffer* vertex_buffer)
     {
-        bind();
+        vertexbuffer_bind(vertex_buffer);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
@@ -265,208 +163,183 @@ namespace Aporia
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, additional));
 
-        unbind();
+        vertexbuffer_unbind();
     }
 
-    void VertexBuffer::flush() const
+    static void vertexbuffer_flush(VertexBuffer* vertex_buffer)
     {
 #if defined(APORIA_EMSCRIPTEN)
-        bind();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(Vertex), data);
-        unbind();
+        vertexbuffer_bind(vertex_buffer);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_buffer->count * sizeof(Vertex), vertex_buffer->data);
+        vertexbuffer_unbind();
 #else
-        glNamedBufferSubData(id, 0, count * sizeof(Vertex), data);
+        glNamedBufferSubData(vertex_buffer->id, 0, vertex_buffer->count * sizeof(Vertex), vertex_buffer->data);
 #endif
     }
 
-    void VertexArray::init(u32 vertex_count, u32 index_count)
+    struct VertexArray
     {
-        glGenVertexArrays(1, &id);
+        u32 id = 0;
+        u32 mode = 0;
 
-        if (vertex_count == 4 && index_count == 6)
+        VertexBuffer vertex_buffer;
+        IndexBuffer index_buffer;
+    };
+
+    static VertexArray vertexarray_create(u32 vertex_stride, u32 index_stride)
+    {
+        VertexArray result;
+        glGenVertexArrays(1, &result.id);
+
+        if (vertex_stride == 4 && index_stride == 6)
         {
-            mode = GL_TRIANGLES;
+            result.mode = GL_TRIANGLES;
         }
-        else if (vertex_count == 2 && index_count == 2)
+        else if (vertex_stride == 2 && index_stride == 2)
         {
-            mode = GL_LINES;
+            result.mode = GL_LINES;
         }
+
+        return result;
     }
 
-    void VertexArray::deinit()
+    static void vertexarray_destroy(VertexArray* vertex_array)
     {
-        glDeleteVertexArrays(1, &id);
-        vertex_buffer.deinit();
-        index_buffer.deinit();
+        glDeleteVertexArrays(1, &vertex_array->id);
+        vertexbuffer_destroy(&vertex_array->vertex_buffer);
+        indexbuffer_destroy(&vertex_array->index_buffer);
     }
 
-    void VertexArray::bind() const
+    static void vertexarray_bind(VertexArray* vertex_array)
     {
-        glBindVertexArray(id);
+        glBindVertexArray(vertex_array->id);
     }
 
-    void VertexArray::unbind() const
+    static void vertexarray_unbind()
     {
         glBindVertexArray(0);
     }
 
-    void VertexArray::render()
+    static void vertexarray_render(VertexArray* vertex_array)
     {
-        vertex_buffer.flush();
+        vertexbuffer_flush(&vertex_array->vertex_buffer);
 
-        this->bind();
-        index_buffer.bind();
+        vertexarray_bind(vertex_array);
+        indexbuffer_bind(&vertex_array->index_buffer);
 
-        const u32 count = index_buffer.index_count * vertex_buffer.count / vertex_buffer.vertex_count;
-        glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
+        const u32 index_count = vertex_array->index_buffer.index_per_object * vertex_array->vertex_buffer.count / vertex_array->vertex_buffer.vertex_per_object;
+        glDrawElements(vertex_array->mode, index_count, GL_UNSIGNED_INT, nullptr);
 
-        index_buffer.unbind();
-        this->unbind();
+        indexbuffer_unbind();
+        vertexarray_unbind();
 
-        vertex_buffer.count = 0;
+        vertex_array->vertex_buffer.count = 0;
     }
 
-    void UniformBuffer::init(u32 in_max_size, u32 in_binding_index, String in_block_name)
+    struct UniformBuffer
     {
-        max_size = in_max_size;
-        binding_index = in_binding_index;
-        block_name = in_block_name;
+        u32 id = 0;
+        u32 max_size = 0;
+        u32 binding_index = 0;
+        String block_name;
+    };
 
-        glGenBuffers(1, &id);
+    static UniformBuffer uniformbuffer_create(u32 max_size, u32 binding_index, String block_name)
+    {
+        UniformBuffer result;
+        result.max_size = max_size;
+        result.binding_index = binding_index;
+        result.block_name = block_name;
 
-        glBindBuffer(GL_UNIFORM_BUFFER, id);
-        glBufferData(GL_UNIFORM_BUFFER, in_max_size, nullptr, GL_STATIC_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        glBindBufferBase(GL_UNIFORM_BUFFER, in_binding_index, id);
+#if defined(APORIA_EMSCRIPTEN)
+        glGenBuffers(1, &result.id);
+        glBindBuffer(GL_UNIFORM_BUFFER, result.id);
+        glBufferData(GL_UNIFORM_BUFFER, result.max_size, nullptr, GL_STATIC_DRAW);
+#else
+        glCreateBuffers(1, &result.id);
+        glBindBuffer(GL_UNIFORM_BUFFER, result.id);
+        glNamedBufferData(result.id, result.max_size, nullptr, GL_STATIC_DRAW);
+#endif
+
+        glBindBufferBase(GL_UNIFORM_BUFFER, result.binding_index, result.id);
+
+        return result;
     }
 
-    void UniformBuffer::deinit()
+    static void uniformbuffer_destroy(UniformBuffer* uniform_buffer)
     {
-        glDeleteBuffers(1, &id);
+        glDeleteBuffers(1, &uniform_buffer->id);
     }
 
-    void UniformBuffer::bind_to_shader(u32 shader_id)
+    static void uniformbuffer_bind_to_shader(UniformBuffer* uniform_buffer, u32 shader_id)
     {
-        const u32 buffer_index = glGetUniformBlockIndex(shader_id, *block_name);
-        glUniformBlockBinding(shader_id, buffer_index, binding_index);
+        const u32 buffer_index = glGetUniformBlockIndex(shader_id, *uniform_buffer->block_name);
+        glUniformBlockBinding(shader_id, buffer_index, uniform_buffer->binding_index);
     }
 
-    void UniformBuffer::set_data(const void* data, u64 size)
+    static void uniformbuffer_set_data(UniformBuffer* uniform_buffer, void* data, u64 size)
     {
-        glBindBuffer(GL_UNIFORM_BUFFER, id);
+#if defined(APORIA_EMSCRIPTEN)
+        glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer->id);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
+#else
+        glNamedBufferSubData(uniform_buffer->id, 0, size, data);
+#endif
     }
 
-    void Framebuffer::create(i32 width, i32 height)
+    // Index for VertexArray in Renderer
+    enum class BufferType : u8
     {
-        APORIA_ASSERT_WITH_MESSAGE(width > 0 && height > 0,
-            "Invalid framebuffer dimensions! Width: %, Height: %", width, height);
+        Quads = 0,
+        Lines = 1,
+    };
 
-        // Delete potential previous buffers and textures
-        destroy();
+    struct RenderQueueKey
+    {
+        BufferType buffer = BufferType::Quads;
+        u32 shader_id = 0;
 
-        // Create new buffers and textures
-        color_buffer.width = width;
-        color_buffer.height = height;
-        color_buffer.channels = 4;
+        Vertex vertex[4];
+    };
 
-        glGenFramebuffers(1, &framebuffer_id);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+    struct RenderQueue
+    {
+        RenderQueueKey* data = nullptr;
+        u64 max_count = 0;
+        u64 count = 0;
+    };
 
-        glGenTextures(1, &color_buffer.id);
-        glActiveTexture(GL_TEXTURE0 + color_buffer.id);
-        glBindTexture(GL_TEXTURE_2D, color_buffer.id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0);
+    static RenderQueue rendering_queue;
+    static VertexArray vertex_arrays[2];
 
-        glGenRenderbuffers(1, &renderbuffer_id);
-        glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer_id);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbuffer_id);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // Setup vertices
-        vertex[0].position = v3{ -1.f, -1.f, 0.f };
-        vertex[0].tex_coord = v2{ 0.f, 0.f };
-        vertex[0].tex_id = color_buffer.id;
-
-        vertex[1].position = v3{ 1.f, -1.f, 0.f };
-        vertex[1].tex_coord = v2{ 1.f, 0.f };
-        vertex[1].tex_id = color_buffer.id;
-
-        vertex[2].position = v3{ 1.f, 1.f, 0.f };
-        vertex[2].tex_coord = v2{ 1.f, 1.f };
-        vertex[2].tex_id = color_buffer.id;
-
-        vertex[3].position = v3{ -1.f, 1.f, 0.f };
-        vertex[3].tex_coord = v2{ 0.f, 1.f };
-        vertex[3].tex_id = color_buffer.id;
+    static VertexArray* get_vao_from_buffer(BufferType buffer_type)
+    {
+        return &vertex_arrays[(u64)buffer_type];
     }
 
-    void Framebuffer::destroy()
+    static RenderQueue renderqueue_create(MemoryArena* arena, u64 in_count)
     {
-        glDeleteTextures(1, &color_buffer.id);
-        glDeleteRenderbuffers(1, &renderbuffer_id);
-        glDeleteFramebuffers(1, &framebuffer_id);
+        RenderQueue result;
+        result.data = arena->push<RenderQueueKey>(in_count);
+        result.max_count = in_count;
+        result.count = 0;
+        return result;
     }
 
-    void Framebuffer::bind() const
+    static void renderqueue_add(RenderQueue* render_queue, const RenderQueueKey& key)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+        APORIA_ASSERT(render_queue->count < render_queue->max_count);
+        render_queue->data[render_queue->count] = key;
+        render_queue->count += 1;
     }
 
-    void Framebuffer::unbind() const
+    static void renderqueue_flush(RenderQueue* render_queue)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    void Framebuffer::clear(Color color /* = Color::Black */)
-    {
-        glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    void RenderQueue::init(MemoryArena* arena, u64 in_count)
-    {
-        data = arena->push<RenderQueueKey>(in_count);
-        max_count = in_count;
-        count = 0;
-    }
-
-    void RenderQueue::add(const RenderQueueKey& key)
-    {
-        APORIA_ASSERT(count < max_count);
-        data[count] = key;
-        count += 1;
-    }
-
-    void LightSources::init(MemoryArena* arena, u64 in_count)
-    {
-        data = arena->push<LightSource>(in_count);
-        max_count = in_count;
-        count = 0;
-    }
-
-    static void flush_buffer(BufferType buffer, u32 shader_id)
-    {
-        bind_shader(shader_id);
-
-        const u8 buffer_index = to_underlying(buffer);
-        vertex_arrays[buffer_index].render();
-    }
-
-    static void flush_rendering_queue()
-    {
-        if (rendering_queue.count > 0)
+        if (render_queue->count > 0)
         {
-            qsort(rendering_queue.data, rendering_queue.count, sizeof(RenderQueueKey),
+            qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
                 [](const void* elem1, const void* elem2) -> i32
                 {
                     const RenderQueueKey& key1 = *reinterpret_cast<const RenderQueueKey*>(elem1);
@@ -486,51 +359,164 @@ namespace Aporia
                     return z_diff;
                 });
 
-            RenderQueueKey prev_key = rendering_queue.data[0];
-            for (u64 idx = 0; idx < rendering_queue.count; ++idx)
+            RenderQueueKey prev_key = render_queue->data[0];
+            for (u64 idx = 0; idx < render_queue->count; ++idx)
             {
-                RenderQueueKey& key = rendering_queue.data[idx];
+                RenderQueueKey& key = render_queue->data[idx];
 
                 if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
                 {
-                    flush_buffer(prev_key.buffer, prev_key.shader_id);
+                    bind_shader(prev_key.shader_id);
+                    vertexarray_render(get_vao_from_buffer(prev_key.buffer));
                 }
 
-                const u8 buffer_index = to_underlying(key.buffer);
-                VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
+                VertexArray* vertex_array = get_vao_from_buffer(key.buffer);
+                VertexBuffer* vertex_buffer = &vertex_array->vertex_buffer;
 
-                if (vertex_buffer.count + vertex_buffer.vertex_count > vertex_buffer.max_size)
+                if (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count)
                 {
-                    flush_buffer(key.buffer, key.shader_id);
+                    bind_shader(key.shader_id);
+                    vertexarray_render(vertex_array);
                 }
 
-                for (u64 i = 0; i < vertex_buffer.vertex_count; ++i)
+                for (u64 i = 0; i < vertex_buffer->vertex_per_object; ++i)
                 {
-                    vertex_buffer.data[vertex_buffer.count] = key.vertex[i];
-                    vertex_buffer.count += 1;
+                    vertex_buffer->data[vertex_buffer->count] = key.vertex[i];
+                    vertex_buffer->count += 1;
                 }
 
                 prev_key = key;
             }
 
-            flush_buffer(prev_key.buffer, prev_key.shader_id);
+            bind_shader(prev_key.shader_id);
+            vertexarray_render(get_vao_from_buffer(prev_key.buffer));
 
-            rendering_queue.count = 0;
+            render_queue->count = 0;
         }
     }
 
-    static void flush_framebuffer(const Framebuffer& framebuffer, u32 shader_id)
+    struct Framebuffer
     {
-        constexpr u8 buffer_index = to_underlying(BufferType::Quads);
-        VertexBuffer& vertex_buffer = vertex_arrays[buffer_index].vertex_buffer;
+        u32 framebuffer_id = 0;
+        u32 renderbuffer_id = 0;
+
+        Texture color_buffer;
+        Vertex vertex[4];
+    };
+
+    static Framebuffer framebuffer_create(i32 width, i32 height)
+    {
+        APORIA_ASSERT_WITH_MESSAGE(width > 0 && height > 0,
+            "Invalid framebuffer dimensions! Width: %, Height: %", width, height);
+
+        Framebuffer result;
+
+        // Create new buffers and textures
+        result.color_buffer.width = width;
+        result.color_buffer.height = height;
+        result.color_buffer.channels = 4;
+
+        glGenFramebuffers(1, &result.framebuffer_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, result.framebuffer_id);
+
+        glGenTextures(1, &result.color_buffer.id);
+        glActiveTexture(GL_TEXTURE0 + result.color_buffer.id);
+        glBindTexture(GL_TEXTURE_2D, result.color_buffer.id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result.color_buffer.id, 0);
+
+        glGenRenderbuffers(1, &result.renderbuffer_id);
+        glBindRenderbuffer(GL_RENDERBUFFER, result.renderbuffer_id);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, result.renderbuffer_id);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Setup vertices
+        result.vertex[0].position = v3{ -1.f, -1.f, 0.f };
+        result.vertex[0].tex_coord = v2{ 0.f, 0.f };
+        result.vertex[0].tex_id = result.color_buffer.id;
+
+        result.vertex[1].position = v3{ 1.f, -1.f, 0.f };
+        result.vertex[1].tex_coord = v2{ 1.f, 0.f };
+        result.vertex[1].tex_id = result.color_buffer.id;
+
+        result.vertex[2].position = v3{ 1.f, 1.f, 0.f };
+        result.vertex[2].tex_coord = v2{ 1.f, 1.f };
+        result.vertex[2].tex_id = result.color_buffer.id;
+
+        result.vertex[3].position = v3{ -1.f, 1.f, 0.f };
+        result.vertex[3].tex_coord = v2{ 0.f, 1.f };
+        result.vertex[3].tex_id = result.color_buffer.id;
+
+        return result;
+    }
+
+    static void framebuffer_destroy(Framebuffer* framebuffer)
+    {
+        glDeleteTextures(1, &framebuffer->color_buffer.id);
+        glDeleteRenderbuffers(1, &framebuffer->renderbuffer_id);
+        glDeleteFramebuffers(1, &framebuffer->framebuffer_id);
+    }
+
+    static void framebuffer_resize(Framebuffer* framebuffer, i32 width, i32 height)
+    {
+        framebuffer_destroy(framebuffer);
+        *framebuffer = framebuffer_create(width, height);
+    }
+
+    static void framebuffer_bind(const Framebuffer& framebuffer)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.framebuffer_id);
+    }
+
+    static void framebuffer_unbind()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    static void framebuffer_clear(Color color /* = Color::Black */)
+    {
+        glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    static void framebuffer_flush(const Framebuffer& framebuffer, u32 shader_id)
+    {
+        VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
+
         for (const Vertex& vertex : framebuffer.vertex)
         {
-            vertex_buffer.data[vertex_buffer.count] = vertex;
-            vertex_buffer.count += 1;
+            quads->vertex_buffer.data[quads->vertex_buffer.count] = vertex;
+            quads->vertex_buffer.count += 1;
         }
 
-        flush_buffer(BufferType::Quads, shader_id);
+        bind_shader(shader_id);
+        vertexarray_render(quads);
     }
+
+    static Framebuffer main_framebuffer;
+    static Framebuffer temp_framebuffer;
+
+    struct LightSourceArray
+    {
+        LightSource* data = nullptr;
+        u64 max_count = 0;
+        u64 count = 0;
+    };
+
+    static constexpr u64 MAX_LIGHT_SOURCES = 1000;
+
+    // @TODO(dubgron): Move the lighting code to the separate file.
+    static bool lighting_enabled = false;
+    static Framebuffer masking;
+    static Framebuffer raymarching;
+    static UniformBuffer lights_uniform_buffer;
+    static LightSourceArray light_sources;
 
     bool is_lighting_enabled()
     {
@@ -541,29 +527,32 @@ namespace Aporia
     {
         lighting_enabled = true;
 
-        masking.create(active_window->width, active_window->height);
-        raymarching.create(active_window->width, active_window->height);
+        masking = framebuffer_create(active_window->width, active_window->height);
+        raymarching = framebuffer_create(active_window->width, active_window->height);
 
         if (light_sources.data == nullptr)
         {
-            light_sources.init(&persistent_arena, MAX_LIGHT_SOURCES);
+            light_sources.data = persistent_arena.push<LightSource>(MAX_LIGHT_SOURCES);
+            light_sources.max_count = MAX_LIGHT_SOURCES;
+            light_sources.count = 0;
+
         }
 
-        lights_uniform_buffer.init(MAX_LIGHT_SOURCES * sizeof(LightSource), 0, "Lights");
-        lights_uniform_buffer.bind_to_shader(raymarching_shader);
-        lights_uniform_buffer.bind_to_shader(shadowcasting_shader);
+        lights_uniform_buffer = uniformbuffer_create(MAX_LIGHT_SOURCES * sizeof(LightSource), 0, "Lights");
+        uniformbuffer_bind_to_shader(&lights_uniform_buffer, raymarching_shader);
+        uniformbuffer_bind_to_shader(&lights_uniform_buffer, shadowcasting_shader);
     }
 
     void disable_lighting()
     {
         lighting_enabled = false;
 
-        masking.destroy();
-        raymarching.destroy();
+        framebuffer_destroy(&masking);
+        framebuffer_destroy(&raymarching);
 
         light_sources.count = 0;
 
-        lights_uniform_buffer.deinit();
+        uniformbuffer_destroy(&lights_uniform_buffer);
     }
 
     void add_light_source(LightSource source)
@@ -578,18 +567,18 @@ namespace Aporia
 
     void rendering_init(MemoryArena* arena)
     {
-        rendering_queue.init(arena, MAX_RENDERING_QUEUE_SIZE);
+        rendering_queue = renderqueue_create(arena, MAX_RENDERING_QUEUE_SIZE);
 
         // Set VertexArray for Quads
         {
-            VertexArray& quads = vertex_arrays[0];
-            quads.init(4, 6);
-            quads.bind();
+            VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
+            *quads = vertexarray_create(4, 6);
+            vertexarray_bind(quads);
 
             VertexBuffer quads_vbo;
-            quads_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 4);
-            quads_vbo.add_layout();
-            quads.vertex_buffer = quads_vbo;
+            quads_vbo = vertexbuffer_create(arena, MAX_OBJECTS_PER_DRAW_CALL * 4, 4);
+            vertexbuffer_add_layout(&quads_vbo);
+            quads->vertex_buffer = quads_vbo;
 
             ScratchArena temp = create_scratch_arena(arena);
 
@@ -606,24 +595,24 @@ namespace Aporia
             }
 
             IndexBuffer quads_ibo;
-            quads_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 6, quad_indices);
-            quads.index_buffer = quads_ibo;
+            quads_ibo = indexbuffer_create(MAX_OBJECTS_PER_DRAW_CALL * 6, 6, quad_indices);
+            quads->index_buffer = quads_ibo;
 
-            quads.unbind();
+            vertexarray_unbind();
 
             rollback_scratch_arena(temp);
         }
 
         // Set VertexArray for Lines
         {
-            VertexArray& lines = vertex_arrays[1];
-            lines.init(2, 2);
-            lines.bind();
+            VertexArray* lines = get_vao_from_buffer(BufferType::Lines);
+            *lines = vertexarray_create(2, 2);
+            vertexarray_bind(lines);
 
             VertexBuffer lines_vbo;
-            lines_vbo.init(arena, MAX_OBJECTS_PER_DRAW_CALL, 2);
-            lines_vbo.add_layout();
-            lines.vertex_buffer = lines_vbo;
+            lines_vbo = vertexbuffer_create(arena, MAX_OBJECTS_PER_DRAW_CALL * 2, 2);
+            vertexbuffer_add_layout(&lines_vbo);
+            lines->vertex_buffer = lines_vbo;
 
             ScratchArena temp = create_scratch_arena(arena);
 
@@ -634,10 +623,10 @@ namespace Aporia
             }
 
             IndexBuffer lines_ibo;
-            lines_ibo.init(MAX_OBJECTS_PER_DRAW_CALL, 2, line_indices);
-            lines.index_buffer = lines_ibo;
+            lines_ibo = indexbuffer_create(MAX_OBJECTS_PER_DRAW_CALL * 2, 2, line_indices);
+            lines->index_buffer = lines_ibo;
 
-            lines.unbind();
+            vertexarray_unbind();
 
             rollback_scratch_arena(temp);
         }
@@ -668,10 +657,10 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < ARRAY_COUNT(vertex_arrays); ++idx)
         {
-            vertex_arrays[idx].deinit();
+            vertexarray_destroy(&vertex_arrays[idx]);
         }
 
-        main_framebuffer.destroy();
+        framebuffer_destroy(&main_framebuffer);
         if (lighting_enabled)
         {
             disable_lighting();
@@ -686,8 +675,8 @@ namespace Aporia
 
     void rendering_end()
     {
-        main_framebuffer.bind();
-        main_framebuffer.clear(camera_config.background_color);
+        framebuffer_bind(temp_framebuffer);
+        framebuffer_clear(camera_config.background_color);
 
         const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
         const f32 camera_zoom = 1.f / active_camera->projection.zoom;
@@ -733,25 +722,25 @@ namespace Aporia
             bind_shader(editor_grid_shader);
             shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
-            VertexArray& quad_vertex_array = vertex_arrays[(u64)BufferType::Quads];
+            VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
-            const u64 idx = quad_vertex_array.vertex_buffer.count;
-            quad_vertex_array.vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, 0.f } };
-            quad_vertex_array.vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, 0.f } };
-            quad_vertex_array.vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, 0.f } };
-            quad_vertex_array.vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, 0.f } };
-            quad_vertex_array.vertex_buffer.count += 4;
+            const u64 idx = quads->vertex_buffer.count;
+            quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, 0.f } };
+            quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, 0.f } };
+            quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, 0.f } };
+            quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, 0.f } };
+            quads->vertex_buffer.count += 4;
 
             bind_shader(editor_grid_shader);
-            quad_vertex_array.render();
+            vertexarray_render(quads);
         }
 
-        flush_rendering_queue();
-        main_framebuffer.unbind();
+        renderqueue_flush(&rendering_queue);
+        framebuffer_unbind();
 
         if (lighting_enabled)
         {
-            lights_uniform_buffer.set_data(light_sources.data, light_sources.count * sizeof(LightSource));
+            uniformbuffer_set_data(&lights_uniform_buffer, light_sources.data, light_sources.count * sizeof(LightSource));
 
             bind_shader(raymarching_shader);
             shader_set_uint("u_num_lights", light_sources.count);
@@ -763,8 +752,8 @@ namespace Aporia
             // before rendering the lights to keep the highest fidelity.
             glViewport(0, 0, active_window->width, active_window->height);
 
-            masking.bind();
-            masking.clear(Color::Transparent);
+            framebuffer_bind(masking);
+            framebuffer_clear(Color::Transparent);
 
             for (u64 idx = 0; idx < world.entity_count; ++idx)
             {
@@ -775,35 +764,35 @@ namespace Aporia
                 }
             }
 
-            flush_rendering_queue();
-            masking.unbind();
+            renderqueue_flush(&rendering_queue);
+            framebuffer_unbind();
 
             DEBUG_TEXTURE(masking.color_buffer);
 
-            raymarching.bind();
-            raymarching.clear(Color::Black);
-            flush_framebuffer(masking, raymarching_shader);
-            raymarching.unbind();
+            framebuffer_bind(raymarching);
+            framebuffer_clear(Color::Black);
+            framebuffer_flush(masking, raymarching_shader);
+            framebuffer_unbind();
 
             DEBUG_TEXTURE(raymarching.color_buffer);
 
             // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
-            glViewport(0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height);
+            glViewport(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height);
 
-            main_framebuffer.bind();
-            flush_framebuffer(raymarching, shadowcasting_shader);
-            main_framebuffer.unbind();
+            framebuffer_bind(temp_framebuffer);
+            framebuffer_flush(raymarching, shadowcasting_shader);
+            framebuffer_unbind();
         }
 
-        DEBUG_TEXTURE(main_framebuffer.color_buffer);
+        DEBUG_TEXTURE(temp_framebuffer.color_buffer);
 
         // @NOTE(dubgron): The temporary framebuffer is here to avoid FBO's Feedback Loop.
         // See https://www.khronos.org/opengl/wiki/Framebuffer_Object#Feedback_Loops.
-        temp_framebuffer.bind();
-        flush_framebuffer(main_framebuffer, postprocessing_shader);
-        temp_framebuffer.unbind();
+        framebuffer_bind(main_framebuffer);
+        framebuffer_flush(temp_framebuffer, postprocessing_shader);
+        framebuffer_unbind();
 
-        f32 render_aspect_ratio = (f32)temp_framebuffer.color_buffer.width / (f32)temp_framebuffer.color_buffer.height;
+        f32 render_aspect_ratio = (f32)main_framebuffer.color_buffer.width / (f32)main_framebuffer.color_buffer.height;
         f32 window_aspect_ratio = (f32)active_window->width / (f32)active_window->height;
 
         i32 offset_x, offset_y, render_width, render_height;
@@ -825,18 +814,17 @@ namespace Aporia
             offset_y = 0;
         }
 
-        glClearColor(0.f, 0.f, 0.f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        framebuffer_clear(Color::Black);
 
 #if defined(APORIA_EMSCRIPTEN)
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, main_framebuffer.framebuffer_id);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBlitFramebuffer(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
+        glBlitFramebuffer(0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height,
             offset_x, offset_y, offset_x + render_width, offset_y + render_height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
-        glBlitNamedFramebuffer(temp_framebuffer.framebuffer_id, 0,
-            0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height,
+        glBlitNamedFramebuffer(main_framebuffer.framebuffer_id, 0,
+            0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height,
             offset_x, offset_y, offset_x + render_width, offset_y + render_height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #endif
@@ -889,7 +877,7 @@ namespace Aporia
             key.vertex[3].tex_id        = entity.texture->source->id;
         }
 
-        rendering_queue.add(key);
+        renderqueue_add(&rendering_queue, key);
     }
 
     void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = default_shader */)
@@ -918,7 +906,7 @@ namespace Aporia
         key.vertex[3].color     = color;
         key.vertex[3].tex_coord = v2{ 0.f, 1.f };
 
-        rendering_queue.add(key);
+        renderqueue_add(&rendering_queue, key);
     }
 
     void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Color::White */, u32 shader_id /* = line_shader */)
@@ -950,7 +938,7 @@ namespace Aporia
         key.vertex[3].color         = color;
         key.vertex[3].additional    = thickness;
 
-        rendering_queue.add(key);
+        renderqueue_add(&rendering_queue, key);
     }
 
     void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
@@ -979,7 +967,7 @@ namespace Aporia
         key.vertex[3].color         = color;
         key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
 
-        rendering_queue.add(key);
+        renderqueue_add(&rendering_queue, key);
     }
 
     // @TODO(dubgron): The current implementation of aligning text is shitty and hard to read, so it needs refactor.
@@ -1202,7 +1190,7 @@ namespace Aporia
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;
 
-                rendering_queue.add(key);
+                renderqueue_add(&rendering_queue, key);
             }
         }
 
@@ -1231,15 +1219,15 @@ namespace Aporia
         i32 render_width, render_height;
         get_size_of_render_surface(&render_width, &render_height);
 
-        main_framebuffer.create(render_width, render_height);
-        temp_framebuffer.create(render_width, render_height);
+        framebuffer_resize(&main_framebuffer, render_width, render_height);
+        framebuffer_resize(&temp_framebuffer, render_width, render_height);
 
         glViewport(0, 0, render_width, render_height);
 
         if (lighting_enabled)
         {
-            masking.create(active_window->width, active_window->height);
-            raymarching.create(active_window->width, active_window->height);
+            framebuffer_resize(&masking, active_window->width, active_window->height);
+            framebuffer_resize(&raymarching, active_window->width, active_window->height);
         }
     }
 }
