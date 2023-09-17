@@ -180,6 +180,28 @@ namespace Aporia
         }
     }
 
+    static bool is_subshader_status_ok(u32 subshader_id, u32 status_type)
+    {
+        i32 is_valid;
+        glGetShaderiv(subshader_id, status_type, &is_valid);
+
+        if (is_valid == GL_FALSE)
+        {
+            i32 length;
+            glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
+
+            ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+            GLchar* error_message = temp.arena->push<GLchar>(length);
+            glGetShaderInfoLog(subshader_id, length, &length, error_message);
+            APORIA_LOG(Error, error_message);
+
+            rollback_scratch_arena(temp);
+        }
+
+        return is_valid == GL_TRUE;
+    }
+
     static u32 compile_subshader(const SubShaderData& subshader)
     {
         const u32 opengl_type = to_opengl_type(subshader.type);
@@ -191,23 +213,9 @@ namespace Aporia
         glShaderSource(subshader_id, 1, &shader_code, &shader_length);
         glCompileShader(subshader_id);
 
-        i32 results;
-        glGetShaderiv(subshader_id, GL_COMPILE_STATUS, &results);
-        if (results == GL_FALSE)
+        if (!is_subshader_status_ok(subshader_id, GL_COMPILE_STATUS))
         {
-            i32 length;
-            glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
-
-            ScratchArena temp = create_scratch_arena(&persistent_arena);
-            {
-                GLchar* error_message = temp.arena->push<GLchar>(length);
-                glGetShaderInfoLog(subshader_id, length, &length, error_message);
-                APORIA_LOG(Error, error_message);
-            }
-            rollback_scratch_arena(temp);
-
             glDeleteProgram(subshader_id);
-
             return 0;
         }
 
@@ -268,6 +276,28 @@ namespace Aporia
     void shaders_init(MemoryArena* arena)
     {
         shaders = arena->push_zero<ShaderInfo>(MAX_SHADERS);
+    }
+
+    static bool is_shader_status_ok(u32 shader_id, u32 status_type)
+    {
+        i32 is_valid;
+        glGetProgramiv(shader_id, GL_LINK_STATUS, &is_valid);
+
+        if (is_valid == GL_FALSE)
+        {
+            i32 length;
+            glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &length);
+
+            ScratchArena temp = create_scratch_arena(&persistent_arena);
+
+            GLchar* error_message = temp.arena->push<GLchar>(length);
+            glGetProgramInfoLog(shader_id, length, &length, error_message);
+            APORIA_LOG(Error, error_message);
+
+            rollback_scratch_arena(temp);
+        }
+
+        return is_valid == GL_TRUE;
     }
 
     static u32 load_shader_from_file(String filepath, u64 subshaders_count)
@@ -371,12 +401,22 @@ namespace Aporia
         }
 
         glLinkProgram(shader_id);
+        bool linking_failed = !is_shader_status_ok(shader_id, GL_LINK_STATUS);
+
         glValidateProgram(shader_id);
+        bool validation_failed = !is_shader_status_ok(shader_id, GL_VALIDATE_STATUS);
 
         for (u64 idx = 0; idx < compiled_subshaders_count; ++idx)
         {
             glDetachShader(shader_id, compiled_subshaders[idx]);
             glDeleteShader(compiled_subshaders[idx]);
+        }
+
+        if (linking_failed || validation_failed)
+        {
+            glDeleteProgram(shader_id);
+            rollback_scratch_arena(temp);
+            return 0;
         }
 
         ShaderInfo shader_info;
