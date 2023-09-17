@@ -442,7 +442,7 @@ namespace Aporia
             | ImGuiInputTextFlags_CallbackCompletion
             | ImGuiInputTextFlags_CallbackHistory
             | ImGuiInputTextFlags_CallbackEdit;
-        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
+        ImGui::PushItemWidth(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x);
         ImGui::SetKeyboardFocusHere();
         if (ImGui::InputText("##commandline", input_buffer, IM_ARRAYSIZE(input_buffer), input_text_flags, MyCallback))
         {
