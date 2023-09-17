@@ -337,62 +337,64 @@ namespace Aporia
 
     static void renderqueue_flush(RenderQueue* render_queue)
     {
-        if (render_queue->count > 0)
+        if (render_queue->count == 0)
         {
-            qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
-                [](const void* elem1, const void* elem2) -> i32
-                {
-                    const RenderQueueKey& key1 = *reinterpret_cast<const RenderQueueKey*>(elem1);
-                    const RenderQueueKey& key2 = *reinterpret_cast<const RenderQueueKey*>(elem2);
+            return;
+        }
 
-                    f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
-                    if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
-                    {
-                        i32 buffer_diff = (i32)key1.buffer - (i32)key2.buffer;
-                        if (buffer_diff == 0)
-                        {
-                            i32 shader_diff = key1.shader_id - key2.shader_id;
-                            return shader_diff;
-                        }
-                        return buffer_diff;
-                    }
-                    return z_diff;
-                });
-
-            RenderQueueKey prev_key = render_queue->data[0];
-            for (u64 idx = 0; idx < render_queue->count; ++idx)
+        qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
+            [](const void* elem1, const void* elem2) -> i32
             {
-                RenderQueueKey& key = render_queue->data[idx];
+                const RenderQueueKey& key1 = *reinterpret_cast<const RenderQueueKey*>(elem1);
+                const RenderQueueKey& key2 = *reinterpret_cast<const RenderQueueKey*>(elem2);
 
-                if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
+                f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
+                if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
                 {
-                    bind_shader(prev_key.shader_id);
-                    vertexarray_render(get_vao_from_buffer(prev_key.buffer));
+                    i32 buffer_diff = (i32)key1.buffer - (i32)key2.buffer;
+                    if (buffer_diff == 0)
+                    {
+                        i32 shader_diff = key1.shader_id - key2.shader_id;
+                        return shader_diff;
+                    }
+                    return buffer_diff;
                 }
+                return z_diff;
+            });
 
-                VertexArray* vertex_array = get_vao_from_buffer(key.buffer);
-                VertexBuffer* vertex_buffer = &vertex_array->vertex_buffer;
+        RenderQueueKey prev_key = render_queue->data[0];
+        for (u64 idx = 0; idx < render_queue->count; ++idx)
+        {
+            RenderQueueKey& key = render_queue->data[idx];
 
-                if (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count)
-                {
-                    bind_shader(key.shader_id);
-                    vertexarray_render(vertex_array);
-                }
-
-                for (u64 i = 0; i < vertex_buffer->vertex_per_object; ++i)
-                {
-                    vertex_buffer->data[vertex_buffer->count] = key.vertex[i];
-                    vertex_buffer->count += 1;
-                }
-
-                prev_key = key;
+            if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
+            {
+                bind_shader(prev_key.shader_id);
+                vertexarray_render(get_vao_from_buffer(prev_key.buffer));
             }
 
-            bind_shader(prev_key.shader_id);
-            vertexarray_render(get_vao_from_buffer(prev_key.buffer));
+            VertexArray* vertex_array = get_vao_from_buffer(key.buffer);
+            VertexBuffer* vertex_buffer = &vertex_array->vertex_buffer;
 
-            render_queue->count = 0;
+            if (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count)
+            {
+                bind_shader(key.shader_id);
+                vertexarray_render(vertex_array);
+            }
+
+            for (u64 i = 0; i < vertex_buffer->vertex_per_object; ++i)
+            {
+                vertex_buffer->data[vertex_buffer->count] = key.vertex[i];
+                vertex_buffer->count += 1;
+            }
+
+            prev_key = key;
         }
+
+        bind_shader(prev_key.shader_id);
+        vertexarray_render(get_vao_from_buffer(prev_key.buffer));
+
+        render_queue->count = 0;
     }
 
     struct Framebuffer
@@ -682,8 +684,23 @@ namespace Aporia
         const f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
         // Initialize texture sampler
-        static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
             16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+
+#if defined(APORIA_EMSCRIPTEN)
+        // NOTE(dubgron): In WebGL, the textures of framebuffers and textures of rendered objects
+        // cannot be in the same sampler as it will cause the Feedback Loop error.
+        for (u64 idx = 0; idx < ARRAY_COUNT(sampler); ++idx)
+        {
+            if (sampler[idx] == main_framebuffer.color_buffer.unit ||
+                sampler[idx] == temp_framebuffer.color_buffer.unit ||
+                sampler[idx] == masking.color_buffer.unit ||
+                sampler[idx] == raymarching.color_buffer.unit)
+            {
+                sampler[idx] = 0;
+            }
+        }
+#endif
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
@@ -701,7 +718,7 @@ namespace Aporia
         shader_set_float("u_camera_zoom", camera_zoom);
 
         bind_shader(postprocessing_shader);
-        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_int("u_framebuffer", temp_framebuffer.color_buffer.id);
 
         v2 window_size = v2{ active_window->get_size() };
 
