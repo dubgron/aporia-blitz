@@ -272,7 +272,7 @@ namespace Aporia
 
     static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     {
-        const String shader_contents = read_file(&persistent_arena, filepath);
+        const String shader_contents = read_entire_text_file(&persistent_arena, filepath);
 
         //////////////////////////////////////////////////////////////////////
         // Parse the shader file

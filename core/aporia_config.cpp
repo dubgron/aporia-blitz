@@ -183,7 +183,7 @@ namespace Aporia
 
     Config_Property* parse_config_from_file(MemoryArena* arena, String filepath)
     {
-        String config_contents = read_file(arena, filepath);
+        String config_contents = read_entire_text_file(arena, filepath);
 
         // Tokenization / Lexing
         String buffer = config_contents;

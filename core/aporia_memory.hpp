@@ -28,6 +28,8 @@ namespace Aporia
         void* push(u64 size);
         void* push_zero(u64 size);
 
+        void pop(u64 size);
+
         template<typename T>
         T* push(u64 count = 1)
         {

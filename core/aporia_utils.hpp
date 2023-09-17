@@ -11,7 +11,9 @@
 
 namespace Aporia
 {
-    String read_file(MemoryArena* arena, String filepath);
+    String read_entire_file(MemoryArena* arena, String filepath);
+    String read_entire_text_file(MemoryArena* arena, String filepath);
+
     String replace_extension(MemoryArena* arena, String filepath, String ext);
     String extract_filename(String filepath);
 

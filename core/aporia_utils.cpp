@@ -5,7 +5,7 @@
 
 namespace Aporia
 {
-    String read_file(MemoryArena* arena, String filepath)
+    String read_entire_file(MemoryArena* arena, String filepath)
     {
         FILE* file = fopen(*filepath, "rb");
 
@@ -16,16 +16,47 @@ namespace Aporia
         }
 
         APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
+
         fseek(file, 0, SEEK_END);
 
-        u64 length = ftell(file);
-        u8* data = arena->push<u8>(length + 1);
+        u64 size_in_bytes = ftell(file);
+        u8* data = arena->push<u8>(size_in_bytes);
 
         fseek(file, 0, SEEK_SET);
-        fread(data, length, 1, file);
-        data[length] = '\0';
+        fread(data, size_in_bytes, 1, file);
 
         fclose(file);
+
+        return String{ data, size_in_bytes };
+    }
+
+    String read_entire_text_file(MemoryArena* arena, String filepath)
+    {
+        FILE* file = fopen(*filepath, "r");
+
+        if (file == nullptr)
+        {
+            APORIA_LOG(Error, "Failed to open file '%'!", filepath);
+            return String{};
+        }
+
+        APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
+
+        fseek(file, 0, SEEK_END);
+
+        u64 size_in_bytes = ftell(file);
+        u8* data = arena->push<u8>(size_in_bytes);
+
+        fseek(file, 0, SEEK_SET);
+        u64 length = fread(data, 1, size_in_bytes, file);
+
+        fclose(file);
+
+        u64 garbage_bytes = size_in_bytes - length;
+        if (garbage_bytes > 0)
+        {
+            arena->pop(garbage_bytes);
+        }
 
         return String{ data, length };
     }

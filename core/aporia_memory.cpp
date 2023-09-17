@@ -54,6 +54,14 @@ namespace Aporia
         return result;
     }
 
+    void MemoryArena::pop(u64 size)
+    {
+        APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= pos,
+            "Can't pop % B! Pos: % B", size, pos);
+
+        pos = next_aligned(pos - size, align);
+    }
+
     ScratchArena create_scratch_arena(MemoryArena* arena)
     {
         APORIA_ASSERT_WITH_MESSAGE(arena, "The arena is null! Can't create a scratch arena!");

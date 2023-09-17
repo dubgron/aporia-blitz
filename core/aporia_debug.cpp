@@ -233,7 +233,7 @@ namespace Aporia
         ScratchArena temp = create_scratch_arena(&persistent_arena);
         {
             String old_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
-            String logs = read_file(temp.arena, old_filepath);
+            String logs = read_entire_text_file(temp.arena, old_filepath);
 
             String new_filepath = sprintf(temp.arena, "logs/%_%.log", log_name, log_timestamp);
             FILE* new_logs = fopen(*new_filepath, "wb");

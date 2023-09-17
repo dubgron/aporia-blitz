@@ -122,11 +122,6 @@ namespace Aporia
         return INVALID_INDEX;
     }
 
-    static bool is_eol(u8 ch)
-    {
-        return ch == '\r' || ch == '\n';
-    }
-
     u64 String::find_eol(u64 offset /* = 0 */) const
     {
         if (offset >= length)
@@ -136,7 +131,7 @@ namespace Aporia
 
         for (u64 off = offset; off < length; ++off)
         {
-            if (is_eol(data[off]))
+            if (data[off] == '\n')
             {
                 return off;
             }
