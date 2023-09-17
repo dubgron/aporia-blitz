@@ -15,7 +15,7 @@ namespace Aporia
     static constexpr u64 MAX_TEXTURES = 10;
     static constexpr u64 MAX_SUBTEXTURES = 512;
 
-    // @NOTE(dubgron): The number of textures would be low, so we don'tneed to use
+    // @NOTE(dubgron): The number of textures would be low, so we don't need to use
     // hash tables. Using a non-resizable array also gives us pointer stability.
     static Texture textures[MAX_TEXTURES];
     static u64 last_valid_texture_idx = 0;
@@ -52,6 +52,13 @@ namespace Aporia
     bool Image::is_valid() const
     {
         return pixels != nullptr;
+    }
+
+    // @TODO(dubgron): This will fail if we reload textures too many times. Make it more robust.
+    u32 get_next_texture_unit()
+    {
+        static u32 unit = 0;
+        return unit++;
     }
 
     static bool operator==(const SubTexture& subtexture1, const SubTexture& subtexture2)
@@ -155,11 +162,12 @@ namespace Aporia
         }
 
         u32 id = 0;
+        u32 unit = get_next_texture_unit();
 
 #if defined(APORIA_EMSCRIPTEN)
         glGenTextures(1, &id);
 
-        glActiveTexture(GL_TEXTURE0 + id);
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, id);
 
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, image.width, image.height);
@@ -174,7 +182,7 @@ namespace Aporia
 #else
         glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-        glBindTextureUnit(id, id);
+        glBindTextureUnit(unit, id);
 
         glTextureStorage2D(id, 1, GL_RGBA8, image.width, image.height);
         glTextureSubImage2D(id, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels);
@@ -198,6 +206,7 @@ namespace Aporia
 
         Texture texture;
         texture.id = id;
+        texture.unit = unit;
         texture.width = image.width;
         texture.height = image.height;
         texture.channels = image.channels;
