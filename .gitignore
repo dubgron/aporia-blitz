@@ -6,6 +6,9 @@ build/
 *.lib
 *.pdb
 
+# Emscripten results
+emscripten/bin/
+
 # Runtime results
 *.log
 imgui.ini

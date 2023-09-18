@@ -638,21 +638,27 @@ namespace Aporia
         // Setup Framebuffers
         refresh_framebuffers();
 
+#if defined(APORIA_EMSCRIPTEN)
+    #define SHADERS_DIRECTORY "content/shaders_gles/"
+#else
+    #define SHADERS_DIRECTORY "content/shaders/"
+#endif
+
         // Setup default shaders
-        default_shader = load_shader("content/shaders/default.glsl");
-        circle_shader = load_shader("content/shaders/circle.glsl");
-        line_shader = load_shader("content/shaders/line.glsl");
-        font_shader = load_shader("content/shaders/font.glsl");
+        default_shader = load_shader(SHADERS_DIRECTORY "default.glsl");
+        circle_shader = load_shader(SHADERS_DIRECTORY "circle.glsl");
+        line_shader = load_shader(SHADERS_DIRECTORY "line.glsl");
+        font_shader = load_shader(SHADERS_DIRECTORY "font.glsl");
 
         // Setup post-processing shaders
-        postprocessing_shader = load_shader("content/shaders/postprocessing.glsl");
+        postprocessing_shader = load_shader(SHADERS_DIRECTORY "postprocessing.glsl");
 
         // Setup lighting shaders
-        raymarching_shader = load_shader("content/shaders/raymarching.glsl");
-        shadowcasting_shader = load_shader("content/shaders/shadowcasting.glsl");
+        raymarching_shader = load_shader(SHADERS_DIRECTORY "raymarching.glsl");
+        shadowcasting_shader = load_shader(SHADERS_DIRECTORY "shadowcasting.glsl");
 
         // Setup editor grid shaders
-        editor_grid_shader = load_shader("content/shaders/editor_grid.glsl");
+        editor_grid_shader = load_shader(SHADERS_DIRECTORY "editor_grid.glsl");
 
         unbind_shader();
     }

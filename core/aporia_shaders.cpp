@@ -19,7 +19,7 @@ namespace Aporia
 
     u32 editor_grid_shader = 0;
 
-    static constexpr u64 MAX_SHADERS = 32;
+    static constexpr u64 MAX_SHADERS = 128;
 
     static ShaderInfo* shaders = nullptr;
     static u32 active_shader_id = 0;

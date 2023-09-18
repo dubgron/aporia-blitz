@@ -105,8 +105,7 @@ namespace Aporia
         // Update
         {
 #if defined(APORIA_EMSCRIPTEN)
-            static constexpr auto emscripten_main_loop = [](void* arg) { game_main_loop(); };
-            emscripten_set_main_loop_arg(emscripten_main_loop, nullptr, 0, true);
+            emscripten_set_main_loop(game_main_loop, 0, true);
 #else
             while (active_window->is_open())
             {

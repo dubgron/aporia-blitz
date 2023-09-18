@@ -18,6 +18,7 @@ if (NOT APORIA_EMSCRIPTEN)
         VS_DEBUGGER_WORKING_DIRECTORY               "${PROJECT_SOURCE_DIR}/bin")
 else()
     set_target_properties(example PROPERTIES
-        OUTPUT_NAME     "index"
-        SUFFIX          ".html")
+        OUTPUT_NAME                 "index"
+        SUFFIX                      ".html"
+        RUNTIME_OUTPUT_DIRECTORY    "${PROJECT_SOURCE_DIR}/emscripten/bin")
 endif()
