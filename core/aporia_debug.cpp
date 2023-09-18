@@ -61,7 +61,7 @@ static i64 get_milliseconds()
 #elif defined(APORIA_UNIX)
     timeval time;
     gettimeofday(&time, nullptr);
-    return (i64)(time.tv_sec * 1000 + time.tv_usec / 1000);
+    return (i64)(time.tv_usec / 1000);
 #else
     #error OS not supported!
 #endif
