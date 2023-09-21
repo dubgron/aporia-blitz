@@ -78,12 +78,12 @@ namespace Aporia
     }
 
     template<typename T>
-    void hash_table_insert(HashTable<T>* hash_table, String key, T value)
+    T* hash_table_insert(HashTable<T>* hash_table, String key, T value)
     {
         if (hash_table->occupied_buckets >= hash_table->bucket_count)
         {
             APORIA_LOG(Error, "The hash table is full! Failed to insert at key '%'!", key);
-            return;
+            return nullptr;
         }
 
         u32 hashed_key = hash(key);
@@ -115,6 +115,8 @@ namespace Aporia
         hash_table->buckets[index] = value;
 
         hash_table->occupied_buckets += 1;
+
+        return &hash_table->buckets[index];
     }
 
     template<typename T>
