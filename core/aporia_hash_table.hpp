@@ -170,15 +170,23 @@ namespace Aporia
             return nullptr;
         }
 
+        u64 buckets_to_check = hash_table->bucket_count;
+
         // Probe forward, until you find the correct bucket (or an empty one).
-        while (hash_table->keys[index].key != key)
+        while (buckets_to_check > 0 && hash_table->keys[index].key != key)
         {
             index = increment_index(hash_table->bucket_count, index);
+            buckets_to_check -= 1;
 
             if (hash_table->keys[index].distance_from_desired_bucket == -1)
             {
                 return nullptr;
             }
+        }
+
+        if (buckets_to_check == 0)
+        {
+            return nullptr;
         }
 
         return &hash_table->buckets[index];
