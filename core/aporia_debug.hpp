@@ -91,6 +91,8 @@ namespace Aporia
 
     void log(String file, i32 line, String function, LogLevel level, String message);
 
+    bool should_log(LogLevel level);
+
     template<typename T>
     static void log(String file, i32 line, String function, LogLevel level, T&& arg)
     {
@@ -100,6 +102,11 @@ namespace Aporia
     template<typename... Ts>
     static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
     {
+        if (!should_log(level))
+        {
+            return;
+        }
+
         ScratchArena temp = create_scratch_arena(&persistent_arena);
         {
             String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);

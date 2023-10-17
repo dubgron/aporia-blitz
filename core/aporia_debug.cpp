@@ -247,7 +247,7 @@ namespace Aporia
 
     void log(String file, i32 line, String function, LogLevel level, String message)
     {
-        if (level < min_log_level)
+        if (!should_log(level))
         {
             return;
         }
@@ -293,6 +293,11 @@ namespace Aporia
             }
         }
         rollback_scratch_arena(temp);
+    }
+
+    bool should_log(LogLevel level)
+    {
+        return level >= min_log_level;
     }
 
     void imgui_init()
