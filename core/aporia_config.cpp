@@ -513,7 +513,6 @@ namespace Aporia
 
         active_window->apply_config();
         active_camera->apply_config();
-        refresh_framebuffers();
 
         return success;
     }
