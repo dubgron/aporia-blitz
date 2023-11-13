@@ -128,7 +128,8 @@ namespace Aporia
     template<typename T, typename... Ts>
     [[nodiscard]] String sprintf(MemoryArena* arena, String format, T arg, Ts... args)
     {
-        StringList result;
+        StringList builder;
+        ScratchArena temp = get_scratch_arena(arena);
 
         u64 args_begin = format.find('%');
         while (args_begin < format.length - 1 && format.data[args_begin + 1] == '%')
@@ -139,25 +140,29 @@ namespace Aporia
         String before_args = format.substr(0, args_begin);
         if (before_args.length > 0)
         {
-            result.push_node(arena, before_args);
+            builder.push_node(temp.arena, before_args);
         }
 
         if (args_begin < format.length)
         {
-            result.push_node(arena, to_string(arena, arg));
+            String arg_as_string = to_string(temp.arena, arg);
+            builder.push_node(temp.arena, arg_as_string);
 
             String after_args = format.substr(args_begin + 1);
             if (after_args.length > 0)
             {
                 if constexpr (sizeof...(args) > 0)
                 {
-                    after_args = sprintf(arena, after_args, std::forward<Ts>(args)...);
+                    after_args = sprintf(temp.arena, after_args, std::forward<Ts>(args)...);
                 }
 
-                result.push_node(arena, after_args);
+                builder.push_node(temp.arena, after_args);
             }
         }
 
-        return result.join(arena);
+        String result = builder.join(arena);
+        release_scratch_arena(temp);
+
+        return result;
     }
 }

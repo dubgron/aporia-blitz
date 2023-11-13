@@ -68,7 +68,7 @@ namespace Aporia
 
     bool load_texture_atlas(String filepath)
     {
-        ScratchArena temp = create_scratch_arena(&frame_arena);
+        ScratchArena temp = get_scratch_arena();
         Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
         String texture_filepath;
@@ -91,7 +91,7 @@ namespace Aporia
 
         if (!hash_table_is_created(&subtextures))
         {
-            subtextures = hash_table_create<SubTexture>(&persistent_arena, MAX_SUBTEXTURES);
+            subtextures = hash_table_create<SubTexture>(&memory.persistent, MAX_SUBTEXTURES);
         }
 
         for (Config_Property* property = parsed_file; property; property = property->next)
@@ -101,7 +101,7 @@ namespace Aporia
                 continue;
             }
 
-            String name = push_string(&persistent_arena, property->field);
+            String name = push_string(&memory.persistent, property->field);
 
             if (hash_table_find(&subtextures, name) != nullptr)
             {
@@ -122,7 +122,7 @@ namespace Aporia
 
         APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
 
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
 
         return true;
     }

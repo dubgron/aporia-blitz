@@ -14,10 +14,7 @@
 
 namespace Aporia
 {
-    MemoryArena persistent_arena;
-    MemoryArena frame_arena;
-    MemoryArena config_arena;
-
+    GameMemory memory;
     World world;
 
     static Game* game = nullptr;
@@ -33,7 +30,7 @@ namespace Aporia
         const f32 frame_time = frame_timer.reset();
         total_time += frame_time;
 
-        frame_arena.clear();
+        memory.frame.clear();
 
         assets_reload_if_dirty();
 
@@ -76,24 +73,30 @@ namespace Aporia
 
         // Init
         {
-            persistent_arena.alloc(MEGABYTES(100));
-            frame_arena.alloc(MEGABYTES(1));
-            config_arena.alloc(KILOBYTES(10));
+            memory.persistent.alloc(MEGABYTES(100));
+            memory.frame.alloc(MEGABYTES(1));
 
-            LOGGING_INIT(&persistent_arena, "aporia");
+            for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
+            {
+                memory.temp[idx].alloc(MEGABYTES(1));
+            }
+
+            memory.config.alloc(KILOBYTES(10));
+
+            LOGGING_INIT(&memory.persistent, "aporia");
 
             assets_init();
 
             const bool config_loaded_successfully = load_engine_config(game->config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
-            active_window = create_window(&persistent_arena);
-            active_camera = create_camera(&persistent_arena);
+            active_window = create_window(&memory.persistent);
+            active_camera = create_camera(&memory.persistent);
 
             opengl_init();
-            shaders_init(&persistent_arena);
-            rendering_init(&persistent_arena);
-            animations_init(&persistent_arena);
+            shaders_init(&memory.persistent);
+            rendering_init(&memory.persistent);
+            animations_init(&memory.persistent);
 
             world.init();
 
@@ -128,9 +131,9 @@ namespace Aporia
 
             LOGGING_DEINIT();
 
-            persistent_arena.dealloc();
-            frame_arena.dealloc();
-            config_arena.dealloc();
+            memory.persistent.dealloc();
+            memory.frame.dealloc();
+            memory.config.dealloc();
         }
     }
 }

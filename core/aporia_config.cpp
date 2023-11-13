@@ -256,17 +256,17 @@ namespace Aporia
                     }
                 }
 
-                ScratchArena temp = create_scratch_arena(arena);
+                ScratchArena temp = get_scratch_arena(arena);
                 APORIA_LOG(Error, "Syntax error at line: %, column: %. Expected token type: %, but got: >>> % <<<!",
                     line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
-                rollback_scratch_arena(temp);
+                release_scratch_arena(temp);
 
                 return nullptr;
             }
 
-            ScratchArena temp = create_scratch_arena(arena);
+            ScratchArena temp = get_scratch_arena(arena);
             APORIA_LOG(Verbose, "Type: % Token: '%'", token_type_flag_to_string(temp.arena, token.type), token.text);
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
 
             token_list.push_node(arena, token);
             expected_tokens = expected_tokens_table(token.type);
@@ -436,12 +436,12 @@ namespace Aporia
 
     static bool load_engine_config_from_file(String filepath)
     {
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
         Config_Property* parsed_config = parse_config_from_file(temp.arena, filepath);
 
         if (!parsed_config)
         {
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
             return false;
         }
 
@@ -462,7 +462,7 @@ namespace Aporia
                         continue;
                     }
 
-                    constexpr auto copy_string = [](String string) { return push_string(&config_arena, string); };
+                    constexpr auto copy_string = [](String string) { return push_string(&memory.config, string); };
 
                     switch (property_definition.value_type)
                     {
@@ -488,7 +488,7 @@ namespace Aporia
             }
         }
 
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
 
         return true;
     }
@@ -499,7 +499,7 @@ namespace Aporia
     {
         APORIA_ASSERT(config_asset->type == AssetType::Config);
 
-        config_arena.clear();
+        memory.config.clear();
 
         // Reset configs to perform a clean reload.
         window_config = {};

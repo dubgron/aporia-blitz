@@ -221,7 +221,7 @@ namespace Aporia
 
     const char* String::operator*() const
     {
-        return cstring(&frame_arena);
+        return cstring(&memory.frame);
     }
 
     String push_string(MemoryArena* arena, String string)
@@ -282,7 +282,7 @@ namespace Aporia
     {
         f32 result = 0.f;
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
         {
             StringList split_number = string.split(temp.arena, '.');
 
@@ -311,7 +311,7 @@ namespace Aporia
                 result = -result;
             }
         }
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
 
         return result;
     }

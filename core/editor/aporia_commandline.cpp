@@ -166,7 +166,7 @@ namespace Aporia
             return StringList{};
         }
 
-        ScratchArena temp = create_scratch_arena(&command_arena);
+        ScratchArena temp = get_scratch_arena();
 
         CommandMatch* matches = temp.arena->push<CommandMatch>(command_count);
         u64 match_count = 0;
@@ -196,7 +196,7 @@ namespace Aporia
             result.push_node(&suggestion_arena, matches[i].command_name);
         }
 
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
 
         return result;
     }
@@ -420,12 +420,12 @@ namespace Aporia
         {
             if (command_history.node_count > 0)
             {
-                ScratchArena temp = create_scratch_arena(&command_arena);
+                ScratchArena temp = get_scratch_arena();
                 {
                     const String history = command_history.join(temp.arena, "\n");
                     ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
                 }
-                rollback_scratch_arena(temp);
+                release_scratch_arena(temp);
             }
 
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())

@@ -20,10 +20,15 @@ namespace Aporia
         String config_filepath;
     };
 
-    extern MemoryArena persistent_arena;
-    extern MemoryArena frame_arena;
-    extern MemoryArena config_arena;
+    struct GameMemory
+    {
+        MemoryArena persistent;
+        MemoryArena frame;
+        MemoryArena temp[2];
+        MemoryArena config;
+    };
 
+    extern GameMemory memory;
     extern World world;
 
     void game_run(Game* in_game);

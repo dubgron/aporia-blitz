@@ -207,7 +207,7 @@ namespace Aporia
 
         if (ImGui::Button("Regiser Asset"))
         {
-            String s = push_string(&persistent_arena, buff);
+            String s = push_string(&memory.persistent, buff);
             register_asset(s, (AssetType)type);
         }
         ImGui::Separator();

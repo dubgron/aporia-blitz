@@ -536,7 +536,7 @@ namespace Aporia
 
         if (light_sources.data == nullptr)
         {
-            light_sources.data = persistent_arena.push<LightSource>(MAX_LIGHT_SOURCES);
+            light_sources.data = memory.persistent.push<LightSource>(MAX_LIGHT_SOURCES);
             light_sources.max_count = MAX_LIGHT_SOURCES;
             light_sources.count = 0;
 
@@ -584,7 +584,7 @@ namespace Aporia
             vertexbuffer_add_layout(&quads_vbo);
             quads->vertex_buffer = quads_vbo;
 
-            ScratchArena temp = create_scratch_arena(arena);
+            ScratchArena temp = get_scratch_arena(arena);
 
             u32* quad_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 6);
             for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
@@ -604,7 +604,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
         }
 
         // Set VertexArray for Lines
@@ -618,7 +618,7 @@ namespace Aporia
             vertexbuffer_add_layout(&lines_vbo);
             lines->vertex_buffer = lines_vbo;
 
-            ScratchArena temp = create_scratch_arena(arena);
+            ScratchArena temp = get_scratch_arena(arena);
 
             u32* line_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 2);
             for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
@@ -632,7 +632,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
         }
 
         // Setup Framebuffers
@@ -1029,7 +1029,7 @@ namespace Aporia
             }
         }
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
 
         f32* line_alignments = temp.arena->push_zero<f32>(line_count);
         f32 max_line_alignment = 0.f;
@@ -1219,7 +1219,7 @@ namespace Aporia
             }
         }
 
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
     }
 
     void get_size_of_render_surface(i32* width, i32* height)

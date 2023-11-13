@@ -58,6 +58,6 @@ namespace Aporia
         u64 pos = 0;
     };
 
-    ScratchArena create_scratch_arena(MemoryArena* arena);
-    void rollback_scratch_arena(ScratchArena& scratch);
+    ScratchArena get_scratch_arena(MemoryArena* conflict = nullptr);
+    void release_scratch_arena(ScratchArena& scratch);
 }

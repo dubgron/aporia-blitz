@@ -62,17 +62,22 @@ namespace Aporia
         pos = next_aligned(pos - size, align);
     }
 
-    ScratchArena create_scratch_arena(MemoryArena* arena)
+    ScratchArena get_scratch_arena(MemoryArena* conflict /* = nullptr */)
     {
-        APORIA_ASSERT_WITH_MESSAGE(arena, "The arena is null! Can't create a scratch arena!");
-
         ScratchArena result;
-        result.arena = arena;
-        result.pos = arena->pos;
+        for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
+        {
+            MemoryArena* temp_arena = &memory.temp[idx];
+            if (conflict != temp_arena)
+            {
+                result.arena = temp_arena;
+                result.pos = temp_arena->pos;
+            }
+        }
         return result;
     }
 
-    void rollback_scratch_arena(ScratchArena& scratch)
+    void release_scratch_arena(ScratchArena& scratch)
     {
         APORIA_ASSERT_WITH_MESSAGE(scratch.arena, "Scratch arena has an invalid arena pointer! Can't rollback!");
 

@@ -185,7 +185,7 @@ namespace Aporia
     {
         if (file_buffer.length > 0)
         {
-            ScratchArena temp = create_scratch_arena(&persistent_arena);
+            ScratchArena temp = get_scratch_arena();
             {
                 String log_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
 
@@ -195,7 +195,7 @@ namespace Aporia
                 fwrite(file_buffer.data, file_buffer.length, 1, log_file);
                 fclose(log_file);
             }
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
 
             buffer_clear(file_buffer);
         }
@@ -215,14 +215,14 @@ namespace Aporia
         console_buffer = buffer_create(arena, buffer_size);
         file_buffer = buffer_create(arena, buffer_size);
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena(arena);
         {
             String log_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
             FILE* log_file = fopen(*log_filepath, "wb");
             APORIA_ASSERT(log_file);
             fclose(log_file);
         }
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
     }
 
     void logging_deinit()
@@ -230,7 +230,7 @@ namespace Aporia
         flush_logs_to_console();
         flush_logs_to_file();
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
         {
             String old_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
             String logs = read_entire_text_file(temp.arena, old_filepath);
@@ -242,7 +242,7 @@ namespace Aporia
             fwrite(logs.data, logs.length, 1, new_logs);
             fclose(new_logs);
         }
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
     }
 
     void log(String file, i32 line, String function, LogLevel level, String message)
@@ -252,7 +252,7 @@ namespace Aporia
             return;
         }
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
         {
             String current_timestamp = format_timestamp(temp.arena, "%H:%M:%S.%%");
             String filename = extract_filename(file);
@@ -292,7 +292,7 @@ namespace Aporia
                 }
             }
         }
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
     }
 
     bool should_log(LogLevel level)

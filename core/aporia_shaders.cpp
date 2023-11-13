@@ -190,13 +190,13 @@ namespace Aporia
             i32 length;
             glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
 
-            ScratchArena temp = create_scratch_arena(&persistent_arena);
+            ScratchArena temp = get_scratch_arena();
 
             GLchar* error_message = temp.arena->push<GLchar>(length);
             glGetShaderInfoLog(subshader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
         }
 
         return is_valid == GL_TRUE;
@@ -288,13 +288,13 @@ namespace Aporia
             i32 length;
             glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &length);
 
-            ScratchArena temp = create_scratch_arena(&persistent_arena);
+            ScratchArena temp = get_scratch_arena();
 
             GLchar* error_message = temp.arena->push<GLchar>(length);
             glGetProgramInfoLog(shader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
         }
 
         return is_valid == GL_TRUE;
@@ -302,12 +302,12 @@ namespace Aporia
 
     static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     {
-        const String shader_contents = read_entire_text_file(&persistent_arena, filepath);
+        const String shader_contents = read_entire_text_file(&memory.persistent, filepath);
 
         //////////////////////////////////////////////////////////////////////
         // Parse the shader file
 
-        ScratchArena temp = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
 
         ShaderData shader_data;
         shader_data.subshaders = temp.arena->push_zero<SubShaderData>(subshaders_count);
@@ -415,7 +415,7 @@ namespace Aporia
         if (linking_failed || validation_failed)
         {
             glDeleteProgram(shader_id);
-            rollback_scratch_arena(temp);
+            release_scratch_arena(temp);
             return 0;
         }
 
@@ -425,7 +425,7 @@ namespace Aporia
         shader_info.source_file = filepath;
         shader_info.properties = shader_data.properties;
 
-        rollback_scratch_arena(temp);
+        release_scratch_arena(temp);
 
         //////////////////////////////////////////////////////////////////////
         // Apply default properties

@@ -8,12 +8,12 @@ namespace Aporia
 {
     void* load_library(String library_name)
     {
-        ScratchArena scratch = create_scratch_arena(&persistent_arena);
+        ScratchArena temp = get_scratch_arena();
 
-        const String library_full_name = library_name.append(scratch.arena, ".dll");
+        const String library_full_name = library_name.append(temp.arena, ".dll");
         HMODULE library = LoadLibrary(*library_full_name);
 
-        rollback_scratch_arena(scratch);
+        release_scratch_arena(temp);
 
         return library;
     }
@@ -42,7 +42,7 @@ namespace Aporia
 
         String message{ (u8*)buff, size };
 
-        return push_string(&frame_arena, message);
+        return push_string(&memory.frame, message);
     }
 
     bool does_directory_exist(String path)
