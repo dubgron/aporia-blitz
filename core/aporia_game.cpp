@@ -17,13 +17,19 @@ namespace Aporia
     GameMemory memory;
     World world;
 
-    static Game* game = nullptr;
-
     static Timer frame_timer;
     static f32 total_time = 0.f;
 
     static f32 delta_time = 1.f / 240.f;
     static f32 accumulated_frame_time = 0.f;
+
+    static void game_simulate_frame(f32 time, f32 delta_time)
+    {
+    }
+
+    static void game_draw_frame(f32 frame_time)
+    {
+    }
 
     static void game_main_loop()
     {
@@ -32,24 +38,24 @@ namespace Aporia
 
         memory.frame.clear();
 
-        assets_reload_if_dirty();
-
         active_window->poll_events();
         poll_gamepad_inputs();
 
         accumulated_frame_time += frame_time;
         while (accumulated_frame_time > delta_time)
         {
-            game->update(total_time, delta_time);
+            game_simulate_frame(total_time, delta_time);
             accumulated_frame_time -= delta_time;
 
             inputs_clear();
+
+            assets_reload_if_dirty();
         }
 
         IMGUI_FRAME_BEGIN();
         rendering_begin();
 
-        game->draw(frame_time);
+        game_draw_frame(frame_time);
 
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
@@ -67,10 +73,8 @@ namespace Aporia
         active_window->display();
     }
 
-    void game_run(Game* in_game)
+    void engine_main(String config_filepath)
     {
-        game = in_game;
-
         // Init
         {
             memory.persistent.alloc(MEGABYTES(100));
@@ -78,7 +82,7 @@ namespace Aporia
 
             for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
             {
-                memory.temp[idx].alloc(MEGABYTES(1));
+                memory.temp[idx].alloc(MEGABYTES(10));
             }
 
             memory.config.alloc(KILOBYTES(10));
@@ -87,7 +91,7 @@ namespace Aporia
 
             assets_init();
 
-            const bool config_loaded_successfully = load_engine_config(game->config_filepath);
+            const bool config_loaded_successfully = load_engine_config(config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
             active_window = create_window(&memory.persistent);
@@ -101,8 +105,6 @@ namespace Aporia
             world.init();
 
             IMGUI_INIT();
-
-            game->init();
         }
 
         // Update
@@ -119,8 +121,6 @@ namespace Aporia
 
         // Terminate
         {
-            game->terminate();
-
             IMGUI_DEINIT();
             world.deinit();
             rendering_deinit();
@@ -136,4 +136,10 @@ namespace Aporia
             memory.config.dealloc();
         }
     }
+}
+
+int main(int argc, char** argv)
+{
+    Aporia::engine_main("content/settings.aporia-config");
+    return 0;
 }
