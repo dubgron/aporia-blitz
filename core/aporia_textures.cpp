@@ -1,6 +1,7 @@
 #include "aporia_textures.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_STDIO
 #include <stb_image.h>
 
 #include "aporia_assets.hpp"
@@ -22,36 +23,36 @@ namespace Aporia
 
     static HashTable<SubTexture> subtextures;
 
-    // @TODO(dubgron): Make it into free functions, it will be more convenient to use.
-    void Image::load(String filepath)
+    Bitmap load_bitmap(MemoryArena* arena, String filepath)
     {
-        if (pixels)
+        Bitmap result;
+
+        ScratchArena temp = get_scratch_arena(arena);
         {
-            APORIA_LOG(Warning, "Image '%' has already been loaded! Unloading first!", filepath);
-            unload();
+            String contents = read_entire_file(temp.arena, filepath);
+            result.pixels = stbi_load_from_memory(contents.data, contents.length, &result.width, &result.height, &result.channels, 4);
+
+            // @HACK(dubgron): It would be nice if we didn't have to use malloc in stb_image
+            // and have the bitmap already pushed on the arena.
+            u64 num_of_pixels = result.width * result.height * result.channels;
+            u8* pixels = arena->push<u8>(num_of_pixels);
+            memcpy(pixels, result.pixels, num_of_pixels);
+
+            stbi_image_free(result.pixels);
+            result.pixels = pixels;
         }
+        release_scratch_arena(temp);
 
-        pixels = stbi_load(*filepath, &width, &height, &channels, 4);
-
-        if (pixels)
+        if (result.pixels)
         {
-            APORIA_LOG(Info, "Image '%' loaded successfully!", filepath);
+            APORIA_LOG(Info, "Bitmap '%' loaded successfully!", filepath);
         }
         else
         {
             APORIA_LOG(Error, "Failed to load image '%'!", filepath);
         }
-    }
 
-    void Image::unload()
-    {
-        stbi_image_free(pixels);
-        pixels = nullptr;
-    }
-
-    bool Image::is_valid() const
-    {
-        return pixels != nullptr;
+        return result;
     }
 
     // @TODO(dubgron): This will fail if we reload textures too many times. Make it more robust.
@@ -154,10 +155,12 @@ namespace Aporia
 
     static Texture* load_texture_from_file(String filepath)
     {
-        Image image;
-        image.load(filepath);
-        if (!image.is_valid())
+        ScratchArena temp = get_scratch_arena();
+
+        Bitmap bitmap = load_bitmap(temp.arena, filepath);
+        if (!bitmap.pixels)
         {
+            release_scratch_arena(temp);
             return nullptr;
         }
 
@@ -170,8 +173,8 @@ namespace Aporia
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, id);
 
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, image.width, image.height);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, bitmap.width, bitmap.height);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap.width, bitmap.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixels);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -184,8 +187,8 @@ namespace Aporia
 
         glBindTextureUnit(unit, id);
 
-        glTextureStorage2D(id, 1, GL_RGBA8, image.width, image.height);
-        glTextureSubImage2D(id, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels);
+        glTextureStorage2D(id, 1, GL_RGBA8, bitmap.width, bitmap.height);
+        glTextureSubImage2D(id, 0, 0, 0, bitmap.width, bitmap.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixels);
 
         // @TODO(dubgron): Texture parameters should be parameterizable.
         glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -196,7 +199,7 @@ namespace Aporia
         glGenerateTextureMipmap(id);
 #endif
 
-        image.unload();
+        release_scratch_arena(temp);
 
         if (!id)
         {
@@ -207,9 +210,9 @@ namespace Aporia
         Texture texture;
         texture.id = id;
         texture.unit = unit;
-        texture.width = image.width;
-        texture.height = image.height;
-        texture.channels = image.channels;
+        texture.width = bitmap.width;
+        texture.height = bitmap.height;
+        texture.channels = bitmap.channels;
         // @NOTE(dubgron): The texture doesn't take an ownership over the filepath.
         // We have to make sure the texture doesn't outlive it.
         texture.source_file = filepath;

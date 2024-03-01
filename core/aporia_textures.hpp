@@ -6,19 +6,15 @@
 
 namespace Aporia
 {
-    struct Image
+    struct Bitmap
     {
         u8* pixels = nullptr;
-
         i32 width = 0;
         i32 height = 0;
         i32 channels = 0;
-
-        void load(String filepath);
-        void unload();
-
-        bool is_valid() const;
     };
+
+    Bitmap load_bitmap(MemoryArena* arena, String filepath);
 
     struct Texture
     {
