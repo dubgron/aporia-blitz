@@ -2,7 +2,7 @@
 
 #include "aporia_types.hpp"
 
-#define PTR_TO_INT(p) reinterpret_cast<u64>(p)
+#define PTR_TO_INT(p) reinterpret_cast<uintptr_t>(p)
 #define INT_TO_PTR(i) reinterpret_cast<void*>(i)
 
 #define BYTES(n)      (n)

@@ -49,7 +49,7 @@ namespace Aporia
 
             inputs_clear();
 
-            assets_reload_if_dirty();
+            assets_reload_if_dirty(delta_time);
         }
 
         IMGUI_FRAME_BEGIN();

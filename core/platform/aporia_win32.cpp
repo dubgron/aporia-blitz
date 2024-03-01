@@ -102,15 +102,15 @@ namespace Aporia
         }
 
         constexpr u64 size = KILOBYTES(1);
-        FILE_NOTIFY_INFORMATION file_notifies[size];
+        u8 notifies_buffer[size];
 
-        for (;;)
+        while (true)
         {
-            memset(file_notifies, 0, size);
+            memset(notifies_buffer, 0, size);
             DWORD bytes_returned;
 
-            bool success = ReadDirectoryChangesW(directory_handle, file_notifies, size, true,
-                FILE_NOTIFY_CHANGE_LAST_WRITE, &bytes_returned, NULL, NULL);
+            bool success = ReadDirectoryChangesExW(directory_handle, notifies_buffer, size, true,
+                FILE_NOTIFY_CHANGE_LAST_WRITE, &bytes_returned, NULL, NULL, ReadDirectoryNotifyExtendedInformation);
 
             if (!success || bytes_returned == 0)
             {
@@ -118,28 +118,45 @@ namespace Aporia
                 continue;
             }
 
-            u64 idx = 0;
-            while (idx < bytes_returned)
+            FILE_NOTIFY_EXTENDED_INFORMATION* file_notify = (FILE_NOTIFY_EXTENDED_INFORMATION*)notifies_buffer;
+
+            mutex_lock(&assets_mutex);
+
+            while (true)
             {
-                char buff[256];
-                u64 size = WideCharToMultiByte(CP_UTF8, 0, file_notifies[idx].FileName,
-                    file_notifies[idx].FileNameLength / sizeof(WCHAR), buff, sizeof(buff), NULL, NULL);
-
-                String changed_file{ (u8*)buff, size };
-                fix_path_slashes(&changed_file);
-
-                if (Asset* changed_asset = get_asset_by_source_file(changed_file))
+                // @NOTE(dubgron): Saving files trigger multiple notifies, some of them report
+                // the file size of 0. Reloading file during this time is dangerous, that's why
+                // we should ignore it.
+                u64 filesize = file_notify->FileSize.QuadPart;
+                if (filesize > 0)
                 {
-                    asset_change_status(changed_asset, AssetStatus::NeedsReload);
+                    char buff[256];
+                    u64 size = WideCharToMultiByte(CP_UTF8, 0, file_notify->FileName,
+                        file_notify->FileNameLength / sizeof(WCHAR), buff, sizeof(buff), NULL, NULL);
+
+                    String changed_file{ (u8*)buff, size };
+                    fix_path_slashes(&changed_file);
+
+                    if (Asset* changed_asset = get_asset_by_source_file(changed_file))
+                    {
+                        changed_asset->status = AssetStatus::NeedsReload;
+
+                        // @HACK(dubgron): Saving files trigger multiple notifies in more than one read,
+                        // which causes unnecessary reloads. To avoid that, we wait for a bit before
+                        // reloding the asset.
+                        changed_asset->time_until_reload = 0.2f;
+                    }
                 }
 
-                if (file_notifies[idx].NextEntryOffset == 0)
+                if (file_notify->NextEntryOffset == 0)
                 {
                     break;
                 }
 
-                idx += file_notifies[idx].NextEntryOffset;
+                file_notify = (FILE_NOTIFY_EXTENDED_INFORMATION*)(PTR_TO_INT(file_notify) + file_notify->NextEntryOffset);
             }
+
+            mutex_unlock(&assets_mutex);
         }
 
         return 0;

@@ -9,7 +9,6 @@
 namespace Aporia
 {
     static MemoryArena assets_arena;
-    static Mutex assets_mutex;
 
     static constexpr u64 MAX_ASSETS = 100;
 
@@ -60,10 +59,11 @@ namespace Aporia
 
     void assets_deinit()
     {
+        assets_arena.dealloc();
         mutex_destroy(&assets_mutex);
     }
 
-    void assets_reload_if_dirty()
+    void assets_reload_if_dirty(f32 delta_time)
     {
         if (!mutex_try_lock(&assets_mutex))
         {
@@ -75,6 +75,14 @@ namespace Aporia
             Asset* asset = &assets[idx];
             if (asset->status == AssetStatus::NeedsReload)
             {
+                if (asset->time_until_reload > 0.f)
+                {
+                    asset->time_until_reload -= delta_time;
+                    break;
+                }
+
+                asset->time_until_reload = 0.f;
+
                 switch (asset->type)
                 {
                     case AssetType::Config:     reload_config_asset(asset);     break;
@@ -177,13 +185,6 @@ namespace Aporia
             }
         }
         return result;
-    }
-
-    void asset_change_status(Asset* asset, AssetStatus status)
-    {
-        mutex_lock(&assets_mutex);
-        asset->status = status;
-        mutex_unlock(&assets_mutex);
     }
 
 #if defined(APORIA_DEBUGTOOLS)
