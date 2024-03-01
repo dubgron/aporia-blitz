@@ -9,7 +9,7 @@ namespace Aporia
     {
         ScratchArena temp = get_scratch_arena();
 
-        const String library_full_name = library_name.append(temp.arena, ".so");
+        const String library_full_name = string_concat(temp.arena, library_name, ".so");
         void* library = dlopen(*library_full_name, RTLD_LAZY);
 
         release_scratch_arena(temp);

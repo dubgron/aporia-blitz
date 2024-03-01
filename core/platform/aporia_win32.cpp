@@ -10,7 +10,7 @@ namespace Aporia
     {
         ScratchArena temp = get_scratch_arena();
 
-        const String library_full_name = library_name.append(temp.arena, ".dll");
+        const String library_full_name = string_concat(temp.arena, library_name, ".dll");
         HMODULE library = LoadLibrary(*library_full_name);
 
         release_scratch_arena(temp);

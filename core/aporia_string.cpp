@@ -49,14 +49,6 @@ namespace Aporia
         return result;
     }
 
-    String String::append(MemoryArena* arena, String other) const
-    {
-        String result = push_string(arena, length + other.length);
-        memcpy(result.data, data, length);
-        memcpy(result.data + length, other.data, other.length);
-        return result;
-    }
-
     StringList String::split(MemoryArena* arena, u8 delim) const
     {
         StringList result;
@@ -247,6 +239,14 @@ namespace Aporia
             result.data = arena->push<u8>(length);
             result.length = length;
         }
+        return result;
+    }
+
+    String string_concat(MemoryArena* arena, String first, String second)
+    {
+        String result = push_string(arena, first.length + second.length);
+        memcpy(result.data, first.data, first.length);
+        memcpy(result.data + first.length, second.data, second.length);
         return result;
     }
 

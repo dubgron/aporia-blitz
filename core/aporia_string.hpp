@@ -21,7 +21,6 @@ namespace Aporia
         String trim_left() const;
         String trim_right() const;
 
-        String append(MemoryArena* arena, String other) const;
         StringList split(MemoryArena* arena, u8 delim) const;
 
         u64 find(u8 character, u64 offset = 0) const;
@@ -80,6 +79,8 @@ namespace Aporia
     String push_string(MemoryArena* arena, String string);
     String push_string(MemoryArena* arena, const char* string);
     String push_string(MemoryArena* arena, u64 length);
+
+    String string_concat(MemoryArena* arena, String first, String second);
 
     i64 string_to_int(String string);
     f32 string_to_float(String string);
