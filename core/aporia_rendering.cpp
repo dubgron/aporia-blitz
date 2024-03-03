@@ -673,7 +673,7 @@ namespace Aporia
         }
 
         // Setup Framebuffers
-        refresh_framebuffers();
+        adjust_framebuffers_to_render_surface();
 
 #if defined(APORIA_EMSCRIPTEN)
     #define SHADERS_DIRECTORY "content/shaders_gles/"
@@ -1278,7 +1278,7 @@ namespace Aporia
         APORIA_ASSERT(*width > 0 && *height > 0);
     }
 
-    void refresh_framebuffers()
+    void adjust_framebuffers_to_render_surface()
     {
         i32 render_width, render_height;
         get_size_of_render_surface(&render_width, &render_height);

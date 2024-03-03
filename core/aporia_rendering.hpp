@@ -37,5 +37,5 @@ namespace Aporia
 
     void get_size_of_render_surface(i32* width, i32* height);
 
-    void refresh_framebuffers();
+    void adjust_framebuffers_to_render_surface();
 }

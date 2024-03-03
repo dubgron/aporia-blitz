@@ -62,7 +62,8 @@ namespace Aporia
     {
         APORIA_ASSERT(window_config.width > 0 && window_config.height > 0);
 
-        // @NOTE(dubgron): This will trigger the FramebufferSizeCallback function.
+        // @NOTE(dubgron): This will trigger the FramebufferSizeCallback function,
+        // if the size differs from the current one.
         glfwSetWindowSize(handle, window_config.width, window_config.height);
 
         glfwSetWindowTitle(handle, *window_config.title);
@@ -164,9 +165,9 @@ namespace Aporia
                 active_window->width = width;
                 active_window->height = height;
 
-                active_camera->refresh_aspect_ratio();
+                active_camera->adjust_aspect_ratio_to_render_surface();
 
-                refresh_framebuffers();
+                adjust_framebuffers_to_render_surface();
             }
         });
 

@@ -514,6 +514,8 @@ namespace Aporia
         active_window->apply_config();
         active_camera->apply_config();
 
+        adjust_framebuffers_to_render_surface();
+
         return success;
     }
 

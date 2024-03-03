@@ -63,7 +63,7 @@ namespace Aporia
         void follow(v2 to_follow, f32 delta_time);
 
         void apply_config();
-        void refresh_aspect_ratio();
+        void adjust_aspect_ratio_to_render_surface();
     };
 
     Camera* create_camera(MemoryArena* arena);

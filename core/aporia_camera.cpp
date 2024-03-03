@@ -193,11 +193,11 @@ namespace Aporia
 
     void Camera::apply_config()
     {
-        refresh_aspect_ratio();
+        adjust_aspect_ratio_to_render_surface();
         projection.fov = camera_config.fov;
     }
 
-    void Camera::refresh_aspect_ratio()
+    void Camera::adjust_aspect_ratio_to_render_surface()
     {
         i32 render_width, render_height;
         get_size_of_render_surface(&render_width, &render_height);
