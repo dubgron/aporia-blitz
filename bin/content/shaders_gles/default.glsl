@@ -14,7 +14,6 @@ in vec2 in_tex_coord;
 
 uniform mat4 u_vp_matrix;
 
-out vec3 vs_position;
 out vec4 vs_color;
 out float vs_tex_unit;
 out vec2 vs_tex_coord;
@@ -23,7 +22,6 @@ void main()
 {
     gl_Position = u_vp_matrix * vec4(in_position, 1.0);
 
-    vs_position = in_position;
     vs_color = in_color;
     vs_tex_unit = in_tex_unit;
     vs_tex_coord = in_tex_coord;
@@ -35,14 +33,11 @@ void main()
 #version 300 es
 precision highp float;
 
-in vec3 vs_position;
 in vec4 vs_color;
 in float vs_tex_unit;
 in vec2 vs_tex_coord;
 
 uniform sampler2D u_atlas[16];
-uniform vec2 u_light_position;
-uniform vec3 u_light_color;
 
 out vec4 out_color;
 
@@ -87,12 +82,8 @@ vec4 sample_texture()
 
 void main()
 {
+    vec4 texture = sample_texture();
     vec4 object_color = vs_color;
 
-    if (vs_tex_unit > 0.0)
-    {
-        object_color *= sample_texture();
-    }
-
-    out_color = object_color;
+    out_color = vs_color * texture;
 }

@@ -38,7 +38,7 @@ namespace Aporia
         // GL_NEAREST, as it works best with pixelart, but fonts look better
         // with linear filtering. Choosing filter should not require to overwrite
         // it after loading the texture.
-        glActiveTexture(GL_TEXTURE0 + result.atlas.source->unit);
+        glActiveTexture(GL_TEXTURE0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

@@ -30,10 +30,10 @@ namespace Aporia
         ScratchArena temp = get_scratch_arena(arena);
         {
             String contents = read_entire_file(temp.arena, filepath);
-            result.pixels = stbi_load_from_memory(contents.data, contents.length, &result.width, &result.height, &result.channels, 4);
+            result.pixels = stbi_load_from_memory(contents.data, contents.length, &result.width, &result.height, &result.channels, 0);
 
             // @HACK(dubgron): It would be nice if we didn't have to use malloc in stb_image
-            // and have the bitmap already pushed on the arena.
+            // and have the bitmap already pushed onto the arena.
             u64 num_of_pixels = result.width * result.height * result.channels;
             u8* pixels = arena->push<u8>(num_of_pixels);
             memcpy(pixels, result.pixels, num_of_pixels);
@@ -53,13 +53,6 @@ namespace Aporia
         }
 
         return result;
-    }
-
-    // @TODO(dubgron): This will fail if we reload textures too many times. Make it more robust.
-    u32 get_next_texture_unit()
-    {
-        static u32 unit = 0;
-        return unit++;
     }
 
     static bool operator==(const SubTexture& subtexture1, const SubTexture& subtexture2)
@@ -164,17 +157,34 @@ namespace Aporia
             return nullptr;
         }
 
+        u32 sized_format, base_format;
+        switch (bitmap.channels)
+        {
+            case 1: sized_format = GL_R8;       base_format = GL_RED;   break;
+            case 2: sized_format = GL_RG8;      base_format = GL_RG;    break;
+            case 3: sized_format = GL_RGB8;     base_format = GL_RGB;   break;
+            case 4: sized_format = GL_RGBA8;    base_format = GL_RGBA;  break;
+            default: APORIA_UNREACHABLE();
+        }
+
+        // @NOTE(dubgron): If the bitmap has an uneven number of channels, we set its
+        // alignment to 1 to guarantee the pixel rows are contiguous in memory.
+        // See https://www.khronos.org/opengl/wiki/Pixel_Transfer#Pixel_layout.
+        if (bitmap.channels % 2 == 1)
+        {
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        }
+
         u32 id = 0;
-        u32 unit = get_next_texture_unit();
 
 #if defined(APORIA_EMSCRIPTEN)
         glGenTextures(1, &id);
 
-        glActiveTexture(GL_TEXTURE0 + unit);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, id);
 
-        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, bitmap.width, bitmap.height);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap.width, bitmap.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixels);
+        glTexStorage2D(GL_TEXTURE_2D, 1, sized_format, bitmap.width, bitmap.height);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap.width, bitmap.height, base_format, GL_UNSIGNED_BYTE, bitmap.pixels);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -185,10 +195,10 @@ namespace Aporia
 #else
         glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-        glBindTextureUnit(unit, id);
+        glBindTextureUnit(0, id);
 
-        glTextureStorage2D(id, 1, GL_RGBA8, bitmap.width, bitmap.height);
-        glTextureSubImage2D(id, 0, 0, 0, bitmap.width, bitmap.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.pixels);
+        glTextureStorage2D(id, 1, sized_format, bitmap.width, bitmap.height);
+        glTextureSubImage2D(id, 0, 0, 0, bitmap.width, bitmap.height, base_format, GL_UNSIGNED_BYTE, bitmap.pixels);
 
         // @TODO(dubgron): Texture parameters should be parameterizable.
         glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -209,7 +219,6 @@ namespace Aporia
 
         Texture texture;
         texture.id = id;
-        texture.unit = unit;
         texture.width = bitmap.width;
         texture.height = bitmap.height;
         texture.channels = bitmap.channels;

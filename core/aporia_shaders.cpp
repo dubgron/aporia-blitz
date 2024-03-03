@@ -10,6 +10,7 @@
 namespace Aporia
 {
     u32 default_shader = 0;
+    u32 rectangle_shader = 0;
     u32 line_shader = 0;
     u32 circle_shader = 0;
     u32 font_shader = 0;
@@ -540,6 +541,11 @@ namespace Aporia
     void shader_set_float2(String name, v2 value)
     {
         glUniform2f(get_uniform_location(name), value.x, value.y);
+    }
+
+    void shader_set_float2(String name, f32 value_1, f32 value_2)
+    {
+        glUniform2f(get_uniform_location(name), value_1, value_2);
     }
 
     void shader_set_float3(String name, v3 value)

@@ -126,6 +126,7 @@ namespace Aporia
 
     void shader_set_float(String name, f32 value);
     void shader_set_float2(String name, v2 value);
+    void shader_set_float2(String name, f32 value_1, f32 value_2);
     void shader_set_float3(String name, v3 value);
     void shader_set_float4(String name, v4 value);
     void shader_set_float_array(String name, f32* value, i32 count);
@@ -156,6 +157,7 @@ namespace Aporia
 
     // Predefined shaders
     extern u32 default_shader;
+    extern u32 rectangle_shader;
     extern u32 line_shader;
     extern u32 circle_shader;
     extern u32 font_shader;

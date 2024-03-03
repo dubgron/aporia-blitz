@@ -19,7 +19,6 @@ namespace Aporia
     struct Texture
     {
         u32 id = 0;
-        u32 unit = 0;
 
         i32 width = 0;
         i32 height = 0;
@@ -35,7 +34,8 @@ namespace Aporia
         Texture* source = nullptr;
     };
 
-    u32 get_next_texture_unit();
+    u32 get_next_texture_unit_for_id(u32 texture_id);
+    void clear_texture_unit_map();
 
     // @NOTE(dubgron): Atlas refers to the config file describing the subtextures inside a texture.
     bool load_texture_atlas(String filepath);

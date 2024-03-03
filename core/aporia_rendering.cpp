@@ -29,6 +29,37 @@ namespace Aporia
     static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
     static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
 
+    // @NOTE(dubgron); It maps texture units to texture ids.
+    static u32 textures_used_in_draw_call[OPENGL_MAX_TEXTURE_UNITS] = { 0 };
+    static u32 first_unused_texture_unit = 0;
+
+    static constexpr u32 INVALID_TEXTURE_UNIT = -1;
+
+    u32 find_or_assign_texture_unit(u32 texture_id)
+    {
+        for (u64 texture_unit = 0; texture_unit < first_unused_texture_unit; ++texture_unit)
+        {
+            if (textures_used_in_draw_call[texture_unit] == texture_id)
+            {
+                glBindTextureUnit(texture_unit, texture_id);
+                return texture_unit;
+            }
+        }
+
+        if (first_unused_texture_unit < ARRAY_COUNT(textures_used_in_draw_call))
+        {
+            u32 texture_unit = first_unused_texture_unit;
+
+            textures_used_in_draw_call[texture_unit] = texture_id;
+            first_unused_texture_unit += 1;
+
+            glBindTextureUnit(texture_unit, texture_id);
+            return texture_unit;
+        }
+
+        return INVALID_TEXTURE_UNIT;
+    }
+
 #if defined(APORIA_EMSCRIPTEN)
     using texture_unit = f32;
 #else
@@ -233,7 +264,9 @@ namespace Aporia
         indexbuffer_unbind();
         vertexarray_unbind();
 
+        // @NOTE(dubgron): Here we could also memset vertex_buffer.data and textures_used_in_draw_call to zero.
         vertex_array->vertex_buffer.count = 0;
+        first_unused_texture_unit = 0;
     }
 
     struct UniformBuffer
@@ -300,6 +333,7 @@ namespace Aporia
     {
         BufferType buffer = BufferType::Quads;
         u32 shader_id = 0;
+        u32 texture_id = 0;
 
         Vertex vertex[4];
     };
@@ -362,37 +396,46 @@ namespace Aporia
                 return z_diff;
             });
 
-        RenderQueueKey prev_key = render_queue->data[0];
+        RenderQueueKey* prev_key = &render_queue->data[0];
         for (u64 idx = 0; idx < render_queue->count; ++idx)
         {
-            RenderQueueKey& key = render_queue->data[idx];
+            RenderQueueKey* key = &render_queue->data[idx];
 
-            if (key.shader_id != prev_key.shader_id || key.buffer != prev_key.buffer)
+            if (key->shader_id != prev_key->shader_id || key->buffer != prev_key->buffer)
             {
-                bind_shader(prev_key.shader_id);
-                vertexarray_render(get_vao_from_buffer(prev_key.buffer));
+                bind_shader(prev_key->shader_id);
+                vertexarray_render(get_vao_from_buffer(prev_key->buffer));
             }
 
-            VertexArray* vertex_array = get_vao_from_buffer(key.buffer);
+            VertexArray* vertex_array = get_vao_from_buffer(key->buffer);
             VertexBuffer* vertex_buffer = &vertex_array->vertex_buffer;
 
-            if (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count)
+            u32 texture_unit = find_or_assign_texture_unit(key->texture_id);
+
+            bool no_available_texture_unit = (texture_unit == INVALID_TEXTURE_UNIT);
+            bool vertex_buffer_overflow = (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count);
+
+            if (no_available_texture_unit || vertex_buffer_overflow)
             {
-                bind_shader(key.shader_id);
+                bind_shader(key->shader_id);
                 vertexarray_render(vertex_array);
+
+                texture_unit = find_or_assign_texture_unit(key->texture_id);
             }
 
             for (u64 i = 0; i < vertex_buffer->vertex_per_object; ++i)
             {
-                vertex_buffer->data[vertex_buffer->count] = key.vertex[i];
+                key->vertex[i].tex_unit = texture_unit;
+
+                vertex_buffer->data[vertex_buffer->count] = key->vertex[i];
                 vertex_buffer->count += 1;
             }
 
             prev_key = key;
         }
 
-        bind_shader(prev_key.shader_id);
-        vertexarray_render(get_vao_from_buffer(prev_key.buffer));
+        bind_shader(prev_key->shader_id);
+        vertexarray_render(get_vao_from_buffer(prev_key->buffer));
 
         render_queue->count = 0;
     }
@@ -417,8 +460,6 @@ namespace Aporia
         Framebuffer result;
 
         // Create new buffers and textures
-        result.color_buffer.unit = get_next_texture_unit();
-
         result.color_buffer.width = width;
         result.color_buffer.height = height;
         result.color_buffer.channels = 4;
@@ -427,9 +468,9 @@ namespace Aporia
         glBindFramebuffer(GL_FRAMEBUFFER, result.framebuffer_id);
 
         glGenTextures(1, &result.color_buffer.id);
-        glActiveTexture(GL_TEXTURE0 + result.color_buffer.unit);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, result.color_buffer.id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -444,21 +485,17 @@ namespace Aporia
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Setup vertices
-        result.vertex[0].position = v3{ -1.f, -1.f, 0.f };
-        result.vertex[0].tex_coord = v2{ 0.f, 0.f };
-        result.vertex[0].tex_unit = result.color_buffer.unit;
+        result.vertex[0].position   = v3{ -1.f, -1.f, 0.f };
+        result.vertex[0].tex_coord  = v2{ 0.f, 0.f };
 
-        result.vertex[1].position = v3{ 1.f, -1.f, 0.f };
-        result.vertex[1].tex_coord = v2{ 1.f, 0.f };
-        result.vertex[1].tex_unit = result.color_buffer.unit;
+        result.vertex[1].position   = v3{ 1.f, -1.f, 0.f };
+        result.vertex[1].tex_coord  = v2{ 1.f, 0.f };
 
-        result.vertex[2].position = v3{ 1.f, 1.f, 0.f };
-        result.vertex[2].tex_coord = v2{ 1.f, 1.f };
-        result.vertex[2].tex_unit = result.color_buffer.unit;
+        result.vertex[2].position   = v3{ 1.f, 1.f, 0.f };
+        result.vertex[2].tex_coord  = v2{ 1.f, 1.f };
 
-        result.vertex[3].position = v3{ -1.f, 1.f, 0.f };
-        result.vertex[3].tex_coord = v2{ 0.f, 1.f };
-        result.vertex[3].tex_unit = result.color_buffer.unit;
+        result.vertex[3].position   = v3{ -1.f, 1.f, 0.f };
+        result.vertex[3].tex_coord  = v2{ 0.f, 1.f };
 
         return result;
     }
@@ -646,8 +683,9 @@ namespace Aporia
 
         // Setup default shaders
         default_shader = load_shader(SHADERS_DIRECTORY "default.glsl");
-        circle_shader = load_shader(SHADERS_DIRECTORY "circle.glsl");
+        rectangle_shader = load_shader(SHADERS_DIRECTORY "rectangle.glsl");
         line_shader = load_shader(SHADERS_DIRECTORY "line.glsl");
+        circle_shader = load_shader(SHADERS_DIRECTORY "circle.glsl");
         font_shader = load_shader(SHADERS_DIRECTORY "font.glsl");
 
         // Setup post-processing shaders
@@ -698,20 +736,23 @@ namespace Aporia
 #if defined(APORIA_EMSCRIPTEN)
         // NOTE(dubgron): In WebGL, the textures of framebuffers and textures of rendered objects
         // cannot be in the same sampler as it will cause the Feedback Loop error.
-        for (u64 idx = 0; idx < ARRAY_COUNT(sampler); ++idx)
-        {
-            if (sampler[idx] == main_framebuffer.color_buffer.unit ||
-                sampler[idx] == temp_framebuffer.color_buffer.unit ||
-                sampler[idx] == masking.color_buffer.unit ||
-                sampler[idx] == raymarching.color_buffer.unit)
-            {
-                sampler[idx] = 0;
-            }
-        }
+        //for (u64 idx = 0; idx < ARRAY_COUNT(sampler); ++idx)
+        //{
+        //    if (sampler[idx] == main_framebuffer.color_buffer.unit ||
+        //        sampler[idx] == temp_framebuffer.color_buffer.unit ||
+        //        sampler[idx] == masking.color_buffer.unit ||
+        //        sampler[idx] == raymarching.color_buffer.unit)
+        //    {
+        //        sampler[idx] = 0;
+        //    }
+        //}
 #endif
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(rectangle_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
 
         bind_shader(line_shader);
@@ -724,23 +765,6 @@ namespace Aporia
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_float("u_camera_zoom", camera_zoom);
-
-        bind_shader(postprocessing_shader);
-        shader_set_int("u_framebuffer", temp_framebuffer.color_buffer.unit);
-
-        v2 window_size = v2{ active_window->get_size() };
-
-        bind_shader(raymarching_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
-        shader_set_int("u_masking", masking.color_buffer.unit);
-        shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", window_size);
-
-        bind_shader(shadowcasting_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
-        shader_set_int("u_raymarching", raymarching.color_buffer.unit);
-        shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", window_size);
 
         if (editor_config.display_editor_grid)
         {
@@ -765,13 +789,8 @@ namespace Aporia
 
         if (lighting_enabled)
         {
-            uniformbuffer_set_data(&lights_uniform_buffer, light_sources.data, light_sources.count * sizeof(LightSource));
-
-            bind_shader(raymarching_shader);
-            shader_set_uint("u_num_lights", light_sources.count);
-
-            bind_shader(shadowcasting_shader);
-            shader_set_uint("u_num_lights", light_sources.count);
+            //////////////////////////////////////////////////
+            // Masking Shader
 
             // @NOTE(dubgron): Resize the viewport to the size of the window
             // before rendering the lights to keep the highest fidelity.
@@ -794,6 +813,20 @@ namespace Aporia
 
             DEBUG_TEXTURE(masking.color_buffer);
 
+            //////////////////////////////////////////////////
+            // Raymarching Shader
+
+            uniformbuffer_set_data(&lights_uniform_buffer, light_sources.data, light_sources.count * sizeof(LightSource));
+
+            u32 masking_unit = find_or_assign_texture_unit(masking.color_buffer.id);
+
+            bind_shader(raymarching_shader);
+            shader_set_mat4("u_vp_matrix", view_projection_matrix);
+            shader_set_int("u_masking", masking_unit);
+            shader_set_float("u_camera_zoom", camera_zoom);
+            shader_set_float2("u_window_size", active_window->width, active_window->height);
+            shader_set_uint("u_num_lights", light_sources.count);
+
             framebuffer_bind(raymarching);
             framebuffer_clear(Color::Black);
             framebuffer_flush(masking, raymarching_shader);
@@ -804,12 +837,29 @@ namespace Aporia
             // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
             glViewport(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height);
 
+            //////////////////////////////////////////////////
+            // Shadowcasting Shader
+
+            u32 raymarching_unit = find_or_assign_texture_unit(raymarching.color_buffer.id);
+
+            bind_shader(shadowcasting_shader);
+            shader_set_mat4("u_vp_matrix", view_projection_matrix);
+            shader_set_int("u_raymarching", raymarching_unit);
+            shader_set_float("u_camera_zoom", camera_zoom);
+            shader_set_float2("u_window_size", active_window->width, active_window->height);
+            shader_set_uint("u_num_lights", light_sources.count);
+
             framebuffer_bind(temp_framebuffer);
             framebuffer_flush(raymarching, shadowcasting_shader);
             framebuffer_unbind();
         }
 
         DEBUG_TEXTURE(temp_framebuffer.color_buffer);
+
+        u32 temp_framebuffer_unit = find_or_assign_texture_unit(temp_framebuffer.color_buffer.id);
+
+        bind_shader(postprocessing_shader);
+        shader_set_int("u_framebuffer", temp_framebuffer_unit);
 
         // @NOTE(dubgron): The temporary framebuffer is here to avoid FBO's Feedback Loop.
         // See https://www.khronos.org/opengl/wiki/Framebuffer_Object#Feedback_Loops.
@@ -886,26 +936,18 @@ namespace Aporia
 
         if (entity.texture && entity.texture->source)
         {
-            const v2 tex_coord_u        = entity.texture->u;
-            const v2 tex_coord_v        = entity.texture->v;
+            key.texture_id              = entity.texture->source->id;
 
-            key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
-            key.vertex[0].tex_unit        = entity.texture->source->unit;
-
-            key.vertex[1].tex_coord     = tex_coord_v;
-            key.vertex[1].tex_unit        = entity.texture->source->unit;
-
-            key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
-            key.vertex[2].tex_unit        = entity.texture->source->unit;
-
-            key.vertex[3].tex_coord     = tex_coord_u;
-            key.vertex[3].tex_unit        = entity.texture->source->unit;
+            key.vertex[0].tex_coord     = v2{ entity.texture->u.x, entity.texture->v.y };
+            key.vertex[1].tex_coord     = entity.texture->v;
+            key.vertex[2].tex_coord     = v2{ entity.texture->v.x, entity.texture->u.y };
+            key.vertex[3].tex_coord     = entity.texture->u;
         }
 
         renderqueue_add(&rendering_queue, key);
     }
 
-    void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = default_shader */)
+    void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
     {
         const v3 base_offset    = v3{ position, 0.f };
         const v3 right_offset   = v3{ width, 0.f, 0.f };
@@ -944,23 +986,23 @@ namespace Aporia
         key.shader_id               = shader_id;
 
         key.vertex[0].position      = v3{ begin, 0.f };
-        key.vertex[0].tex_coord     = normal;
         key.vertex[0].color         = color;
+        key.vertex[0].tex_coord     = normal;
         key.vertex[0].additional    = thickness;
 
         key.vertex[1].position      = v3{ begin, 0.f };
-        key.vertex[1].tex_coord     = -normal;
         key.vertex[1].color         = color;
+        key.vertex[1].tex_coord     = -normal;
         key.vertex[1].additional    = thickness;
 
         key.vertex[2].position      = v3{ end, 0.f };
-        key.vertex[2].tex_coord     = -normal;
         key.vertex[2].color         = color;
+        key.vertex[2].tex_coord     = -normal;
         key.vertex[2].additional    = thickness;
 
         key.vertex[3].position      = v3{ end, 0.f };
-        key.vertex[3].tex_coord     = normal;
         key.vertex[3].color         = color;
+        key.vertex[3].tex_coord     = normal;
         key.vertex[3].additional    = thickness;
 
         renderqueue_add(&rendering_queue, key);
@@ -1174,7 +1216,7 @@ namespace Aporia
                 const f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
                 const f32 height        = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
 
-                // @NOTE(dubgron): We flpi the sign of plane_bounds.bottom because
+                // @NOTE(dubgron): We flip the sign of plane_bounds.bottom because
                 // the plane_bounds lives in a space where the y-axis goes downwards.
                 const v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
                 const v2 align_offset   = v2{ line_alignments[current_line], 0.f };
@@ -1190,27 +1232,24 @@ namespace Aporia
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
                 key.shader_id               = text.shader_id;
+                key.texture_id              = font.atlas.source->id;
 
                 key.vertex[0].position      = v3{ base_offset, 0.f };
-                key.vertex[0].tex_unit        = font.atlas.source->unit;
                 key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
                 key.vertex[0].color         = text.color;
                 key.vertex[0].additional    = screen_px_range;
 
                 key.vertex[1].position      = v3{ base_offset + right_offset, 0.f };
-                key.vertex[1].tex_unit        = font.atlas.source->unit;
                 key.vertex[1].tex_coord     = tex_coord_v;
                 key.vertex[1].color         = text.color;
                 key.vertex[1].additional    = screen_px_range;
 
                 key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, 0.f };
-                key.vertex[2].tex_unit        = font.atlas.source->unit;
                 key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
                 key.vertex[2].color         = text.color;
                 key.vertex[2].additional    = screen_px_range;
 
                 key.vertex[3].position      = v3{ base_offset + up_offset, 0.f };
-                key.vertex[3].tex_unit        = font.atlas.source->unit;
                 key.vertex[3].tex_coord     = tex_coord_u;
                 key.vertex[3].color         = text.color;
                 key.vertex[3].additional    = screen_px_range;
