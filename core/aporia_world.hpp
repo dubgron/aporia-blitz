@@ -21,7 +21,7 @@ namespace Aporia
 
     struct World
     {
-        MemoryArena world_arena;
+        MemoryArena arena;
         u64 max_entities = 0;
 
         Entity* entity_array = nullptr;
@@ -29,14 +29,14 @@ namespace Aporia
 
         EntityNode* entity_list = nullptr;
         EntityNode* free_list = nullptr;
-
-        void init(u64 in_max_entities = 10000);
-        void deinit();
-
-        EntityID create_entity(Entity** out_entity = nullptr);
-        void remove_entity(EntityID entity_id);
-        void clear_entities();
-
-        Entity* get_entity(EntityID entity_id) const;
     };
+
+    void world_init(World* world, u64 in_max_entities = 10000);
+    void world_deinit(World* world);
+
+    EntityID create_entity(World* world, Entity** out_entity = nullptr);
+    void remove_entity(World* world, EntityID entity_id);
+    void clear_entities(World* world);
+
+    Entity* get_entity(World* world, EntityID entity_id);
 }

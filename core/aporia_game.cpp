@@ -102,7 +102,7 @@ namespace Aporia
             rendering_init(&memory.persistent);
             animations_init(&memory.persistent);
 
-            world.init();
+            world_init(&world);
 
             IMGUI_INIT();
         }
@@ -122,7 +122,7 @@ namespace Aporia
         // Terminate
         {
             IMGUI_DEINIT();
-            world.deinit();
+            world_deinit(&world);
             rendering_deinit();
 
             destroy_active_window();
