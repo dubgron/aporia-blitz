@@ -28,7 +28,7 @@ namespace Aporia
     // @TODO(dubgron): The arena should be parameterized in the future.
     void load_animations(String filepath)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
         Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
         for (const Config_Property* property = parsed_file; property; property = property->next)
@@ -42,7 +42,7 @@ namespace Aporia
             const u64 frame_count = property->literals.node_count;
 
             Animation animation;
-            animation.frames = memory.persistent.push<AnimationFrame>(frame_count);
+            animation.frames = arena_push_uninitialized<AnimationFrame>(&memory.persistent, frame_count);
 
             for (const StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
             {
@@ -58,7 +58,7 @@ namespace Aporia
             APORIA_ASSERT(*hash_table_find(&all_animations, animation_name) == animation);
         }
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
     }
 
     void animation_tick(Entity& entity, f32 frame_time)

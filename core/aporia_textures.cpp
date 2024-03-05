@@ -27,7 +27,7 @@ namespace Aporia
     {
         Bitmap result;
 
-        ScratchArena temp = get_scratch_arena(arena);
+        ScratchArena temp = scratch_begin(arena);
         {
             String contents = read_entire_file(temp.arena, filepath);
             result.pixels = stbi_load_from_memory(contents.data, contents.length, &result.width, &result.height, &result.channels, 0);
@@ -35,13 +35,13 @@ namespace Aporia
             // @HACK(dubgron): It would be nice if we didn't have to use malloc in stb_image
             // and have the bitmap already pushed onto the arena.
             u64 num_of_pixels = result.width * result.height * result.channels;
-            u8* pixels = arena->push<u8>(num_of_pixels);
+            u8* pixels = arena_push_uninitialized<u8>(arena, num_of_pixels);
             memcpy(pixels, result.pixels, num_of_pixels);
 
             stbi_image_free(result.pixels);
             result.pixels = pixels;
         }
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         if (result.pixels)
         {
@@ -62,7 +62,7 @@ namespace Aporia
 
     bool load_texture_atlas(String filepath)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
         Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
         String texture_filepath;
@@ -116,7 +116,7 @@ namespace Aporia
 
         APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return true;
     }
@@ -148,12 +148,12 @@ namespace Aporia
 
     static Texture* load_texture_from_file(String filepath)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
         Bitmap bitmap = load_bitmap(temp.arena, filepath);
         if (!bitmap.pixels)
         {
-            release_scratch_arena(temp);
+            scratch_end(&temp);
             return nullptr;
         }
 
@@ -209,7 +209,7 @@ namespace Aporia
         glGenerateTextureMipmap(id);
 #endif
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         if (!id)
         {

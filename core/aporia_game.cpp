@@ -36,7 +36,7 @@ namespace Aporia
         const f32 frame_time = frame_timer.reset();
         total_time += frame_time;
 
-        memory.frame.clear();
+        arena_clear(&memory.frame);
 
         active_window->poll_events();
         poll_gamepad_inputs();
@@ -77,15 +77,15 @@ namespace Aporia
     {
         // Init
         {
-            memory.persistent.alloc(MEGABYTES(100));
-            memory.frame.alloc(MEGABYTES(1));
+            memory.persistent = arena_init(MEGABYTES(100));
+            memory.frame = arena_init(MEGABYTES(1));
 
             for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
             {
-                memory.temp[idx].alloc(MEGABYTES(10));
+                memory.temp[idx] = arena_init(MEGABYTES(10));
             }
 
-            memory.config.alloc(KILOBYTES(10));
+            memory.config = arena_init(KILOBYTES(10));
 
             LOGGING_INIT(&memory.persistent, "aporia");
 
@@ -102,7 +102,7 @@ namespace Aporia
             rendering_init(&memory.persistent);
             animations_init(&memory.persistent);
 
-            world_init(&world);
+            world = world_init();
 
             IMGUI_INIT();
         }
@@ -131,9 +131,9 @@ namespace Aporia
 
             LOGGING_DEINIT();
 
-            memory.persistent.dealloc();
-            memory.frame.dealloc();
-            memory.config.dealloc();
+            arena_deinit(&memory.persistent);
+            arena_deinit(&memory.frame);
+            arena_deinit(&memory.config);
         }
     }
 }

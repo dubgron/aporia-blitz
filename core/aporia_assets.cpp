@@ -46,7 +46,7 @@ namespace Aporia
     void assets_init()
     {
         // @TODO(dubgron): The size of this arena should be more planned out.
-        assets_arena.alloc(KILOBYTES(100));
+        assets_arena = arena_init(KILOBYTES(100));
 
         assets_mutex = mutex_create();
 
@@ -59,7 +59,7 @@ namespace Aporia
 
     void assets_deinit()
     {
-        assets_arena.dealloc();
+        arena_deinit(&assets_arena);
         mutex_destroy(&assets_mutex);
     }
 

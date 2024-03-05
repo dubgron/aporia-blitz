@@ -56,7 +56,7 @@ namespace Aporia
 
     void Config_TokenList::push_node(MemoryArena* arena, Config_Token token)
     {
-        Config_TokenNode* node = arena->push_zero<Config_TokenNode>();
+        Config_TokenNode* node = arena_push<Config_TokenNode>(arena);
         node->token = token;
 
         if (node_count > 0)
@@ -256,17 +256,17 @@ namespace Aporia
                     }
                 }
 
-                ScratchArena temp = get_scratch_arena(arena);
+                ScratchArena temp = scratch_begin(arena);
                 APORIA_LOG(Error, "Syntax error at line: %, column: %. Expected token type: %, but got: >>> % <<<!",
                     line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
-                release_scratch_arena(temp);
+                scratch_end(&temp);
 
                 return nullptr;
             }
 
-            ScratchArena temp = get_scratch_arena(arena);
+            ScratchArena temp = scratch_begin(arena);
             APORIA_LOG(Verbose, "Type: % Token: '%'", token_type_flag_to_string(temp.arena, token.type), token.text);
-            release_scratch_arena(temp);
+            scratch_end(&temp);
 
             token_list.push_node(arena, token);
             expected_tokens = expected_tokens_table(token.type);
@@ -277,7 +277,7 @@ namespace Aporia
         APORIA_LOG(Debug, "Tokenization completed! Processed % tokens!", token_list.node_count);
 
         // Parsing
-        Config_Property* result = arena->push_zero<Config_Property>();
+        Config_Property* result = arena_push<Config_Property>(arena);
 
         Config_Property* property = result;
         u64 total_property_count = 0;
@@ -298,7 +298,7 @@ namespace Aporia
                 // If the next token is either a Category or a Field, a new property is needed.
                 if (token.type & (Config_TokenType_Category | Config_TokenType_Field))
                 {
-                    property->next = arena->push_zero<Config_Property>();
+                    property->next = arena_push<Config_Property>(arena);
                     property->next->category = property->category;
                     property->next->outer = property->outer;
 
@@ -333,7 +333,7 @@ namespace Aporia
 
                 case Config_TokenType_InnerPropertyBegin:
                 {
-                    property->inner = arena->push_zero<Config_Property>();
+                    property->inner = arena_push<Config_Property>(arena);
                     property->inner->outer = property;
 
                     property = property->inner;
@@ -436,12 +436,12 @@ namespace Aporia
 
     static bool load_engine_config_from_file(String filepath)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
         Config_Property* parsed_config = parse_config_from_file(temp.arena, filepath);
 
         if (!parsed_config)
         {
-            release_scratch_arena(temp);
+            scratch_end(&temp);
             return false;
         }
 
@@ -488,7 +488,7 @@ namespace Aporia
             }
         }
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return true;
     }
@@ -499,7 +499,7 @@ namespace Aporia
     {
         APORIA_ASSERT(config_asset->type == AssetType::Config);
 
-        memory.config.clear();
+        arena_clear(&memory.config);
 
         // Reset configs to perform a clean reload.
         window_config = {};

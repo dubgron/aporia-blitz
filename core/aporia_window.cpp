@@ -104,7 +104,7 @@ namespace Aporia
             return nullptr;
         }
 
-        Window* result = arena->push<Window>();
+        Window* result = arena_push_uninitialized<Window>(arena);
         result->handle = handle;
         result->width = window_config.width;
         result->height = window_config.height;

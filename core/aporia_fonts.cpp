@@ -15,7 +15,7 @@ namespace Aporia
     // @TODO(dubgron): The arena should be parameterized in the future.
     void load_font(String name, String filepath)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
         String png_filepath = replace_extension(temp.arena, filepath, "png");
         String config_filepath = replace_extension(temp.arena, filepath, "aporia-config");
@@ -25,7 +25,7 @@ namespace Aporia
             if (fonts[idx].name == name)
             {
                 APORIA_LOG(Warning, "Already loaded font named '%'!", name);
-                release_scratch_arena(temp);
+                scratch_end(&temp);
                 return;
             }
         }
@@ -61,8 +61,8 @@ namespace Aporia
         }
 
         // @TODO(dubgron): The arena should be parameterized in the future.
-        result.glyphs = memory.persistent.push<Glyph>(glyphs_count);
-        result.kerning = memory.persistent.push<Kerning>(kerning_count);
+        result.glyphs = arena_push_uninitialized<Glyph>(&memory.persistent, glyphs_count);
+        result.kerning = arena_push_uninitialized<Kerning>(&memory.persistent, kerning_count);
 
         for (Config_Property* property = parsed_file; property; property = property->next)
         {
@@ -195,7 +195,7 @@ namespace Aporia
         fonts[fonts_count] = result;
         fonts_count += 1;
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
     }
 
     const Font* get_font(String name)

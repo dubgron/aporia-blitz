@@ -31,12 +31,12 @@ namespace Aporia
         EntityNode* free_list = nullptr;
     };
 
-    void world_init(World* world, u64 in_max_entities = 10000);
+    World world_init(u64 in_max_entities = 10000);
     void world_deinit(World* world);
 
-    EntityID create_entity(World* world, Entity** out_entity = nullptr);
-    void remove_entity(World* world, EntityID entity_id);
-    void clear_entities(World* world);
+    void world_clear(World* world);
 
-    Entity* get_entity(World* world, EntityID entity_id);
+    EntityID entity_create(World* world, Entity** out_entity = nullptr);
+    void entity_destroy(World* world, EntityID entity_id);
+    Entity* entity_get(World* world, EntityID entity_id);
 }

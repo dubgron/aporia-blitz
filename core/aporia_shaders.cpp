@@ -191,13 +191,13 @@ namespace Aporia
             i32 length;
             glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
 
-            ScratchArena temp = get_scratch_arena();
+            ScratchArena temp = scratch_begin();
 
-            GLchar* error_message = temp.arena->push<GLchar>(length);
+            GLchar* error_message = arena_push_uninitialized<GLchar>(temp.arena, length);
             glGetShaderInfoLog(subshader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            release_scratch_arena(temp);
+            scratch_end(&temp);
         }
 
         return is_valid == GL_TRUE;
@@ -276,7 +276,7 @@ namespace Aporia
 
     void shaders_init(MemoryArena* arena)
     {
-        shaders = arena->push_zero<ShaderInfo>(MAX_SHADERS);
+        shaders = arena_push<ShaderInfo>(arena, MAX_SHADERS);
     }
 
     static bool is_shader_status_ok(u32 shader_id, u32 status_type)
@@ -289,13 +289,13 @@ namespace Aporia
             i32 length;
             glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &length);
 
-            ScratchArena temp = get_scratch_arena();
+            ScratchArena temp = scratch_begin();
 
-            GLchar* error_message = temp.arena->push<GLchar>(length);
+            GLchar* error_message = arena_push_uninitialized<GLchar>(temp.arena, length);
             glGetProgramInfoLog(shader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            release_scratch_arena(temp);
+            scratch_end(&temp);
         }
 
         return is_valid == GL_TRUE;
@@ -308,10 +308,10 @@ namespace Aporia
         //////////////////////////////////////////////////////////////////////
         // Parse the shader file
 
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
         ShaderData shader_data;
-        shader_data.subshaders = temp.arena->push_zero<SubShaderData>(subshaders_count);
+        shader_data.subshaders = arena_push<SubShaderData>(temp.arena, subshaders_count);
 
         u64 line_begin = 0;
         u64 line_end = shader_contents.find_eol(line_begin);
@@ -375,7 +375,7 @@ namespace Aporia
         //////////////////////////////////////////////////////////////////////
         // Compile and link subshaders
 
-        u32* compiled_subshaders = temp.arena->push_zero<u32>(subshaders_count);
+        u32* compiled_subshaders = arena_push<u32>(temp.arena, subshaders_count);
         u64 compiled_subshaders_count = 0;
 
         for (u64 idx = 0; idx < shader_data.subshaders_count; ++idx)
@@ -416,7 +416,7 @@ namespace Aporia
         if (linking_failed || validation_failed)
         {
             glDeleteProgram(shader_id);
-            release_scratch_arena(temp);
+            scratch_end(&temp);
             return 0;
         }
 
@@ -426,7 +426,7 @@ namespace Aporia
         shader_info.source_file = filepath;
         shader_info.properties = shader_data.properties;
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         //////////////////////////////////////////////////////////////////////
         // Apply default properties

@@ -137,7 +137,7 @@ namespace Aporia
         result.max_count = max_count;
         result.vertex_per_object = vertex_per_object;
 
-        result.data = arena->push<Vertex>(result.max_count);
+        result.data = arena_push_uninitialized<Vertex>(arena, result.max_count);
         result.count = 0;
 
         i64 size = result.max_count * sizeof(Vertex);
@@ -356,7 +356,7 @@ namespace Aporia
     static RenderQueue renderqueue_create(MemoryArena* arena, u64 in_count)
     {
         RenderQueue result;
-        result.data = arena->push<RenderQueueKey>(in_count);
+        result.data = arena_push_uninitialized<RenderQueueKey>(arena, in_count);
         result.max_count = in_count;
         result.count = 0;
         return result;
@@ -573,7 +573,7 @@ namespace Aporia
 
         if (light_sources.data == nullptr)
         {
-            light_sources.data = memory.persistent.push<LightSource>(MAX_LIGHT_SOURCES);
+            light_sources.data = arena_push_uninitialized<LightSource>(&memory.persistent, MAX_LIGHT_SOURCES);
             light_sources.max_count = MAX_LIGHT_SOURCES;
             light_sources.count = 0;
 
@@ -621,9 +621,9 @@ namespace Aporia
             vertexbuffer_add_layout(&quads_vbo);
             quads->vertex_buffer = quads_vbo;
 
-            ScratchArena temp = get_scratch_arena(arena);
+            ScratchArena temp = scratch_begin(arena);
 
-            u32* quad_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 6);
+            u32* quad_indices = arena_push_uninitialized<u32>(temp.arena, MAX_OBJECTS_PER_DRAW_CALL * 6);
             for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
             {
                 quad_indices[  i  ] = offset + 0;
@@ -641,7 +641,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            release_scratch_arena(temp);
+            scratch_end(&temp);
         }
 
         // Set VertexArray for Lines
@@ -655,9 +655,9 @@ namespace Aporia
             vertexbuffer_add_layout(&lines_vbo);
             lines->vertex_buffer = lines_vbo;
 
-            ScratchArena temp = get_scratch_arena(arena);
+            ScratchArena temp = scratch_begin(arena);
 
-            u32* line_indices = temp.arena->push<u32>(MAX_OBJECTS_PER_DRAW_CALL * 2);
+            u32* line_indices = arena_push_uninitialized<u32>(temp.arena, MAX_OBJECTS_PER_DRAW_CALL * 2);
             for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
             {
                 line_indices[i] = i;
@@ -669,7 +669,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            release_scratch_arena(temp);
+            scratch_end(&temp);
         }
 
         // Setup Framebuffers
@@ -1071,9 +1071,9 @@ namespace Aporia
             }
         }
 
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
-        f32* line_alignments = temp.arena->push_zero<f32>(line_count);
+        f32* line_alignments = arena_push<f32>(temp.arena, line_count);
         f32 max_line_alignment = 0.f;
 
         // Calculate the alignment of every text line
@@ -1258,7 +1258,7 @@ namespace Aporia
             }
         }
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
     }
 
     void get_size_of_render_surface(i32* width, i32* height)

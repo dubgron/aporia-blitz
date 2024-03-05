@@ -40,7 +40,6 @@ namespace Aporia
     static MemoryArena suggestion_arena;
 
     static constexpr u64 MAX_SUGGESTIONS = 10;
-    static StringNode suggestion_memory[MAX_SUGGESTIONS];
 
     struct CommandlineResult
     {
@@ -166,9 +165,9 @@ namespace Aporia
             return StringList{};
         }
 
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
-        CommandMatch* matches = temp.arena->push<CommandMatch>(command_count);
+        CommandMatch* matches = arena_push_uninitialized<CommandMatch>(temp.arena, command_count);
         u64 match_count = 0;
 
         for (u64 idx = 0; idx < command_count; ++idx)
@@ -196,17 +195,17 @@ namespace Aporia
             result.push_node(&suggestion_arena, matches[i].command_name);
         }
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return result;
     }
 
     static void commandline_init()
     {
-        command_arena.alloc(MEGABYTES(1));
-        suggestion_arena.make_from_array(suggestion_memory);
+        command_arena = arena_init(MEGABYTES(1));
+        suggestion_arena = arena_init(MAX_SUGGESTIONS * sizeof(StringNode));
 
-        commands = command_arena.push_zero<CommandlineCommand>(MAX_COMMANDS);
+        commands = arena_push<CommandlineCommand>(&command_arena, MAX_COMMANDS);
 
         add_command(CommandlineCommand{
             .display_name = "print",
@@ -420,12 +419,12 @@ namespace Aporia
         {
             if (command_history.node_count > 0)
             {
-                ScratchArena temp = get_scratch_arena();
+                ScratchArena temp = scratch_begin();
                 {
                     const String history = command_history.join(temp.arena, "\n");
                     ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
                 }
-                release_scratch_arena(temp);
+                scratch_end(&temp);
             }
 
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -467,7 +466,7 @@ namespace Aporia
                 }
                 input_buffer[0] = '\0';
                 suggestions.clear();
-                suggestion_arena.clear();
+                arena_clear(&suggestion_arena);
                 input_state = ConsoleInputState::Empty;
                 selected_command = command_hist_help.node_count;
             }
@@ -476,7 +475,7 @@ namespace Aporia
         {
             input_state = ConsoleInputState::Empty;
             suggestions.clear();
-            suggestion_arena.clear();
+            arena_clear(&suggestion_arena);
         }
 
         ImGui::PopItemWidth();
@@ -523,6 +522,12 @@ namespace Aporia
         }
 
         ImGui::End();
+    }
+
+    static void commandline_deinit()
+    {
+        arena_deinit(&command_arena);
+        arena_deinit(&suggestion_arena);
     }
 }
 

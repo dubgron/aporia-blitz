@@ -11,58 +11,60 @@ namespace Aporia
         return aligned_address;
     }
 
-    void MemoryArena::alloc(u64 size)
+    MemoryArena arena_init(u64 size)
     {
-        memory = malloc(size);
-        max = size;
-        pos = 0;
-        align = 8;
+        MemoryArena result;
+        result.memory = malloc(size);
+        result.max = size;
+        result.pos = 0;
+        result.align = 8;
+        APORIA_ASSERT(PTR_TO_INT(result.memory) % result.align == 0 );
 
-        APORIA_ASSERT( PTR_TO_INT(memory) % align == 0 );
+        return result;
     }
 
-    void MemoryArena::dealloc()
+    void arena_deinit(MemoryArena* arena)
     {
-        free(memory);
-        memory = nullptr;
-        max = 0;
-        pos = 0;
-        align = 8;
+        free(arena->memory);
+        arena->memory = nullptr;
+        arena->max = 0;
+        arena->pos = 0;
+        arena->align = 8;
     }
 
-    void MemoryArena::clear()
+    void arena_clear(MemoryArena* arena)
     {
-        pos = 0;
+        arena->pos = 0;
     }
 
-    void* MemoryArena::push(u64 size)
+    void* arena_push_uninitialized(MemoryArena* arena, u64 size)
     {
-        const u64 space_left = max - pos;
+        const u64 space_left = arena->max - arena->pos;
         APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= space_left,
-            "Can't allocate % B! Pos: % B, Max: % B, Left: % B", size, pos, max, space_left);
+            "Can't allocate % B! Pos: % B, Max: % B, Left: % B", size, arena->pos, arena->max, space_left);
 
-        const u64 result = PTR_TO_INT(memory) + pos;
-        pos = next_aligned(pos + size, align);
+        const u64 result = PTR_TO_INT(arena->memory) + arena->pos;
+        arena->pos = next_aligned(arena->pos + size, arena->align);
 
         return INT_TO_PTR(result);
     }
 
-    void* MemoryArena::push_zero(u64 size)
+    void* arena_push(MemoryArena* arena, u64 size)
     {
-        void* result = push(size);
+        void* result = arena_push_uninitialized(arena, size);
         memset(result, 0, size);
         return result;
     }
 
-    void MemoryArena::pop(u64 size)
+    void arena_pop(MemoryArena* arena, u64 size)
     {
-        APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= pos,
-            "Can't pop % B! Pos: % B", size, pos);
+        APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= arena->pos,
+            "Can't pop % B! Pos: % B", size, arena->pos);
 
-        pos = next_aligned(pos - size, align);
+        arena->pos = next_aligned(arena->pos - size, arena->align);
     }
 
-    ScratchArena get_scratch_arena(MemoryArena* conflict /* = nullptr */)
+    ScratchArena scratch_begin(MemoryArena* conflict /* = nullptr */)
     {
         ScratchArena result;
         for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
@@ -77,12 +79,12 @@ namespace Aporia
         return result;
     }
 
-    void release_scratch_arena(ScratchArena& scratch)
+    void scratch_end(ScratchArena* scratch)
     {
-        APORIA_ASSERT_WITH_MESSAGE(scratch.arena, "Scratch arena has an invalid arena pointer! Can't rollback!");
+        APORIA_ASSERT_WITH_MESSAGE(scratch->arena, "Scratch arena has an invalid arena pointer!");
 
 #if defined(APORIA_DEBUGTOOLS)
-        APORIA_ASSERT(scratch.arena->pos >= scratch.pos);
+        APORIA_ASSERT(scratch->arena->pos >= scratch->pos);
 
         // @NOTE(dubgron): Using scratch arenas enables a peculiar use-after-free
         // bug, where you create a scratch arena on top of arena X, you push some
@@ -96,11 +98,11 @@ namespace Aporia
         // thus making the program either crash immediately (making tracking the
         // source of the bug easier) or have a simple to spot pattern in memory.
 
-        void* scratch_block_begin = INT_TO_PTR(PTR_TO_INT(scratch.arena->memory) + scratch.pos);
-        u64 scratch_block_size = scratch.arena->pos - scratch.pos;
+        void* scratch_block_begin = INT_TO_PTR(PTR_TO_INT(scratch->arena->memory) + scratch->pos);
+        u64 scratch_block_size = scratch->arena->pos - scratch->pos;
         memset(scratch_block_begin, 0xae, scratch_block_size);
 #endif
 
-        scratch.arena->pos = scratch.pos;
+        scratch->arena->pos = scratch->pos;
     }
 }

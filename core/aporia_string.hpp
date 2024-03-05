@@ -130,7 +130,7 @@ namespace Aporia
     [[nodiscard]] String sprintf(MemoryArena* arena, String format, T arg, Ts... args)
     {
         StringList builder;
-        ScratchArena temp = get_scratch_arena(arena);
+        ScratchArena temp = scratch_begin(arena);
 
         u64 args_begin = format.find('%');
         while (args_begin < format.length - 1 && format.data[args_begin + 1] == '%')
@@ -162,7 +162,7 @@ namespace Aporia
         }
 
         String result = builder.join(arena);
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return result;
     }

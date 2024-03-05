@@ -8,12 +8,12 @@ namespace Aporia
 {
     void* load_library(String library_name)
     {
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
 
         const String library_full_name = string_concat(temp.arena, library_name, ".dll");
         HMODULE library = LoadLibrary(*library_full_name);
 
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return library;
     }

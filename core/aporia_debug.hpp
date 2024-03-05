@@ -107,12 +107,12 @@ namespace Aporia
             return;
         }
 
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
         {
             String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
             log(file, line, function, level, formatted_message);
         }
-        release_scratch_arena(temp);
+        scratch_end(&temp);
     }
 
     void imgui_init();

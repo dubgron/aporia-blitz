@@ -20,7 +20,7 @@ namespace Aporia
         fseek(file, 0, SEEK_END);
 
         u64 size_in_bytes = ftell(file);
-        u8* data = arena->push<u8>(size_in_bytes);
+        u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
 
         fseek(file, 0, SEEK_SET);
         fread(data, size_in_bytes, 1, file);
@@ -45,7 +45,7 @@ namespace Aporia
         fseek(file, 0, SEEK_END);
 
         u64 size_in_bytes = ftell(file);
-        u8* data = arena->push<u8>(size_in_bytes);
+        u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
 
         fseek(file, 0, SEEK_SET);
         u64 length = fread(data, 1, size_in_bytes, file);
@@ -55,7 +55,7 @@ namespace Aporia
         u64 garbage_bytes = size_in_bytes - length;
         if (garbage_bytes > 0)
         {
-            arena->pop(garbage_bytes);
+            arena_pop(arena, garbage_bytes);
         }
 
         return String{ data, length };

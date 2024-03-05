@@ -55,8 +55,8 @@ namespace Aporia
         APORIA_ASSERT((bucket_count & (bucket_count - 1)) == 0);
 
         HashTable<T> result;
-        result.keys = arena->push_zero<HashTableKey>(bucket_count);
-        result.buckets = arena->push_zero<T>(bucket_count);
+        result.keys = arena_push<HashTableKey>(arena, bucket_count);
+        result.buckets = arena_push<T>(arena, bucket_count);
         result.bucket_count = bucket_count;
 
         for (u64 idx = 0; idx < bucket_count; ++idx)

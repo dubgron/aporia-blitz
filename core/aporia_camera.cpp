@@ -208,7 +208,7 @@ namespace Aporia
 
     Camera* create_camera(MemoryArena* arena)
     {
-        Camera* result = arena->push<Camera>();
+        Camera* result = arena_push_uninitialized<Camera>(arena);
         *result = Camera{};
         result->apply_config();
 

@@ -236,7 +236,7 @@ namespace Aporia
         String result;
         if (length > 0)
         {
-            result.data = arena->push<u8>(length);
+            result.data = arena_push_uninitialized<u8>(arena, length);
             result.length = length;
         }
         return result;
@@ -282,7 +282,7 @@ namespace Aporia
     {
         f32 result = 0.f;
 
-        ScratchArena temp = get_scratch_arena();
+        ScratchArena temp = scratch_begin();
         {
             StringList split_number = string.split(temp.arena, '.');
 
@@ -311,7 +311,7 @@ namespace Aporia
                 result = -result;
             }
         }
-        release_scratch_arena(temp);
+        scratch_end(&temp);
 
         return result;
     }
@@ -343,7 +343,7 @@ namespace Aporia
 
     void StringList::push_node(MemoryArena* arena, String string)
     {
-        StringNode* node = arena->push_zero<StringNode>();
+        StringNode* node = arena_push<StringNode>(arena);
         node->string = string;
 
         if (node_count > 0)
@@ -366,7 +366,7 @@ namespace Aporia
 
     void StringList::push_node_front(MemoryArena* arena, String string)
     {
-        StringNode* node = arena->push_zero<StringNode>();
+        StringNode* node = arena_push<StringNode>(arena);
         node->string = string;
 
         if (node_count > 0)
