@@ -25,7 +25,7 @@ namespace Aporia
             if (fonts[idx].name == name)
             {
                 APORIA_LOG(Warning, "Already loaded font named '%'!", name);
-                scratch_end(&temp);
+                scratch_end(temp);
                 return;
             }
         }
@@ -195,7 +195,7 @@ namespace Aporia
         fonts[fonts_count] = result;
         fonts_count += 1;
 
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     const Font* get_font(String name)

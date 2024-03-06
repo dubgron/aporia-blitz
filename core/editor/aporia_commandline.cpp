@@ -195,7 +195,7 @@ namespace Aporia
             result.push_node(&suggestion_arena, matches[i].command_name);
         }
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         return result;
     }
@@ -424,7 +424,7 @@ namespace Aporia
                     const String history = command_history.join(temp.arena, "\n");
                     ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
                 }
-                scratch_end(&temp);
+                scratch_end(temp);
             }
 
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())

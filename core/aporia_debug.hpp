@@ -112,7 +112,7 @@ namespace Aporia
             String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
             log(file, line, function, level, formatted_message);
         }
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     void imgui_init();

@@ -52,5 +52,5 @@ namespace Aporia
     };
 
     ScratchArena scratch_begin(MemoryArena* conflict = nullptr);
-    void scratch_end(ScratchArena* scratch);
+    void scratch_end(ScratchArena scratch);
 }

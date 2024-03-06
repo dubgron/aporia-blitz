@@ -259,14 +259,14 @@ namespace Aporia
                 ScratchArena temp = scratch_begin(arena);
                 APORIA_LOG(Error, "Syntax error at line: %, column: %. Expected token type: %, but got: >>> % <<<!",
                     line, column, token_type_flag_to_string(temp.arena, expected_tokens), token_string);
-                scratch_end(&temp);
+                scratch_end(temp);
 
                 return nullptr;
             }
 
             ScratchArena temp = scratch_begin(arena);
             APORIA_LOG(Verbose, "Type: % Token: '%'", token_type_flag_to_string(temp.arena, token.type), token.text);
-            scratch_end(&temp);
+            scratch_end(temp);
 
             token_list.push_node(arena, token);
             expected_tokens = expected_tokens_table(token.type);
@@ -441,7 +441,7 @@ namespace Aporia
 
         if (!parsed_config)
         {
-            scratch_end(&temp);
+            scratch_end(temp);
             return false;
         }
 
@@ -488,7 +488,7 @@ namespace Aporia
             }
         }
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         return true;
     }

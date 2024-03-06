@@ -311,7 +311,7 @@ namespace Aporia
                 result = -result;
             }
         }
-        scratch_end(&temp);
+        scratch_end(temp);
 
         return result;
     }

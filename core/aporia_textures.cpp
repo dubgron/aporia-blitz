@@ -41,7 +41,7 @@ namespace Aporia
             stbi_image_free(result.pixels);
             result.pixels = pixels;
         }
-        scratch_end(&temp);
+        scratch_end(temp);
 
         if (result.pixels)
         {
@@ -116,7 +116,7 @@ namespace Aporia
 
         APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         return true;
     }
@@ -153,7 +153,7 @@ namespace Aporia
         Bitmap bitmap = load_bitmap(temp.arena, filepath);
         if (!bitmap.pixels)
         {
-            scratch_end(&temp);
+            scratch_end(temp);
             return nullptr;
         }
 
@@ -209,7 +209,7 @@ namespace Aporia
         glGenerateTextureMipmap(id);
 #endif
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         if (!id)
         {

@@ -195,7 +195,7 @@ namespace Aporia
                 fwrite(file_buffer.data, file_buffer.length, 1, log_file);
                 fclose(log_file);
             }
-            scratch_end(&temp);
+            scratch_end(temp);
 
             buffer_clear(file_buffer);
         }
@@ -222,7 +222,7 @@ namespace Aporia
             APORIA_ASSERT(log_file);
             fclose(log_file);
         }
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     void logging_deinit()
@@ -242,7 +242,7 @@ namespace Aporia
             fwrite(logs.data, logs.length, 1, new_logs);
             fclose(new_logs);
         }
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     void log(String file, i32 line, String function, LogLevel level, String message)
@@ -292,7 +292,7 @@ namespace Aporia
                 }
             }
         }
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     bool should_log(LogLevel level)

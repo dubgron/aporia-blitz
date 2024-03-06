@@ -197,7 +197,7 @@ namespace Aporia
             glGetShaderInfoLog(subshader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            scratch_end(&temp);
+            scratch_end(temp);
         }
 
         return is_valid == GL_TRUE;
@@ -295,7 +295,7 @@ namespace Aporia
             glGetProgramInfoLog(shader_id, length, &length, error_message);
             APORIA_LOG(Error, error_message);
 
-            scratch_end(&temp);
+            scratch_end(temp);
         }
 
         return is_valid == GL_TRUE;
@@ -416,7 +416,7 @@ namespace Aporia
         if (linking_failed || validation_failed)
         {
             glDeleteProgram(shader_id);
-            scratch_end(&temp);
+            scratch_end(temp);
             return 0;
         }
 
@@ -426,7 +426,7 @@ namespace Aporia
         shader_info.source_file = filepath;
         shader_info.properties = shader_data.properties;
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         //////////////////////////////////////////////////////////////////////
         // Apply default properties

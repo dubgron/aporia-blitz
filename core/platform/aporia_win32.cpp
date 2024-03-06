@@ -13,7 +13,7 @@ namespace Aporia
         const String library_full_name = string_concat(temp.arena, library_name, ".dll");
         HMODULE library = LoadLibrary(*library_full_name);
 
-        scratch_end(&temp);
+        scratch_end(temp);
 
         return library;
     }

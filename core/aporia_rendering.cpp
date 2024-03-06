@@ -641,7 +641,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            scratch_end(&temp);
+            scratch_end(temp);
         }
 
         // Set VertexArray for Lines
@@ -669,7 +669,7 @@ namespace Aporia
 
             vertexarray_unbind();
 
-            scratch_end(&temp);
+            scratch_end(temp);
         }
 
         // Setup Framebuffers
@@ -1257,7 +1257,7 @@ namespace Aporia
             }
         }
 
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     void get_size_of_render_surface(i32* width, i32* height)

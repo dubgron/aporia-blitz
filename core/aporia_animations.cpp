@@ -58,7 +58,7 @@ namespace Aporia
             APORIA_ASSERT(*hash_table_find(&all_animations, animation_name) == animation);
         }
 
-        scratch_end(&temp);
+        scratch_end(temp);
     }
 
     void animation_tick(Entity& entity, f32 frame_time)
