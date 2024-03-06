@@ -780,7 +780,6 @@ namespace Aporia
             quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, 0.f } };
             quads->vertex_buffer.count += 4;
 
-            bind_shader(editor_grid_shader);
             vertexarray_render(quads);
         }
 

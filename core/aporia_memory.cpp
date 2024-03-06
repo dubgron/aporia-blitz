@@ -1,6 +1,7 @@
 #include "aporia_memory.hpp"
 
 #include "aporia_debug.hpp"
+#include "aporia_utils.hpp"
 
 namespace Aporia
 {

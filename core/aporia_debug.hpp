@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aporia_game.hpp"
+#include "aporia_memory.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
 

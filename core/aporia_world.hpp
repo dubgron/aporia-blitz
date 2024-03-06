@@ -36,6 +36,9 @@ namespace Aporia
 
     void world_clear(World* world);
 
+    String world_serialize(MemoryArena* arena, World* world);
+    World world_deserialize(String serialized);
+
     EntityID entity_create(World* world, Entity** out_entity = nullptr);
     void entity_destroy(World* world, EntityID entity_id);
     Entity* entity_get(World* world, EntityID entity_id);
