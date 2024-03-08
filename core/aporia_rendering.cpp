@@ -41,7 +41,12 @@ namespace Aporia
         {
             if (textures_used_in_draw_call[texture_unit] == texture_id)
             {
+#if defined(APORIA_EMSCRIPTEN)
+                glActiveTexture(GL_TEXTURE0 + texture_unit);
+                glBindTexture(GL_TEXTURE_2D, texture_id);
+#else
                 glBindTextureUnit(texture_unit, texture_id);
+#endif
                 return texture_unit;
             }
         }
@@ -53,7 +58,12 @@ namespace Aporia
             textures_used_in_draw_call[texture_unit] = texture_id;
             first_unused_texture_unit += 1;
 
+#if defined(APORIA_EMSCRIPTEN)
+            glActiveTexture(GL_TEXTURE0 + texture_unit);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+#else
             glBindTextureUnit(texture_unit, texture_id);
+#endif
             return texture_unit;
         }
 
