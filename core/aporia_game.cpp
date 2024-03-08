@@ -29,6 +29,19 @@ namespace Aporia
 
     static void game_draw_frame(f32 frame_time)
     {
+        for (u64 idx = 0; idx < world.entity_count; ++idx)
+        {
+            Entity& entity = world.entity_array[idx];
+            if (is_flag_set(entity, EntityFlag_Visible))
+            {
+                animation_tick(entity, frame_time);
+                draw_entity(entity);
+            }
+        }
+    }
+
+    static void game_draw_ui(f32 frame_time)
+    {
     }
 
     static void game_main_loop()
@@ -41,6 +54,8 @@ namespace Aporia
         active_window->poll_events();
         poll_gamepad_inputs();
 
+        IMGUI_FRAME_BEGIN();
+
         accumulated_frame_time += frame_time;
         while (accumulated_frame_time > delta_time)
         {
@@ -52,22 +67,20 @@ namespace Aporia
             assets_reload_if_dirty(delta_time);
         }
 
-        IMGUI_FRAME_BEGIN();
-        rendering_begin();
-
-        game_draw_frame(frame_time);
-
-        for (u64 idx = 0; idx < world.entity_count; ++idx)
+        rendering_frame_begin();
         {
-            Entity& entity = world.entity_array[idx];
-            if (is_flag_set(entity, EntityFlag_Visible))
-            {
-                animation_tick(entity, frame_time);
-                draw_entity(entity);
-            }
+            game_draw_frame(frame_time);
         }
+        rendering_frame_end();
 
-        rendering_end();
+        rendering_ui_begin();
+        {
+            game_draw_ui(frame_time);
+        }
+        rendering_ui_end();
+
+        rendering_flush_to_screen();
+
         IMGUI_FRAME_END();
 
         active_window->display();

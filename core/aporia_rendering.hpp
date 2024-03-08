@@ -26,8 +26,13 @@ namespace Aporia
     void rendering_init(MemoryArena* arena);
     void rendering_deinit();
 
-    void rendering_begin();
-    void rendering_end();
+    void rendering_frame_begin();
+    void rendering_frame_end();
+
+    void rendering_ui_begin();
+    void rendering_ui_end();
+
+    void rendering_flush_to_screen();
 
     void draw_entity(const Entity& entity);
     void draw_rectangle(v2 position, f32 width, f32 height, Color color = Color::White, u32 shader_id = rectangle_shader);

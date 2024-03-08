@@ -716,12 +716,12 @@ namespace Aporia
         remove_all_shaders();
     }
 
-    void rendering_begin()
+    void rendering_frame_begin()
     {
         light_sources.count = 0;
     }
 
-    void rendering_end()
+    void rendering_frame_end()
     {
         framebuffer_bind(temp_framebuffer);
         framebuffer_clear(camera_config.background_color);
@@ -730,23 +730,8 @@ namespace Aporia
         const f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
         // Initialize texture sampler
-        i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
             16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
-
-#if defined(APORIA_EMSCRIPTEN)
-        // NOTE(dubgron): In WebGL, the textures of framebuffers and textures of rendered objects
-        // cannot be in the same sampler as it will cause the Feedback Loop error.
-        //for (u64 idx = 0; idx < ARRAY_COUNT(sampler); ++idx)
-        //{
-        //    if (sampler[idx] == main_framebuffer.color_buffer.unit ||
-        //        sampler[idx] == temp_framebuffer.color_buffer.unit ||
-        //        sampler[idx] == masking.color_buffer.unit ||
-        //        sampler[idx] == raymarching.color_buffer.unit)
-        //    {
-        //        sampler[idx] = 0;
-        //    }
-        //}
-#endif
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
@@ -865,7 +850,53 @@ namespace Aporia
         framebuffer_bind(main_framebuffer);
         framebuffer_flush(temp_framebuffer, postprocessing_shader);
         framebuffer_unbind();
+    }
 
+    void rendering_ui_begin()
+    {
+    }
+
+    void rendering_ui_end()
+    {
+        framebuffer_bind(main_framebuffer);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        const m4 normalized_screen_to_clip{
+            2.f,    0.f,    0.f,    0.f,
+            0.f,    -2.f,   0.f,    0.f,
+            0.f,    0.f,    -1.f,   0.f,
+            -1.f,   1.f,    0.f,    1.f };
+
+        const f32 camera_zoom = 1.f / active_camera->projection.zoom;
+
+        // Initialize texture sampler
+        static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+
+        bind_shader(default_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+
+        bind_shader(rectangle_shader);
+        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+
+        bind_shader(line_shader);
+        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+
+        bind_shader(circle_shader);
+        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+
+        bind_shader(font_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_float("u_camera_zoom", 1.f);
+
+        renderqueue_flush(&rendering_queue);
+        framebuffer_unbind();
+    }
+
+    void rendering_flush_to_screen()
+    {
         f32 render_aspect_ratio = (f32)main_framebuffer.color_buffer.width / (f32)main_framebuffer.color_buffer.height;
         f32 window_aspect_ratio = (f32)active_window->width / (f32)active_window->height;
 
@@ -888,6 +919,7 @@ namespace Aporia
             offset_y = 0;
         }
 
+        framebuffer_unbind();
         framebuffer_clear(Color::Black);
 
 #if defined(APORIA_EMSCRIPTEN)
@@ -902,8 +934,6 @@ namespace Aporia
             offset_x, offset_y, offset_x + render_width, offset_y + render_height,
             GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #endif
-
-        unbind_shader();
     }
 
     void draw_entity(const Entity& entity)
