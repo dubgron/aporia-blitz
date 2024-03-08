@@ -389,6 +389,11 @@ namespace Aporia
                     if (buffer_diff == 0)
                     {
                         i32 shader_diff = key1.shader_id - key2.shader_id;
+                        if (shader_diff == 0)
+                        {
+                            uintptr_t ptr_diff = PTR_TO_INT(elem1) - PTR_TO_INT(elem2);
+                            return ptr_diff;
+                        }
                         return shader_diff;
                     }
                     return buffer_diff;
