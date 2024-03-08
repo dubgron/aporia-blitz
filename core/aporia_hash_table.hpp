@@ -142,6 +142,8 @@ namespace Aporia
         hash_table->keys[index] = HashTableKey{};
         hash_table->buckets[index] = T{};
 
+        hash_table->occupied_buckets -= 1;
+
         index = increment_index(hash_table->bucket_count, index);
 
         while (hash_table->keys[index].distance_from_desired_bucket > 0)
