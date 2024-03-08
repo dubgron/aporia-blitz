@@ -3,11 +3,25 @@
 #include <chrono>
 #include <random>
 
+#include "aporia_memory.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
+
+#define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
+#define INDEX_IN_ARRAY(elem, arr) ((PTR_TO_INT(elem) - PTR_TO_INT(arr)) / sizeof(*elem))
 
 namespace Aporia
 {
-    std::string read_file(std::string_view filepath);
+    String read_entire_file(MemoryArena* arena, String filepath);
+    String read_entire_text_file(MemoryArena* arena, String filepath);
+
+    String replace_extension(MemoryArena* arena, String filepath, String ext);
+    String extract_filename(String filepath);
+
+    // @NOTE(dubgron): Careful! It's an 'in place' transformation.
+    void fix_path_slashes(String* filepath);
+
+    u32 hash(String string);
 
     struct Color
     {
@@ -85,4 +99,10 @@ namespace Aporia
     i32 random_range(i32 min, i32 max);
     i64 random_range(i64 min, i64 max);
     f32 random_range(f32 min, f32 max);
+
+    template<typename E, typename T = std::underlying_type_t<E>> requires std::is_enum_v<E>
+    constexpr T to_underlying(E enum_value)
+    {
+        return static_cast<T>(enum_value);
+    }
 }

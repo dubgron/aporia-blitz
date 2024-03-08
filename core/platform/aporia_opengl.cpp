@@ -5,19 +5,33 @@
 namespace Aporia
 {
 #if !defined(APORIA_EMSCRIPTEN)
-    LogLevel gl_debug_severity_to_log_level(GLenum severity)
+    static String gl3w_return_code_to_string(i32 gl3w_return_code)
+    {
+        switch (gl3w_return_code)
+        {
+            case GL3W_OK:                               return "OK";
+            case GL3W_ERROR_INIT:                       return "ERROR INIT";
+            case GL3W_ERROR_LIBRARY_OPEN:               return "ERROR LIBRARY OPEN";
+            case GL3W_ERROR_OPENGL_VERSION:             return "ERROR OPENGL VERSION";
+            default:                                    return "INVALID RETURN CODE";
+        }
+    }
+#endif
+
+#if defined(APORIA_DEBUGTOOLS)
+    static LogLevel gl_debug_severity_to_log_level(GLenum severity)
     {
         switch (severity)
         {
             case GL_DEBUG_SEVERITY_HIGH:                return LogLevel::Error;
             case GL_DEBUG_SEVERITY_MEDIUM:              return LogLevel::Warning;
             case GL_DEBUG_SEVERITY_LOW:                 return LogLevel::Info;
-            case GL_DEBUG_SEVERITY_NOTIFICATION:        return LogLevel::Verbose;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:        return LogLevel::Garbage;
             default:                                    return LogLevel::Critical;
         }
     }
 
-    const char* gl_debug_source_to_string(GLenum source)
+    static String gl_debug_source_to_string(GLenum source)
     {
         switch (source)
         {
@@ -31,7 +45,7 @@ namespace Aporia
         }
     }
 
-    const char* gl_debug_type_to_string(GLenum type)
+    static String gl_debug_type_to_string(GLenum type)
     {
         switch (type)
         {
@@ -48,16 +62,12 @@ namespace Aporia
         }
     }
 
-    const char* gl3w_return_code_to_string(i32 gl3w_return_code)
+    static void gl_debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
     {
-        switch (gl3w_return_code)
-        {
-            case GL3W_OK:                               return "OK";
-            case GL3W_ERROR_INIT:                       return "ERROR INIT";
-            case GL3W_ERROR_LIBRARY_OPEN:               return "ERROR LIBRARY OPEN";
-            case GL3W_ERROR_OPENGL_VERSION:             return "ERROR OPENGL VERSION";
-            default:                                    return "INVALID RETURN CODE";
-        }
+        LogLevel log_level = gl_debug_severity_to_log_level(severity);
+        String debug_source = gl_debug_source_to_string(source);
+        String debug_type = gl_debug_type_to_string(type);
+        APORIA_LOG(log_level, "% % [ID: %] '%'", debug_source, debug_type, id, message);
     }
 #endif
 
@@ -68,16 +78,12 @@ namespace Aporia
         const i32 gl3w_init_return_code = gl3wInit();
 
         APORIA_ASSERT_WITH_MESSAGE(gl3w_init_return_code == GL3W_OK,
-            "Failed to initialize OpenGL! Reason: {}", gl3w_return_code_to_string(gl3w_init_return_code));
+            "Failed to initialize OpenGL! Reason: %", gl3w_return_code_to_string(gl3w_init_return_code));
+#endif
 
+#if defined(APORIA_DEBUGTOOLS) && !defined(APORIA_EMSCRIPTEN)
         glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-        {
-            const LogLevel log_level = gl_debug_severity_to_log_level(severity);
-            const char* debug_source = gl_debug_source_to_string(source);
-            const char* debug_type = gl_debug_type_to_string(type);
-            APORIA_LOG(log_level, "{} {} [ID: {}] '{}'", debug_source, debug_type, id, message);
-        }, nullptr);
+        glDebugMessageCallback(gl_debug_message_callback, nullptr);
 #endif
 
         APORIA_LOG(Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aporia_animation.hpp"
+#include "aporia_animations.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"
@@ -31,15 +31,15 @@ namespace Aporia
         v2 scale{ 1.f };
 
         const SubTexture* texture = nullptr;
-        Color color;
+        Color color = Color::White;
         u32 shader_id = default_shader;
 
         Animator animator;
-
-        f32 velocity = 0.f;
     };
 
     bool is_flag_set(const Entity& entity, EntityFlag flag);
     void set_flag(Entity& entity, EntityFlag flag);
     void unset_flag(Entity& entity, EntityFlag flag);
+
+    void entity_ajust_size_to_texture(Entity& entity);
 }

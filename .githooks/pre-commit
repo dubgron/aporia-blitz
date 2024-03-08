@@ -1,0 +1,24 @@
+#!/bin/bash
+
+RED () (echo -e '\e[1;31m'$1'\e[0m')
+
+SEARCH_TARGET="nocheckin"
+
+GREP_CMD="git grep
+    --ignore-case
+    --extended-regexp
+    --line-number
+    --column
+    --color=always
+    --cached
+    -e @?$SEARCH_TARGET
+    -- *.*pp"
+
+ERRORS=$(exec $GREP_CMD | wc -l)
+
+if (($ERRORS > 0)); then
+    (exec $GREP_CMD)
+    echo "$(RED "error:") $SEARCH_TARGET(s) were found in $ERRORS place(s), $(RED "aborting commit")."
+fi
+
+exit $ERRORS

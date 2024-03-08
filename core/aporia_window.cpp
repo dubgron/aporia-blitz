@@ -1,12 +1,11 @@
 #include "aporia_window.hpp"
 
-#include <cstdint>
-
 #include <glm/gtx/transform.hpp>
 
 #include "aporia_debug.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
+#include "aporia_game.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_utils.hpp"
@@ -38,29 +37,19 @@ namespace Aporia
         return !glfwWindowShouldClose(handle);
     }
 
-    v2_u32 Window::get_size() const
-    {
-        v2_i32 size;
-        glfwGetWindowSize(handle, &size.x, &size.y);
-
-        return size;
-    }
-
     v2 Window::get_mouse_position() const
     {
         v2_f64 screen_position{ 0.0 };
         glfwGetCursorPos(handle, &screen_position.x, &screen_position.y);
 
-        const v2 window_size = get_size();
-
         // @NOTE(dubgron): Precalculated following lines:
-        //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / window_size.x, -2.f / window_size.y, 1.f });
+        //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / width, -2.f / height, -1.f });
         //     screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
         const m4 screen_to_clip{
-            2.f / window_size.x,   0.f,                   0.f,   0.f,
-            0.f,                   -2.f / window_size.y,  0.f,   0.f,
-            0.f,                   0.f,                   1.f,   0.f,
-            -1.f,                  1.f,                   0.f,   1.f };
+            2.f / width,    0.f,            0.f,    0.f,
+            0.f,            -2.f / height,  0.f,    0.f,
+            0.f,            0.f,            -1.f,   0.f,
+            -1.f,           1.f,            0.f,    1.f };
 
         const m4 view_projection_matrix = active_camera->calculate_view_projection_matrix();
         const m4 clip_to_world = glm::inverse(view_projection_matrix);
@@ -69,15 +58,20 @@ namespace Aporia
         return world_position;
     }
 
-    void Window::on_config_reload()
+    void Window::apply_config()
     {
-        glfwSetWindowTitle(handle, window_config.title.c_str());
+        APORIA_ASSERT(window_config.width > 0 && window_config.height > 0);
+
+        // @NOTE(dubgron): This will trigger the FramebufferSizeCallback function,
+        // if the size differs from the current one.
         glfwSetWindowSize(handle, window_config.width, window_config.height);
+
+        glfwSetWindowTitle(handle, *window_config.title);
         glfwSwapInterval(window_config.vsync);
 
-        if (window_config.position)
+        if (window_config.position != WindowConfig::INVALID_POSITION)
         {
-            glfwSetWindowPos(handle, window_config.position->x, window_config.position->y);
+            glfwSetWindowPos(handle, window_config.position.x, window_config.position.y);
         }
     }
 
@@ -85,7 +79,7 @@ namespace Aporia
     {
         glfwSetErrorCallback([](i32 error, const char* description)
         {
-            APORIA_LOG(Error, "GLFW Error #{}: {}", error, description);
+            APORIA_LOG(Error, "GLFW Error #%: %", error, description);
         });
 
         if (!glfwInit())
@@ -99,7 +93,9 @@ namespace Aporia
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, window_config.title.c_str(), nullptr, nullptr);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        GLFWwindow* handle = glfwCreateWindow(window_config.width, window_config.height, *window_config.title, nullptr, nullptr);
 
         if (!handle)
         {
@@ -108,17 +104,18 @@ namespace Aporia
             return nullptr;
         }
 
-        APORIA_ASSERT(arena);
-        Window* result = arena->push<Window>();
+        Window* result = arena_push_uninitialized<Window>(arena);
         result->handle = handle;
+        result->width = window_config.width;
+        result->height = window_config.height;
 
         glfwMakeContextCurrent(handle);
         glfwSetWindowUserPointer(handle, result);
         glfwSwapInterval(window_config.vsync);
 
-        if (window_config.position)
+        if (window_config.position != WindowConfig::INVALID_POSITION)
         {
-            glfwSetWindowPos(handle, window_config.position->x, window_config.position->y);
+            glfwSetWindowPos(handle, window_config.position.x, window_config.position.y);
         }
 
         glfwSetWindowCloseCallback(handle, [](GLFWwindow* handle)
@@ -129,8 +126,19 @@ namespace Aporia
 
         glfwSetKeyCallback(handle, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
         {
+            const Key key = static_cast<Key>(key_code);
             const InputAction input_action = static_cast<InputAction>(action);
-            process_input_action(input.keys[key_code], input_action);
+
+            if (key != Key::Unknown)
+            {
+                process_input_action(input.keys[key_code], input_action);
+            }
+            else switch (input_action)
+            {
+                case InputAction::Released: APORIA_LOG(Warning, "The unknown key has been released!");  break;
+                case InputAction::Pressed:  APORIA_LOG(Warning, "The unknown key has been pressed!");   break;
+                case InputAction::Repeat:   APORIA_LOG(Warning, "The unknown key has been held!");      break;
+            }
         });
 
         glfwSetMouseButtonCallback(handle, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
@@ -154,13 +162,13 @@ namespace Aporia
         {
             if (width > 0 && height > 0)
             {
-                resize_framebuffers(width, height);
-                if (active_camera)
-                {
-                    active_camera->on_window_resize(width, height);
-                }
+                active_window->width = width;
+                active_window->height = height;
+
+                active_camera->adjust_aspect_ratio_to_render_surface();
+
+                adjust_framebuffers_to_render_surface();
             }
-            glViewport(0, 0, width, height);
         });
 
         return result;

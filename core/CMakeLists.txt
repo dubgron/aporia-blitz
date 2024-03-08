@@ -6,8 +6,6 @@ option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
 
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(spdlog REQUIRED)
 find_package(stb REQUIRED)
 
 if (NOT APORIA_EMSCRIPTEN)
@@ -16,10 +14,12 @@ if (NOT APORIA_EMSCRIPTEN)
     find_package(OpenGL REQUIRED)
 endif()
 
-add_library(core STATIC
+add_executable(core
     "aporia.hpp"
-    "aporia_animation.cpp"
-    "aporia_animation.hpp"
+    "aporia_animations.cpp"
+    "aporia_animations.hpp"
+    "aporia_assets.cpp"
+    "aporia_assets.hpp"
     "aporia_camera.cpp"
     "aporia_camera.hpp"
     "aporia_config.cpp"
@@ -28,11 +28,11 @@ add_library(core STATIC
     "aporia_debug.hpp"
     "aporia_entity.cpp"
     "aporia_entity.hpp"
-    "aporia_entry.hpp"
     "aporia_fonts.cpp"
     "aporia_fonts.hpp"
     "aporia_game.cpp"
     "aporia_game.hpp"
+    "aporia_hash_table.hpp"
     "aporia_inputs.cpp"
     "aporia_inputs.hpp"
     "aporia_memory.cpp"
@@ -41,8 +41,8 @@ add_library(core STATIC
     "aporia_rendering.hpp"
     "aporia_shaders.cpp"
     "aporia_shaders.hpp"
-    "aporia_strings.cpp"
-    "aporia_strings.hpp"
+    "aporia_string.cpp"
+    "aporia_string.hpp"
     "aporia_textures.cpp"
     "aporia_textures.hpp"
     "aporia_types.hpp"
@@ -71,8 +71,6 @@ target_link_libraries(core
     glfw
     glm
     imgui
-    nlohmann_json
-    spdlog
     stb)
 
 if (NOT APORIA_EMSCRIPTEN)
@@ -81,7 +79,7 @@ if (NOT APORIA_EMSCRIPTEN)
         OpenGL::GL)
 endif()
 
-target_compile_features(core PUBLIC cxx_std_23)
+target_compile_features(core PUBLIC cxx_std_20)
 
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
 
@@ -141,8 +139,25 @@ source_group(core/editor        "core/editor/.+\.[cht]pp")
 source_group(core/platform      "core/platform/.+\.[cht]pp")
 
 set_target_properties(core PROPERTIES
-    USE_FOLDERS     ON
-    OUTPUT_NAME     "aporia-blitz")
+    USE_FOLDERS                 ON
+    OUTPUT_NAME_RELEASE         "aporia"
+    OUTPUT_NAME_DEBUG           "aporia_debug"
+    OUTPUT_NAME_RELWITHDEBINFO  "aporia_dev"
+    OUTPUT_NAME_MINSIZEREL      "aporia_minsize")
+
+if (NOT APORIA_EMSCRIPTEN)
+    set_target_properties(core PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE            "${PROJECT_SOURCE_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG              "${PROJECT_SOURCE_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO     "${PROJECT_SOURCE_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL         "${PROJECT_SOURCE_DIR}/bin"
+        VS_DEBUGGER_WORKING_DIRECTORY               "${PROJECT_SOURCE_DIR}/bin")
+else()
+    set_target_properties(core PROPERTIES
+        OUTPUT_NAME                 "index"
+        SUFFIX                      ".html"
+        RUNTIME_OUTPUT_DIRECTORY    "${PROJECT_SOURCE_DIR}/emscripten/bin")
+endif()
 
 if (APORIA_USE_UNITY_BUILD)
     # UNITY_BUILD_BATCH_SIZE of 0 means combining all sources for the target into a single unity file
@@ -152,9 +167,6 @@ if (APORIA_USE_UNITY_BUILD)
         UNITY_BUILD_BATCH_SIZE  0)
 endif()
 
-if (NOT APORIA_EMSCRIPTEN)
-    set_target_properties(core PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
-        RUNTIME_OUTPUT_DIRECTORY          "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core"
-        VS_DEBUGGER_WORKING_DIRECTORY     "${PROJECT_SOURCE_DIR}/bin/$<CONFIG>/core")
+if (MSVC)
+    target_sources(core PRIVATE "${PROJECT_SOURCE_DIR}/misc/aporia_core.natvis")
 endif()

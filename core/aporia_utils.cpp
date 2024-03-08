@@ -1,19 +1,117 @@
 #include "aporia_utils.hpp"
 
-#include <fstream>
-
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 
 namespace Aporia
 {
-    std::string read_file(std::string_view filepath)
+    String read_entire_file(MemoryArena* arena, String filepath)
     {
-        APORIA_ASSERT(std::filesystem::exists(filepath));
+        FILE* file = fopen(*filepath, "rb");
 
-        std::ifstream file{ filepath.data(), std::ios::in };
-        APORIA_LOG(Info, "Opened '{}' successfully!", filepath);
+        if (file == nullptr)
+        {
+            APORIA_LOG(Error, "Failed to open file '%'!", filepath);
+            return String{};
+        }
 
-        return std::string{ std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+        APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
+
+        fseek(file, 0, SEEK_END);
+
+        u64 size_in_bytes = ftell(file);
+        u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
+
+        fseek(file, 0, SEEK_SET);
+        fread(data, size_in_bytes, 1, file);
+
+        fclose(file);
+
+        return String{ data, size_in_bytes };
+    }
+
+    String read_entire_text_file(MemoryArena* arena, String filepath)
+    {
+        FILE* file = fopen(*filepath, "r");
+
+        if (file == nullptr)
+        {
+            APORIA_LOG(Error, "Failed to open file '%'!", filepath);
+            return String{};
+        }
+
+        APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
+
+        fseek(file, 0, SEEK_END);
+
+        u64 size_in_bytes = ftell(file);
+        u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
+
+        fseek(file, 0, SEEK_SET);
+        u64 length = fread(data, 1, size_in_bytes, file);
+
+        fclose(file);
+
+        u64 garbage_bytes = size_in_bytes - length;
+        if (garbage_bytes > 0)
+        {
+            arena_pop(arena, garbage_bytes);
+        }
+
+        return String{ data, length };
+    }
+
+    String replace_extension(MemoryArena* arena, String filepath, String ext)
+    {
+        u64 last_fullstop = filepath.rfind('.');
+        filepath = filepath.substr(0, last_fullstop);
+
+        String result = push_string(arena, filepath.length + ext.length + 1);
+        memcpy(result.data, filepath.data, filepath.length);
+        result.data[filepath.length] = '.';
+        memcpy(result.data + filepath.length + 1, ext.data, ext.length);
+        return result;
+    }
+
+    String extract_filename(String filepath)
+    {
+        u64 last_slash = filepath.rfind('/');
+        if (last_slash == String::INVALID_INDEX)
+        {
+            last_slash = filepath.rfind('\\');
+        }
+
+        if (last_slash == String::INVALID_INDEX)
+        {
+            return filepath;
+        }
+        else
+        {
+            return filepath.substr(last_slash + 1);
+        }
+    }
+
+    void fix_path_slashes(String* filepath)
+    {
+        for (u64 idx = 0; idx < filepath->length; ++idx)
+        {
+            if (filepath->data[idx] == '\\')
+            {
+                filepath->data[idx] = '/';
+            }
+        }
+    }
+
+    // TODO(dubgron): Provide a better hashing function.
+    // NOTE(dubgron): This hashing function is called djb2.
+    u32 hash(String string)
+    {
+        u32 hash = 5381;
+        for (u64 idx = 0; idx < string.length; ++idx)
+        {
+            hash = ((hash << 5) + hash) + string.data[idx];
+        }
+        return hash;
     }
 
     const Color Color::Black       = Color{  0,   0,   0,  255 };

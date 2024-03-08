@@ -11,10 +11,10 @@ namespace Aporia
         f32 rotation = 0.f;
 
         // Cached values
-        mutable m4 matrix{ 1.f };
+        m4 matrix{ 1.f };
 
-        mutable v2 up_vector{ 0.f, 1.f };
-        mutable v2 right_vector{ 1.f, 0.f };
+        v2 up_vector{ 0.f, 1.f };
+        v2 right_vector{ 1.f, 0.f };
     };
 
     struct CameraProjection
@@ -24,13 +24,13 @@ namespace Aporia
         f32 zoom = 1.f;
 
         // Cached values
-        mutable m4 matrix{ 1.f };
+        m4 matrix{ 1.f };
     };
 
     enum CameraDirtyFlag : u8
     {
-        CameraDirtyFlag_View        = 0x00,
-        CameraDirtyFlag_Projection  = 0x01,
+        CameraDirtyFlag_View        = 0x01,
+        CameraDirtyFlag_Projection  = 0x02,
     };
 
     struct Camera
@@ -62,7 +62,8 @@ namespace Aporia
         void control_zoom(f32 delta_time);
         void follow(v2 to_follow, f32 delta_time);
 
-        void on_window_resize(u32 width, u32 height);
+        void apply_config();
+        void adjust_aspect_ratio_to_render_surface();
     };
 
     Camera* create_camera(MemoryArena* arena);

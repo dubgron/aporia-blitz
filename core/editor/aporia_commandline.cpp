@@ -1,8 +1,10 @@
+#if defined(APORIA_DEBUGTOOLS)
+
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_inputs.hpp"
 #include "aporia_rendering.hpp"
-#include "aporia_strings.hpp"
+#include "aporia_string.hpp"
 #include "aporia_types.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
@@ -35,7 +37,9 @@ namespace Aporia
     static ConsoleInputState input_state = ConsoleInputState::Empty;
 
     static MemoryArena command_arena;
-    static MemoryArena temp_arena;
+    static MemoryArena suggestion_arena;
+
+    static constexpr u64 MAX_SUGGESTIONS = 10;
 
     struct CommandlineResult
     {
@@ -52,12 +56,22 @@ namespace Aporia
         commandline_function* func = nullptr;
     };
 
-    std::vector<CommandlineCommand> commands;
+    static constexpr u64 MAX_COMMANDS = 1000;
+    static CommandlineCommand* commands = nullptr;
+    static u64 command_count = 0;
+
+    static void add_command(CommandlineCommand command)
+    {
+        APORIA_ASSERT(command_count < MAX_COMMANDS);
+        commands[command_count] = command;
+        command_count += 1;
+    }
 
     static CommandlineCommand* find_command(String command_name)
     {
-        for (CommandlineCommand& command : commands)
+        for (u64 idx = 0; idx < command_count; ++idx)
         {
+            CommandlineCommand& command = commands[idx];
             if (command.display_name == command_name)
             {
                 return &command;
@@ -69,13 +83,13 @@ namespace Aporia
 
     static APORIA_COMMANDLINE_FUNCTION(print_string)
     {
-        const String result = args.join(&command_arena, create_string(" "));
+        const String result = args.join(&command_arena, " ");
         APORIA_LOG(Info, result);
 
         return CommandlineResult
         {
             .return_code = 0,
-            .output = create_string("String printed successfully!")
+            .output = "String printed successfully!"
         };
     }
 
@@ -86,7 +100,7 @@ namespace Aporia
             return CommandlineResult
             {
                 .return_code = 1,
-                .output = create_string("Too few arguments!")
+                .output = "Too few arguments!"
             };
         }
 
@@ -98,7 +112,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 0,
-                    .output = create_string("Enabled lighting successfully!")
+                    .output = "Enabled lighting successfully!"
                 };
             }
             else
@@ -106,7 +120,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 1,
-                    .output = create_string("Lighting already enabled!")
+                    .output = "Lighting already enabled!"
                 };
             }
         }
@@ -118,7 +132,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 0,
-                    .output = create_string("Disabled lighting successfully!")
+                    .output = "Disabled lighting successfully!"
                 };
             }
             else
@@ -126,7 +140,7 @@ namespace Aporia
                 return CommandlineResult
                 {
                     .return_code = 1,
-                    .output = create_string("Lighting already disabled!")
+                    .output = "Lighting already disabled!"
                 };
             }
         }
@@ -134,7 +148,7 @@ namespace Aporia
         return CommandlineResult
         {
             .return_code = 1,
-            .output = create_string("Invalid argument!")
+            .output = "Invalid argument!"
         };
     }
 
@@ -144,50 +158,63 @@ namespace Aporia
         u64 match_score = 0;
     };
 
-    static StringList find_matching_commands(String command_prefix, u64 max_count = -1)
+    static StringList find_matching_commands(String command_prefix)
     {
         if (command_prefix.length == 0)
         {
             return StringList{};
         }
 
-        std::vector<CommandMatch> matches;
-        matches.reserve(commands.size());
-        for (const CommandlineCommand& command : commands)
+        ScratchArena temp = scratch_begin();
+
+        CommandMatch* matches = arena_push_uninitialized<CommandMatch>(temp.arena, command_count);
+        u64 match_count = 0;
+
+        for (u64 idx = 0; idx < command_count; ++idx)
         {
+            CommandlineCommand& command = commands[idx];
             if (command.display_name.contains(command_prefix))
             {
-                matches.push_back(CommandMatch{ command.display_name, command.display_name.length });
+                matches[match_count] = CommandMatch{ command.display_name, command.display_name.length };
+                match_count += 1;
             }
         }
-        std::sort(matches.begin(), matches.end(),
-            [](const CommandMatch& m1, const CommandMatch& m2)
+
+        qsort(matches, match_count, sizeof(CommandMatch),
+            [](const void* elem1, const void* elem2)->i32
             {
-                return m1.match_score < m2.match_score;
+                const CommandMatch& m1 = *reinterpret_cast<const CommandMatch*>(elem1);
+                const CommandMatch& m2 = *reinterpret_cast<const CommandMatch*>(elem2);
+                return m1.match_score - m2.match_score;
             });
 
         StringList result;
-        const u64 result_num = min<u64>(max_count, matches.size());
+        const u64 result_num = min<u64>(MAX_SUGGESTIONS, match_count);
         for (i64 i = 0; i < result_num; ++i)
         {
-            result.push_node(&temp_arena, matches[i].command_name);
+            result.push_node(&suggestion_arena, matches[i].command_name);
         }
+
+        scratch_end(temp);
+
         return result;
     }
 
     static void commandline_init()
     {
-        command_arena.alloc(MEGABYTES(1));
-        temp_arena.alloc(KILOBYTES(10));
+        command_arena = arena_init(MEGABYTES(1));
+        suggestion_arena = arena_init(MAX_SUGGESTIONS * sizeof(StringNode));
 
-        commands.push_back(CommandlineCommand{
-            .display_name = create_string("print"),
-            .description = create_string("Prints strings\nUsage: print string1 [string2...]\n"),
+        commands = arena_push<CommandlineCommand>(&command_arena, MAX_COMMANDS);
+
+        add_command(CommandlineCommand{
+            .display_name = "print",
+            .description = "Prints strings\nUsage: print string1 [string2...]\n",
             .func = print_string });
 
-        commands.push_back(CommandlineCommand{
-            .display_name = create_string("lights.enable"),
-            .description = create_string("Enable lights\nUsage: lights.enable 0|1|true|false\n"),
+        add_command(CommandlineCommand{
+            .display_name = "lights.enable",
+            .description = "Enable lights\nUsage: lights.enable 0|1|true|false\n",
             .func = enable_lights });
     }
 
@@ -286,8 +313,8 @@ namespace Aporia
 
         if (input_state == ConsoleInputState::Typing)
         {
-            const String current_command = create_string(data->Buf);
-            suggestions = find_matching_commands(current_command, 10);
+            const String current_command = data->Buf;
+            suggestions = find_matching_commands(current_command);
         }
 
         return 0;
@@ -320,8 +347,6 @@ namespace Aporia
 
     static void commandline_draw()
     {
-        temp_arena.clear();
-
         ImGuiViewport* viewport = ImGui::GetMainViewport();
 
         const f32 target_small = viewport->Size.y * 0.2f;
@@ -394,8 +419,12 @@ namespace Aporia
         {
             if (command_history.node_count > 0)
             {
-                const String history = command_history.join(&temp_arena, create_string("\n"));
-                ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
+                ScratchArena temp = scratch_begin();
+                {
+                    const String history = command_history.join(temp.arena, "\n");
+                    ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
+                }
+                scratch_end(temp);
             }
 
             if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -412,7 +441,7 @@ namespace Aporia
             | ImGuiInputTextFlags_CallbackCompletion
             | ImGuiInputTextFlags_CallbackHistory
             | ImGuiInputTextFlags_CallbackEdit;
-        ImGui::PushItemWidth(ImGui::GetWindowContentRegionWidth());
+        ImGui::PushItemWidth(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x);
         ImGui::SetKeyboardFocusHere();
         if (ImGui::InputText("##commandline", input_buffer, IM_ARRAYSIZE(input_buffer), input_text_flags, MyCallback))
         {
@@ -437,6 +466,7 @@ namespace Aporia
                 }
                 input_buffer[0] = '\0';
                 suggestions.clear();
+                arena_clear(&suggestion_arena);
                 input_state = ConsoleInputState::Empty;
                 selected_command = command_hist_help.node_count;
             }
@@ -445,6 +475,7 @@ namespace Aporia
         {
             input_state = ConsoleInputState::Empty;
             suggestions.clear();
+            arena_clear(&suggestion_arena);
         }
 
         ImGui::PopItemWidth();
@@ -492,4 +523,12 @@ namespace Aporia
 
         ImGui::End();
     }
+
+    static void commandline_deinit()
+    {
+        arena_deinit(&command_arena);
+        arena_deinit(&suggestion_arena);
+    }
 }
+
+#endif

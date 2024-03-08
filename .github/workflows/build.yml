@@ -3,13 +3,23 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: build (${{ matrix.platform.name }}, ${{ matrix.build-type }}${{ matrix.debug-tools == 'On' && ' + Tools' || '' }})
+
+    runs-on: ${{ matrix.platform.os }}
+
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-22.04, macos-12]
-        build-type: [RelWithDebInfo, Release]
+        platform:
+          - os: windows-latest
+            name: Windows
+          - os: ubuntu-22.04
+            name: Linux
+          - os: macos-12
+            name: MacOS
+        build-type: [Debug, Release]
+        debug-tools: [On, Off]
 
-    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -24,7 +34,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake .
+          cmake . -DAPORIA_DEBUGTOOLS=${{ matrix.debug-tools }}
 
       - name: Build
         run: |

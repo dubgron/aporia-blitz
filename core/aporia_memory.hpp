@@ -2,7 +2,7 @@
 
 #include "aporia_types.hpp"
 
-#define PTR_TO_INT(p) reinterpret_cast<u64>(p)
+#define PTR_TO_INT(p) reinterpret_cast<uintptr_t>(p)
 #define INT_TO_PTR(i) reinterpret_cast<void*>(i)
 
 #define BYTES(n)      (n)
@@ -19,29 +19,31 @@ namespace Aporia
         u64 max = 0;
         u64 pos = 0;
         u64 align = 8;
-
-        void alloc(u64 size);
-        void dealloc();
-
-        void clear();
-
-        void* push(u64 size);
-        void* push_zero(u64 size);
-
-        template<typename T>
-        T* push(u64 count = 1)
-        {
-            const u64 size = count * sizeof(T);
-            return reinterpret_cast<T*>( push(size) );
-        }
-
-        template<typename T>
-        T* push_zero(u64 count = 1)
-        {
-            const u64 size = count * sizeof(T);
-            return reinterpret_cast<T*>( push_zero(size) );
-        }
     };
+
+    MemoryArena arena_init(u64 size);
+    void arena_deinit(MemoryArena* arena);
+
+    void arena_clear(MemoryArena* arena);
+
+    void* arena_push_uninitialized(MemoryArena* arena, u64 size);
+    void* arena_push(MemoryArena* arena, u64 size);
+
+    void arena_pop(MemoryArena* arena, u64 size);
+
+    template<typename T>
+    T* arena_push_uninitialized(MemoryArena* arena, u64 count = 1)
+    {
+        const u64 size = count * sizeof(T);
+        return (T*)arena_push_uninitialized(arena, size);
+    }
+
+    template<typename T>
+    T* arena_push(MemoryArena* arena, u64 count = 1)
+    {
+        const u64 size = count * sizeof(T);
+        return (T*)arena_push(arena, size);
+    }
 
     struct ScratchArena
     {
@@ -49,6 +51,6 @@ namespace Aporia
         u64 pos = 0;
     };
 
-    ScratchArena create_scratch_arena(MemoryArena* arena);
-    void rollback_scratch_arena(ScratchArena& scratch);
+    ScratchArena scratch_begin(MemoryArena* conflict = nullptr);
+    void scratch_end(ScratchArena scratch);
 }

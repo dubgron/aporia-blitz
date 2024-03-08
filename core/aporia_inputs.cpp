@@ -133,8 +133,8 @@ namespace Aporia
         clear_input_state(input.mouse, +MouseButton::Count);
         clear_input_state(input.buttons, +GamepadButton::Count);
 
-        memset(input.wheels, 0.f, sizeof(AnalogInputState) * +MouseWheel::Count);
-        memset(input.axes, 0.f, sizeof(AnalogInputState) * +GamepadAxis::Count);
+        memset(input.wheels, 0.f, sizeof(input.wheels));
+        memset(input.axes, 0.f, sizeof(input.axes));
     }
 
     i32 has_been_pressed(Key key)
@@ -209,6 +209,39 @@ namespace Aporia
         return is_flag_set(state, flag);
     }
 
+    i32 has_any_key_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +Key::Count; ++idx)
+        {
+            const InputState state = input.keys[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
+    i32 has_any_mouse_button_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +MouseButton::Count; ++idx)
+        {
+            const InputState state = input.mouse[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
+    i32 has_any_gamepad_button_been_pressed()
+    {
+        i32 result = 0;
+        for (u64 idx = 0; idx < +GamepadButton::Count; ++idx)
+        {
+            const InputState state = input.buttons[idx];
+            result += has_been_pressed(state);
+        }
+        return result;
+    }
+
     AnalogInputState get_analog_state(MouseWheel wheel)
     {
         const u64 wheel_code = +wheel;
@@ -223,7 +256,7 @@ namespace Aporia
         return input.axes[axis_code];
     }
 
-    Key string_to_key(std::string_view string)
+    Key string_to_key(String string)
     {
         if (string == "Unknown")        return Key::Unknown;
         if (string == "Space")          return Key::Space;

@@ -4,7 +4,8 @@
     #include <emscripten.h>
 #endif
 
-#include "aporia_animation.hpp"
+#include "aporia_animations.hpp"
+#include "aporia_assets.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
@@ -13,12 +14,8 @@
 
 namespace Aporia
 {
-    MemoryArena persistent_arena;
-    MemoryArena frame_arena;
-
+    GameMemory memory;
     World world;
-
-    static Game* game = nullptr;
 
     static Timer frame_timer;
     static f32 total_time = 0.f;
@@ -26,30 +23,12 @@ namespace Aporia
     static f32 delta_time = 1.f / 240.f;
     static f32 accumulated_frame_time = 0.f;
 
-    static void game_main_loop()
+    static void game_simulate_frame(f32 time, f32 delta_time)
     {
-        const f32 frame_time = frame_timer.reset();
-        total_time += frame_time;
+    }
 
-        frame_arena.clear();
-
-        active_window->poll_events();
-        poll_gamepad_inputs();
-
-        accumulated_frame_time += frame_time;
-        while (accumulated_frame_time > delta_time)
-        {
-            game->update(total_time, delta_time);
-            accumulated_frame_time -= delta_time;
-
-            inputs_clear();
-        }
-
-        imgui_frame_begin();
-        rendering_begin();
-
-        game->draw(frame_time);
-
+    static void game_draw_frame(f32 frame_time)
+    {
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
             Entity& entity = world.entity_array[idx];
@@ -59,45 +38,92 @@ namespace Aporia
                 draw_entity(entity);
             }
         }
+    }
 
-        rendering_end();
-        imgui_frame_end();
+    static void game_draw_ui(f32 frame_time)
+    {
+    }
+
+    static void game_main_loop()
+    {
+        const f32 frame_time = frame_timer.reset();
+        total_time += frame_time;
+
+        arena_clear(&memory.frame);
+
+        active_window->poll_events();
+        poll_gamepad_inputs();
+
+        IMGUI_FRAME_BEGIN();
+
+        accumulated_frame_time += frame_time;
+        while (accumulated_frame_time > delta_time)
+        {
+            game_simulate_frame(total_time, delta_time);
+            accumulated_frame_time -= delta_time;
+
+            inputs_clear();
+
+            assets_reload_if_dirty(delta_time);
+        }
+
+        rendering_frame_begin();
+        {
+            game_draw_frame(frame_time);
+        }
+        rendering_frame_end();
+
+        rendering_ui_begin();
+        {
+            game_draw_ui(frame_time);
+        }
+        rendering_ui_end();
+
+        rendering_flush_to_screen();
+
+        IMGUI_FRAME_END();
 
         active_window->display();
     }
 
-    void game_run(Game* in_game)
+    void engine_main(String config_filepath)
     {
-        game = in_game;
-
         // Init
         {
-            logging_init("aporia");
+            memory.persistent = arena_init(MEGABYTES(100));
+            memory.frame = arena_init(MEGABYTES(1));
 
-            persistent_arena.alloc(MEGABYTES(100));
-            frame_arena.alloc(KILOBYTES(10));
+            for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
+            {
+                memory.temp[idx] = arena_init(MEGABYTES(10));
+            }
 
-            load_config(game->config_filepath);
+            memory.config = arena_init(KILOBYTES(10));
 
-            active_camera = create_camera(&persistent_arena);
-            active_window = create_window(&persistent_arena);
+            LOGGING_INIT(&memory.persistent, "aporia");
+
+            assets_init();
+
+            const bool config_loaded_successfully = load_engine_config(config_filepath);
+            APORIA_ASSERT(config_loaded_successfully);
+
+            active_window = create_window(&memory.persistent);
+            active_camera = create_camera(&memory.persistent);
 
             opengl_init();
-            shaders_init();
-            rendering_init();
+            shaders_init(&memory.persistent);
+            rendering_init(&memory.persistent);
+            animations_init(&memory.persistent);
 
-            world.init();
+            world = world_init();
 
-            imgui_init();
-
-            game->init();
+            IMGUI_INIT();
         }
 
         // Update
         {
 #if defined(APORIA_EMSCRIPTEN)
-            static constexpr auto emscripten_main_loop = [](void* arg) { game_main_loop(); };
-            emscripten_set_main_loop_arg(emscripten_main_loop, nullptr, 0, true);
+            emscripten_set_main_loop(game_main_loop, 0, true);
 #else
             while (active_window->is_open())
             {
@@ -108,13 +134,25 @@ namespace Aporia
 
         // Terminate
         {
-            game->terminate();
-
-            imgui_deinit();
-            world.deinit();
+            IMGUI_DEINIT();
+            world_deinit(&world);
             rendering_deinit();
 
             destroy_active_window();
+
+            assets_deinit();
+
+            LOGGING_DEINIT();
+
+            arena_deinit(&memory.persistent);
+            arena_deinit(&memory.frame);
+            arena_deinit(&memory.config);
         }
     }
+}
+
+int main(int argc, char** argv)
+{
+    Aporia::engine_main("content/settings.aporia-config");
+    return 0;
 }

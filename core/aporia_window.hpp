@@ -11,6 +11,9 @@ namespace Aporia
     {
         GLFWwindow* handle;
 
+        i32 width = 0;
+        i32 height = 0;
+
         void display();
 
         void poll_events() const;
@@ -18,10 +21,9 @@ namespace Aporia
         void close();
         bool is_open() const;
 
-        v2_u32 get_size() const;
         v2 get_mouse_position() const;
 
-        void on_config_reload();
+        void apply_config();
     };
 
     Window* create_window(MemoryArena* arena);
