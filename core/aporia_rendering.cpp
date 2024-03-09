@@ -801,7 +801,7 @@ namespace Aporia
             for (u64 idx = 0; idx < world.entity_count; ++idx)
             {
                 const Entity& entity = world.entity_array[idx];
-                if (is_flag_set(entity, EntityFlag_Visible) && is_flag_set(entity, EntityFlag_BlockingLight))
+                if (entity_flag_is_set(entity, EntityFlag_Visible) && entity_flag_is_set(entity, EntityFlag_BlockingLight))
                 {
                     draw_entity(entity);
                 }
@@ -978,14 +978,14 @@ namespace Aporia
         key.vertex[3].position      = base_offset + up_offset;
         key.vertex[3].color         = entity.color;
 
-        if (entity.texture && entity.texture->source)
+        if (Texture* texture = get_texture(entity.texture.texture_index))
         {
-            key.texture_id              = entity.texture->source->id;
+            key.texture_id              = texture->id;
 
-            key.vertex[0].tex_coord     = v2{ entity.texture->u.x, entity.texture->v.y };
-            key.vertex[1].tex_coord     = entity.texture->v;
-            key.vertex[2].tex_coord     = v2{ entity.texture->v.x, entity.texture->u.y };
-            key.vertex[3].tex_coord     = entity.texture->u;
+            key.vertex[0].tex_coord     = v2{ entity.texture.u.x, entity.texture.v.y };
+            key.vertex[1].tex_coord     = entity.texture.v;
+            key.vertex[2].tex_coord     = v2{ entity.texture.v.x, entity.texture.u.y };
+            key.vertex[3].tex_coord     = entity.texture.u;
         }
 
         renderqueue_add(&rendering_queue, key);
@@ -1092,12 +1092,11 @@ namespace Aporia
         APORIA_ASSERT(text.font);
         const Font& font = *text.font;
 
-        if (!font.atlas.source)
+        Texture* texture = get_texture(font.atlas.source);
+        if (!texture)
         {
             return;
         }
-
-        const v2 texture_size = v2{ font.atlas.source->width, font.atlas.source->height };
 
         // Adjust text scaling by the predefined atlas font size
         const f32 effective_font_size   = text.font_size / font.atlas.font_size;
@@ -1254,6 +1253,8 @@ namespace Aporia
                 const GlyphBounds& atlas_bounds = glyph->atlas_bounds;
                 const GlyphBounds& plane_bounds = glyph->plane_bounds;
 
+                const v2 texture_size   = v2{ texture->width, texture->height };
+
                 const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
                 const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
 
@@ -1276,7 +1277,7 @@ namespace Aporia
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;
                 key.shader_id               = text.shader_id;
-                key.texture_id              = font.atlas.source->id;
+                key.texture_id              = texture->id;
 
                 key.vertex[0].position      = v3{ base_offset, 0.f };
                 key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };

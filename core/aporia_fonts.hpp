@@ -11,7 +11,7 @@ namespace Aporia
         f32 font_size = 64.f;
         f32 distance_range = 2.f;
 
-        Texture* source;
+        i64 source = INDEX_INVALID;
     };
 
     struct GlyphBounds

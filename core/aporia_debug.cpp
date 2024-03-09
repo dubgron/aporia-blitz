@@ -124,7 +124,7 @@ namespace Aporia
         String result{ (u8*)buff, length };
 
         // @NOTE(dubgron): We assume that '%%' in format string means milliseconds. It's dumb, I know...
-        if (result.find('%') != String::INVALID_INDEX)
+        if (result.find('%') != INDEX_INVALID)
         {
             char temp[4];
             i64 milliseconds = get_milliseconds();

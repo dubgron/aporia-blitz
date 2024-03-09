@@ -13,8 +13,8 @@
 
 namespace Aporia
 {
-    static constexpr u64 MAX_TEXTURES = 10;
-    static constexpr u64 MAX_SUBTEXTURES = 512;
+    static constexpr u64 MAX_TEXTURES = 32;
+    static constexpr u64 MAX_SUBTEXTURES = 2048;
 
     // @NOTE(dubgron): The number of textures would be low, so we don't need to use
     // hash tables. Using a non-resizable array also gives us pointer stability.
@@ -57,7 +57,7 @@ namespace Aporia
 
     static bool operator==(const SubTexture& subtexture1, const SubTexture& subtexture2)
     {
-        return subtexture1.u == subtexture2.u && subtexture1.v == subtexture2.v && subtexture1.source == subtexture2.source;
+        return subtexture1.u == subtexture2.u && subtexture1.v == subtexture2.v && subtexture1.texture_index == subtexture2.texture_index;
     }
 
     bool load_texture_atlas(String filepath)
@@ -81,7 +81,7 @@ namespace Aporia
             return false;
         }
 
-        Texture* atlas_texture = find_or_load_texture(texture_filepath);
+        i64 atlas_texture = find_or_load_texture_index(texture_filepath);
 
         if (!hash_table_is_created(&subtextures))
         {
@@ -108,7 +108,7 @@ namespace Aporia
             SubTexture subtexture;
             subtexture.u = u;
             subtexture.v = v;
-            subtexture.source = atlas_texture;
+            subtexture.texture_index = atlas_texture;
             hash_table_insert(&subtextures, name, subtexture);
 
             APORIA_ASSERT(*hash_table_find(&subtextures, name) == subtexture);
@@ -121,32 +121,32 @@ namespace Aporia
         return true;
     }
 
-    static Texture* add_texture(const Texture& texture)
+    static i64 add_texture(const Texture& texture)
     {
-        Texture* found_spot = nullptr;
+        i64 found_spot = INDEX_INVALID;
         for (u64 idx = 0; idx < last_valid_texture_idx; ++idx)
         {
             if (textures[idx].id == 0)
             {
-                found_spot = &textures[idx];
+                found_spot = idx;
                 break;
             }
         }
 
-        if (!found_spot)
+        if (found_spot == INDEX_INVALID)
         {
             APORIA_ASSERT(last_valid_texture_idx < MAX_TEXTURES);
-            found_spot = &textures[last_valid_texture_idx];
+            found_spot = last_valid_texture_idx;
             last_valid_texture_idx += 1;
         }
 
-        APORIA_ASSERT(found_spot);
-        *found_spot = texture;
+        APORIA_ASSERT(found_spot != INDEX_INVALID);
+        textures[found_spot] = texture;
 
         return found_spot;
     }
 
-    static Texture* load_texture_from_file(String filepath)
+    static i64 load_texture_from_file(String filepath)
     {
         ScratchArena temp = scratch_begin();
 
@@ -154,7 +154,7 @@ namespace Aporia
         if (!bitmap.pixels)
         {
             scratch_end(temp);
-            return nullptr;
+            return INDEX_INVALID;
         }
 
         u32 sized_format, base_format;
@@ -214,7 +214,7 @@ namespace Aporia
         if (!id)
         {
             APORIA_LOG(Error, "Failed to create OpenGL texture from '%'!", filepath);
-            return nullptr;
+            return INDEX_INVALID;
         }
 
         Texture texture;
@@ -229,22 +229,22 @@ namespace Aporia
         return add_texture(texture);
     }
 
-    Texture* find_or_load_texture(String filepath)
+    i64 find_or_load_texture_index(String filepath)
     {
         for (i64 idx = 0; idx < last_valid_texture_idx; ++idx)
         {
             // Texture already loaded.
             if (textures[idx].source_file == filepath)
             {
-                return &textures[idx];
+                return idx;
             }
         }
 
         // Failed to find the texture, we need to load it.
         Asset* texture_asset = register_asset(filepath, AssetType::Texture);
 
-        Texture* result = load_texture_from_file(texture_asset->source_file);
-        texture_asset->status = result ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+        i64 result = load_texture_from_file(texture_asset->source_file);
+        texture_asset->status = result != INDEX_INVALID ? AssetStatus::Loaded : AssetStatus::NotLoaded;
 
         return result;
     }
@@ -263,10 +263,10 @@ namespace Aporia
 
                 // @NOTE(dubgron): This should reload the new texture into the
                 // same spot as an old one because its ID has been zeroed out.
-                Texture* reloaded_texture = load_texture_from_file(texture_asset->source_file);
-                texture_asset->status = reloaded_texture ? AssetStatus::Loaded : AssetStatus::NotLoaded;
+                i64 reloaded_texture = load_texture_from_file(texture_asset->source_file);
+                texture_asset->status = reloaded_texture != INDEX_INVALID ? AssetStatus::Loaded : AssetStatus::NotLoaded;
 
-                return reloaded_texture != nullptr;
+                return reloaded_texture != INDEX_INVALID;
             }
         }
 
@@ -274,7 +274,17 @@ namespace Aporia
         return false;
     }
 
-    const SubTexture* get_subtexture(String name)
+    Texture* get_texture(i64 index)
+    {
+        if (index != INDEX_INVALID && index < last_valid_texture_idx)
+        {
+            return &textures[index];
+        }
+
+        return nullptr;
+    }
+
+    SubTexture* get_subtexture(String name)
     {
         SubTexture* subtexture = hash_table_find(&subtextures, name);
         if (!subtexture)
@@ -284,13 +294,12 @@ namespace Aporia
         return subtexture;
     }
 
-    f32 get_subtexture_width(const SubTexture& subtexture)
+    void get_subtexture_size(const SubTexture& subtexture, f32* width, f32* height)
     {
-        return subtexture.source ? (subtexture.v.x - subtexture.u.x) * subtexture.source->width : 0.f;
-    }
-
-    f32 get_subtexture_height(const SubTexture& subtexture)
-    {
-        return subtexture.source ? (subtexture.v.y - subtexture.u.y) * subtexture.source->height : 0.f;
+        if (Texture* texture = get_texture(subtexture.texture_index))
+        {
+            *width = (subtexture.v.x - subtexture.u.x) * texture->width;
+            *height = (subtexture.v.y - subtexture.u.y) * texture->height;
+        }
     }
 }

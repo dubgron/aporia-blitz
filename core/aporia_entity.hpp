@@ -30,16 +30,16 @@ namespace Aporia
         f32 height = 0.f;
         v2 scale{ 1.f };
 
-        const SubTexture* texture = nullptr;
+        SubTexture texture;
         Color color = Color::White;
         u32 shader_id = default_shader;
 
         Animator animator;
     };
 
-    bool is_flag_set(const Entity& entity, EntityFlag flag);
-    void set_flag(Entity& entity, EntityFlag flag);
-    void unset_flag(Entity& entity, EntityFlag flag);
+    bool entity_flag_is_set(const Entity& entity, EntityFlag flag);
+    void entity_flag_set(Entity* entity, EntityFlag flag);
+    void entity_flag_unset(Entity* entity, EntityFlag flag);
 
-    void entity_ajust_size_to_texture(Entity& entity);
+    void entity_ajust_size_to_texture(Entity* entity);
 }

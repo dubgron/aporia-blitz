@@ -316,7 +316,7 @@ namespace Aporia
         u64 line_begin = 0;
         u64 line_end = shader_contents.find_eol(line_begin);
 
-        while (line_end != String::INVALID_INDEX)
+        while (line_end != INDEX_INVALID)
         {
             const String line = shader_contents.substr(line_begin, line_end - line_begin);
 
@@ -328,7 +328,7 @@ namespace Aporia
                 if (line.starts_with("#blend "))
                 {
                     const u64 delim = params.find(' ');
-                    if (delim != String::INVALID_INDEX)
+                    if (delim != INDEX_INVALID)
                     {
                         shader_data.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
                         shader_data.properties.blend[1] = string_to_shader_blend(params.substr(delim + 1, line_end - delim - 1));

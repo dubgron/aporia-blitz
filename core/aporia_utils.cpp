@@ -76,12 +76,12 @@ namespace Aporia
     String extract_filename(String filepath)
     {
         u64 last_slash = filepath.rfind('/');
-        if (last_slash == String::INVALID_INDEX)
+        if (last_slash == INDEX_INVALID)
         {
             last_slash = filepath.rfind('\\');
         }
 
-        if (last_slash == String::INVALID_INDEX)
+        if (last_slash == INDEX_INVALID)
         {
             return filepath;
         }

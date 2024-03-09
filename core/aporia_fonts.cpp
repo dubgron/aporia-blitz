@@ -32,7 +32,7 @@ namespace Aporia
 
         Font result;
         result.name = name;
-        result.atlas.source = find_or_load_texture(png_filepath);
+        result.atlas.source = find_or_load_texture_index(png_filepath);
 
         // @HACK(dubgron): By default, we set the filter texture parameter to
         // GL_NEAREST, as it works best with pixelart, but fonts look better

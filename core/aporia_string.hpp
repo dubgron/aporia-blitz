@@ -43,8 +43,6 @@ namespace Aporia
         String(const char* string) : data( (u8*)string ), length( string ? strlen(string) : 0 ) {}
         const char* cstring(MemoryArena* arena) const;
         const char* operator*() const; // @NOTE(dubgron): This allocates a temporary null-terminated string on the frame arena.
-
-        static constexpr u64 INVALID_INDEX = -1;
     };
 
     struct StringNode

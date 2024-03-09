@@ -2,27 +2,23 @@
 
 namespace Aporia
 {
-    bool is_flag_set(const Entity& entity, EntityFlag flag)
+    bool entity_flag_is_set(const Entity& entity, EntityFlag flag)
     {
         return entity.flags & flag;
     }
 
-    void set_flag(Entity& entity, EntityFlag flag)
+    void entity_flag_set(Entity* entity, EntityFlag flag)
     {
-        entity.flags |= flag;
+        entity->flags |= flag;
     }
 
-    void unset_flag(Entity& entity, EntityFlag flag)
+    void entity_flag_unset(Entity* entity, EntityFlag flag)
     {
-        entity.flags &= ~flag;
+        entity->flags &= ~flag;
     }
 
-    void entity_ajust_size_to_texture(Entity& entity)
+    void entity_ajust_size_to_texture(Entity* entity)
     {
-        if (entity.texture)
-        {
-            entity.width = get_subtexture_width(*entity.texture);
-            entity.height = get_subtexture_height(*entity.texture);
-        }
+        get_subtexture_size(entity->texture, &entity->width, &entity->height);
     }
 }

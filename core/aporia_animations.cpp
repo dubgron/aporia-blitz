@@ -88,14 +88,10 @@ namespace Aporia
                 animator.requested_animation = String{};
             }
 
-            // Increment the current frame and wrap, if necessary.
-            animator.current_frame += 1;
-            if (animator.current_frame > animation->frame_count - 1)
-            {
-                animator.current_frame = 0;
-            }
+            // Increment the current frame and wrap it around, if necessary.
+            animator.current_frame = animator.current_frame < animation->frame_count - 1 ? (animator.current_frame + 1) : 0;
 
-            entity.texture = animation->frames[animator.current_frame].texture;
+            entity.texture = *animation->frames[animator.current_frame].texture;
         }
     }
 

@@ -31,19 +31,16 @@ namespace Aporia
     {
         v2 u{ 0.f };
         v2 v{ 0.f };
-        Texture* source = nullptr;
+        i64 texture_index = INDEX_INVALID;
     };
-
-    u32 get_next_texture_unit_for_id(u32 texture_id);
-    void clear_texture_unit_map();
 
     // @NOTE(dubgron): Atlas refers to the config file describing the subtextures inside a texture.
     bool load_texture_atlas(String filepath);
 
-    Texture* find_or_load_texture(String filepath);
+    i64 find_or_load_texture_index(String filepath);
     bool reload_texture_asset(Asset* texture_asset);
 
-    const SubTexture* get_subtexture(String name);
-    f32 get_subtexture_width(const SubTexture& subtexture);
-    f32 get_subtexture_height(const SubTexture& subtexture);
+    Texture* get_texture(i64 index);
+    SubTexture* get_subtexture(String name);
+    void get_subtexture_size(const SubTexture& subtexture, f32* width, f32* height);
 }

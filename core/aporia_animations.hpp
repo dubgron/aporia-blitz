@@ -9,7 +9,7 @@ namespace Aporia
 
     struct AnimationFrame
     {
-        const SubTexture* texture = nullptr;
+        SubTexture* texture = nullptr;
     };
 
     struct Animation

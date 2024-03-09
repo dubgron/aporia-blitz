@@ -34,3 +34,6 @@ using v4_u32 = glm::uvec4;
 using m2 = glm::mat2;
 using m3 = glm::mat3;
 using m4 = glm::mat4;
+
+
+enum { INDEX_INVALID = -1 };

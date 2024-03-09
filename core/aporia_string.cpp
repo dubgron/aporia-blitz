@@ -80,7 +80,7 @@ namespace Aporia
     {
         if (offset >= length)
         {
-            return INVALID_INDEX;
+            return INDEX_INVALID;
         }
 
         for (u64 off = offset; off < length; ++off)
@@ -91,14 +91,14 @@ namespace Aporia
             }
         }
 
-        return INVALID_INDEX;
+        return INDEX_INVALID;
     }
 
     u64 String::find(String other, u64 offset /* = 0 */) const
     {
         if (other.length + offset > length)
         {
-            return INVALID_INDEX;
+            return INDEX_INVALID;
         }
 
         const u64 substr_num = length - other.length + 1;
@@ -111,14 +111,14 @@ namespace Aporia
             }
         }
 
-        return INVALID_INDEX;
+        return INDEX_INVALID;
     }
 
     u64 String::find_eol(u64 offset /* = 0 */) const
     {
         if (offset >= length)
         {
-            return INVALID_INDEX;
+            return INDEX_INVALID;
         }
 
         for (u64 off = offset; off < length; ++off)
@@ -129,7 +129,7 @@ namespace Aporia
             }
         }
 
-        return INVALID_INDEX;
+        return INDEX_INVALID;
     }
 
     u64 String::rfind(u8 character, u64 offset /* = -1 */) const
@@ -142,14 +142,14 @@ namespace Aporia
                 return off;
             }
         }
-        return INVALID_INDEX;
+        return INDEX_INVALID;
     }
 
     u64 String::rfind(String other, u64 offset /* = -1 */) const
     {
         if (length < other.length || other.length == 0)
         {
-            return INVALID_INDEX;
+            return INDEX_INVALID;
         }
 
         // There is no point in starting the search at offset greater than
@@ -166,12 +166,12 @@ namespace Aporia
             }
         }
 
-        return INVALID_INDEX;
+        return INDEX_INVALID;
     }
 
     bool String::contains(String other) const
     {
-        return find(other) != INVALID_INDEX;
+        return find(other) != INDEX_INVALID;
     }
 
     bool String::starts_with(String other) const

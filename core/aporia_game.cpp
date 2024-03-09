@@ -32,7 +32,7 @@ namespace Aporia
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
             Entity& entity = world.entity_array[idx];
-            if (is_flag_set(entity, EntityFlag_Visible))
+            if (entity_flag_is_set(entity, EntityFlag_Visible))
             {
                 animation_tick(entity, frame_time);
                 draw_entity(entity);
