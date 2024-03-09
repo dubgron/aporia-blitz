@@ -102,16 +102,27 @@ namespace Aporia
         }
     }
 
-    // TODO(dubgron): Provide a better hashing function.
-    // NOTE(dubgron): This hashing function is called djb2.
-    u32 hash(String string)
+    constexpr u64 FNV_64_PRIME = 0x100000001b3;
+    constexpr u64 FNV_64_OFFSET_BIAS = 0xcbf29ce484222325;
+
+    static u64 fnv1a_hash(u64 value, u64 hash = FNV_64_OFFSET_BIAS)
     {
-        u32 hash = 5381;
+        hash ^= value;
+        return hash * FNV_64_PRIME;
+    }
+
+    static u64 fnv1a_hash(String string, u64 hash = FNV_64_OFFSET_BIAS)
+    {
         for (u64 idx = 0; idx < string.length; ++idx)
         {
-            hash = ((hash << 5) + hash) + string.data[idx];
+            hash = fnv1a_hash(string.data[idx], hash);
         }
         return hash;
+    }
+
+    u32 get_hash(String string)
+    {
+        return (u32)fnv1a_hash(string);
     }
 
     const Color Color::Black       = Color{  0,   0,   0,  255 };

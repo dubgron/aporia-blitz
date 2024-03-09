@@ -5,63 +5,67 @@
 
 namespace Aporia
 {
-    struct HashTableKey
-    {
-        i32 distance_from_desired_bucket = -1;
-        String key;
-    };
+    constexpr i64 FIRST_VALID_HASH = 0;
+    constexpr i64 NEVER_OCCUPIED_HASH = -1;
+    constexpr i64 REMOVED_HASH = -2;
 
-    // @NOTE(dubgron): Remember that this hash table is not resizable!
+    constexpr i64 MAX_LOAD_FACTOR_PERCENT = 70;
+
+    // @NOTE(dubgron): Remember that this hash table does not automatically resize!
     template<typename T>
     struct HashTable
     {
-        HashTableKey* keys = nullptr;
-        T* buckets = nullptr;
+        struct Bucket
+        {
+            i64 hash = NEVER_OCCUPIED_HASH;
+            String key;
+            T value;
+        };
 
-        u64 bucket_count = 0;
-        u64 occupied_buckets = 0;
+        Bucket* buckets = nullptr;
+        i64 bucket_count = 0;
+
+        i64 valid_buckets = 0;
+        i64 occupied_buckets = 0;
     };
 
-    static u64 hash_to_index(u64 bucket_count, u32 hash)
+    static u64 next_power_of_two(u64 n)
     {
-        // @NOTE(dubgron): The number of buckets in the hash table is a power
-        // of 2, so we can easily fold the hash between 0 and bucket_count by
-        // chopping off the top bits, which is less robust than using an integer
-        // modulo operation, but it's way faster.
-        return hash & (bucket_count - 1);
-    }
+        APORIA_ASSERT(n != 0);
 
-    static u64 increment_index(u64 bucket_count, u64 index)
-    {
-        return index < bucket_count - 1 ? (index + 1) : 0;
-    }
-
-    static u64 decrement_index(u64 bucket_count, u64 index)
-    {
-        return index > 0 ? index - 1 : bucket_count - 1;
+        u64 result = 1;
+        while (n > result)
+        {
+            result += result;
+        }
+        return result;
     }
 
     template<typename T>
     bool hash_table_is_created(HashTable<T>* hash_table)
     {
-        return hash_table->keys && hash_table->buckets && hash_table->bucket_count > 0;
+        return hash_table->buckets && hash_table->bucket_count > 0;
     }
 
     template<typename T>
-    HashTable<T> hash_table_create(MemoryArena* arena, u64 bucket_count)
+    HashTable<T> hash_table_create(MemoryArena* arena, i64 bucket_count)
     {
         // @NOTE(dubgron): The number of buckets in the hash table should be a power of 2.
-        // For explanation, see 'hash_to_index' function.
-        APORIA_ASSERT((bucket_count & (bucket_count - 1)) == 0);
+        // For explanation, see 'hash_table_wrap_around' function.
+        if ((bucket_count & (bucket_count - 1)) != 0)
+        {
+            bucket_count = next_power_of_two(bucket_count);
+        }
+
+        using HashTableBucket = typename HashTable<T>::Bucket;
 
         HashTable<T> result;
-        result.keys = arena_push<HashTableKey>(arena, bucket_count);
-        result.buckets = arena_push<T>(arena, bucket_count);
+        result.buckets = arena_push<HashTableBucket>(arena, bucket_count);
         result.bucket_count = bucket_count;
 
         for (u64 idx = 0; idx < bucket_count; ++idx)
         {
-            result.keys[idx].distance_from_desired_bucket = -1;
+            result.buckets[idx].hash = NEVER_OCCUPIED_HASH;
         }
 
         return result;
@@ -72,127 +76,132 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < hash_table->bucket_count; ++idx)
         {
-            hash_table->keys[idx] = HashTableKey{};
-            hash_table->buckets[idx] = 0;
+            using HashTableBucket = typename HashTable<T>::Bucket;
+            hash_table->buckets[idx] = HashTableBucket{};
         }
+
+        hash_table->valid_buckets = 0;
+        hash_table->occupied_buckets = 0;
+    }
+
+    template<typename T>
+    void hash_table_expand(MemoryArena* arena, HashTable<T>* hash_table)
+    {
+        u64 required_count;
+        if ((hash_table->valid_buckets * 2 + 1) * 100 < MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
+        {
+            required_count = hash_table->bucket_count;
+        }
+        else
+        {
+            required_count = hash_table->bucket_count * 2;
+        }
+
+        HashTable<T> result = hash_table_create<T>(arena, required_count);
+
+        for (u64 idx = 0; idx < hash_table->bucket_count; ++idx)
+        {
+            using HashTableBucket = typename HashTable<T>::Bucket;
+            HashTableBucket* bucket = &hash_table->buckets[idx];
+
+            if (bucket->hash >= FIRST_VALID_HASH)
+            {
+                hash_table_insert(&result, bucket->key, bucket->value);
+            }
+        }
+    }
+
+    template<typename T>
+    static inline i64 hash_table_wrap_around(HashTable<T>* hash_table, u64 value)
+    {
+        // @NOTE(dubgron): The number of buckets in the hash table is a power
+        // of 2, so we can easily wrap the value between 0 and bucket_count by
+        // chopping off the top bits.
+        return value & (hash_table->bucket_count - 1);
     }
 
     template<typename T>
     T* hash_table_insert(HashTable<T>* hash_table, String key, T value)
     {
-        if (hash_table->occupied_buckets >= hash_table->bucket_count)
+        // @NOTE(dubgron): Without dividing, we want to test:
+        //      occupied_buckets / bucket_count >= max_load_factor_percent / 100
+        // Therefore, we say:
+        //      occupied_buckets * 100 >= max_load_factor_percent * bucket_count
+        if ((hash_table->occupied_buckets + 1) * 100 >= MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
         {
-            APORIA_LOG(Error, "The hash table is full! Failed to insert at key '%'!", key);
+            APORIA_LOG(Warning, "The hash table is full! Failed to insert at key '%'!", key);
             return nullptr;
         }
 
-        u32 hashed_key = hash(key);
-        u64 index = hash_to_index(hash_table->bucket_count, hashed_key);
+        u32 hash = get_hash(key);
+        i64 index = hash_table_wrap_around(hash_table, hash);
 
-        HashTableKey ht_key;
-        ht_key.key = key;
-        ht_key.distance_from_desired_bucket = 0;
+        u32 probe_increment = 1;
 
-        while (hash_table->keys[index].distance_from_desired_bucket != -1)
+        // Probe forward, until you find an empty bucket.
+        while (hash_table->buckets[index].hash != NEVER_OCCUPIED_HASH)
         {
-            if (ht_key.distance_from_desired_bucket > hash_table->keys[index].distance_from_desired_bucket)
-            {
-                HashTableKey temp_key = hash_table->keys[index];
-                hash_table->keys[index] = ht_key;
-                ht_key = temp_key;
-
-                T temp_value = hash_table->buckets[index];
-                hash_table->buckets[index] = value;
-                value = temp_value;
-            }
-
-            ht_key.distance_from_desired_bucket += 1;
-
-            index = increment_index(hash_table->bucket_count, index);
+            index = hash_table_wrap_around(hash_table, index + probe_increment);
+            probe_increment += 1;
         }
 
-        hash_table->keys[index] = ht_key;
-        hash_table->buckets[index] = value;
+        hash_table->buckets[index].hash = hash;
+        hash_table->buckets[index].key = key;
+        hash_table->buckets[index].value = value;
 
+        hash_table->valid_buckets += 1;
         hash_table->occupied_buckets += 1;
 
-        return &hash_table->buckets[index];
+        return &hash_table->buckets[index].value;
     }
 
     template<typename T>
     T hash_table_remove(HashTable<T>* hash_table, String key)
     {
-        u32 hashed_key = hash(key);
-        u64 index = hash_to_index(hash_table->bucket_count, hashed_key);
+        u32 hash = get_hash(key);
+        i64 index = hash_table_wrap_around(hash_table, hash);
+
+        u32 probe_increment = 1;
 
         // Probe forward, until you find the correct bucket (or an empty one).
-        while (hash_table->keys[index].key != key)
+        while (hash_table->buckets[index].hash != hash)
         {
-            index = increment_index(hash_table->bucket_count, index);
-
-            if (hash_table->keys[index].distance_from_desired_bucket == -1)
+            if (hash_table->buckets[index].hash == NEVER_OCCUPIED_HASH)
             {
                 APORIA_LOG(Warning, "Tried to remove a non-existant key '%' from the hash table!", key);
                 return T{};
             }
+
+            index = hash_table_wrap_around(hash_table, index + probe_increment);
+            probe_increment += 1;
         }
 
-        T result = hash_table->buckets[index];
+        hash_table->buckets[index].hash = REMOVED_HASH;
+        hash_table->valid_buckets -= 1;
 
-        hash_table->keys[index] = HashTableKey{};
-        hash_table->buckets[index] = T{};
-
-        hash_table->occupied_buckets -= 1;
-
-        index = increment_index(hash_table->bucket_count, index);
-
-        while (hash_table->keys[index].distance_from_desired_bucket > 0)
-        {
-            u64 prev_index = decrement_index(hash_table->bucket_count, index);
-
-            hash_table->keys[prev_index] = hash_table->keys[index];
-            hash_table->keys[prev_index].distance_from_desired_bucket -= 1;
-            hash_table->keys[index] = HashTableKey{};
-
-            hash_table->buckets[prev_index] = hash_table->buckets[index];
-            hash_table->buckets[index] = T{};
-
-            index = increment_index(hash_table->bucket_count, index);
-        }
-
-        return result;
+        return hash_table->buckets[index].value;
     }
 
     template<typename T>
     T* hash_table_find(HashTable<T>* hash_table, String key)
     {
-        u32 hashed_key = hash(key);
-        u64 index = hash_to_index(hash_table->bucket_count, hashed_key);
+        u32 hash = get_hash(key);
+        i64 index = hash_table_wrap_around(hash_table, hash);
 
-        if (hash_table->keys[index].distance_from_desired_bucket == -1)
-        {
-            return nullptr;
-        }
-
-        u64 buckets_to_check = hash_table->bucket_count;
+        u32 probe_increment = 1;
 
         // Probe forward, until you find the correct bucket (or an empty one).
-        while (buckets_to_check > 0 && hash_table->keys[index].key != key)
+        while (hash_table->buckets[index].hash != hash || hash_table->buckets[index].key != key)
         {
-            index = increment_index(hash_table->bucket_count, index);
-            buckets_to_check -= 1;
-
-            if (hash_table->keys[index].distance_from_desired_bucket == -1)
+            if (hash_table->buckets[index].hash == NEVER_OCCUPIED_HASH)
             {
                 return nullptr;
             }
+
+            index = hash_table_wrap_around(hash_table, index + probe_increment);
+            probe_increment += 1;
         }
 
-        if (buckets_to_check == 0)
-        {
-            return nullptr;
-        }
-
-        return &hash_table->buckets[index];
+        return &hash_table->buckets[index].value;
     }
 }

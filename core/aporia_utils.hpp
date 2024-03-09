@@ -21,7 +21,7 @@ namespace Aporia
     // @NOTE(dubgron): Careful! It's an 'in place' transformation.
     void fix_path_slashes(String* filepath);
 
-    u32 hash(String string);
+    u32 get_hash(String string);
 
     struct Color
     {
