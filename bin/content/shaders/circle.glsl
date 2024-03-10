@@ -1,3 +1,8 @@
+#blend src_alpha one_minus_src_alpha
+#blend_op add
+#depth_test lequal
+#depth_write on
+
 #type vertex
 #version 450 core
 
@@ -32,6 +37,8 @@ layout (location = 0) out vec4 out_color;
 
 void main()
 {
+    float circle_mask = 1.0 - smoothstep(1.0 - SMALL_NUMBER, 1.0, length(in_tex_coord));
+
     out_color = in_color;
-    out_color.a = 1.0 - smoothstep(1.0 - SMALL_NUMBER, 1.0, length(in_tex_coord));
+    out_color.a *= circle_mask;
 }

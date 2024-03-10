@@ -48,7 +48,7 @@ vec4 draw_grid(vec2 uv)
     {
         vec2 coord = uv / grid_size;
         vec2 derivative = fwidth(coord);
-        
+
         // Draw grid
         vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
         float line = min(grid.x, grid.y) / grid_thickness;
