@@ -876,13 +876,7 @@ namespace Aporia
         framebuffer_bind(main_framebuffer);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        const m4 normalized_screen_to_clip{
-            2.f,    0.f,    0.f,    0.f,
-            0.f,    -2.f,   0.f,    0.f,
-            0.f,    0.f,    -1.f,   0.f,
-            -1.f,   1.f,    0.f,    1.f };
-
-        const f32 camera_zoom = 1.f / active_camera->projection.zoom;
+        m4 screen_to_clip = glm::ortho<f32>(0.f, active_window->width, 0.f, active_window->height);
 
         // Initialize texture sampler
         static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -890,20 +884,20 @@ namespace Aporia
 
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_mat4("u_vp_matrix", screen_to_clip);
 
         bind_shader(rectangle_shader);
-        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_mat4("u_vp_matrix", screen_to_clip);
 
         bind_shader(line_shader);
-        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_mat4("u_vp_matrix", screen_to_clip);
 
         bind_shader(circle_shader);
-        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_mat4("u_vp_matrix", screen_to_clip);
 
         bind_shader(font_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-        shader_set_mat4("u_vp_matrix", normalized_screen_to_clip);
+        shader_set_mat4("u_vp_matrix", screen_to_clip);
         shader_set_float("u_camera_zoom", 1.f);
 
         renderqueue_flush(&rendering_queue);
