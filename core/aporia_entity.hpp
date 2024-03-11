@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aporia_animations.hpp"
+#include "aporia_collision.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"
@@ -12,6 +13,7 @@ namespace Aporia
         EntityFlag_None             = 0x00,
         EntityFlag_Visible          = 0x01,
         EntityFlag_BlockingLight    = 0x02,
+        EntityFlag_CollisionEnabled = 0x04,
     };
 
     struct Entity
@@ -35,6 +37,8 @@ namespace Aporia
         u32 shader_id = default_shader;
 
         Animator animator;
+
+        Collider collider;
     };
 
     bool entity_flag_is_set(const Entity& entity, EntityFlag flag);
@@ -42,4 +46,6 @@ namespace Aporia
     void entity_flag_unset(Entity* entity, EntityFlag flag);
 
     void entity_ajust_size_to_texture(Entity* entity);
+
+    Collider entity_collider_from_local_to_world(const Entity& entity);
 }

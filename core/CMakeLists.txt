@@ -22,6 +22,8 @@ add_executable(core
     "aporia_assets.hpp"
     "aporia_camera.cpp"
     "aporia_camera.hpp"
+    "aporia_collision.cpp"
+    "aporia_collision.hpp"
     "aporia_config.cpp"
     "aporia_config.hpp"
     "aporia_debug.cpp"
