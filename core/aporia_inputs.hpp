@@ -243,8 +243,8 @@ namespace Aporia
         AnalogInputState axes[+GamepadAxis::Count];
     };
 
-    void process_input_action(InputState& state, InputAction action);
-    void process_input_value(AnalogInputState& state, f32 value);
+    void process_input_action(InputState* state, InputAction action);
+    void process_input_value(AnalogInputState* state, f32 value);
 
     void poll_gamepad_inputs();
     void inputs_clear();

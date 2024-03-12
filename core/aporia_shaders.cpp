@@ -205,12 +205,12 @@ namespace Aporia
 
     static u32 compile_subshader(const SubShaderData& subshader)
     {
-        const u32 opengl_type = to_opengl_type(subshader.type);
+        u32 opengl_type = to_opengl_type(subshader.type);
 
-        const char* shader_code = (const char*)subshader.contents.data;
-        const i32 shader_length = subshader.contents.length;
+        CString shader_code = (CString)subshader.contents.data;
+        i32 shader_length = subshader.contents.length;
 
-        const u32 subshader_id = glCreateShader(opengl_type);
+        u32 subshader_id = glCreateShader(opengl_type);
         glShaderSource(subshader_id, 1, &shader_code, &shader_length);
         glCompileShader(subshader_id);
 
@@ -303,7 +303,7 @@ namespace Aporia
 
     static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     {
-        const String shader_contents = read_entire_text_file(&memory.persistent, filepath);
+        String shader_contents = read_entire_text_file(&memory.persistent, filepath);
 
         //////////////////////////////////////////////////////////////////////
         // Parse the shader file
@@ -318,16 +318,16 @@ namespace Aporia
 
         while (line_end != INDEX_INVALID)
         {
-            const String line = shader_contents.substr(line_begin, line_end - line_begin);
+            String line = shader_contents.substr(line_begin, line_end - line_begin);
 
             if (line.length > 0)
             {
-                const u64 params_begin = line.find(' ') + 1;
-                const String params = line.substr(params_begin, line_end - params_begin);
+                u64 params_begin = line.find(' ') + 1;
+                String params = line.substr(params_begin, line_end - params_begin);
 
                 if (line.starts_with("#blend "))
                 {
-                    const u64 delim = params.find(' ');
+                    u64 delim = params.find(' ');
                     if (delim != INDEX_INVALID)
                     {
                         shader_data.properties.blend[0] = string_to_shader_blend(params.substr(0, delim));
@@ -352,8 +352,8 @@ namespace Aporia
                 }
                 else if (line.starts_with("#type "))
                 {
-                    const u64 subshader_begin = line_end + 1;
-                    const u64 subshader_end = shader_contents.find("#type ", subshader_begin);
+                    u64 subshader_begin = line_end + 1;
+                    u64 subshader_end = shader_contents.find("#type ", subshader_begin);
 
                     SubShaderData subshader;
                     subshader.type = string_to_subshader_type(params);

@@ -102,8 +102,8 @@ namespace Aporia
                 APORIA_LOG(Warning, "There is more than one subtexture named '%'! One of them will be overwritten!", name);
             }
 
-            const v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
-            const v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
+            v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
+            v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
 
             SubTexture subtexture;
             subtexture.u = u;

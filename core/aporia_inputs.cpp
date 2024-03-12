@@ -17,14 +17,14 @@ namespace Aporia
         return state.flags & flag;
     }
 
-    static void set_flag(InputState& state, InputFlag flag)
+    static void set_flag(InputState* state, InputFlag flag)
     {
-        state.flags |= flag;
+        state->flags |= flag;
     }
 
-    static void unset_flag(InputState& state, InputFlag flag)
+    static void unset_flag(InputState* state, InputFlag flag)
     {
-        state.flags &= ~flag;
+        state->flags &= ~flag;
     }
 
     static InputState get_input_state(Key key)
@@ -36,14 +36,14 @@ namespace Aporia
 
     static InputState get_input_state(MouseButton button)
     {
-        const u64 button_code = +button;
+        u64 button_code = +button;
         APORIA_ASSERT(button_code < +MouseButton::Count);
         return input.mouse[button_code];
     }
 
     static InputState get_input_state(GamepadButton button)
     {
-        const u64 button_code = +button;
+        u64 button_code = +button;
         APORIA_ASSERT(button_code < +GamepadButton::Count);
         return input.buttons[button_code];
     }
@@ -73,7 +73,7 @@ namespace Aporia
         return !is_flag_set(state, InputFlag_WasHandled) && is_flag_set(state, InputFlag_WasReleased);
     }
 
-    void process_input_action(InputState& state, InputAction action)
+    void process_input_action(InputState* state, InputAction action)
     {
         switch (action)
         {
@@ -86,7 +86,7 @@ namespace Aporia
 
             case InputAction::Pressed:
             {
-                state.pressed_count += 1;
+                state->pressed_count += 1;
                 set_flag(state, InputFlag_EndedFrameDown);
             }
             break;
@@ -99,11 +99,11 @@ namespace Aporia
         }
     }
 
-    void process_input_value(AnalogInputState& state, f32 value)
+    void process_input_value(AnalogInputState* state, f32 value)
     {
-        state.end_value = value;
-        state.max_value = max<f32>(state.max_value, value);
-        state.min_value = min<f32>(state.min_value, value);
+        state->end_value = value;
+        state->max_value = max<f32>(state->max_value, value);
+        state->min_value = min<f32>(state->min_value, value);
     }
 
     void poll_gamepad_inputs()
@@ -114,14 +114,14 @@ namespace Aporia
         {
             for (u64 gamepad_idx = 0; gamepad_idx < +GamepadButton::Count; ++gamepad_idx)
             {
-                const InputAction action = static_cast<InputAction>(gamepad_state.buttons[gamepad_idx]);
-                process_input_action(input.buttons[gamepad_idx], action);
+                InputAction action = static_cast<InputAction>(gamepad_state.buttons[gamepad_idx]);
+                process_input_action(&input.buttons[gamepad_idx], action);
             }
 
             for (u64 axis_idx = 0; axis_idx < +GamepadAxis::Count; ++axis_idx)
             {
-                const f32 current_value = gamepad_state.axes[axis_idx];
-                process_input_value(input.axes[axis_idx], current_value);
+                f32 current_value = gamepad_state.axes[axis_idx];
+                process_input_value(&input.axes[axis_idx], current_value);
             }
         }
 #endif
@@ -139,73 +139,73 @@ namespace Aporia
 
     i32 has_been_pressed(Key key)
     {
-        const InputState state = get_input_state(key);
+        InputState state = get_input_state(key);
         return has_been_pressed(state);
     }
 
     bool has_been_held(Key key)
     {
-        const InputState state = get_input_state(key);
+        InputState state = get_input_state(key);
         return has_been_held(state);
     }
 
     bool has_been_released(Key key)
     {
-        const InputState state = get_input_state(key);
+        InputState state = get_input_state(key);
         return has_been_released(state);
     }
 
     bool is_flag_set(Key key, InputFlag flag)
     {
-        const InputState state = get_input_state(key);
+        InputState state = get_input_state(key);
         return is_flag_set(state, flag);
     }
 
     i32 has_been_pressed(MouseButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_pressed(state);
     }
 
     bool has_been_held(MouseButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_held(state);
     }
 
     bool has_been_released(MouseButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_released(state);
     }
 
     bool is_flag_set(MouseButton button, InputFlag flag)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return is_flag_set(state, flag);
     }
 
     i32 has_been_pressed(GamepadButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_pressed(state);
     }
 
     bool has_been_held(GamepadButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_held(state);
     }
 
     bool has_been_released(GamepadButton button)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return has_been_released(state);
     }
 
     bool is_flag_set(GamepadButton button, InputFlag flag)
     {
-        const InputState state = get_input_state(button);
+        InputState state = get_input_state(button);
         return is_flag_set(state, flag);
     }
 
@@ -214,7 +214,7 @@ namespace Aporia
         i32 result = 0;
         for (u64 idx = 0; idx < +Key::Count; ++idx)
         {
-            const InputState state = input.keys[idx];
+            InputState state = input.keys[idx];
             result += has_been_pressed(state);
         }
         return result;
@@ -225,7 +225,7 @@ namespace Aporia
         i32 result = 0;
         for (u64 idx = 0; idx < +MouseButton::Count; ++idx)
         {
-            const InputState state = input.mouse[idx];
+            InputState state = input.mouse[idx];
             result += has_been_pressed(state);
         }
         return result;
@@ -236,7 +236,7 @@ namespace Aporia
         i32 result = 0;
         for (u64 idx = 0; idx < +GamepadButton::Count; ++idx)
         {
-            const InputState state = input.buttons[idx];
+            InputState state = input.buttons[idx];
             result += has_been_pressed(state);
         }
         return result;
@@ -244,14 +244,14 @@ namespace Aporia
 
     AnalogInputState get_analog_state(MouseWheel wheel)
     {
-        const u64 wheel_code = +wheel;
+        u64 wheel_code = +wheel;
         APORIA_ASSERT(wheel_code < +GamepadAxis::Count);
         return input.wheels[wheel_code];
     }
 
     AnalogInputState get_analog_state(GamepadAxis axis)
     {
-        const u64 axis_code = +axis;
+        u64 axis_code = +axis;
         APORIA_ASSERT(axis_code < +GamepadAxis::Count);
         return input.axes[axis_code];
     }

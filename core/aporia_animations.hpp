@@ -32,6 +32,6 @@ namespace Aporia
 
     void load_animations(String filepath);
 
-    void animation_tick(Entity& entity, f32 frame_time);
-    void animation_request(Animator& animator, String animation_name);
+    void animation_tick(Entity* entity, f32 frame_time);
+    void animation_request(Animator* animator, String animation_name);
 }

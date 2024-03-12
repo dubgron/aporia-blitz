@@ -84,23 +84,23 @@ namespace Aporia
         return result;
     }
 
-    static bool will_buffer_overflow_after_append(LogBuffer& buffer, String string)
+    static bool will_buffer_overflow_after_append(const LogBuffer& buffer, String string)
     {
         return buffer.length + string.length > buffer.max_length;
     }
 
-    static void buffer_add_line(LogBuffer& buffer, String string)
+    static void buffer_add_line(LogBuffer* buffer, String string)
     {
-        APORIA_ASSERT(!will_buffer_overflow_after_append(buffer, string));
+        APORIA_ASSERT(!will_buffer_overflow_after_append(*buffer, string));
 
-        memcpy(buffer.data + buffer.length, string.data, string.length);
-        buffer.data[buffer.length + string.length] = '\n';
-        buffer.length += string.length + 1;
+        memcpy(buffer->data + buffer->length, string.data, string.length);
+        buffer->data[buffer->length + string.length] = '\n';
+        buffer->length += string.length + 1;
     }
 
-    static void buffer_clear(LogBuffer& buffer)
+    static void buffer_clear(LogBuffer* buffer)
     {
-        buffer.length = 0;
+        buffer->length = 0;
     }
 
     static LogBuffer console_buffer;
@@ -119,7 +119,7 @@ namespace Aporia
         tm* now_tm = localtime(&time_in_seconds);
 
         char buff[30];
-        u64 length = strftime(buff, sizeof(buff), (const char*)format.data, now_tm);
+        u64 length = strftime(buff, sizeof(buff), (CString)format.data, now_tm);
 
         String result{ (u8*)buff, length };
 
@@ -177,7 +177,7 @@ namespace Aporia
         if (console_buffer.length > 0)
         {
             printf("%.*s", (i32)console_buffer.length, console_buffer.data);
-            buffer_clear(console_buffer);
+            buffer_clear(&console_buffer);
         }
     }
 
@@ -197,7 +197,7 @@ namespace Aporia
             }
             scratch_end(temp);
 
-            buffer_clear(file_buffer);
+            buffer_clear(&file_buffer);
         }
     }
 
@@ -269,7 +269,7 @@ namespace Aporia
                     flush_logs_to_console();
                 }
 
-                buffer_add_line(console_buffer, console_message);
+                buffer_add_line(&console_buffer, console_message);
 
                 if (level >= flush_to_console_level)
                 {
@@ -284,7 +284,7 @@ namespace Aporia
                     flush_logs_to_file();
                 }
 
-                buffer_add_line(file_buffer, formatted_message);
+                buffer_add_line(&file_buffer, formatted_message);
 
                 if (level >= flush_to_file_level)
                 {
@@ -304,22 +304,22 @@ namespace Aporia
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        ImGuiIO* io = &ImGui::GetIO();
+        io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 #if !defined(APORIA_EMSCRIPTEN)
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 #endif
 
         ImGui::StyleColorsDark();
 
-        ImGuiStyle& style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        ImGuiStyle* style = &ImGui::GetStyle();
+        if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
-            style.WindowRounding = 0.f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.f;
+            style->WindowRounding = 0.f;
+            style->Colors[ImGuiCol_WindowBg].w = 1.f;
         }
 
         ImGui_ImplGlfw_InitForOpenGL(active_window->handle, true);
@@ -342,7 +342,7 @@ namespace Aporia
 
     void imgui_frame_end()
     {
-        ImGuiIO& io = ImGui::GetIO();
+        const ImGuiIO& io = ImGui::GetIO();
         GLFWwindow* window = glfwGetCurrentContext();
 
         ImGui::Render();

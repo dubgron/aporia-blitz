@@ -31,20 +31,20 @@ namespace Aporia
         ScratchArena temp = scratch_begin();
         Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
 
-        for (const Config_Property* property = parsed_file; property; property = property->next)
+        for (Config_Property* property = parsed_file; property; property = property->next)
         {
             if (property->category != "animations")
             {
                 continue;
             }
 
-            const String animation_name = push_string(&memory.persistent, property->field);
-            const u64 frame_count = property->literals.node_count;
+            String animation_name = push_string(&memory.persistent, property->field);
+            u64 frame_count = property->literals.node_count;
 
             Animation animation;
             animation.frames = arena_push_uninitialized<AnimationFrame>(&memory.persistent, frame_count);
 
-            for (const StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
+            for (StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
             {
                 AnimationFrame frame;
                 frame.texture = get_subtexture(frame_node->string);
@@ -61,49 +61,53 @@ namespace Aporia
         scratch_end(temp);
     }
 
-    void animation_tick(Entity& entity, f32 frame_time)
+    void animation_tick(Entity* entity, f32 frame_time)
     {
-        Animator& animator = entity.animator;
+        Animator* animator = &entity->animator;
 
-        if (animator.current_animation.is_empty())
+        if (animator->current_animation.is_empty())
         {
             return;
         }
 
-        Animation* animation = hash_table_find(&all_animations, animator.current_animation);
+        Animation* animation = hash_table_find(&all_animations, animator->current_animation);
         APORIA_ASSERT(animation);
 
-        animator.elapsed_time += frame_time;
-        while (animator.elapsed_time >= animation->frame_length)
+        animator->elapsed_time += frame_time;
+        while (animator->elapsed_time >= animation->frame_length)
         {
-            animator.elapsed_time -= animation->frame_length;
+            animator->elapsed_time -= animation->frame_length;
 
             // The current frame is over. If other animation has been requested, play it.
-            if (!animator.requested_animation.is_empty())
+            if (!animator->requested_animation.is_empty())
             {
-                animation = hash_table_find(&all_animations, animator.requested_animation);
+                animation = hash_table_find(&all_animations, animator->requested_animation);
                 APORIA_ASSERT(animation);
 
-                animator.current_animation = animator.requested_animation;
-                animator.requested_animation = String{};
+                animator->current_animation = animator->requested_animation;
+                animator->requested_animation = String{};
             }
 
             // Increment the current frame and wrap it around, if necessary.
-            animator.current_frame = animator.current_frame < animation->frame_count - 1 ? (animator.current_frame + 1) : 0;
+            animator->current_frame += 1;
+            if (animator->current_frame >= animation->frame_count)
+            {
+                animator->current_frame = 0;
+            }
 
-            entity.texture = *animation->frames[animator.current_frame].texture;
+            entity->texture = *animation->frames[animator->current_frame].texture;
         }
     }
 
-    void animation_request(Animator& animator, String animation)
+    void animation_request(Animator* animator, String animation)
     {
-        if (animator.current_animation.is_empty())
+        if (animator->current_animation.is_empty())
         {
-            animator.current_animation = animation;
+            animator->current_animation = animation;
         }
-        else if (animator.current_animation != animation)
+        else if (animator->current_animation != animation)
         {
-            animator.requested_animation = animation;
+            animator->requested_animation = animation;
         }
     }
 }

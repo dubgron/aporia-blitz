@@ -8,7 +8,8 @@
 
 #define APORIA_LOG(lvl, fmt, ...)   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
 
-#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...)  do { if (!(expr)) { \
+#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) \
+    do { if (!(expr)) { \
         APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
     } } while(0)
 

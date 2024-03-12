@@ -9,6 +9,8 @@ namespace Aporia
 {
     struct StringList;
 
+    using CString = const char*;
+
     struct String
     {
         u8* data = nullptr;
@@ -34,15 +36,15 @@ namespace Aporia
         bool starts_with(String other) const;
 
         bool operator==(String other) const;
-        bool operator==(const char* other) const;
+        bool operator==(CString other) const;
 
         String() = default;
         String(u8* data, u64 length) : data(data), length(length) {}
 
         // @HACK(dubgron): Cringe constructors and operators to handle conversion between Strings and C-strings.
-        String(const char* string) : data( (u8*)string ), length( string ? strlen(string) : 0 ) {}
-        const char* cstring(MemoryArena* arena) const;
-        const char* operator*() const; // @NOTE(dubgron): This allocates a temporary null-terminated string on the frame arena.
+        String(CString string) : data((u8*)string), length(string ? strlen(string) : 0) {}
+        CString cstring(MemoryArena* arena) const;
+        CString operator*() const; // @NOTE(dubgron): This allocates a temporary null-terminated string on the frame arena.
     };
 
     struct StringNode
@@ -75,7 +77,7 @@ namespace Aporia
     };
 
     String push_string(MemoryArena* arena, String string);
-    String push_string(MemoryArena* arena, const char* string);
+    String push_string(MemoryArena* arena, CString string);
     String push_string(MemoryArena* arena, u64 length);
 
     String string_concat(MemoryArena* arena, String first, String second);
@@ -122,7 +124,7 @@ namespace Aporia
     }
 
     String to_string(MemoryArena* arena, String value);
-    String to_string(MemoryArena* arena, const char* value);
+    String to_string(MemoryArena* arena, CString value);
 
     template<typename T, typename... Ts>
     [[nodiscard]] String sprintf(MemoryArena* arena, String format, T arg, Ts... args)

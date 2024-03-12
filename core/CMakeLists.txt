@@ -15,7 +15,6 @@ if (NOT APORIA_EMSCRIPTEN)
 endif()
 
 add_executable(core
-    "aporia.hpp"
     "aporia_animations.cpp"
     "aporia_animations.hpp"
     "aporia_assets.cpp"

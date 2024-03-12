@@ -34,14 +34,14 @@ namespace Aporia
     template<typename T>
     T* arena_push_uninitialized(MemoryArena* arena, u64 count = 1)
     {
-        const u64 size = count * sizeof(T);
+        u64 size = count * sizeof(T);
         return (T*)arena_push_uninitialized(arena, size);
     }
 
     template<typename T>
     T* arena_push(MemoryArena* arena, u64 count = 1)
     {
-        const u64 size = count * sizeof(T);
+        u64 size = count * sizeof(T);
         return (T*)arena_push(arena, size);
     }
 

@@ -71,14 +71,14 @@ namespace Aporia
         return false;
     }
 
-    bool collision_point_to_aabb(v2 point, Collider_AABB& aabb)
+    bool collision_point_to_aabb(v2 point, const Collider_AABB& aabb)
     {
         bool collides_on_x = point.x > aabb.base.x && point.x < aabb.base.x + aabb.width;
         bool collides_on_y = point.y > aabb.base.y && point.y < aabb.base.y + aabb.height;
         return collides_on_x && collides_on_y;
     }
 
-    bool collision_point_to_circle(v2 point, Collider_Circle& circle)
+    bool collision_point_to_circle(v2 point, const Collider_Circle& circle)
     {
         f32 dist_squared = distance_squared(point, circle.base);
         return dist_squared < circle.radius * circle.radius;
@@ -93,7 +93,7 @@ namespace Aporia
         return (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
     }
 
-    bool collision_point_to_polygon(v2 point, Collider_Polygon& polygon)
+    bool collision_point_to_polygon(v2 point, const Collider_Polygon& polygon)
     {
         f32 initial_orientation = collinearity_test(polygon.points[polygon.point_count - 1], polygon.points[0], point);
 
@@ -112,14 +112,14 @@ namespace Aporia
         return true;
     }
 
-    bool collision_aabb_to_aabb(Collider_AABB& aabb_a, Collider_AABB& aabb_b)
+    bool collision_aabb_to_aabb(const Collider_AABB& aabb_a, const Collider_AABB& aabb_b)
     {
         bool collides_on_x = (aabb_a.base.x < aabb_b.base.x + aabb_b.width) && (aabb_a.base.x + aabb_a.width > aabb_b.base.x);
         bool collides_on_y = (aabb_a.base.y < aabb_b.base.y + aabb_b.height) && (aabb_a.base.y + aabb_a.height > aabb_b.base.y);
         return collides_on_x && collides_on_y;
     }
 
-    bool collision_aabb_to_circle(Collider_AABB& aabb, Collider_Circle& circle)
+    bool collision_aabb_to_circle(const Collider_AABB& aabb, const Collider_Circle& circle)
     {
         v2 aabb_half_extents = v2{ aabb.width, aabb.height } / 2.f;
         v2 aabb_center = aabb.base + aabb_half_extents;
@@ -131,7 +131,7 @@ namespace Aporia
         return dist_squared_from_circle_to_closest < circle.radius * circle.radius;
     }
 
-    bool collision_aabb_to_polygon(Collider_AABB& aabb, Collider_Polygon& polygon)
+    bool collision_aabb_to_polygon(const Collider_AABB& aabb, const Collider_Polygon& polygon)
     {
         ScratchArena temp = scratch_begin();
 
@@ -159,14 +159,14 @@ namespace Aporia
         return collides;
     }
 
-    bool collision_circle_to_circle(Collider_Circle& circle_a, Collider_Circle& circle_b)
+    bool collision_circle_to_circle(const Collider_Circle& circle_a, const Collider_Circle& circle_b)
     {
         f32 dist_squared = distance_squared(circle_a.base, circle_b.base);
         f32 sum_of_radii = circle_a.radius + circle_b.radius;
         return dist_squared < sum_of_radii * sum_of_radii;
     }
 
-    bool collision_circle_to_polygon(Collider_Circle& circle, Collider_Polygon& polygon)
+    bool collision_circle_to_polygon(const Collider_Circle& circle, const Collider_Polygon& polygon)
     {
         f32 min_dist_squared = distance_squared(circle.base, polygon.points[0]);
         i64 closest_point_idx = 0;
@@ -215,7 +215,7 @@ namespace Aporia
         return collides;
     }
 
-    bool collision_polygon_to_polygon(Collider_Polygon& polygon_a, Collider_Polygon& polygon_b)
+    bool collision_polygon_to_polygon(const Collider_Polygon& polygon_a, const Collider_Polygon& polygon_b)
     {
         ScratchArena temp = scratch_begin();
 
@@ -233,7 +233,7 @@ namespace Aporia
         return collides;
     }
 
-    bool collision_check(Collider& collider_a, Collider& collider_b)
+    bool collision_check(const Collider& collider_a, const Collider& collider_b)
     {
         switch (collider_a.type)
         {
@@ -265,7 +265,7 @@ namespace Aporia
         return false;
     }
 
-    void draw_collider(Collider& collider, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
+    void draw_collider(const Collider& collider, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
     {
         switch (collider.type)
         {
@@ -275,7 +275,7 @@ namespace Aporia
         }
     }
 
-    void draw_collider_aabb(Collider_AABB& aabb, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
+    void draw_collider_aabb(const Collider_AABB& aabb, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
     {
         v2 p0 = aabb.base;
         v2 p1 = aabb.base + v2{ aabb.width, 0.f };
@@ -288,7 +288,7 @@ namespace Aporia
         draw_line(p3, p0, thickness, color);
     }
 
-    void draw_collider_circle(Collider_Circle& circle, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
+    void draw_collider_circle(const Collider_Circle& circle, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
     {
         constexpr i64 segments = 32;
         constexpr f32 angle_increment = 2 * M_PI / segments;
@@ -306,7 +306,7 @@ namespace Aporia
         }
     }
 
-    void draw_collider_polygon(Collider_Polygon& polygon, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
+    void draw_collider_polygon(const Collider_Polygon& polygon, f32 thickness /* = 1.f */, Color color /* = Color::Magenta */)
     {
         draw_line(polygon.points[polygon.point_count - 1], polygon.points[0], thickness, color);
         for (i64 idx = 0; idx < polygon.point_count - 1; ++idx)

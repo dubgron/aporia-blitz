@@ -71,10 +71,9 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < command_count; ++idx)
         {
-            CommandlineCommand& command = commands[idx];
-            if (command.display_name == command_name)
+            if (commands[idx].display_name == command_name)
             {
-                return &command;
+                return &commands[idx];
             }
         }
 
@@ -83,7 +82,7 @@ namespace Aporia
 
     static APORIA_COMMANDLINE_FUNCTION(print_string)
     {
-        const String result = args.join(&command_arena, " ");
+        String result = args.join(&command_arena, " ");
         APORIA_LOG(Info, result);
 
         return CommandlineResult
@@ -172,7 +171,7 @@ namespace Aporia
 
         for (u64 idx = 0; idx < command_count; ++idx)
         {
-            CommandlineCommand& command = commands[idx];
+            const CommandlineCommand& command = commands[idx];
             if (command.display_name.contains(command_prefix))
             {
                 matches[match_count] = CommandMatch{ command.display_name, command.display_name.length };
@@ -181,15 +180,15 @@ namespace Aporia
         }
 
         qsort(matches, match_count, sizeof(CommandMatch),
-            [](const void* elem1, const void* elem2)->i32
+            [](const void* elem1, const void* elem2) -> i32
             {
-                const CommandMatch& m1 = *reinterpret_cast<const CommandMatch*>(elem1);
-                const CommandMatch& m2 = *reinterpret_cast<const CommandMatch*>(elem2);
+                const CommandMatch& m1 = *(CommandMatch*)elem1;
+                const CommandMatch& m2 = *(CommandMatch*)elem2;
                 return m1.match_score - m2.match_score;
             });
 
         StringList result;
-        const u64 result_num = min<u64>(MAX_SUGGESTIONS, match_count);
+        u64 result_num = min<u64>(MAX_SUGGESTIONS, match_count);
         for (i64 i = 0; i < result_num; ++i)
         {
             result.push_node(&suggestion_arena, matches[i].command_name);
@@ -229,7 +228,7 @@ namespace Aporia
             else if (suggestions.node_count > 0)
             {
                 data->DeleteChars(0, data->BufTextLen);
-                const String comp = suggestions.first->string.substr(data->CursorPos);
+                String comp = suggestions.first->string.substr(data->CursorPos);
                 data->InsertChars(0, (char*)comp.data, (char*)(comp.data + comp.length));
             }
 
@@ -262,7 +261,7 @@ namespace Aporia
 
                 StringNode* suggestion_node = suggestions.get_node_at_index(selected_command);
                 APORIA_ASSERT(suggestion_node);
-                const String selected_suggestion = suggestion_node->string;
+                String selected_suggestion = suggestion_node->string;
 
                 data->DeleteChars(0, data->BufTextLen);
                 data->InsertChars(0, (char*)(selected_suggestion.data), (char*)(selected_suggestion.data + selected_suggestion.length));
@@ -293,7 +292,7 @@ namespace Aporia
                 {
                     StringNode* history_node = command_hist_help.get_node_at_index(selected_command);
                     APORIA_ASSERT(history_node);
-                    const String selected_history = history_node->string;
+                    String selected_history = history_node->string;
 
                     data->DeleteChars(0, data->BufTextLen);
                     data->InsertChars(0, (char*)(selected_history.data), (char*)(selected_history.data + selected_history.length));
@@ -313,7 +312,7 @@ namespace Aporia
 
         if (input_state == ConsoleInputState::Typing)
         {
-            const String current_command = data->Buf;
+            String current_command = data->Buf;
             suggestions = find_matching_commands(current_command);
         }
 
@@ -349,8 +348,8 @@ namespace Aporia
     {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-        const f32 target_small = viewport->Size.y * 0.2f;
-        const f32 target_big = viewport->Size.y * 0.8f;
+        f32 target_small = viewport->Size.y * 0.2f;
+        f32 target_big = viewport->Size.y * 0.8f;
 
         constexpr f32 target_closed = 0.f;
         f32 target_open = 0.f;
@@ -370,12 +369,12 @@ namespace Aporia
         static f32 current = 0.f;
 
         f32 target = (state != ConsoleWindowState::Closed) ? target_open : target_closed;
-        const f32 rate = 1.f / ImGui::GetIO().Framerate;
+        f32 rate = 1.f / ImGui::GetIO().Framerate;
         current += (target - current) * (1.f - pow(2.f, -20.f * rate));
 
         if (state == ConsoleWindowState::Closed)
         {
-            const bool target_closed_reached = abs(current - target_closed) < 0.01f;
+            bool target_closed_reached = abs(current - target_closed) < 0.01f;
             if (target_closed_reached)
             {
                 current = target_closed;
@@ -383,7 +382,7 @@ namespace Aporia
             }
         }
 
-        const bool target_open_reached = abs(current - target_open) < 0.01f;
+        bool target_open_reached = abs(current - target_open) < 0.01f;
         if (!target_open_reached)
         {
             ImGui::GetIO().ClearInputCharacters();
@@ -405,23 +404,23 @@ namespace Aporia
             size_off = target_open;
             pos_off = current - target_open;
         }
-        const ImVec2 console_size = ImVec2(viewport->Size.x, size_off);
-        const ImVec2 console_pos = ImVec2(viewport->Pos.x, viewport->Pos.y + pos_off);
+        ImVec2 console_size = ImVec2(viewport->Size.x, size_off);
+        ImVec2 console_pos = ImVec2(viewport->Pos.x, viewport->Pos.y + pos_off);
         ImGui::SetNextWindowPos(console_pos);
         ImGui::SetNextWindowSize(console_size);
         ImGui::SetNextWindowViewport(viewport->ID);
         ImGui::SetNextWindowBgAlpha(0.8f);
 
-        const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking;
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking;
         ImGui::Begin("##console", nullptr, flags);
-        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         if (ImGui::BeginChild("##command_history", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
         {
             if (command_history.node_count > 0)
             {
                 ScratchArena temp = scratch_begin();
                 {
-                    const String history = command_history.join(temp.arena, "\n");
+                    String history = command_history.join(temp.arena, "\n");
                     ImGui::TextUnformatted((char*)history.data, (char*)history.data + history.length);
                 }
                 scratch_end(temp);
@@ -445,17 +444,17 @@ namespace Aporia
         ImGui::SetKeyboardFocusHere();
         if (ImGui::InputText("##commandline", input_buffer, IM_ARRAYSIZE(input_buffer), input_text_flags, MyCallback))
         {
-            const u64 input_length = strlen(input_buffer);
+            u64 input_length = strlen(input_buffer);
             if (input_length > 0)
             {
-                const String input_str = push_string(&command_arena, input_buffer).trim();
-                const StringList input_split = input_str.split(&command_arena, ' ');
+                String input_str = push_string(&command_arena, input_buffer).trim();
+                StringList input_split = input_str.split(&command_arena, ' ');
                 if (input_split.node_count > 0)
                 {
-                    const String command_name = input_split.first->string;
-                    if (const CommandlineCommand* command = find_command(command_name))
+                    String command_name = input_split.first->string;
+                    if (CommandlineCommand* command = find_command(command_name))
                     {
-                        const StringList args = input_split.pop_node_front();
+                        StringList args = input_split.pop_node_front();
                         command->func(args);
                     }
                 }
@@ -482,25 +481,25 @@ namespace Aporia
 
         if (suggestions.node_count > 0)
         {
-            ImGuiStyle& style = ImGui::GetStyle();
+            const ImGuiStyle& style = ImGui::GetStyle();
 
-            const ImVec2 region_min = ImGui::GetWindowContentRegionMin();
-            const ImVec2 region_max = ImGui::GetWindowContentRegionMax();
-            const ImVec2 window_pos = ImGui::GetWindowPos();
-            const ImVec2 suggestions_size = ImVec2(region_max.x - region_min.x, console_size.y * 0.5f);
-            const ImVec2 suggestions_pos = ImVec2(window_pos.x + region_min.x, window_pos.y + region_max.y - footer_height_to_reserve - suggestions_size.y);
+            ImVec2 region_min = ImGui::GetWindowContentRegionMin();
+            ImVec2 region_max = ImGui::GetWindowContentRegionMax();
+            ImVec2 window_pos = ImGui::GetWindowPos();
+            ImVec2 suggestions_size = ImVec2(region_max.x - region_min.x, console_size.y * 0.5f);
+            ImVec2 suggestions_pos = ImVec2(window_pos.x + region_min.x, window_pos.y + region_max.y - footer_height_to_reserve - suggestions_size.y);
             ImGui::SetNextWindowPos(suggestions_pos);
             ImGui::SetNextWindowBgAlpha(style.Colors[ImGuiCol_PopupBg].w * 0.75f);
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, style.Alpha * 0.75f);
             ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
             ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
 
-            const ImGuiWindowFlags flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
+            ImGuiWindowFlags flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing;
             ImGui::BeginChildFrame(ImGui::GetID("##command_history"), suggestions_size, flags);
 
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.5f, 0.5f, 0.5f, 1.f));
             u64 idx = suggestions.node_count - 1;
-            for (const StringNode* node = suggestions.last; node; node = node->prev)
+            for (StringNode* node = suggestions.last; node; node = node->prev)
             {
                 if (idx == selected_command)
                 {

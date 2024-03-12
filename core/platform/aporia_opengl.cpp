@@ -62,7 +62,7 @@ namespace Aporia
         }
     }
 
-    static void gl_debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+    static void gl_debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, CString message, const void* userParam)
     {
         LogLevel log_level = gl_debug_severity_to_log_level(severity);
         String debug_source = gl_debug_source_to_string(source);
@@ -75,7 +75,7 @@ namespace Aporia
     {
 #if !defined(APORIA_EMSCRIPTEN)
         // @NOTE(dubgron): It has to be called after glfwMakeContextCurrent.
-        const i32 gl3w_init_return_code = gl3wInit();
+        i32 gl3w_init_return_code = gl3wInit();
 
         APORIA_ASSERT_WITH_MESSAGE(gl3w_init_return_code == GL3W_OK,
             "Failed to initialize OpenGL! Reason: %", gl3w_return_code_to_string(gl3w_init_return_code));
@@ -86,6 +86,6 @@ namespace Aporia
         glDebugMessageCallback(gl_debug_message_callback, nullptr);
 #endif
 
-        APORIA_LOG(Info, reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+        APORIA_LOG(Info, (CString)glGetString(GL_VERSION));
     }
 }

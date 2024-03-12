@@ -40,11 +40,11 @@ namespace Aporia
 
     void* arena_push_uninitialized(MemoryArena* arena, u64 size)
     {
-        const u64 space_left = arena->max - arena->pos;
+        u64 space_left = arena->max - arena->pos;
         APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= space_left,
             "Can't allocate % B! Pos: % B, Max: % B, Left: % B", size, arena->pos, arena->max, space_left);
 
-        const u64 result = PTR_TO_INT(arena->memory) + arena->pos;
+        u64 result = PTR_TO_INT(arena->memory) + arena->pos;
         arena->pos = next_aligned(arena->pos + size, arena->align);
 
         return INT_TO_PTR(result);

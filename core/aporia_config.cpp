@@ -99,7 +99,7 @@ namespace Aporia
 
     static String consume_until_eol(String* buffer)
     {
-        const u64 eol = buffer->find_eol();
+        u64 eol = buffer->find_eol();
         String result = buffer->substr(0, eol);
 
         buffer->data += eol;
@@ -129,7 +129,7 @@ namespace Aporia
 
         while (token_length < buffer->length)
         {
-            const u8 chr = buffer->data[token_length];
+            u8 chr = buffer->data[token_length];
 
             if (!ignore_special_chars && (isspace(chr) || is_special_token(chr)))
             {
@@ -197,10 +197,10 @@ namespace Aporia
         Config_TokenList token_list;
         while (buffer.length > 0)
         {
-            const String token_string = consume_token(&buffer);
+            String token_string = consume_token(&buffer);
 
-            const u8 first_char = token_string.data[0];
-            const u8 last_char = token_string.data[token_string.length - 1];
+            u8 first_char = token_string.data[0];
+            u8 last_char = token_string.data[token_string.length - 1];
 
             Config_Token token{ token_string };
             if ((expected_tokens & Config_TokenType_Comment) && first_char == comment_token)
@@ -244,7 +244,7 @@ namespace Aporia
             {
                 u64 line = 1;
                 u64 column = 1;
-                const u64 error_at_location = config_contents.length - buffer.length - token_string.length;
+                u64 error_at_location = config_contents.length - buffer.length - token_string.length;
                 for (u64 idx = 0; idx < error_at_location; ++idx)
                 {
                     column += 1;

@@ -83,11 +83,11 @@ namespace Aporia
         u32 shader_id = font_shader;
 
         String caption;
-        const Font* font = nullptr;
+        Font* font = nullptr;
 
         TextAlignment alignment = TextAlignment::Left;
     };
 
     void load_font(String name, String filepath);
-    const Font* get_font(String name);
+    Font* get_font(String name);
 }

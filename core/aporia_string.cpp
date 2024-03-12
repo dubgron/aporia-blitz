@@ -60,7 +60,7 @@ namespace Aporia
             {
                 if (idx > offset)
                 {
-                    const String string = substr(offset, idx - offset);
+                    String string = substr(offset, idx - offset);
                     result.push_node(arena, string);
                 }
                 offset = idx + 1;
@@ -69,7 +69,7 @@ namespace Aporia
 
         if (length > offset)
         {
-            const String string = substr(offset);
+            String string = substr(offset);
             result.push_node(arena, string);
         }
 
@@ -101,10 +101,10 @@ namespace Aporia
             return INDEX_INVALID;
         }
 
-        const u64 substr_num = length - other.length + 1;
+        u64 substr_num = length - other.length + 1;
         for (u64 off = offset; off < substr_num; ++off)
         {
-            const String temp = substr(off, other.length);
+            String temp = substr(off, other.length);
             if (other == temp)
             {
                 return off;
@@ -159,7 +159,7 @@ namespace Aporia
 
         for (i64 off = offset; off >= 0; --off)
         {
-            const String temp = substr(off, other.length);
+            String temp = substr(off, other.length);
             if (temp == other)
             {
                 return off;
@@ -176,7 +176,7 @@ namespace Aporia
 
     bool String::starts_with(String other) const
     {
-        const String temp = substr(0, other.length);
+        String temp = substr(0, other.length);
         return other == temp;
     }
 
@@ -198,35 +198,35 @@ namespace Aporia
         return true;
     }
 
-    bool String::operator==(const char* other) const
+    bool String::operator==(CString other) const
     {
         return *this == String{ other };
     }
 
-    const char* String::cstring(MemoryArena* arena) const
+    CString String::cstring(MemoryArena* arena) const
     {
         String result = push_string(arena, length + 1);
         memcpy(result.data, data, length * sizeof(u8));
         result.data[length] = '\0';
-        return reinterpret_cast<const char*>(result.data);
+        return reinterpret_cast<CString>(result.data);
     }
 
-    const char* String::operator*() const
+    CString String::operator*() const
     {
         return cstring(&memory.frame);
     }
 
     String push_string(MemoryArena* arena, String string)
     {
-        const String result = push_string(arena, string.length);
+        String result = push_string(arena, string.length);
         memcpy(result.data, string.data, string.length * sizeof(u8));
         return result;
     }
 
-    String push_string(MemoryArena* arena, const char* string)
+    String push_string(MemoryArena* arena, CString string)
     {
-        const u64 length = strlen(string);
-        const String result = push_string(arena, length);
+        u64 length = strlen(string);
+        String result = push_string(arena, length);
         memcpy(result.data, string, length * sizeof(u8));
         return result;
     }
@@ -450,12 +450,12 @@ namespace Aporia
             return String{};
         }
 
-        const u64 delim_length = (node_count - 1) * delim.length;
-        const u64 joined_length = total_length + delim_length;
-        const String result = push_string(arena, joined_length);
+        u64 delim_length = (node_count - 1) * delim.length;
+        u64 joined_length = total_length + delim_length;
+        String result = push_string(arena, joined_length);
 
         u64 offset = 0;
-        for (const StringNode* node = first; node && node->prev != last; node = node->next)
+        for (StringNode* node = first; node && node->prev != last; node = node->next)
         {
             memcpy(result.data + offset, node->string.data, node->string.length * sizeof(u8));
             offset += node->string.length;
@@ -608,7 +608,7 @@ namespace Aporia
         return value;
     }
 
-    String to_string(MemoryArena* arena, const char* value)
+    String to_string(MemoryArena* arena, CString value)
     {
         return push_string(arena, value);
     }

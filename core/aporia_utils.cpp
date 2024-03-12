@@ -125,22 +125,22 @@ namespace Aporia
         return (u32)fnv1a_hash(string);
     }
 
-    const Color Color::Black       = Color{  0,   0,   0,  255 };
-    const Color Color::White       = Color{ 255, 255, 255, 255 };
-    const Color Color::Red         = Color{ 255,  0,   0,  255 };
-    const Color Color::Green       = Color{  0,  255,  0,  255 };
-    const Color Color::Blue        = Color{  0,   0,  255, 255 };
-    const Color Color::Yellow      = Color{ 255, 255,  0,  255 };
-    const Color Color::Magenta     = Color{ 255,  0,  255, 255 };
-    const Color Color::Cyan        = Color{  0,  255, 255, 255 };
-    const Color Color::Transparent = Color{  0,   0,   0,   0  };
+    Color Color::Black       = Color{  0,   0,   0,  255 };
+    Color Color::White       = Color{ 255, 255, 255, 255 };
+    Color Color::Red         = Color{ 255,  0,   0,  255 };
+    Color Color::Green       = Color{  0,  255,  0,  255 };
+    Color Color::Blue        = Color{  0,   0,  255, 255 };
+    Color Color::Yellow      = Color{ 255, 255,  0,  255 };
+    Color Color::Magenta     = Color{ 255,  0,  255, 255 };
+    Color Color::Cyan        = Color{  0,  255, 255, 255 };
+    Color Color::Transparent = Color{  0,   0,   0,   0  };
 
     Color color_from_vec4(f64 r, f64 g, f64 b, f64 a)
     {
-        const u8 new_r = static_cast<u8>(r * 255);
-        const u8 new_g = static_cast<u8>(g * 255);
-        const u8 new_b = static_cast<u8>(b * 255);
-        const u8 new_a = static_cast<u8>(a * 255);
+        u8 new_r = static_cast<u8>(r * 255);
+        u8 new_g = static_cast<u8>(g * 255);
+        u8 new_b = static_cast<u8>(b * 255);
+        u8 new_a = static_cast<u8>(a * 255);
 
         return Color{ new_r, new_g, new_b, new_a };
     }
@@ -150,9 +150,9 @@ namespace Aporia
         hue = unwind_angle(hue);
         APORIA_ASSERT(hue >= 0 && hue < 360);
 
-        const f64 C = saturation * value;
-        const f64 X = C * (1.0 - std::abs(std::fmod(hue / 60.0, 2.0) - 1.0));
-        const f64 m = value - C;
+        f64 C = saturation * value;
+        f64 X = C * (1.0 - std::abs(std::fmod(hue / 60.0, 2.0) - 1.0));
+        f64 m = value - C;
 
         f64 Rs, Gs, Bs;
         if (hue >= 0 && hue < 60)
@@ -196,9 +196,9 @@ namespace Aporia
             APORIA_UNREACHABLE();
         }
 
-        const u8 r = static_cast<u8>((Rs + m) * 255);
-        const u8 g = static_cast<u8>((Gs + m) * 255);
-        const u8 b = static_cast<u8>((Bs + m) * 255);
+        u8 r = static_cast<u8>((Rs + m) * 255);
+        u8 g = static_cast<u8>((Gs + m) * 255);
+        u8 b = static_cast<u8>((Bs + m) * 255);
 
         return Color{ r, g, b };
     }

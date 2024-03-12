@@ -11,7 +11,7 @@ namespace Aporia
         result.entity_count = 0;
 
         // @TODO(dubgron): The count of the world arena should be more planned out.
-        const u64 world_arena_size = 2 * result.max_entities * (sizeof(Entity) + sizeof(EntityNode));
+        u64 world_arena_size = 2 * result.max_entities * (sizeof(Entity) + sizeof(EntityNode));
         result.arena = arena_init(world_arena_size);
         APORIA_LOG(Info, "World has allocated % B of memory.", world_arena_size);
 
@@ -33,7 +33,7 @@ namespace Aporia
         world->entity_count = 0;
         world->free_list = world->entity_list;
 
-        const u64 last_idx = world->max_entities - 1;
+        u64 last_idx = world->max_entities - 1;
         for (u64 idx = 0; idx < last_idx; ++idx)
         {
             world->entity_list[idx].next = &world->entity_list[idx + 1];
@@ -190,8 +190,8 @@ namespace Aporia
 
     void entity_destroy(World* world, EntityID entity_id)
     {
-        const u64 index = entity_id.index;
-        const u64 generation = entity_id.generation;
+        u64 index = entity_id.index;
+        u64 generation = entity_id.generation;
 
         APORIA_ASSERT_WITH_MESSAGE(index < world->max_entities && generation > 0,
             "Invalid Entity ID (index: %, generation: %)!", index, generation);
@@ -205,7 +205,7 @@ namespace Aporia
         APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
             "Entity with ID (index: %, generation: %) is null!", index, generation);
 
-        const Entity* last_entity = &world->entity_array[world->entity_count - 1];
+        Entity* last_entity = &world->entity_array[world->entity_count - 1];
 
         // Swap the removed entity with the end of the entity array and redirect its node.
         *entity_node->entity = *last_entity;
@@ -220,13 +220,13 @@ namespace Aporia
 
     Entity* entity_get(World* world, EntityID entity_id)
     {
-        const u64 index = entity_id.index;
-        const u64 generation = entity_id.generation;
+        u64 index = entity_id.index;
+        u64 generation = entity_id.generation;
 
         APORIA_ASSERT_WITH_MESSAGE(index < world->max_entities && generation > 0,
             "Invalid EntityID (index: %, generation: %)!", index, generation);
 
-        const EntityNode* entity_node = &world->entity_list[index];
+        EntityNode* entity_node = &world->entity_list[index];
         if (entity_node->generation != generation)
         {
             return nullptr;

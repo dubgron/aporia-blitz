@@ -31,11 +31,11 @@ namespace Aporia
     {
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
-            Entity& entity = world.entity_array[idx];
-            if (entity_flag_is_set(entity, EntityFlag_Visible))
+            Entity* entity = &world.entity_array[idx];
+            if (entity_flag_is_set(*entity, EntityFlag_Visible))
             {
                 animation_tick(entity, frame_time);
-                draw_entity(entity);
+                draw_entity(*entity);
             }
         }
     }
@@ -46,7 +46,7 @@ namespace Aporia
 
     static void game_main_loop()
     {
-        const f32 frame_time = frame_timer.reset();
+        f32 frame_time = frame_timer.reset();
         total_time += frame_time;
 
         arena_clear(&memory.frame);
@@ -104,7 +104,7 @@ namespace Aporia
 
             assets_init();
 
-            const bool config_loaded_successfully = load_engine_config(config_filepath);
+            bool config_loaded_successfully = load_engine_config(config_filepath);
             APORIA_ASSERT(config_loaded_successfully);
 
             active_window = create_window(&memory.persistent);

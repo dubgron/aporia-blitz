@@ -95,7 +95,7 @@ namespace Aporia
         u32 index_per_object = 0;
     };
 
-    static IndexBuffer indexbuffer_create(u32 max_count, u32 index_per_object, const u32* indices)
+    static IndexBuffer indexbuffer_create(u32 max_count, u32 index_per_object, u32* indices)
     {
         IndexBuffer result;
         result.max_count = max_count;
@@ -185,24 +185,24 @@ namespace Aporia
         vertexbuffer_bind(vertex_buffer);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, position));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const void*)offsetof(Vertex, color));
+        glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (void*)offsetof(Vertex, color));
 
 #if defined(APORIA_EMSCRIPTEN)
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_unit));
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_unit));
 #else
         glEnableVertexAttribArray(2);
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (const void*)offsetof(Vertex, tex_unit));
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(Vertex), (void*)offsetof(Vertex, tex_unit));
 #endif
 
         glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, tex_coord));
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tex_coord));
 
         glEnableVertexAttribArray(4);
-        glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, additional));
+        glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, additional));
 
         vertexbuffer_unbind();
     }
@@ -268,7 +268,7 @@ namespace Aporia
         vertexarray_bind(vertex_array);
         indexbuffer_bind(&vertex_array->index_buffer);
 
-        const u32 index_count = vertex_array->index_buffer.index_per_object * vertex_array->vertex_buffer.count / vertex_array->vertex_buffer.vertex_per_object;
+        u32 index_count = vertex_array->index_buffer.index_per_object * vertex_array->vertex_buffer.count / vertex_array->vertex_buffer.vertex_per_object;
         glDrawElements(vertex_array->mode, index_count, GL_UNSIGNED_INT, nullptr);
 
         indexbuffer_unbind();
@@ -317,7 +317,7 @@ namespace Aporia
 
     static void uniformbuffer_bind_to_shader(UniformBuffer* uniform_buffer, u32 shader_id)
     {
-        const u32 buffer_index = glGetUniformBlockIndex(shader_id, *uniform_buffer->block_name);
+        u32 buffer_index = glGetUniformBlockIndex(shader_id, *uniform_buffer->block_name);
         glUniformBlockBinding(shader_id, buffer_index, uniform_buffer->binding_index);
     }
 
@@ -389,8 +389,8 @@ namespace Aporia
         qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
             [](const void* elem1, const void* elem2) -> i32
             {
-                const RenderQueueKey& key1 = *reinterpret_cast<const RenderQueueKey*>(elem1);
-                const RenderQueueKey& key2 = *reinterpret_cast<const RenderQueueKey*>(elem2);
+                const RenderQueueKey& key1 = *(RenderQueueKey*)elem1;
+                const RenderQueueKey& key2 = *(RenderQueueKey*)elem2;
 
                 f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
                 if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
@@ -742,7 +742,7 @@ namespace Aporia
         framebuffer_clear(camera_config.background_color);
 
         const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
-        const f32 camera_zoom = 1.f / active_camera->projection.zoom;
+        f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
         // Initialize texture sampler
         static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -773,7 +773,7 @@ namespace Aporia
 
             VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
-            const u64 idx = quads->vertex_buffer.count;
+            u64 idx = quads->vertex_buffer.count;
             quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, 0.f } };
             quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, 0.f } };
             quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, 0.f } };
@@ -947,14 +947,14 @@ namespace Aporia
 
     void draw_entity(const Entity& entity)
     {
-        const f32 sin = std::sin(entity.rotation);
-        const f32 cos = std::cos(entity.rotation);
+        f32 sin = std::sin(entity.rotation);
+        f32 cos = std::cos(entity.rotation);
 
-        const v3 right_offset       = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
-        const v3 up_offset          = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;
+        v3 right_offset       = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
+        v3 up_offset          = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;
 
-        const v3 offset_from_center = right_offset * entity.center_of_rotation.x + up_offset * entity.center_of_rotation.y;
-        const v3 base_offset        = v3{ entity.position, entity.z } - offset_from_center;
+        v3 offset_from_center = right_offset * entity.center_of_rotation.x + up_offset * entity.center_of_rotation.y;
+        v3 base_offset        = v3{ entity.position, entity.z } - offset_from_center;
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
@@ -987,9 +987,9 @@ namespace Aporia
 
     void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
     {
-        const v3 base_offset    = v3{ position, 0.f };
-        const v3 right_offset   = v3{ width, 0.f, 0.f };
-        const v3 up_offset      = v3{ 0.f, height, 0.f };
+        v3 base_offset    = v3{ position, 0.f };
+        v3 right_offset   = v3{ width, 0.f, 0.f };
+        v3 up_offset      = v3{ 0.f, height, 0.f };
 
         RenderQueueKey key;
         key.buffer              = BufferType::Quads;
@@ -1016,8 +1016,8 @@ namespace Aporia
 
     void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Color::White */, u32 shader_id /* = line_shader */)
     {
-        const v2 direction = glm::normalize(end - begin);
-        const v2 normal = v2{ -direction.y, direction.x };
+        v2 direction = glm::normalize(end - begin);
+        v2 normal = v2{ -direction.y, direction.x };
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
@@ -1048,9 +1048,9 @@ namespace Aporia
 
     void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
     {
-        const v3 base_offset          = v3{ position, 0.f };
-        const v3 right_half_offset    = v3{ -radius, 0.f, 0.f };
-        const v3 up_half_offset       = v3{ 0.f, radius, 0.f };
+        v3 base_offset          = v3{ position, 0.f };
+        v3 right_half_offset    = v3{ -radius, 0.f, 0.f };
+        v3 up_half_offset       = v3{ 0.f, radius, 0.f };
 
         RenderQueueKey key;
         key.buffer                  = BufferType::Quads;
@@ -1093,11 +1093,11 @@ namespace Aporia
         }
 
         // Adjust text scaling by the predefined atlas font size
-        const f32 effective_font_size   = text.font_size / font.atlas.font_size;
-        const f32 screen_px_range       = font.atlas.distance_range * effective_font_size;
+        f32 effective_font_size   = text.font_size / font.atlas.font_size;
+        f32 screen_px_range       = font.atlas.distance_range * effective_font_size;
 
-        const f32 sin = std::sin(text.rotation);
-        const f32 cos = std::cos(text.rotation);
+        f32 sin = std::sin(text.rotation);
+        f32 cos = std::cos(text.rotation);
 
         u64 line_count = 1;
         for (u64 idx = 0; idx < text.caption.length; ++idx)
@@ -1118,10 +1118,10 @@ namespace Aporia
             u64 current_line = 0;
             for (u64 idx = 0; idx < text.caption.length; ++idx)
             {
-                const u8 character = text.caption.data[idx];
+                u8 character = text.caption.data[idx];
                 if (idx > 0)
                 {
-                    const u8 prev_character = text.caption.data[idx - 1];
+                    u8 prev_character = text.caption.data[idx - 1];
 
                     for (u64 idx = 0; idx < font.kerning_count; ++idx)
                     {
@@ -1157,7 +1157,7 @@ namespace Aporia
                 }
             }
 
-            const u8 last_character = text.caption.data[text.caption.length - 1];
+            u8 last_character = text.caption.data[text.caption.length - 1];
             for (u64 idx = 0; idx < font.glyphs_count; ++idx)
             {
                 const Glyph& glyph = font.glyphs[idx];
@@ -1170,7 +1170,7 @@ namespace Aporia
             max_line_alignment = max(max_line_alignment, line_alignments[line_count - 1]);
 
             static constexpr f32 align_blend[] = { 0.f, 0.5f, 1.f };
-            const u64 alignment_id = static_cast<u64>(text.alignment);
+            u64 alignment_id = static_cast<u64>(text.alignment);
 
             for (u64 idx = 0; idx < line_count; ++idx)
             {
@@ -1179,19 +1179,19 @@ namespace Aporia
         }
 
         // @TODO(dubgron): Fix this. Right now we don't load x-height from font, so we have to approximate it.
-        const f32 x_height = font.metrics.line_height * 0.65f;
-        const f32 total_text_height = (line_count - 1) * font.metrics.line_height + x_height;
-        const v2 center_offset = v2{ max_line_alignment, total_text_height } * text.center_of_rotation;
+        f32 x_height = font.metrics.line_height * 0.65f;
+        f32 total_text_height = (line_count - 1) * font.metrics.line_height + x_height;
+        v2 center_offset = v2{ max_line_alignment, total_text_height } * text.center_of_rotation;
 
         u64 current_line = 0;
         v2 advance{ 0.f, total_text_height - x_height };
         for (u64 idx = 0; idx < text.caption.length; ++idx)
         {
-            const u8 character = text.caption.data[idx];
+            u8 character = text.caption.data[idx];
 
             if (idx > 0)
             {
-                const u8 prev_character = text.caption.data[idx - 1];
+                u8 prev_character = text.caption.data[idx - 1];
 
                 for (u64 idx = 0; idx < font.kerning_count; ++idx)
                 {
@@ -1229,7 +1229,7 @@ namespace Aporia
             }
             else
             {
-                const Glyph* glyph = nullptr;
+                Glyph* glyph = nullptr;
                 for (u64 idx = 0; idx < font.glyphs_count; ++idx)
                 {
                     if (font.glyphs[idx].unicode == character)
@@ -1247,26 +1247,26 @@ namespace Aporia
                 const GlyphBounds& atlas_bounds = glyph->atlas_bounds;
                 const GlyphBounds& plane_bounds = glyph->plane_bounds;
 
-                const v2 texture_size   = v2{ texture->width, texture->height };
+                v2 texture_size   = v2{ texture->width, texture->height };
 
-                const v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
-                const v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
+                v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
+                v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
 
-                const f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
-                const f32 height        = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
+                f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
+                f32 height        = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
 
                 // @NOTE(dubgron): We flip the sign of plane_bounds.bottom because
                 // the plane_bounds lives in a space where the y-axis goes downwards.
-                const v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
-                const v2 align_offset   = v2{ line_alignments[current_line], 0.f };
-                const v2 line_offset    = advance + plane_offset + align_offset - center_offset;
+                v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
+                v2 align_offset   = v2{ line_alignments[current_line], 0.f };
+                v2 line_offset    = advance + plane_offset + align_offset - center_offset;
 
-                const f32 rotated_x     = cos * line_offset.x - sin * line_offset.y;
-                const f32 rotated_y     = sin * line_offset.x + cos * line_offset.y;
+                f32 rotated_x     = cos * line_offset.x - sin * line_offset.y;
+                f32 rotated_y     = sin * line_offset.x + cos * line_offset.y;
 
-                const v2 base_offset    = text.position + v2{ rotated_x, rotated_y } * text.font_size;
-                const v2 right_offset   = v2{ cos , sin } * width;
-                const v2 up_offset      = v2{ -sin, cos } * height;
+                v2 base_offset    = text.position + v2{ rotated_x, rotated_y } * text.font_size;
+                v2 right_offset   = v2{ cos , sin } * width;
+                v2 up_offset      = v2{ -sin, cos } * height;
 
                 RenderQueueKey key;
                 key.buffer                  = BufferType::Quads;

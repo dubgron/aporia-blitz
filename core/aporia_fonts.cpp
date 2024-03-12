@@ -198,7 +198,7 @@ namespace Aporia
         scratch_end(temp);
     }
 
-    const Font* get_font(String name)
+    Font* get_font(String name)
     {
         for (i64 idx = 0; idx < fonts_count; ++idx)
         {
