@@ -1,4 +1,4 @@
-#include "aporia_inputs.hpp"
+#include "aporia_input.hpp"
 
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
@@ -12,36 +12,36 @@ namespace Aporia
 {
     Input input;
 
-    static bool is_flag_set(InputState state, InputFlag flag)
+    static bool input_is_flag_set(InputState state, InputFlag flag)
     {
         return state.flags & flag;
     }
 
-    static void set_flag(InputState* state, InputFlag flag)
+    static void input_set_flag(InputState* state, InputFlag flag)
     {
         state->flags |= flag;
     }
 
-    static void unset_flag(InputState* state, InputFlag flag)
+    static void input_unset_flag(InputState* state, InputFlag flag)
     {
         state->flags &= ~flag;
     }
 
-    static InputState get_input_state(Key key)
+    static InputState input_get_state(Key key)
     {
         u64 key_code = +key;
         APORIA_ASSERT(key_code < +Key::Count);
         return input.keys[key_code];
     }
 
-    static InputState get_input_state(MouseButton button)
+    static InputState input_get_state(MouseButton button)
     {
         u64 button_code = +button;
         APORIA_ASSERT(button_code < +MouseButton::Count);
         return input.mouse[button_code];
     }
 
-    static InputState get_input_state(GamepadButton button)
+    static InputState input_get_state(GamepadButton button)
     {
         u64 button_code = +button;
         APORIA_ASSERT(button_code < +GamepadButton::Count);
@@ -58,19 +58,19 @@ namespace Aporia
         }
     }
 
-    static i32 has_been_pressed(InputState state)
+    static i32 input_has_been_pressed(InputState state)
     {
-        return is_flag_set(state, InputFlag_WasHandled) ? 0 : state.pressed_count;
+        return input_is_flag_set(state, InputFlag_WasHandled) ? 0 : state.pressed_count;
     }
 
-    static bool has_been_held(InputState state)
+    static bool input_has_been_held(InputState state)
     {
-        return !is_flag_set(state, InputFlag_WasHandled) && is_flag_set(state, InputFlag_EndedFrameDown);
+        return !input_is_flag_set(state, InputFlag_WasHandled) && input_is_flag_set(state, InputFlag_EndedFrameDown);
     }
 
-    static bool has_been_released(InputState state)
+    static bool input_has_been_released(InputState state)
     {
-        return !is_flag_set(state, InputFlag_WasHandled) && is_flag_set(state, InputFlag_WasReleased);
+        return !input_is_flag_set(state, InputFlag_WasHandled) && input_is_flag_set(state, InputFlag_WasReleased);
     }
 
     void process_input_action(InputState* state, InputAction action)
@@ -79,21 +79,21 @@ namespace Aporia
         {
             case InputAction::Released:
             {
-                unset_flag(state, InputFlag_EndedFrameDown);
-                set_flag(state, InputFlag_WasReleased);
+                input_unset_flag(state, InputFlag_EndedFrameDown);
+                input_set_flag(state, InputFlag_WasReleased);
             }
             break;
 
             case InputAction::Pressed:
             {
                 state->pressed_count += 1;
-                set_flag(state, InputFlag_EndedFrameDown);
+                input_set_flag(state, InputFlag_EndedFrameDown);
             }
             break;
 
             case InputAction::Repeat:
             {
-                set_flag(state, InputFlag_IsRepeated);
+                input_set_flag(state, InputFlag_IsRepeated);
             }
             break;
         }
@@ -127,7 +127,7 @@ namespace Aporia
 #endif
     }
 
-    void inputs_clear()
+    void input_clear()
     {
         clear_input_state(input.keys, +Key::Count);
         clear_input_state(input.mouse, +MouseButton::Count);
@@ -137,119 +137,119 @@ namespace Aporia
         memset(input.axes, 0.f, sizeof(input.axes));
     }
 
-    i32 has_been_pressed(Key key)
+    i32 input_has_been_pressed(Key key)
     {
-        InputState state = get_input_state(key);
-        return has_been_pressed(state);
+        InputState state = input_get_state(key);
+        return input_has_been_pressed(state);
     }
 
-    bool has_been_held(Key key)
+    bool input_has_been_held(Key key)
     {
-        InputState state = get_input_state(key);
-        return has_been_held(state);
+        InputState state = input_get_state(key);
+        return input_has_been_held(state);
     }
 
-    bool has_been_released(Key key)
+    bool input_has_been_released(Key key)
     {
-        InputState state = get_input_state(key);
-        return has_been_released(state);
+        InputState state = input_get_state(key);
+        return input_has_been_released(state);
     }
 
-    bool is_flag_set(Key key, InputFlag flag)
+    bool input_is_flag_set(Key key, InputFlag flag)
     {
-        InputState state = get_input_state(key);
-        return is_flag_set(state, flag);
+        InputState state = input_get_state(key);
+        return input_is_flag_set(state, flag);
     }
 
-    i32 has_been_pressed(MouseButton button)
+    i32 input_has_been_pressed(MouseButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_pressed(state);
+        InputState state = input_get_state(button);
+        return input_has_been_pressed(state);
     }
 
-    bool has_been_held(MouseButton button)
+    bool input_has_been_held(MouseButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_held(state);
+        InputState state = input_get_state(button);
+        return input_has_been_held(state);
     }
 
-    bool has_been_released(MouseButton button)
+    bool input_has_been_released(MouseButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_released(state);
+        InputState state = input_get_state(button);
+        return input_has_been_released(state);
     }
 
-    bool is_flag_set(MouseButton button, InputFlag flag)
+    bool input_is_flag_set(MouseButton button, InputFlag flag)
     {
-        InputState state = get_input_state(button);
-        return is_flag_set(state, flag);
+        InputState state = input_get_state(button);
+        return input_is_flag_set(state, flag);
     }
 
-    i32 has_been_pressed(GamepadButton button)
+    i32 input_has_been_pressed(GamepadButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_pressed(state);
+        InputState state = input_get_state(button);
+        return input_has_been_pressed(state);
     }
 
-    bool has_been_held(GamepadButton button)
+    bool input_has_been_held(GamepadButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_held(state);
+        InputState state = input_get_state(button);
+        return input_has_been_held(state);
     }
 
-    bool has_been_released(GamepadButton button)
+    bool input_has_been_released(GamepadButton button)
     {
-        InputState state = get_input_state(button);
-        return has_been_released(state);
+        InputState state = input_get_state(button);
+        return input_has_been_released(state);
     }
 
-    bool is_flag_set(GamepadButton button, InputFlag flag)
+    bool input_is_flag_set(GamepadButton button, InputFlag flag)
     {
-        InputState state = get_input_state(button);
-        return is_flag_set(state, flag);
+        InputState state = input_get_state(button);
+        return input_is_flag_set(state, flag);
     }
 
-    i32 has_any_key_been_pressed()
+    i32 input_has_any_key_been_pressed()
     {
         i32 result = 0;
         for (u64 idx = 0; idx < +Key::Count; ++idx)
         {
             InputState state = input.keys[idx];
-            result += has_been_pressed(state);
+            result += input_has_been_pressed(state);
         }
         return result;
     }
 
-    i32 has_any_mouse_button_been_pressed()
+    i32 input_has_any_mouse_button_been_pressed()
     {
         i32 result = 0;
         for (u64 idx = 0; idx < +MouseButton::Count; ++idx)
         {
             InputState state = input.mouse[idx];
-            result += has_been_pressed(state);
+            result += input_has_been_pressed(state);
         }
         return result;
     }
 
-    i32 has_any_gamepad_button_been_pressed()
+    i32 input_has_any_gamepad_button_been_pressed()
     {
         i32 result = 0;
         for (u64 idx = 0; idx < +GamepadButton::Count; ++idx)
         {
             InputState state = input.buttons[idx];
-            result += has_been_pressed(state);
+            result += input_has_been_pressed(state);
         }
         return result;
     }
 
-    AnalogInputState get_analog_state(MouseWheel wheel)
+    AnalogInputState input_get_analog_state(MouseWheel wheel)
     {
         u64 wheel_code = +wheel;
         APORIA_ASSERT(wheel_code < +GamepadAxis::Count);
         return input.wheels[wheel_code];
     }
 
-    AnalogInputState get_analog_state(GamepadAxis axis)
+    AnalogInputState input_get_analog_state(GamepadAxis axis)
     {
         u64 axis_code = +axis;
         APORIA_ASSERT(axis_code < +GamepadAxis::Count);

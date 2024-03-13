@@ -2,7 +2,7 @@
 
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
-#include "aporia_inputs.hpp"
+#include "aporia_input.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
@@ -321,9 +321,9 @@ namespace Aporia
 
     static void commandline_update()
     {
-        if (has_been_pressed(Key::Tilde))
+        if (input_has_been_pressed(Key::Tilde))
         {
-            if (has_been_held(Key::LShift))
+            if (input_has_been_held(Key::LShift))
             {
                 switch (state)
                 {

@@ -23,6 +23,10 @@ namespace Aporia
     static f32 delta_time = 1.f / 240.f;
     static f32 accumulated_frame_time = 0.f;
 
+    static void game_initialize()
+    {
+    }
+
     static void game_simulate_frame(f32 time, f32 delta_time)
     {
     }
@@ -44,6 +48,10 @@ namespace Aporia
     {
     }
 
+    static void game_terminate()
+    {
+    }
+
     static void game_main_loop()
     {
         f32 frame_time = frame_timer.reset();
@@ -62,7 +70,7 @@ namespace Aporia
             game_simulate_frame(total_time, delta_time);
             accumulated_frame_time -= delta_time;
 
-            inputs_clear();
+            input_clear();
 
             assets_reload_if_dirty(delta_time);
         }
@@ -118,6 +126,8 @@ namespace Aporia
             world = world_init();
 
             IMGUI_INIT();
+
+            game_initialize();
         }
 
         // Update
@@ -134,7 +144,18 @@ namespace Aporia
 
         // Terminate
         {
+            game_terminate();
+
+            LOGGING_DEINIT();
+
+            return;
+
+            // @NOTE(dubgron): All of the below is optional. Since we're exiting the program,
+            // the OS will free this memory for us. Doing it manually has no benefits and it
+            // slows down the shutdown of the engine.
+
             IMGUI_DEINIT();
+
             world_deinit(&world);
             rendering_deinit();
 
@@ -142,11 +163,14 @@ namespace Aporia
 
             assets_deinit();
 
-            LOGGING_DEINIT();
-
             arena_deinit(&memory.persistent);
             arena_deinit(&memory.frame);
             arena_deinit(&memory.config);
+
+            for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
+            {
+                arena_deinit(&memory.temp[idx]);
+            }
         }
     }
 }

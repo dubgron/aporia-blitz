@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aporia_assets.hpp"
-#include "aporia_inputs.hpp"
+#include "aporia_input.hpp"
 #include "aporia_shaders.hpp"
 #include "aporia_string.hpp"
 #include "aporia_utils.hpp"

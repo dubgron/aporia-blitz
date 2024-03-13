@@ -6,7 +6,7 @@
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_game.hpp"
-#include "aporia_inputs.hpp"
+#include "aporia_input.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_utils.hpp"
 #include "platform/aporia_opengl.hpp"

@@ -247,29 +247,29 @@ namespace Aporia
     void process_input_value(AnalogInputState* state, f32 value);
 
     void poll_gamepad_inputs();
-    void inputs_clear();
+    void input_clear();
 
-    i32 has_been_pressed(Key key);
-    bool has_been_held(Key key);
-    bool has_been_released(Key key);
-    bool is_flag_set(Key key, InputFlag flag);
+    i32 input_has_been_pressed(Key key);
+    bool input_has_been_held(Key key);
+    bool input_has_been_released(Key key);
+    bool input_is_flag_set(Key key, InputFlag flag);
 
-    i32 has_been_pressed(MouseButton button);
-    bool has_been_held(MouseButton button);
-    bool has_been_released(MouseButton button);
-    bool is_flag_set(MouseButton button, InputFlag flag);
+    i32 input_has_been_pressed(MouseButton button);
+    bool input_has_been_held(MouseButton button);
+    bool input_has_been_released(MouseButton button);
+    bool input_is_flag_set(MouseButton button, InputFlag flag);
 
-    i32 has_been_pressed(GamepadButton button);
-    bool has_been_held(GamepadButton button);
-    bool has_been_released(GamepadButton button);
-    bool is_flag_set(GamepadButton button, InputFlag flag);
+    i32 input_has_been_pressed(GamepadButton button);
+    bool input_has_been_held(GamepadButton button);
+    bool input_has_been_released(GamepadButton button);
+    bool input_is_flag_set(GamepadButton button, InputFlag flag);
 
-    i32 has_any_key_been_pressed();
-    i32 has_any_mouse_button_been_pressed();
-    i32 has_any_gamepad_button_been_pressed();
+    i32 input_has_any_key_been_pressed();
+    i32 input_has_any_mouse_button_been_pressed();
+    i32 input_has_any_gamepad_button_been_pressed();
 
-    AnalogInputState get_analog_state(MouseWheel wheel);
-    AnalogInputState get_analog_state(GamepadAxis axis);
+    AnalogInputState input_get_analog_state(MouseWheel wheel);
+    AnalogInputState input_get_analog_state(GamepadAxis axis);
 
     Key string_to_key(String string);
 }

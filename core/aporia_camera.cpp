@@ -2,7 +2,7 @@
 
 #include "aporia_debug.hpp"
 #include "aporia_config.hpp"
-#include "aporia_inputs.hpp"
+#include "aporia_input.hpp"
 #include "aporia_rendering.hpp"
 
 namespace Aporia
@@ -114,22 +114,22 @@ namespace Aporia
         f32 movement_speed = camera_config.movement_speed * delta_time;
         v2 movement{ 0.f };
 
-        if (has_been_held(camera_config.movement_key_up))
+        if (input_has_been_held(camera_config.movement_key_up))
         {
             movement.y += movement_speed;
         }
 
-        if (has_been_held(camera_config.movement_key_down))
+        if (input_has_been_held(camera_config.movement_key_down))
         {
             movement.y -= movement_speed;
         }
 
-        if (has_been_held(camera_config.movement_key_left))
+        if (input_has_been_held(camera_config.movement_key_left))
         {
             movement.x -= movement_speed;
         }
 
-        if (has_been_held(camera_config.movement_key_right))
+        if (input_has_been_held(camera_config.movement_key_right))
         {
             movement.x += movement_speed;
         }
@@ -146,12 +146,12 @@ namespace Aporia
         f32 rotation_speed = camera_config.rotation_speed * delta_time;
         f32 rotation = 0.f;
 
-        if (has_been_held(camera_config.rotation_key_left))
+        if (input_has_been_held(camera_config.rotation_key_left))
         {
             rotation += rotation_speed;
         }
 
-        if (has_been_held(camera_config.rotation_key_right))
+        if (input_has_been_held(camera_config.rotation_key_right))
         {
             rotation -= rotation_speed;
         }
@@ -167,12 +167,12 @@ namespace Aporia
         f32 zoom_speed = camera_config.zoom_speed * delta_time;
         f32 zoom = 0.f;
 
-        if (has_been_held(camera_config.zoom_key_in))
+        if (input_has_been_held(camera_config.zoom_key_in))
         {
             zoom -= zoom_speed;
         }
 
-        if (has_been_held(camera_config.zoom_key_out))
+        if (input_has_been_held(camera_config.zoom_key_out))
         {
             zoom += zoom_speed;
         }
