@@ -27,6 +27,10 @@ namespace Aporia
     {
     }
 
+    static void game_simulate_ui(f32 time, f32 delta_time)
+    {
+    }
+
     static void game_simulate_frame(f32 time, f32 delta_time)
     {
     }
@@ -60,19 +64,21 @@ namespace Aporia
         arena_clear(&memory.frame);
 
         active_window->poll_events();
-        poll_gamepad_inputs();
+        input_process_events();
 
         IMGUI_FRAME_BEGIN();
 
         accumulated_frame_time += frame_time;
         while (accumulated_frame_time > delta_time)
         {
+            game_simulate_ui(total_time, delta_time);
             game_simulate_frame(total_time, delta_time);
-            accumulated_frame_time -= delta_time;
 
             input_clear();
 
             assets_reload_if_dirty(delta_time);
+
+            accumulated_frame_time -= delta_time;
         }
 
         rendering_frame_begin();

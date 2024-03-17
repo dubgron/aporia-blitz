@@ -8,6 +8,7 @@
 #include "aporia_types.hpp"
 
 #define ARRAY_COUNT(arr) (sizeof(arr) / sizeof(*arr))
+#define ARRAY_ZERO(arr) memset(arr, 0, sizeof(arr))
 #define INDEX_IN_ARRAY(elem, arr) ((PTR_TO_INT(elem) - PTR_TO_INT(arr)) / sizeof(*elem))
 
 namespace Aporia

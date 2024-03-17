@@ -21,7 +21,8 @@ namespace Aporia
         void close();
         bool is_open() const;
 
-        v2 get_mouse_position() const;
+        v2 get_mouse_screen_position() const;
+        v2 get_mouse_world_position() const;
 
         void apply_config();
     };

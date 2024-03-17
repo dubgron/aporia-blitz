@@ -10,376 +10,390 @@
 
 namespace Aporia
 {
-    Input input;
+    static Input input;
 
-    static bool input_is_flag_set(InputState state, InputFlag flag)
-    {
-        return state.flags & flag;
-    }
-
-    static void input_set_flag(InputState* state, InputFlag flag)
-    {
-        state->flags |= flag;
-    }
-
-    static void input_unset_flag(InputState* state, InputFlag flag)
-    {
-        state->flags &= ~flag;
-    }
-
-    static InputState input_get_state(Key key)
-    {
-        u64 key_code = +key;
-        APORIA_ASSERT(key_code < +Key::Count);
-        return input.keys[key_code];
-    }
-
-    static InputState input_get_state(MouseButton button)
-    {
-        u64 button_code = +button;
-        APORIA_ASSERT(button_code < +MouseButton::Count);
-        return input.mouse[button_code];
-    }
-
-    static InputState input_get_state(GamepadButton button)
-    {
-        u64 button_code = +button;
-        APORIA_ASSERT(button_code < +GamepadButton::Count);
-        return input.buttons[button_code];
-    }
-
-    static void clear_input_state(InputState* state, u64 count)
-    {
-        for (u64 idx = 0; idx < count; ++idx)
-        {
-            // Leave only InputFlag_EndedFrameDown flag
-            state[idx].flags &= InputFlag_EndedFrameDown;
-            state[idx].pressed_count = 0;
-        }
-    }
-
-    static i32 input_has_been_pressed(InputState state)
-    {
-        return input_is_flag_set(state, InputFlag_WasHandled) ? 0 : state.pressed_count;
-    }
-
-    static bool input_has_been_held(InputState state)
-    {
-        return !input_is_flag_set(state, InputFlag_WasHandled) && input_is_flag_set(state, InputFlag_EndedFrameDown);
-    }
-
-    static bool input_has_been_released(InputState state)
-    {
-        return !input_is_flag_set(state, InputFlag_WasHandled) && input_is_flag_set(state, InputFlag_WasReleased);
-    }
-
-    void process_input_action(InputState* state, InputAction action)
+    static void input_process_event(InputState* state, InputAction action)
     {
         switch (action)
         {
-            case InputAction::Released:
+            case InputAction_Released:
             {
-                input_unset_flag(state, InputFlag_EndedFrameDown);
-                input_set_flag(state, InputFlag_WasReleased);
+                if (state->flags & InputFlag_EndedFrameDown)
+                {
+                    // Unset InputFlag_EndedFrameDown flag.
+                    state->flags &= ~InputFlag_EndedFrameDown;
+                    state->flags |= InputFlag_WasReleased;
+                }
             }
             break;
 
-            case InputAction::Pressed:
+            case InputAction_Pressed:
             {
                 state->pressed_count += 1;
-                input_set_flag(state, InputFlag_EndedFrameDown);
+                state->flags |= InputFlag_EndedFrameDown;
             }
             break;
 
-            case InputAction::Repeat:
+            case InputAction_Repeat:
             {
-                input_set_flag(state, InputFlag_IsRepeated);
+                state->flags |= InputFlag_IsRepeated;
             }
             break;
         }
     }
 
-    void process_input_value(AnalogInputState* state, f32 value)
+    static void input_process_event(AnalogInputState* state, f32 value)
     {
         state->end_value = value;
         state->max_value = max<f32>(state->max_value, value);
         state->min_value = min<f32>(state->min_value, value);
     }
 
-    void poll_gamepad_inputs()
+    void input_process_key_event(Key key, InputAction action)
     {
-#if !defined(APORIA_EMSCRIPTEN)
+        if (key != Key_Unknown)
+        {
+            input_process_event(&input.keys[key], action);
+        }
+        else switch (action)
+        {
+            case InputAction_Released: APORIA_LOG(Warning, "The unknown key has been released!");  break;
+            case InputAction_Pressed:  APORIA_LOG(Warning, "The unknown key has been pressed!");   break;
+            case InputAction_Repeat:   APORIA_LOG(Warning, "The unknown key has been held!");      break;
+        }
+    }
+
+    void input_process_mouse_event(MouseButton button, InputAction action)
+    {
+        input_process_event(&input.mouse[button], action);
+    }
+
+    void input_process_gamepad_event(GamepadButton button, InputAction action)
+    {
+        input_process_event(&input.gamepad[button], action);
+    }
+
+    void input_process_scroll_event(MouseWheel wheel, f32 value)
+    {
+        input_process_event(&input.wheels[wheel], value);
+    }
+
+    void input_process_analog_event(GamepadAnalog analog, f32 value)
+    {
+        input_process_event(&input.analogs[analog], value);
+    }
+
+    template<u64 N>
+    static void input_release_consumed(InputState (&state)[N])
+    {
+        for (u64 idx = 0; idx < N; ++idx)
+        {
+            input_process_event(&state[idx], InputAction_Released);
+        }
+    }
+
+    void input_process_events()
+    {
         GLFWgamepadstate gamepad_state;
         if (glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepad_state))
         {
-            for (u64 gamepad_idx = 0; gamepad_idx < +GamepadButton::Count; ++gamepad_idx)
+            for (u64 gamepad_idx = 0; gamepad_idx < ARRAY_COUNT(input.gamepad); ++gamepad_idx)
             {
-                InputAction action = static_cast<InputAction>(gamepad_state.buttons[gamepad_idx]);
-                process_input_action(&input.buttons[gamepad_idx], action);
+                GamepadButton button = (GamepadButton)gamepad_idx;
+                InputAction action = (InputAction)gamepad_state.buttons[gamepad_idx];
+                input_process_gamepad_event(button, action);
             }
 
-            for (u64 axis_idx = 0; axis_idx < +GamepadAxis::Count; ++axis_idx)
+            for (u64 analog_idx = 0; analog_idx < ARRAY_COUNT(input.analogs); ++analog_idx)
             {
-                f32 current_value = gamepad_state.axes[axis_idx];
-                process_input_value(&input.axes[axis_idx], current_value);
+                GamepadAnalog analog = (GamepadAnalog)analog_idx;
+                f32 current_value = gamepad_state.axes[analog_idx];
+                input_process_analog_event(analog, current_value);
             }
         }
-#endif
+
+        ImGuiIO* io = &ImGui::GetIO();
+
+        // @NOTE(dubgron): According to ImGui comments:
+        //  - WantCaptureKeyboard means "InputText active, or an imgui window is focused
+        //      and navigation is enabled, etc."
+        //  - WantCaptureMouse means "unclicked mouse is hovering over an imgui window,
+        //      widget is active, mouse was clicked over an imgui window, etc."
+        input.keys_consumed = io->WantCaptureKeyboard;
+        input.cursor_consumed = io->WantCaptureMouse;
+
+        if (input.keys_consumed)
+        {
+            input_release_consumed(input.keys);
+            input_release_consumed(input.gamepad);
+        }
+
+        if (input.cursor_consumed)
+        {
+            input_release_consumed(input.mouse);
+        }
+    }
+
+    template<u64 N>
+    static void input_prepare_for_next_frame(InputState(&state)[N])
+    {
+        for (u64 idx = 0; idx < N; ++idx)
+        {
+            // Leave only InputFlag_EndedFrameDown flag.
+            state[idx].flags &= InputFlag_EndedFrameDown;
+            state[idx].pressed_count = 0;
+        }
     }
 
     void input_clear()
     {
-        clear_input_state(input.keys, +Key::Count);
-        clear_input_state(input.mouse, +MouseButton::Count);
-        clear_input_state(input.buttons, +GamepadButton::Count);
+        input_prepare_for_next_frame(input.keys);
+        input_prepare_for_next_frame(input.mouse);
+        input_prepare_for_next_frame(input.gamepad);
 
-        memset(input.wheels, 0.f, sizeof(input.wheels));
-        memset(input.axes, 0.f, sizeof(input.axes));
+        ARRAY_ZERO(input.wheels);
+        ARRAY_ZERO(input.analogs);
+
+        input.keys_consumed_last_frame = input.keys_consumed;
+        input.cursor_consumed_last_frame = input.cursor_consumed;
     }
 
     i32 input_has_been_pressed(Key key)
     {
-        InputState state = input_get_state(key);
-        return input_has_been_pressed(state);
+        InputState state = input.keys[key];
+        return !input.keys_consumed ? state.pressed_count : 0;
     }
 
     bool input_has_been_held(Key key)
     {
-        InputState state = input_get_state(key);
-        return input_has_been_held(state);
+        InputState state = input.keys[key];
+        return !input.keys_consumed && (state.flags & InputFlag_EndedFrameDown);
     }
 
     bool input_has_been_released(Key key)
     {
-        InputState state = input_get_state(key);
-        return input_has_been_released(state);
-    }
-
-    bool input_is_flag_set(Key key, InputFlag flag)
-    {
-        InputState state = input_get_state(key);
-        return input_is_flag_set(state, flag);
+        InputState state = input.keys[key];
+        return !input.keys_consumed_last_frame && (state.flags & InputFlag_WasReleased);
     }
 
     i32 input_has_been_pressed(MouseButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_pressed(state);
+        InputState state = input.mouse[button];
+        return !input.cursor_consumed ? state.pressed_count : 0;
     }
 
     bool input_has_been_held(MouseButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_held(state);
+        InputState state = input.mouse[button];
+        return !input.cursor_consumed && (state.flags & InputFlag_EndedFrameDown);
     }
 
     bool input_has_been_released(MouseButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_released(state);
-    }
-
-    bool input_is_flag_set(MouseButton button, InputFlag flag)
-    {
-        InputState state = input_get_state(button);
-        return input_is_flag_set(state, flag);
+        InputState state = input.mouse[button];
+        return !input.cursor_consumed_last_frame && (state.flags & InputFlag_WasReleased);
     }
 
     i32 input_has_been_pressed(GamepadButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_pressed(state);
+        InputState state = input.gamepad[button];
+        return !input.keys_consumed && state.pressed_count;
     }
 
     bool input_has_been_held(GamepadButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_held(state);
+        InputState state = input.gamepad[button];
+        return !input.keys_consumed && (state.flags & InputFlag_EndedFrameDown);
     }
 
     bool input_has_been_released(GamepadButton button)
     {
-        InputState state = input_get_state(button);
-        return input_has_been_released(state);
-    }
-
-    bool input_is_flag_set(GamepadButton button, InputFlag flag)
-    {
-        InputState state = input_get_state(button);
-        return input_is_flag_set(state, flag);
+        InputState state = input.gamepad[button];
+        return !input.keys_consumed_last_frame && (state.flags & InputFlag_WasReleased);
     }
 
     i32 input_has_any_key_been_pressed()
     {
-        i32 result = 0;
-        for (u64 idx = 0; idx < +Key::Count; ++idx)
+        if (input.keys_consumed_last_frame)
         {
-            InputState state = input.keys[idx];
-            result += input_has_been_pressed(state);
+            return 0;
+        }
+
+        i32 result = 0;
+        for (u64 key_idx = 0; key_idx < ARRAY_COUNT(input.keys); ++key_idx)
+        {
+            Key key = (Key)key_idx;
+            result += input_has_been_pressed(key);
         }
         return result;
     }
 
     i32 input_has_any_mouse_button_been_pressed()
     {
-        i32 result = 0;
-        for (u64 idx = 0; idx < +MouseButton::Count; ++idx)
+        if (input.cursor_consumed_last_frame)
         {
-            InputState state = input.mouse[idx];
-            result += input_has_been_pressed(state);
+            return 0;
+        }
+
+        i32 result = 0;
+        for (u64 mouse_idx = 0; mouse_idx < ARRAY_COUNT(input.mouse); ++mouse_idx)
+        {
+            MouseButton button = (MouseButton)mouse_idx;
+            result += input_has_been_pressed(button);
         }
         return result;
     }
 
     i32 input_has_any_gamepad_button_been_pressed()
     {
-        i32 result = 0;
-        for (u64 idx = 0; idx < +GamepadButton::Count; ++idx)
+        if (input.keys_consumed_last_frame)
         {
-            InputState state = input.buttons[idx];
-            result += input_has_been_pressed(state);
+            return 0;
+        }
+
+        i32 result = 0;
+        for (u64 gamepad_idx = 0; gamepad_idx < ARRAY_COUNT(input.gamepad); ++gamepad_idx)
+        {
+            GamepadButton button = (GamepadButton)gamepad_idx;
+            result += input_has_been_pressed(button);
         }
         return result;
     }
 
     AnalogInputState input_get_analog_state(MouseWheel wheel)
     {
-        u64 wheel_code = +wheel;
-        APORIA_ASSERT(wheel_code < +GamepadAxis::Count);
-        return input.wheels[wheel_code];
+        return !input.cursor_consumed ? input.wheels[wheel] : AnalogInputState{};
     }
 
-    AnalogInputState input_get_analog_state(GamepadAxis axis)
+    AnalogInputState input_get_analog_state(GamepadAnalog analog)
     {
-        u64 axis_code = +axis;
-        APORIA_ASSERT(axis_code < +GamepadAxis::Count);
-        return input.axes[axis_code];
+        return !input.keys_consumed ? input.analogs[analog] : AnalogInputState{};
     }
 
     Key string_to_key(String string)
     {
-        if (string == "Unknown")        return Key::Unknown;
-        if (string == "Space")          return Key::Space;
-        if (string == "Quote")          return Key::Quote;
-        if (string == "Comma")          return Key::Comma;
-        if (string == "Minus")          return Key::Minus;
-        if (string == "Period")         return Key::Period;
-        if (string == "Slash")          return Key::Slash;
-        if (string == "Num0")           return Key::Num0;
-        if (string == "Num1")           return Key::Num1;
-        if (string == "Num2")           return Key::Num2;
-        if (string == "Num3")           return Key::Num3;
-        if (string == "Num4")           return Key::Num4;
-        if (string == "Num5")           return Key::Num5;
-        if (string == "Num6")           return Key::Num6;
-        if (string == "Num7")           return Key::Num7;
-        if (string == "Num8")           return Key::Num8;
-        if (string == "Num9")           return Key::Num9;
-        if (string == "Semicolon")      return Key::Semicolon;
-        if (string == "Equal")          return Key::Equal;
-        if (string == "A")              return Key::A;
-        if (string == "B")              return Key::B;
-        if (string == "C")              return Key::C;
-        if (string == "D")              return Key::D;
-        if (string == "E")              return Key::E;
-        if (string == "F")              return Key::F;
-        if (string == "G")              return Key::G;
-        if (string == "H")              return Key::H;
-        if (string == "I")              return Key::I;
-        if (string == "J")              return Key::J;
-        if (string == "K")              return Key::K;
-        if (string == "L")              return Key::L;
-        if (string == "M")              return Key::M;
-        if (string == "N")              return Key::N;
-        if (string == "O")              return Key::O;
-        if (string == "P")              return Key::P;
-        if (string == "Q")              return Key::Q;
-        if (string == "R")              return Key::R;
-        if (string == "S")              return Key::S;
-        if (string == "T")              return Key::T;
-        if (string == "U")              return Key::U;
-        if (string == "V")              return Key::V;
-        if (string == "W")              return Key::W;
-        if (string == "X")              return Key::X;
-        if (string == "Y")              return Key::Y;
-        if (string == "Z")              return Key::Z;
-        if (string == "LBracket")       return Key::LBracket;
-        if (string == "Backslash")      return Key::Backslash;
-        if (string == "RBracket")       return Key::RBracket;
-        if (string == "Tilde")          return Key::Tilde;
-        if (string == "World1")         return Key::World1;
-        if (string == "World2")         return Key::World2;
-        if (string == "Escape")         return Key::Escape;
-        if (string == "Enter")          return Key::Enter;
-        if (string == "Tab")            return Key::Tab;
-        if (string == "Backspace")      return Key::Backspace;
-        if (string == "Insert")         return Key::Insert;
-        if (string == "Delete")         return Key::Delete;
-        if (string == "Right")          return Key::Right;
-        if (string == "Left")           return Key::Left;
-        if (string == "Down")           return Key::Down;
-        if (string == "Up")             return Key::Up;
-        if (string == "PageUp")         return Key::PageUp;
-        if (string == "PageDown")       return Key::PageDown;
-        if (string == "Home")           return Key::Home;
-        if (string == "End")            return Key::End;
-        if (string == "CapsLock")       return Key::CapsLock;
-        if (string == "ScrollLock")     return Key::ScrollLock;
-        if (string == "NumLock")        return Key::NumLock;
-        if (string == "PrintScreen")    return Key::PrintScreen;
-        if (string == "Pause")          return Key::Pause;
-        if (string == "F1")             return Key::F1;
-        if (string == "F2")             return Key::F2;
-        if (string == "F3")             return Key::F3;
-        if (string == "F4")             return Key::F4;
-        if (string == "F5")             return Key::F5;
-        if (string == "F6")             return Key::F6;
-        if (string == "F7")             return Key::F7;
-        if (string == "F8")             return Key::F8;
-        if (string == "F9")             return Key::F9;
-        if (string == "F10")            return Key::F10;
-        if (string == "F11")            return Key::F11;
-        if (string == "F12")            return Key::F12;
-        if (string == "F13")            return Key::F13;
-        if (string == "F14")            return Key::F14;
-        if (string == "F15")            return Key::F15;
-        if (string == "F16")            return Key::F16;
-        if (string == "F17")            return Key::F17;
-        if (string == "F18")            return Key::F18;
-        if (string == "F19")            return Key::F19;
-        if (string == "F20")            return Key::F20;
-        if (string == "F21")            return Key::F21;
-        if (string == "F22")            return Key::F22;
-        if (string == "F23")            return Key::F23;
-        if (string == "F24")            return Key::F24;
-        if (string == "F25")            return Key::F25;
-        if (string == "Numpad0")        return Key::Numpad0;
-        if (string == "Numpad1")        return Key::Numpad1;
-        if (string == "Numpad2")        return Key::Numpad2;
-        if (string == "Numpad3")        return Key::Numpad3;
-        if (string == "Numpad4")        return Key::Numpad4;
-        if (string == "Numpad5")        return Key::Numpad5;
-        if (string == "Numpad6")        return Key::Numpad6;
-        if (string == "Numpad7")        return Key::Numpad7;
-        if (string == "Numpad8")        return Key::Numpad8;
-        if (string == "Numpad9")        return Key::Numpad9;
-        if (string == "NumpadPeriod")   return Key::NumpadPeriod;
-        if (string == "NumpadDivide")   return Key::NumpadDivide;
-        if (string == "NumpadMultiply") return Key::NumpadMultiply;
-        if (string == "NumpadSubtract") return Key::NumpadSubtract;
-        if (string == "NumpadAdd")      return Key::NumpadAdd;
-        if (string == "NumpadEnter")    return Key::NumpadEnter;
-        if (string == "NumpadEqual")    return Key::NumpadEqual;
-        if (string == "LShift")         return Key::LShift;
-        if (string == "LControl")       return Key::LControl;
-        if (string == "LAlt")           return Key::LAlt;
-        if (string == "LSuper")         return Key::LSuper;
-        if (string == "RShift")         return Key::RShift;
-        if (string == "RControl")       return Key::RControl;
-        if (string == "RAlt")           return Key::RAlt;
-        if (string == "RSuper")         return Key::RSuper;
-        if (string == "Menu")           return Key::Menu;
+        if (string == "Unknown")        return Key_Unknown;
+        if (string == "Space")          return Key_Space;
+        if (string == "Quote")          return Key_Quote;
+        if (string == "Comma")          return Key_Comma;
+        if (string == "Minus")          return Key_Minus;
+        if (string == "Period")         return Key_Period;
+        if (string == "Slash")          return Key_Slash;
+        if (string == "Num0")           return Key_Num0;
+        if (string == "Num1")           return Key_Num1;
+        if (string == "Num2")           return Key_Num2;
+        if (string == "Num3")           return Key_Num3;
+        if (string == "Num4")           return Key_Num4;
+        if (string == "Num5")           return Key_Num5;
+        if (string == "Num6")           return Key_Num6;
+        if (string == "Num7")           return Key_Num7;
+        if (string == "Num8")           return Key_Num8;
+        if (string == "Num9")           return Key_Num9;
+        if (string == "Semicolon")      return Key_Semicolon;
+        if (string == "Equal")          return Key_Equal;
+        if (string == "A")              return Key_A;
+        if (string == "B")              return Key_B;
+        if (string == "C")              return Key_C;
+        if (string == "D")              return Key_D;
+        if (string == "E")              return Key_E;
+        if (string == "F")              return Key_F;
+        if (string == "G")              return Key_G;
+        if (string == "H")              return Key_H;
+        if (string == "I")              return Key_I;
+        if (string == "J")              return Key_J;
+        if (string == "K")              return Key_K;
+        if (string == "L")              return Key_L;
+        if (string == "M")              return Key_M;
+        if (string == "N")              return Key_N;
+        if (string == "O")              return Key_O;
+        if (string == "P")              return Key_P;
+        if (string == "Q")              return Key_Q;
+        if (string == "R")              return Key_R;
+        if (string == "S")              return Key_S;
+        if (string == "T")              return Key_T;
+        if (string == "U")              return Key_U;
+        if (string == "V")              return Key_V;
+        if (string == "W")              return Key_W;
+        if (string == "X")              return Key_X;
+        if (string == "Y")              return Key_Y;
+        if (string == "Z")              return Key_Z;
+        if (string == "LBracket")       return Key_LBracket;
+        if (string == "Backslash")      return Key_Backslash;
+        if (string == "RBracket")       return Key_RBracket;
+        if (string == "Tilde")          return Key_Tilde;
+        if (string == "World1")         return Key_World1;
+        if (string == "World2")         return Key_World2;
+        if (string == "Escape")         return Key_Escape;
+        if (string == "Enter")          return Key_Enter;
+        if (string == "Tab")            return Key_Tab;
+        if (string == "Backspace")      return Key_Backspace;
+        if (string == "Insert")         return Key_Insert;
+        if (string == "Delete")         return Key_Delete;
+        if (string == "Right")          return Key_Right;
+        if (string == "Left")           return Key_Left;
+        if (string == "Down")           return Key_Down;
+        if (string == "Up")             return Key_Up;
+        if (string == "PageUp")         return Key_PageUp;
+        if (string == "PageDown")       return Key_PageDown;
+        if (string == "Home")           return Key_Home;
+        if (string == "End")            return Key_End;
+        if (string == "CapsLock")       return Key_CapsLock;
+        if (string == "ScrollLock")     return Key_ScrollLock;
+        if (string == "NumLock")        return Key_NumLock;
+        if (string == "PrintScreen")    return Key_PrintScreen;
+        if (string == "Pause")          return Key_Pause;
+        if (string == "F1")             return Key_F1;
+        if (string == "F2")             return Key_F2;
+        if (string == "F3")             return Key_F3;
+        if (string == "F4")             return Key_F4;
+        if (string == "F5")             return Key_F5;
+        if (string == "F6")             return Key_F6;
+        if (string == "F7")             return Key_F7;
+        if (string == "F8")             return Key_F8;
+        if (string == "F9")             return Key_F9;
+        if (string == "F10")            return Key_F10;
+        if (string == "F11")            return Key_F11;
+        if (string == "F12")            return Key_F12;
+        if (string == "F13")            return Key_F13;
+        if (string == "F14")            return Key_F14;
+        if (string == "F15")            return Key_F15;
+        if (string == "F16")            return Key_F16;
+        if (string == "F17")            return Key_F17;
+        if (string == "F18")            return Key_F18;
+        if (string == "F19")            return Key_F19;
+        if (string == "F20")            return Key_F20;
+        if (string == "F21")            return Key_F21;
+        if (string == "F22")            return Key_F22;
+        if (string == "F23")            return Key_F23;
+        if (string == "F24")            return Key_F24;
+        if (string == "F25")            return Key_F25;
+        if (string == "Numpad0")        return Key_Numpad0;
+        if (string == "Numpad1")        return Key_Numpad1;
+        if (string == "Numpad2")        return Key_Numpad2;
+        if (string == "Numpad3")        return Key_Numpad3;
+        if (string == "Numpad4")        return Key_Numpad4;
+        if (string == "Numpad5")        return Key_Numpad5;
+        if (string == "Numpad6")        return Key_Numpad6;
+        if (string == "Numpad7")        return Key_Numpad7;
+        if (string == "Numpad8")        return Key_Numpad8;
+        if (string == "Numpad9")        return Key_Numpad9;
+        if (string == "NumpadPeriod")   return Key_NumpadPeriod;
+        if (string == "NumpadDivide")   return Key_NumpadDivide;
+        if (string == "NumpadMultiply") return Key_NumpadMultiply;
+        if (string == "NumpadSubtract") return Key_NumpadSubtract;
+        if (string == "NumpadAdd")      return Key_NumpadAdd;
+        if (string == "NumpadEnter")    return Key_NumpadEnter;
+        if (string == "NumpadEqual")    return Key_NumpadEqual;
+        if (string == "LShift")         return Key_LShift;
+        if (string == "LControl")       return Key_LControl;
+        if (string == "LAlt")           return Key_LAlt;
+        if (string == "LSuper")         return Key_LSuper;
+        if (string == "RShift")         return Key_RShift;
+        if (string == "RControl")       return Key_RControl;
+        if (string == "RAlt")           return Key_RAlt;
+        if (string == "RSuper")         return Key_RSuper;
+        if (string == "Menu")           return Key_Menu;
 
-        return Key::Unknown;
+        return Key_Unknown;
     }
 }

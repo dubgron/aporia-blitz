@@ -3,227 +3,219 @@
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
-#define DEFINE_ENUM_TO_U64_CAST(enum_name) \
-    inline constexpr u64 operator+(enum_name value) { return static_cast<u64>(value); }
-
 namespace Aporia
 {
-    enum class Key : i32
+    enum Key : i32
     {
-        Unknown             = -1,   // Unhandled key
-        Space               = 32,   // The Space key
-        Quote               = 39,   // The ' key
-        Comma               = 44,   // The , key
-        Minus               = 45,   // The - key
-        Period              = 46,   // The . key
-        Slash               = 47,   // The / key
-        Num0                = 48,   // The 0 key
-        Num1                = 49,   // The 1 key
-        Num2                = 50,   // The 2 key
-        Num3                = 51,   // The 3 key
-        Num4                = 52,   // The 4 key
-        Num5                = 53,   // The 5 key
-        Num6                = 54,   // The 6 key
-        Num7                = 55,   // The 7 key
-        Num8                = 56,   // The 8 key
-        Num9                = 57,   // The 9 key
-        Semicolon           = 59,   // The ; key
-        Equal               = 61,   // The = key
-        A                   = 65,   // The A key
-        B                   = 66,   // The B key
-        C                   = 67,   // The C key
-        D                   = 68,   // The D key
-        E                   = 69,   // The E key
-        F                   = 70,   // The F key
-        G                   = 71,   // The G key
-        H                   = 72,   // The H key
-        I                   = 73,   // The I key
-        J                   = 74,   // The J key
-        K                   = 75,   // The K key
-        L                   = 76,   // The L key
-        M                   = 77,   // The M key
-        N                   = 78,   // The N key
-        O                   = 79,   // The O key
-        P                   = 80,   // The P key
-        Q                   = 81,   // The Q key
-        R                   = 82,   // The R key
-        S                   = 83,   // The S key
-        T                   = 84,   // The T key
-        U                   = 85,   // The U key
-        V                   = 86,   // The V key
-        W                   = 87,   // The W key
-        X                   = 88,   // The X key
-        Y                   = 89,   // The Y key
-        Z                   = 90,   // The Z key
-        LBracket            = 91,   // The ( key
-        Backslash           = 92,   // The \ key
-        RBracket            = 93,   // The ) key
-        Tilde               = 96,   // The ~ key
-        World1              = 161,  // The World1 key
-        World2              = 162,  // The World2 key
-        Escape              = 256,  // The Escape key
-        Enter               = 257,  // The Enter/Return keys
-        Tab                 = 258,  // The Tab key
-        Backspace           = 259,  // The Backspace key
-        Insert              = 260,  // The Insert key
-        Delete              = 261,  // The Delete key
-        Right               = 262,  // The Right key
-        Left                = 263,  // The Left key
-        Down                = 264,  // The Down key
-        Up                  = 265,  // The Up key
-        PageUp              = 266,  // The PageUp key
-        PageDown            = 267,  // The PageDown key
-        Home                = 268,  // The Home key
-        End                 = 279,  // The End key
-        CapsLock            = 280,  // The CapsLock key
-        ScrollLock          = 281,  // The ScrollLock key
-        NumLock             = 282,  // The NumLock key
-        PrintScreen         = 283,  // The PrintScreen key
-        Pause               = 284,  // The Pause key
-        F1                  = 290,  // The F1 key
-        F2                  = 291,  // The F2 key
-        F3                  = 292,  // The F3 key
-        F4                  = 293,  // The F4 key
-        F5                  = 294,  // The F5 key
-        F6                  = 295,  // The F6 key
-        F7                  = 296,  // The F7 key
-        F8                  = 297,  // The F8 key
-        F9                  = 298,  // The F9 key
-        F10                 = 299,  // The F10 key
-        F11                 = 300,  // The F11 key
-        F12                 = 301,  // The F12 key
-        F13                 = 302,  // The F13 key
-        F14                 = 303,  // The F14 key
-        F15                 = 304,  // The F15 key
-        F16                 = 305,  // The F16 key
-        F17                 = 306,  // The F17 key
-        F18                 = 307,  // The F18 key
-        F19                 = 308,  // The F19 key
-        F20                 = 309,  // The F20 key
-        F21                 = 310,  // The F21 key
-        F22                 = 311,  // The F22 key
-        F23                 = 312,  // The F23 key
-        F24                 = 313,  // The F24 key
-        F25                 = 314,  // The F25 key
-        Numpad0             = 320,  // The numpad 0 key
-        Numpad1             = 321,  // The numpad 1 key
-        Numpad2             = 322,  // The numpad 2 key
-        Numpad3             = 323,  // The numpad 3 key
-        Numpad4             = 324,  // The numpad 4 key
-        Numpad5             = 325,  // The numpad 5 key
-        Numpad6             = 326,  // The numpad 6 key
-        Numpad7             = 327,  // The numpad 7 key
-        Numpad8             = 328,  // The numpad 8 key
-        Numpad9             = 329,  // The numpad 9 key
-        NumpadPeriod        = 330,  // The numpad . key
-        NumpadDivide        = 331,  // The numpad / key
-        NumpadMultiply      = 332,  // The numpad * key
-        NumpadSubtract      = 333,  // The numpad - key
-        NumpadAdd           = 334,  // The numpad + key
-        NumpadEnter         = 335,  // The numpad Enter key
-        NumpadEqual         = 336,  // The numpad = key
-        LShift              = 340,  // The left Shift key
-        LControl            = 341,  // The left Control key
-        LAlt                = 342,  // The left Alt key
-        LSuper              = 343,  // The left Super key
-        RShift              = 344,  // The right Shift key
-        RControl            = 345,  // The right Control key
-        RAlt                = 346,  // The right Alt key
-        RSuper              = 347,  // The right Super key
-        Menu                = 348,  // The Menu key
+        Key_Unknown             = -1,   // Unhandled key
+        Key_Space               = 32,   // The Space key
+        Key_Quote               = 39,   // The ' key
+        Key_Comma               = 44,   // The , key
+        Key_Minus               = 45,   // The - key
+        Key_Period              = 46,   // The . key
+        Key_Slash               = 47,   // The / key
+        Key_Num0                = 48,   // The 0 key
+        Key_Num1                = 49,   // The 1 key
+        Key_Num2                = 50,   // The 2 key
+        Key_Num3                = 51,   // The 3 key
+        Key_Num4                = 52,   // The 4 key
+        Key_Num5                = 53,   // The 5 key
+        Key_Num6                = 54,   // The 6 key
+        Key_Num7                = 55,   // The 7 key
+        Key_Num8                = 56,   // The 8 key
+        Key_Num9                = 57,   // The 9 key
+        Key_Semicolon           = 59,   // The ; key
+        Key_Equal               = 61,   // The = key
+        Key_A                   = 65,   // The A key
+        Key_B                   = 66,   // The B key
+        Key_C                   = 67,   // The C key
+        Key_D                   = 68,   // The D key
+        Key_E                   = 69,   // The E key
+        Key_F                   = 70,   // The F key
+        Key_G                   = 71,   // The G key
+        Key_H                   = 72,   // The H key
+        Key_I                   = 73,   // The I key
+        Key_J                   = 74,   // The J key
+        Key_K                   = 75,   // The K key
+        Key_L                   = 76,   // The L key
+        Key_M                   = 77,   // The M key
+        Key_N                   = 78,   // The N key
+        Key_O                   = 79,   // The O key
+        Key_P                   = 80,   // The P key
+        Key_Q                   = 81,   // The Q key
+        Key_R                   = 82,   // The R key
+        Key_S                   = 83,   // The S key
+        Key_T                   = 84,   // The T key
+        Key_U                   = 85,   // The U key
+        Key_V                   = 86,   // The V key
+        Key_W                   = 87,   // The W key
+        Key_X                   = 88,   // The X key
+        Key_Y                   = 89,   // The Y key
+        Key_Z                   = 90,   // The Z key
+        Key_LBracket            = 91,   // The ( key
+        Key_Backslash           = 92,   // The \ key
+        Key_RBracket            = 93,   // The ) key
+        Key_Tilde               = 96,   // The ~ key
+        Key_World1              = 161,  // The World1 key
+        Key_World2              = 162,  // The World2 key
+        Key_Escape              = 256,  // The Escape key
+        Key_Enter               = 257,  // The Enter/Return keys
+        Key_Tab                 = 258,  // The Tab key
+        Key_Backspace           = 259,  // The Backspace key
+        Key_Insert              = 260,  // The Insert key
+        Key_Delete              = 261,  // The Delete key
+        Key_Right               = 262,  // The Right key
+        Key_Left                = 263,  // The Left key
+        Key_Down                = 264,  // The Down key
+        Key_Up                  = 265,  // The Up key
+        Key_PageUp              = 266,  // The PageUp key
+        Key_PageDown            = 267,  // The PageDown key
+        Key_Home                = 268,  // The Home key
+        Key_End                 = 279,  // The End key
+        Key_CapsLock            = 280,  // The CapsLock key
+        Key_ScrollLock          = 281,  // The ScrollLock key
+        Key_NumLock             = 282,  // The NumLock key
+        Key_PrintScreen         = 283,  // The PrintScreen key
+        Key_Pause               = 284,  // The Pause key
+        Key_F1                  = 290,  // The F1 key
+        Key_F2                  = 291,  // The F2 key
+        Key_F3                  = 292,  // The F3 key
+        Key_F4                  = 293,  // The F4 key
+        Key_F5                  = 294,  // The F5 key
+        Key_F6                  = 295,  // The F6 key
+        Key_F7                  = 296,  // The F7 key
+        Key_F8                  = 297,  // The F8 key
+        Key_F9                  = 298,  // The F9 key
+        Key_F10                 = 299,  // The F10 key
+        Key_F11                 = 300,  // The F11 key
+        Key_F12                 = 301,  // The F12 key
+        Key_F13                 = 302,  // The F13 key
+        Key_F14                 = 303,  // The F14 key
+        Key_F15                 = 304,  // The F15 key
+        Key_F16                 = 305,  // The F16 key
+        Key_F17                 = 306,  // The F17 key
+        Key_F18                 = 307,  // The F18 key
+        Key_F19                 = 308,  // The F19 key
+        Key_F20                 = 309,  // The F20 key
+        Key_F21                 = 310,  // The F21 key
+        Key_F22                 = 311,  // The F22 key
+        Key_F23                 = 312,  // The F23 key
+        Key_F24                 = 313,  // The F24 key
+        Key_F25                 = 314,  // The F25 key
+        Key_Numpad0             = 320,  // The numpad 0 key
+        Key_Numpad1             = 321,  // The numpad 1 key
+        Key_Numpad2             = 322,  // The numpad 2 key
+        Key_Numpad3             = 323,  // The numpad 3 key
+        Key_Numpad4             = 324,  // The numpad 4 key
+        Key_Numpad5             = 325,  // The numpad 5 key
+        Key_Numpad6             = 326,  // The numpad 6 key
+        Key_Numpad7             = 327,  // The numpad 7 key
+        Key_Numpad8             = 328,  // The numpad 8 key
+        Key_Numpad9             = 329,  // The numpad 9 key
+        Key_NumpadPeriod        = 330,  // The numpad . key
+        Key_NumpadDivide        = 331,  // The numpad / key
+        Key_NumpadMultiply      = 332,  // The numpad * key
+        Key_NumpadSubtract      = 333,  // The numpad - key
+        Key_NumpadAdd           = 334,  // The numpad + key
+        Key_NumpadEnter         = 335,  // The numpad Enter key
+        Key_NumpadEqual         = 336,  // The numpad = key
+        Key_LShift              = 340,  // The left Shift key
+        Key_LControl            = 341,  // The left Control key
+        Key_LAlt                = 342,  // The left Alt key
+        Key_LSuper              = 343,  // The left Super key
+        Key_RShift              = 344,  // The right Shift key
+        Key_RControl            = 345,  // The right Control key
+        Key_RAlt                = 346,  // The right Alt key
+        Key_RSuper              = 347,  // The right Super key
+        Key_Menu                = 348,  // The Menu key
 
-        Count,
-    };
-    DEFINE_ENUM_TO_U64_CAST(Key);
-
-    enum class MouseButton : i32
-    {
-        Button1             = 0,    // The button no. 1
-        Button2             = 1,    // The button no. 2
-        Button3             = 2,    // The button no. 3
-        Button4             = 3,    // The button no. 4
-        Button5             = 4,    // The button no. 5
-        Button6             = 5,    // The button no. 6
-        Button7             = 6,    // The button no. 7
-        Button8             = 7,    // The button no. 8
-
-        Count,
-
-        Left = Button1,             // The left mouse button
-        Right = Button2,            // The right mouse button
-        Middle = Button3,           // The middle (wheel) mouse button
-    };
-    DEFINE_ENUM_TO_U64_CAST(MouseButton);
-
-    enum class MouseWheel : i32
-    {
-        VerticalWheel       = 0,    // The vertical mouse wheel
-        HorizontalWheel     = 1,    // The horizontal mouse wheel
-
-        Count,
-    };
-    DEFINE_ENUM_TO_U64_CAST(MouseWheel);
-
-    enum class GamepadButton : i32
-    {
-        ButtonA             = 0,    // The A button
-        ButtonB             = 1,    // The B button
-        ButtonX             = 2,    // The X button
-        ButtonY             = 3,    // The Y button
-        LeftBumper          = 4,    // The left bumper button
-        RightBumper         = 5,    // The right bumper button
-        Back                = 6,    // The back button
-        Start               = 7,    // The start button
-        Guide               = 8,    // The guide button
-        LeftThumb           = 9,    // The left thumb button
-        RightThumb          = 10,   // The right thumb button
-        DPadUp              = 11,   // The d-pad up button
-        DPadRight           = 12,   // The d-pad right button
-        DPadDown            = 13,   // The d-pad down button
-        DPadLeft            = 14,   // The d-pad left button
-
-        Count,
-
-        ButtonCross = ButtonA,      // The cross button
-        ButtonCircle = ButtonB,     // The circle button
-        ButtonSquare = ButtonX,     // The square button
-        ButtonTriangle = ButtonY,   // The triangle button
-    };
-    DEFINE_ENUM_TO_U64_CAST(GamepadButton);
-
-    enum class GamepadAxis : i32
-    {
-        LeftStickX          = 0,    // The X component of the left stick
-        LeftStickY          = 1,    // The Y component of the left stick
-        RightStickX         = 2,    // The X component of the right stick
-        RightStickY         = 3,    // The Y component of the right stick
-        LeftTrigger         = 4,    // The left trigger
-        RightTrigger        = 5,    // The right trigger
-
-        Count,
-    };
-    DEFINE_ENUM_TO_U64_CAST(GamepadAxis);
-
-    enum class InputAction : u8
-    {
-        Released,
-        Pressed,
-        Repeat,
+        Key_Count,
     };
 
-    enum InputFlag : u8
+    enum MouseButton : i32
+    {
+        Mouse_Button1           = 0,    // The button no. 1
+        Mouse_Button2           = 1,    // The button no. 2
+        Mouse_Button3           = 2,    // The button no. 3
+        Mouse_Button4           = 3,    // The button no. 4
+        Mouse_Button5           = 4,    // The button no. 5
+        Mouse_Button6           = 5,    // The button no. 6
+        Mouse_Button7           = 6,    // The button no. 7
+        Mouse_Button8           = 7,    // The button no. 8
+
+        Mouse_Count,
+
+        Mouse_Left = Mouse_Button1,     // The left mouse button
+        Mouse_Right = Mouse_Button2,    // The right mouse button
+        Mouse_Middle = Mouse_Button3,   // The middle (wheel) mouse button
+    };
+
+    enum MouseWheel : i32
+    {
+        Mouse_VerticalWheel     = 0,    // The vertical mouse wheel
+        Mouse_HorizontalWheel   = 1,    // The horizontal mouse wheel
+
+        MouseWheel_Count,
+    };
+
+    enum GamepadButton : i32
+    {
+        Gamepad_ButtonA         = 0,    // The A button
+        Gamepad_ButtonB         = 1,    // The B button
+        Gamepad_ButtonX         = 2,    // The X button
+        Gamepad_ButtonY         = 3,    // The Y button
+        Gamepad_LeftBumper      = 4,    // The left bumper button
+        Gamepad_RightBumper     = 5,    // The right bumper button
+        Gamepad_Back            = 6,    // The back button
+        Gamepad_Start           = 7,    // The start button
+        Gamepad_Guide           = 8,    // The guide button
+        Gamepad_LeftThumb       = 9,    // The left thumb button
+        Gamepad_RightThumb      = 10,   // The right thumb button
+        Gamepad_DPadUp          = 11,   // The d-pad up button
+        Gamepad_DPadRight       = 12,   // The d-pad right button
+        Gamepad_DPadDown        = 13,   // The d-pad down button
+        Gamepad_DPadLeft        = 14,   // The d-pad left button
+
+        Gamepad_Count,
+
+        Gamepad_Cross = Gamepad_ButtonA,    // The cross button
+        Gamepad_Circle = Gamepad_ButtonB,   // The circle button
+        Gamepad_Square = Gamepad_ButtonX,   // The square button
+        Gamepad_Triangle = Gamepad_ButtonY, // The triangle button
+    };
+
+    enum GamepadAnalog : i32
+    {
+        Gamepad_LeftStickX      = 0,    // The X component of the left stick
+        Gamepad_LeftStickY      = 1,    // The Y component of the left stick
+        Gamepad_RightStickX     = 2,    // The X component of the right stick
+        Gamepad_RightStickY     = 3,    // The Y component of the right stick
+        Gamepad_LeftTrigger     = 4,    // The left trigger
+        Gamepad_RightTrigger    = 5,    // The right trigger
+
+        GamepadAnalog_Count,
+    };
+
+    enum InputAction : u8
+    {
+        InputAction_Released,
+        InputAction_Pressed,
+        InputAction_Repeat,
+    };
+
+    using InputFlag = u8;
+    enum InputFlag_ : InputFlag
     {
         InputFlag_None              = 0x00,
         InputFlag_EndedFrameDown    = 0x01,
         InputFlag_WasReleased       = 0x02,
         InputFlag_IsRepeated        = 0x04,
-        InputFlag_WasHandled        = 0x08
     };
 
     struct InputState
     {
         u8 pressed_count = 0;
-        u8 flags = InputFlag_None;
+        InputFlag flags = InputFlag_None;
     };
 
     struct AnalogInputState
@@ -235,41 +227,45 @@ namespace Aporia
 
     struct Input
     {
-        InputState keys[+Key::Count];
-        InputState mouse[+MouseButton::Count];
-        InputState buttons[+GamepadButton::Count];
+        InputState keys[Key_Count];
+        InputState mouse[Mouse_Count];
+        InputState gamepad[Gamepad_Count];
 
-        AnalogInputState wheels[+MouseWheel::Count];
-        AnalogInputState axes[+GamepadAxis::Count];
+        AnalogInputState wheels[MouseWheel_Count];
+        AnalogInputState analogs[GamepadAnalog_Count];
+
+        bool keys_consumed = false;
+        bool cursor_consumed = false;
+
+        bool keys_consumed_last_frame = false;
+        bool cursor_consumed_last_frame = false;
     };
 
-    void process_input_action(InputState* state, InputAction action);
-    void process_input_value(AnalogInputState* state, f32 value);
+    void input_process_key_event(Key key, InputAction action);
+    void input_process_mouse_event(MouseButton button, InputAction action);
+    void input_process_scroll_event(MouseWheel wheel, f32 value);
 
-    void poll_gamepad_inputs();
+    void input_process_events();
     void input_clear();
 
     i32 input_has_been_pressed(Key key);
     bool input_has_been_held(Key key);
     bool input_has_been_released(Key key);
-    bool input_is_flag_set(Key key, InputFlag flag);
 
     i32 input_has_been_pressed(MouseButton button);
     bool input_has_been_held(MouseButton button);
     bool input_has_been_released(MouseButton button);
-    bool input_is_flag_set(MouseButton button, InputFlag flag);
 
     i32 input_has_been_pressed(GamepadButton button);
     bool input_has_been_held(GamepadButton button);
     bool input_has_been_released(GamepadButton button);
-    bool input_is_flag_set(GamepadButton button, InputFlag flag);
 
     i32 input_has_any_key_been_pressed();
     i32 input_has_any_mouse_button_been_pressed();
     i32 input_has_any_gamepad_button_been_pressed();
 
     AnalogInputState input_get_analog_state(MouseWheel wheel);
-    AnalogInputState input_get_analog_state(GamepadAxis axis);
+    AnalogInputState input_get_analog_state(GamepadAnalog analog);
 
     Key string_to_key(String string);
 }

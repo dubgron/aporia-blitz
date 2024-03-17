@@ -321,9 +321,9 @@ namespace Aporia
 
     static void commandline_update()
     {
-        if (input_has_been_pressed(Key::Tilde))
+        if (input_has_been_pressed(Key_Tilde))
         {
-            if (input_has_been_held(Key::LShift))
+            if (input_has_been_held(Key_LShift))
             {
                 switch (state)
                 {

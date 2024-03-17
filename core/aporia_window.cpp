@@ -13,8 +13,6 @@
 
 namespace Aporia
 {
-    extern Input input;
-
     Window* active_window = nullptr;
 
     void Window::display()
@@ -37,19 +35,26 @@ namespace Aporia
         return !glfwWindowShouldClose(handle);
     }
 
-    v2 Window::get_mouse_position() const
+    v2 Window::get_mouse_screen_position() const
     {
         v2_f64 screen_position{ 0.0 };
         glfwGetCursorPos(handle, &screen_position.x, &screen_position.y);
 
+        return v2{ screen_position.x, height - screen_position.y };
+    }
+
+    v2 Window::get_mouse_world_position() const
+    {
+        v2 screen_position = get_mouse_screen_position();
+
         // @NOTE(dubgron): Precalculated following lines:
-        //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / width, -2.f / height, -1.f });
-        //     screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, 1.f, 0.f });
+        //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / width, 2.f / height, -1.f });
+        //     screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, -1.f, 0.f });
         m4 screen_to_clip{
             2.f / width,    0.f,            0.f,    0.f,
-            0.f,            -2.f / height,  0.f,    0.f,
+            0.f,            2.f / height,   0.f,    0.f,
             0.f,            0.f,            -1.f,   0.f,
-            -1.f,           1.f,            0.f,    1.f };
+            -1.f,           -1.f,           0.f,    1.f };
 
         m4 view_projection_matrix = active_camera->calculate_view_projection_matrix();
         m4 clip_to_world = glm::inverse(view_projection_matrix);
@@ -119,39 +124,30 @@ namespace Aporia
         }
 
         glfwSetWindowCloseCallback(handle, [](GLFWwindow* handle)
-        {
-            Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(handle));
-            window->close();
-        });
+            {
+                Window* window = (Window*)glfwGetWindowUserPointer(handle);
+                window->close();
+            });
 
         glfwSetKeyCallback(handle, [](GLFWwindow* handle, i32 key_code, i32 scan_code, i32 action, i32 mods)
-        {
-            Key key = static_cast<Key>(key_code);
-            InputAction input_action = static_cast<InputAction>(action);
-
-            if (key != Key::Unknown)
             {
-                process_input_action(&input.keys[key_code], input_action);
-            }
-            else switch (input_action)
-            {
-                case InputAction::Released: APORIA_LOG(Warning, "The unknown key has been released!");  break;
-                case InputAction::Pressed:  APORIA_LOG(Warning, "The unknown key has been pressed!");   break;
-                case InputAction::Repeat:   APORIA_LOG(Warning, "The unknown key has been held!");      break;
-            }
-        });
+                Key key = (Key)key_code;
+                InputAction input_action = (InputAction)action;
+                input_process_key_event(key, input_action);
+            });
 
         glfwSetMouseButtonCallback(handle, [](GLFWwindow* handle, i32 button_code, i32 action, i32 mods)
-        {
-            InputAction input_action = static_cast<InputAction>(action);
-            process_input_action(&input.mouse[button_code], input_action);
-        });
+            {
+                MouseButton button = (MouseButton)button_code;
+                InputAction input_action = (InputAction)action;
+                input_process_mouse_event(button, input_action);
+            });
 
         glfwSetScrollCallback(handle, [](GLFWwindow* handle, f64 x_offset, f64 y_offset)
-        {
-            process_input_value(&input.wheels[+MouseWheel::HorizontalWheel], x_offset);
-            process_input_value(&input.wheels[+MouseWheel::VerticalWheel], y_offset);
-        });
+            {
+                input_process_scroll_event(Mouse_HorizontalWheel, x_offset);
+                input_process_scroll_event(Mouse_VerticalWheel, y_offset);
+            });
 
         // @NOTE(dubgron): We probably would like to use this callback in the future.
         // glfwSetCursorPosCallback(handle, [](GLFWwindow* handle, f64 x_pos, f64 y_pos)
