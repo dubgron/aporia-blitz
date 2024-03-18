@@ -31,15 +31,15 @@ namespace Aporia
         u8 b = 255;
         u8 a = 255;
 
-        static Color Black;
-        static Color White;
-        static Color Red;
-        static Color Green;
-        static Color Blue;
-        static Color Yellow;
-        static Color Magenta;
-        static Color Cyan;
-        static Color Transparent;
+        static const Color Black;
+        static const Color White;
+        static const Color Red;
+        static const Color Green;
+        static const Color Blue;
+        static const Color Yellow;
+        static const Color Magenta;
+        static const Color Cyan;
+        static const Color Transparent;
     };
 
     Color color_from_vec4(f64 r, f64 g, f64 b, f64 a);

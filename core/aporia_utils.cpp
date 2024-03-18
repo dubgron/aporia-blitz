@@ -125,15 +125,15 @@ namespace Aporia
         return (u32)fnv1a_hash(string);
     }
 
-    Color Color::Black       = Color{  0,   0,   0,  255 };
-    Color Color::White       = Color{ 255, 255, 255, 255 };
-    Color Color::Red         = Color{ 255,  0,   0,  255 };
-    Color Color::Green       = Color{  0,  255,  0,  255 };
-    Color Color::Blue        = Color{  0,   0,  255, 255 };
-    Color Color::Yellow      = Color{ 255, 255,  0,  255 };
-    Color Color::Magenta     = Color{ 255,  0,  255, 255 };
-    Color Color::Cyan        = Color{  0,  255, 255, 255 };
-    Color Color::Transparent = Color{  0,   0,   0,   0  };
+    const Color Color::Black       = Color{  0,   0,   0,  255 };
+    const Color Color::White       = Color{ 255, 255, 255, 255 };
+    const Color Color::Red         = Color{ 255,  0,   0,  255 };
+    const Color Color::Green       = Color{  0,  255,  0,  255 };
+    const Color Color::Blue        = Color{  0,   0,  255, 255 };
+    const Color Color::Yellow      = Color{ 255, 255,  0,  255 };
+    const Color Color::Magenta     = Color{ 255,  0,  255, 255 };
+    const Color Color::Cyan        = Color{  0,  255, 255, 255 };
+    const Color Color::Transparent = Color{  0,   0,   0,   0  };
 
     Color color_from_vec4(f64 r, f64 g, f64 b, f64 a)
     {
