@@ -51,6 +51,9 @@ namespace Aporia
         u64 pos = 0;
     };
 
+    void temporary_memory_init(u64 size);
+    void temporary_memory_deinit();
+
     ScratchArena scratch_begin(MemoryArena* conflict = nullptr);
     void scratch_end(ScratchArena scratch);
 }

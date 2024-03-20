@@ -9,7 +9,6 @@ namespace Aporia
     {
         MemoryArena persistent;
         MemoryArena frame;
-        MemoryArena temp[2];
         MemoryArena config;
     };
 

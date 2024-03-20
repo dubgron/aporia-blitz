@@ -19,7 +19,7 @@ namespace Aporia
         result.max = size;
         result.pos = 0;
         result.align = 8;
-        APORIA_ASSERT(PTR_TO_INT(result.memory) % result.align == 0 );
+        APORIA_ASSERT(PTR_TO_INT(result.memory) % result.align == 0);
 
         return result;
     }
@@ -65,12 +65,30 @@ namespace Aporia
         arena->pos = next_aligned(arena->pos - size, arena->align);
     }
 
+    static MemoryArena temporary[2];
+
+    void temporary_memory_init(u64 size)
+    {
+        for (u64 idx = 0; idx < ARRAY_COUNT(temporary); ++idx)
+        {
+            temporary[idx] = arena_init(size);
+        }
+    }
+
+    void temporary_memory_deinit()
+    {
+        for (u64 idx = 0; idx < ARRAY_COUNT(temporary); ++idx)
+        {
+            arena_deinit(&temporary[idx]);
+        }
+    }
+
     ScratchArena scratch_begin(MemoryArena* conflict /* = nullptr */)
     {
         ScratchArena result;
-        for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
+        for (u64 idx = 0; idx < ARRAY_COUNT(temporary); ++idx)
         {
-            MemoryArena* temp_arena = &memory.temp[idx];
+            MemoryArena* temp_arena = &temporary[idx];
             if (conflict != temp_arena)
             {
                 result.arena = temp_arena;

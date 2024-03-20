@@ -3,19 +3,29 @@
 #include "aporia_memory.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
+#include "aporia_utils.hpp"
 
 #if defined(APORIA_DEBUGTOOLS)
 
 #define APORIA_LOG(lvl, fmt, ...)   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
+#define APORIA_LOG_RAW(msg)         Aporia::log_raw(msg)
 
-#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) \
+#define APORIA_ASSERT_HELPER(expr, msg) \
     do { if (!(expr)) { \
-        APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
+        APORIA_LOG_RAW("[FATAL] " msg ", file " __FILE__ ", line " STR(__LINE__)); APORIA_BREAKPOINT(); assert(expr); \
     } } while(0)
 
-#define APORIA_ASSERT(expr)         APORIA_ASSERT_WITH_MESSAGE(expr, "Assertion '%' failed!", #expr)
-#define APORIA_UNREACHABLE()        APORIA_ASSERT_WITH_MESSAGE(false, "Unreachable!")
-#define APORIA_NOT_IMPLEMENTED()    APORIA_ASSERT_WITH_MESSAGE(false, "Not Implemented!")
+#define APORIA_ASSERT(expr)         APORIA_ASSERT_HELPER(expr, "Assertion failed: " #expr)
+#define APORIA_UNREACHABLE()        APORIA_ASSERT_HELPER(false, "Unreachable!")
+#define APORIA_NOT_IMPLEMENTED()    APORIA_ASSERT_HELPER(false, "Not Implemented!")
+
+bool handling_assertion_failure = false;
+#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) \
+    do { if (!(expr)) { \
+        if (handling_assertion_failure) APORIA_ASSERT(expr); \
+        handling_assertion_failure = true; \
+        APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
+    } } while(0)
 
 #if defined(__has_builtin) && !defined(__ibmxl__)
     #if __has_builtin(__builtin_debugtrap)
@@ -91,6 +101,7 @@ namespace Aporia
     void logging_deinit();
 
     void log(String file, i32 line, String function, LogLevel level, String message);
+    void log_raw(String message);
 
     bool should_log(LogLevel level);
 
@@ -126,10 +137,14 @@ namespace Aporia
 #else
 
 #define APORIA_LOG(...)
-#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) assert(expr)
+#define APORIA_LOG_RAW(...)
+
+#define APORIA_ASSERT_HELPER(expr, msg) assert(expr && msg)
 #define APORIA_ASSERT(expr) assert(expr)
 #define APORIA_UNREACHABLE() assert(!"Unreachable!")
 #define APORIA_NOT_IMPLEMENTED() assert(!"Not Implemented!")
+#define APORIA_ASSERT_WITH_MESSAGE(expr, fmt, ...) assert(expr)
+
 #define APORIA_BREAKPOINT()
 
 #define LOGGING_INIT(...)

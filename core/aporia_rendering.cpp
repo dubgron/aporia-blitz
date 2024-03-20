@@ -301,7 +301,6 @@ namespace Aporia
         glBufferData(GL_UNIFORM_BUFFER, result.max_size, nullptr, GL_STATIC_DRAW);
 #else
         glCreateBuffers(1, &result.id);
-        glBindBuffer(GL_UNIFORM_BUFFER, result.id);
         glNamedBufferData(result.id, result.max_size, nullptr, GL_STATIC_DRAW);
 #endif
 

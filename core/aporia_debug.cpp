@@ -49,8 +49,7 @@
 #define BG_BRIGHT_CYAN      106
 #define BG_BRIGHT_GRAY      107
 
-#define STRINGIFY(x) #x
-#define CONSOLE_STYLIZED_FORMAT(style) "\033[" STRINGIFY(style) "m" "%" "\033[0m"
+#define CONSOLE_STYLIZED_FORMAT(style) "\033[" STR(style) "m" "%" "\033[0m"
 
 static i64 get_milliseconds()
 {
@@ -86,7 +85,7 @@ namespace Aporia
 
     static bool will_buffer_overflow_after_append(const LogBuffer& buffer, String string)
     {
-        return buffer.length + string.length > buffer.max_length;
+        return buffer.length + string.length + 1 > buffer.max_length;
     }
 
     static void buffer_add_line(LogBuffer* buffer, String string)
@@ -107,6 +106,7 @@ namespace Aporia
     static LogBuffer file_buffer;
 
     static String log_name;
+    static String log_filepath;
     static String log_timestamp;
 
     static LogLevel min_log_level = Verbose;
@@ -185,17 +185,11 @@ namespace Aporia
     {
         if (file_buffer.length > 0)
         {
-            ScratchArena temp = scratch_begin();
-            {
-                String log_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
+            FILE* log_file = fopen(*log_filepath, "ab");
+            assert(log_file);
 
-                FILE* log_file = fopen(*log_filepath, "ab");
-                APORIA_ASSERT(log_file);
-
-                fwrite(file_buffer.data, file_buffer.length, 1, log_file);
-                fclose(log_file);
-            }
-            scratch_end(temp);
+            fwrite(file_buffer.data, file_buffer.length, 1, log_file);
+            fclose(log_file);
 
             buffer_clear(&file_buffer);
         }
@@ -209,20 +203,16 @@ namespace Aporia
         }
 
         log_name = push_string(arena, name);
+        log_filepath = sprintf(arena, "logs/%_latest.log", log_name);
         log_timestamp = format_timestamp(arena, "%Y-%m-%d_%H-%M-%S");
 
         constexpr u64 buffer_size = MEGABYTES(1);
         console_buffer = buffer_create(arena, buffer_size);
         file_buffer = buffer_create(arena, buffer_size);
 
-        ScratchArena temp = scratch_begin(arena);
-        {
-            String log_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
-            FILE* log_file = fopen(*log_filepath, "wb");
-            APORIA_ASSERT(log_file);
-            fclose(log_file);
-        }
-        scratch_end(temp);
+        FILE* log_file = fopen(*log_filepath, "wb");
+        assert(log_file);
+        fclose(log_file);
     }
 
     void logging_deinit()
@@ -232,12 +222,11 @@ namespace Aporia
 
         ScratchArena temp = scratch_begin();
         {
-            String old_filepath = sprintf(temp.arena, "logs/%_latest.log", log_name);
-            String logs = read_entire_text_file(temp.arena, old_filepath);
+            String logs = read_entire_text_file(temp.arena, log_filepath);
 
             String new_filepath = sprintf(temp.arena, "logs/%_%.log", log_name, log_timestamp);
             FILE* new_logs = fopen(*new_filepath, "wb");
-            APORIA_ASSERT(new_logs);
+            assert(new_logs);
 
             fwrite(logs.data, logs.length, 1, new_logs);
             fclose(new_logs);
@@ -293,6 +282,31 @@ namespace Aporia
             }
         }
         scratch_end(temp);
+    }
+
+    void log_raw(String message)
+    {
+        // Log to console
+        {
+            if (will_buffer_overflow_after_append(console_buffer, message))
+            {
+                flush_logs_to_console();
+            }
+
+            buffer_add_line(&console_buffer, message);
+            flush_logs_to_console();
+        }
+
+        // Log to file
+        {
+            if (will_buffer_overflow_after_append(file_buffer, message))
+            {
+                flush_logs_to_file();
+            }
+
+            buffer_add_line(&file_buffer, message);
+            flush_logs_to_file();
+        }
     }
 
     bool should_log(LogLevel level)

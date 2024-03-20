@@ -40,7 +40,7 @@ namespace Aporia
         f32 half_height = camera->projection.fov * camera->projection.zoom;
         f32 half_width = half_height * camera->projection.aspect_ratio;
 
-        camera->projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height, -1.f, 1.f);
+        camera->projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height);
     }
 
     const m4& Camera::calculate_view_projection_matrix()

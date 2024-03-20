@@ -106,13 +106,9 @@ namespace Aporia
         {
             memory.persistent = arena_init(MEGABYTES(100));
             memory.frame = arena_init(MEGABYTES(1));
-
-            for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
-            {
-                memory.temp[idx] = arena_init(MEGABYTES(10));
-            }
-
             memory.config = arena_init(KILOBYTES(10));
+
+            temporary_memory_init(MEGABYTES(10));
 
             LOGGING_INIT(&memory.persistent, "aporia");
 
@@ -169,14 +165,11 @@ namespace Aporia
 
             assets_deinit();
 
-            arena_deinit(&memory.persistent);
-            arena_deinit(&memory.frame);
-            arena_deinit(&memory.config);
+            temporary_memory_deinit();
 
-            for (u64 idx = 0; idx < ARRAY_COUNT(memory.temp); ++idx)
-            {
-                arena_deinit(&memory.temp[idx]);
-            }
+            arena_deinit(&memory.config);
+            arena_deinit(&memory.frame);
+            arena_deinit(&memory.persistent);
         }
     }
 }
