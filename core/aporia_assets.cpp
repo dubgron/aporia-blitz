@@ -4,12 +4,11 @@
 
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
+#include "aporia_game.hpp"
 #include "platform/aporia_os.hpp"
 
 namespace Aporia
 {
-    static MemoryArena assets_arena;
-
     static constexpr u64 MAX_ASSETS = 100;
 
     static Asset assets[MAX_ASSETS];
@@ -45,9 +44,6 @@ namespace Aporia
 
     void assets_init()
     {
-        // @TODO(dubgron): The size of this arena should be more planned out.
-        assets_arena = arena_init(KILOBYTES(100));
-
         assets_mutex = mutex_create();
 
         free_list = assets;
@@ -59,7 +55,6 @@ namespace Aporia
 
     void assets_deinit()
     {
-        arena_deinit(&assets_arena);
         mutex_destroy(&assets_mutex);
     }
 
@@ -78,7 +73,7 @@ namespace Aporia
                 if (asset->time_until_reload > 0.f)
                 {
                     asset->time_until_reload -= delta_time;
-                    break;
+                    continue;
                 }
 
                 asset->time_until_reload = 0.f;
@@ -113,7 +108,7 @@ namespace Aporia
 
         Asset result;
         result.id = next_id;
-        result.source_file = push_string(&assets_arena, source_file);
+        result.source_file = push_string(&memory.assets, source_file);
         result.type = type;
         result.status = AssetStatus::NotLoaded;
 

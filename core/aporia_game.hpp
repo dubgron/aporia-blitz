@@ -10,6 +10,7 @@ namespace Aporia
         MemoryArena persistent;
         MemoryArena frame;
         MemoryArena config;
+        MemoryArena assets;
     };
 
     extern GameMemory memory;

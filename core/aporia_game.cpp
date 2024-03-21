@@ -107,6 +107,7 @@ namespace Aporia
             memory.persistent = arena_init(MEGABYTES(100));
             memory.frame = arena_init(MEGABYTES(1));
             memory.config = arena_init(KILOBYTES(10));
+            memory.assets = arena_init(KILOBYTES(100)); // @TODO(dubgron): This arena should store the assets.
 
             temporary_memory_init(MEGABYTES(10));
 
@@ -167,6 +168,7 @@ namespace Aporia
 
             temporary_memory_deinit();
 
+            arena_deinit(&memory.assets);
             arena_deinit(&memory.config);
             arena_deinit(&memory.frame);
             arena_deinit(&memory.persistent);
