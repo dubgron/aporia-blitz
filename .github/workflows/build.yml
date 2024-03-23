@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: build (${{ matrix.platform.name }}, ${{ matrix.build-type }}${{ matrix.debug-tools == 'On' && ' + Tools' || '' }})
+    name: build (${{ matrix.platform.name }}, ${{ matrix.build-type }})${{ matrix.debug-tools == 'On' && ' + Tools' || '' }}
 
     runs-on: ${{ matrix.platform.os }}
 
@@ -30,7 +30,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+            libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libxext-dev libasound2-dev
 
       - name: Configure CMake
         run: |

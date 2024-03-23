@@ -31,6 +31,7 @@
 // Platform
 #if defined(APORIA_WINDOWS)
     #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
     #include <windows.h>
 #elif defined(APORIA_UNIX)
     #include <dlfcn.h>

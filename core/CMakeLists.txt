@@ -4,6 +4,18 @@ option(APORIA_DEBUGTOOLS        "Compile with debug tools"      ON)
 option(APORIA_USE_UNITY_BUILD   "Compile using unity build"     ON)
 option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
 
+if (WIN32)
+    set(APORIA_WINDOWS TRUE)
+elseif (UNIX)
+    set(APORIA_UNIX TRUE)
+    if (APPLE)
+        set(APORIA_APPLE TRUE)
+    else()
+        set(APORIA_LINUX TRUE)
+    endif()
+endif()
+
+
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
 find_package(sokol REQUIRED)
@@ -84,26 +96,31 @@ if (NOT APORIA_EMSCRIPTEN)
         OpenGL::GL)
 endif()
 
+# Link platform-specific libraries
+if (APORIA_LINUX AND NOT APORIA_EMSCRIPTEN)
+    find_package(ALSA REQUIRED)
+    target_link_libraries(core ALSA::ALSA)
+elseif (APORIA_APPLE)
+    find_library(AUDIO_TOOLBOX_LIBRARY AudioToolbox)
+    target_link_libraries(core "${AUDIO_TOOLBOX_LIBRARY}")
+endif()
+
 target_compile_features(core PUBLIC cxx_std_20)
-
 target_include_directories(core PUBLIC "${PROJECT_SOURCE_DIR}/core")
-
-target_compile_definitions(core PUBLIC
-    _USE_MATH_DEFINES
-    NOMINMAX)
+target_compile_definitions(core PUBLIC _USE_MATH_DEFINES)
 
 if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
 endif()
 
 # Add platform-specific defines
-if (WIN32)
+if (APORIA_WINDOWS)
     target_compile_definitions(core PUBLIC APORIA_WINDOWS)
-elseif (UNIX)
+elseif (APORIA_UNIX)
     target_compile_definitions(core PUBLIC APORIA_UNIX)
-    if (APPLE)
+    if (APORIA_APPLE)
         target_compile_definitions(core PUBLIC APORIA_APPLE)
-    else()
+    elseif (APORIA_LINUX)
         target_compile_definitions(core PUBLIC APORIA_LINUX)
     endif()
 endif()
