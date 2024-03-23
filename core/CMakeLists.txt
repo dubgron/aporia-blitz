@@ -20,6 +20,8 @@ add_executable(core
     "aporia_animations.hpp"
     "aporia_assets.cpp"
     "aporia_assets.hpp"
+    "aporia_audio.cpp"
+    "aporia_audio.hpp"
     "aporia_camera.cpp"
     "aporia_camera.hpp"
     "aporia_collision.cpp"

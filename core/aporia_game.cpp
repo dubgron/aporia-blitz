@@ -6,6 +6,7 @@
 
 #include "aporia_animations.hpp"
 #include "aporia_assets.hpp"
+#include "aporia_audio.hpp"
 #include "aporia_camera.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
@@ -35,6 +36,10 @@ namespace Aporia
     {
     }
 
+    static void game_draw_ui(f32 frame_time)
+    {
+    }
+
     static void game_draw_frame(f32 frame_time)
     {
         for (u64 idx = 0; idx < world.entity_count; ++idx)
@@ -46,10 +51,6 @@ namespace Aporia
                 draw_entity(*entity);
             }
         }
-    }
-
-    static void game_draw_ui(f32 frame_time)
-    {
     }
 
     static void game_terminate()
@@ -125,6 +126,7 @@ namespace Aporia
             shaders_init(&memory.persistent);
             rendering_init(&memory.persistent);
             animations_init(&memory.persistent);
+            audio_init();
 
             world = world_init();
 
@@ -160,6 +162,8 @@ namespace Aporia
             IMGUI_DEINIT();
 
             world_deinit(&world);
+
+            audio_deinit();
             rendering_deinit();
 
             destroy_active_window();
