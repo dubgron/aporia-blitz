@@ -43,36 +43,33 @@ namespace Aporia
         return mkdir(*dir_path, S_IREAD | S_IWRITE | S_IEXEC) != -1;
     }
 
-    // @TODO(dubgron): Using malloc and free doesn't feel right. We should
-    // probably use some arena-based pool of mutexes in the future.
     Mutex mutex_create()
     {
+
         Mutex result;
-        result.handle = malloc(sizeof(pthread_mutex_t));
         pthread_mutex_init((pthread_mutex_t*)result.handle, nullptr);
         return result;
     }
 
     bool mutex_try_lock(Mutex* mutex)
     {
-        return pthread_mutex_trylock((pthread_mutex_t*)mutex->handle) == 0;
-    }
-
-    bool mutex_lock(Mutex* mutex)
-    {
-        return pthread_mutex_lock((pthread_mutex_t*)mutex->handle) == 0;
-    }
-
-    bool mutex_unlock(Mutex* mutex)
-    {
-        return pthread_mutex_unlock((pthread_mutex_t*)mutex->handle) == 0;
-    }
-
-    bool mutex_destroy(Mutex* mutex)
-    {
-        i32 return_code = pthread_mutex_destroy((pthread_mutex_t*)mutex->handle);
-        free(mutex->handle);
+        i32 return_code = pthread_mutex_trylock((pthread_mutex_t*)mutex->handle);
         return return_code == 0;
+    }
+
+    void mutex_lock(Mutex* mutex)
+    {
+        pthread_mutex_lock((pthread_mutex_t*)mutex->handle);
+    }
+
+    void mutex_unlock(Mutex* mutex)
+    {
+        pthread_mutex_unlock((pthread_mutex_t*)mutex->handle);
+    }
+
+    void mutex_destroy(Mutex* mutex)
+    {
+        pthread_mutex_destroy((pthread_mutex_t*)mutex->handle);
     }
 
     void watch_project_directory()

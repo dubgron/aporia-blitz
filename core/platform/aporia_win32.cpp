@@ -59,28 +59,28 @@ namespace Aporia
     Mutex mutex_create()
     {
         Mutex result;
-        result.handle = CreateMutex(0, false, NULL);
+        InitializeCriticalSection((CRITICAL_SECTION*)result.handle);
         return result;
     }
 
     bool mutex_try_lock(Mutex* mutex)
     {
-        return WaitForSingleObject(mutex->handle, 0) == WAIT_OBJECT_0;
+        return TryEnterCriticalSection((CRITICAL_SECTION*)mutex->handle);
     }
 
-    bool mutex_lock(Mutex* mutex)
+    void mutex_lock(Mutex* mutex)
     {
-        return WaitForSingleObject(mutex->handle, INFINITE) == WAIT_OBJECT_0;
+        EnterCriticalSection((CRITICAL_SECTION*)mutex->handle);
     }
 
-    bool mutex_unlock(Mutex* mutex)
+    void mutex_unlock(Mutex* mutex)
     {
-        return ReleaseMutex(mutex->handle);
+        LeaveCriticalSection((CRITICAL_SECTION*)mutex->handle);
     }
 
-    bool mutex_destroy(Mutex* mutex)
+    void mutex_destroy(Mutex* mutex)
     {
-        return CloseHandle(mutex->handle);
+        DeleteCriticalSection((CRITICAL_SECTION*)mutex->handle);
     }
 
     static DWORD internal_watch_project_directory(void* data)

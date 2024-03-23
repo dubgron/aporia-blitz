@@ -7,8 +7,8 @@ namespace Aporia
 {
     static u64 next_aligned(u64 address, u64 align)
     {
-        u64 aligned_address = address + align - 1;
-        aligned_address -= aligned_address % align;
+        APORIA_ASSERT((align & (align - 1)) == 0);
+        u64 aligned_address = (address + align - 1) & ~(align - 1);
         return aligned_address;
     }
 

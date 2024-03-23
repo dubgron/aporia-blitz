@@ -17,14 +17,29 @@ namespace Aporia
 
     struct Mutex
     {
-        void* handle = nullptr;
+        // @NOTE(dubgron): The size of the handle is selected so it can hold the mutex
+        // on every supported system.
+        //
+        // On Windows,   sizeof(CRITICAL_SECTION) == 40
+        // On Linux,     sizeof(pthread_mutex_t) == 40
+        // On MacOs,     sizeof(pthread_mutex_t) == 80
+        //
+        // It's suboptimal, but we don't store a lot of mutexes and it frees us from
+        // dynamically allocating the needed memory.
+        u8 handle[80] = {};
     };
+
+#if defined(APORIA_WINDOWS)
+        static_assert(sizeof(CRITICAL_SECTION) <= sizeof(Mutex));
+#elif defined(APORIA_UNIX)
+        static_assert(sizeof(pthread_mutex_t) <= sizeof(Mutex));
+#endif
 
     Mutex mutex_create();
     bool mutex_try_lock(Mutex* mutex);
-    bool mutex_lock(Mutex* mutex);
-    bool mutex_unlock(Mutex* mutex);
-    bool mutex_destroy(Mutex* mutex);
+    void mutex_lock(Mutex* mutex);
+    void mutex_unlock(Mutex* mutex);
+    void mutex_destroy(Mutex* mutex);
 
     void watch_project_directory();
 }
