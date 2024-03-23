@@ -112,6 +112,7 @@ namespace Aporia
             }
         }
 
+#if defined(APORIA_DEBUGTOOLS)
         ImGuiIO* io = &ImGui::GetIO();
 
         // @NOTE(dubgron): According to ImGui comments:
@@ -121,6 +122,10 @@ namespace Aporia
         //      widget is active, mouse was clicked over an imgui window, etc."
         input.keys_consumed = io->WantCaptureKeyboard;
         input.cursor_consumed = io->WantCaptureMouse;
+#else
+        input.keys_consumed = false;
+        input.cursor_consumed = false;
+#endif
 
         if (input.keys_consumed)
         {
