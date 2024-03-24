@@ -109,4 +109,10 @@ namespace Aporia
     {
         return static_cast<T>(enum_value);
     }
+
+    template<typename T>
+    T lerp(T a, T b, f64 t)
+    {
+        return (1.0 - t) * a + t * b;
+    }
 }

@@ -28,6 +28,12 @@ namespace Aporia
 
     f32 master_volume = 1.f;
 
+    static void get_icursor_and_remainder(f32 cursor, i64* out_icursor, f32* out_remainder)
+    {
+        *out_icursor = (i64)cursor;
+        *out_remainder = cursor - *out_icursor;
+    }
+
     static void audio_thread_function(f32* buffer, i32 num_samples, i32 num_channels)
     {
         memset(buffer, 0, sizeof(f32) * num_samples * num_channels);
@@ -41,32 +47,48 @@ namespace Aporia
             AudioStream* stream = active_streams[idx];
             AudioSource* source = stream->source;
 
+            i64 samples_provided = 0;
             i64 samples_requested = num_samples;
+
             f32 final_volume = stream->volume * master_volume;
 
-            while (samples_requested > 0)
+            i64 icursor; f32 remainder;
+            get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
+
+            while (samples_provided < samples_requested)
             {
-                i64 samples_left = source->samples_count - stream->source_cursor;
-                i64 samples_provided = min(samples_requested, samples_left);
+                i64 icursor0 = icursor;
+                i64 icursor1 = icursor + 1;
 
-                for (i64 sample = 0; sample < samples_provided; sample++)
+                if (icursor1 == source->samples_count)
                 {
-                    for (i64 dst_channel = 0; dst_channel < MAX_AURIO_OUTPUT_CHANNELS; ++dst_channel)
-                    {
-                        i64 dst_index = MAX_AURIO_OUTPUT_CHANNELS * sample + dst_channel;
-
-                        i64 src_channel = min(dst_channel, (i64)source->channels);
-                        i64 src_index = stream->source_cursor + src_channel * source->samples_count;
-
-                        buffer[dst_index] += source->samples[src_index] * sample_scale * final_volume;
-                    }
-
-                    stream->source_cursor += 1;
+                    icursor1 = (stream->flags & AudioFlag_Repeating) ? 0 : icursor0;
                 }
 
-                if (stream->source_cursor == source->samples_count)
+                for (i64 dst_channel = 0; dst_channel < MAX_AURIO_OUTPUT_CHANNELS; ++dst_channel)
                 {
-                    stream->source_cursor = 0;
+                    i64 dst_index = MAX_AURIO_OUTPUT_CHANNELS * samples_provided + dst_channel;
+
+                    i64 src_channel = min(dst_channel, (i64)source->channels - 1);
+                    i64 src_index0 = icursor0 * source->channels + src_channel;
+                    i64 src_index1 = icursor1 * source->channels + src_channel;
+
+                    f32 sample0 = source->samples[src_index0];
+                    f32 sample1 = source->samples[src_index1];
+                    f32 sampled_value = lerp(sample0, sample1, remainder);
+
+                    buffer[dst_index] += sampled_value * sample_scale * final_volume;
+                }
+
+                samples_provided += 1;
+
+                stream->source_cursor += stream->playback_speed;
+                get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
+
+                if (icursor >= source->samples_count)
+                {
+                    stream->source_cursor -= source->samples_count;
+                    get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
 
                     if (!(stream->flags & AudioFlag_Repeating))
                     {
@@ -76,8 +98,6 @@ namespace Aporia
                         break;
                     }
                 }
-
-                samples_requested -= samples_provided;
             }
         }
 
@@ -106,28 +126,22 @@ namespace Aporia
         source.source_file = filepath;
 
         ScratchArena temp = scratch_begin(arena);
-
-        String audio_file = read_entire_file(temp.arena, filepath);
-        stb_vorbis* audio_data = stb_vorbis_open_memory(audio_file.data, audio_file.length, nullptr, nullptr);
-
-        source.channels = audio_data->channels;
-        source.sample_rate = audio_data->sample_rate;
-
-        source.samples_count = stb_vorbis_stream_length_in_samples(audio_data);
-
-        APORIA_ASSERT(source.channels <= MAX_AUDIO_SOURCE_CHANNELS);
-        source.samples = arena_push<i16>(arena, source.samples_count * source.channels);
-
-        i16* samples[MAX_AUDIO_SOURCE_CHANNELS] = { nullptr };
-        for (i64 channel = 0; channel < source.channels; ++channel)
         {
-            i64 channel_offset = source.samples_count * channel;
-            samples[channel] = &source.samples[channel_offset];
+            String audio_file = read_entire_file(temp.arena, filepath);
+            stb_vorbis* audio_data = stb_vorbis_open_memory(audio_file.data, audio_file.length, nullptr, nullptr);
+
+            source.channels = audio_data->channels;
+            source.sample_rate = audio_data->sample_rate;
+
+            source.samples_count = stb_vorbis_stream_length_in_samples(audio_data);
+
+            APORIA_ASSERT(source.channels <= MAX_AUDIO_SOURCE_CHANNELS);
+            source.samples = arena_push<i16>(arena, source.samples_count * source.channels);
+
+            stb_vorbis_get_samples_short_interleaved(audio_data, source.channels, source.samples, source.samples_count * source.channels);
+
+            stb_vorbis_close(audio_data);
         }
-        stb_vorbis_get_samples_short(audio_data, source.channels, samples, source.samples_count);
-
-        stb_vorbis_close(audio_data);
-
         scratch_end(temp);
 
         APORIA_ASSERT(audio_sources_count < MAX_AUDIO_SOURCES);

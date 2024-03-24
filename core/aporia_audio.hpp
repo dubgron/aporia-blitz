@@ -5,12 +5,21 @@
 
 namespace Aporia
 {
+    // @TODO(dubgron): Missing audio features:
+    //
+    // [x] Variable playback speed
+    // [ ] Playing audio in reverse
+    // [ ] Doing fade-in and fade-out
+    // [ ] Playing audio at location (spartial)
+    // [ ] Handling .wav files
+    //
+
     constexpr i64 MAX_AURIO_OUTPUT_CHANNELS = 2;
     constexpr i64 MAX_AUDIO_SOURCE_CHANNELS = 2;
 
     struct AudioSource
     {
-        i16* samples = nullptr; // Samples from all channels, not interleaved.
+        i16* samples = nullptr; // Samples from all channels, interleaved.
         i64 samples_count = 0; // Samples per channel, i.e. mono-samples.
 
         i32 channels = 0;
@@ -29,17 +38,10 @@ namespace Aporia
     struct AudioStream
     {
         AudioSource* source = nullptr;
-        i64 source_cursor = 0;
+        f32 source_cursor = 0.f;
 
         f32 volume = 1.f;
-
-        // @TODO(dubgron): Missing features:
-        // 
-        // [ ] playback speed
-        // [ ] playing in reverse
-        // [ ] fade-in and fade-out
-        // [ ] sound at location (spartial)
-        //
+        f32 playback_speed = 1.f;
 
         AudioFlag flags = AudioFlag_None;
     };
