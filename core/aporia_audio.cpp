@@ -12,12 +12,9 @@
 
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
-#include "platform/aporia_os.hpp"
 
 namespace Aporia
 {
-    Mutex audio_mutex;
-
     constexpr i64 MAX_AUDIO_SOURCES = 64;
     AudioSource audio_sources[MAX_AUDIO_SOURCES];
     i64 audio_sources_count = 0;
@@ -25,8 +22,6 @@ namespace Aporia
     constexpr i64 MAX_ACTIVE_AUDIO_STREAMS = 128;
     AudioStream* active_streams[MAX_ACTIVE_AUDIO_STREAMS];
     i64 active_streams_count = 0;
-
-    f32 master_volume = 1.f;
 
     static void get_icursor_and_remainder(f32 cursor, i64* out_icursor, f32* out_remainder)
     {
@@ -47,22 +42,37 @@ namespace Aporia
             AudioStream* stream = active_streams[idx];
             AudioSource* source = stream->source;
 
+            f32 direction = stream->playback_speed < 0.f ? -1.f : 1.f;
+
+            if (direction < 0.f && stream->play_cursor == 0.f)
+            {
+                stream->play_cursor = source->samples_count - 1;
+            }
+
             i64 samples_provided = 0;
             i64 samples_requested = num_samples;
 
             f32 final_volume = stream->volume * master_volume;
 
             i64 icursor; f32 remainder;
-            get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
 
             while (samples_provided < samples_requested)
             {
-                i64 icursor0 = icursor;
-                i64 icursor1 = icursor + 1;
+                get_icursor_and_remainder(stream->play_cursor, &icursor, &remainder);
 
-                if (icursor1 == source->samples_count)
+                i64 icursor0 = icursor;
+                i64 icursor1 = icursor + direction;
+
+                if (icursor1 < 0 || icursor1 >= source->samples_count)
                 {
-                    icursor1 = (stream->flags & AudioFlag_Repeating) ? 0 : icursor0;
+                    if (stream->flags & AudioFlag_Repeating)
+                    {
+                        icursor1 = wrap_around_once(icursor1, source->samples_count);
+                    }
+                    else
+                    {
+                        icursor1 = icursor0;
+                    }
                 }
 
                 for (i64 dst_channel = 0; dst_channel < MAX_AURIO_OUTPUT_CHANNELS; ++dst_channel)
@@ -82,13 +92,12 @@ namespace Aporia
 
                 samples_provided += 1;
 
-                stream->source_cursor += stream->playback_speed;
-                get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
+                stream->play_cursor += stream->playback_speed;
 
-                if (icursor >= source->samples_count)
+                if (stream->play_cursor < 0.f || stream->play_cursor >= source->samples_count)
                 {
-                    stream->source_cursor -= source->samples_count;
-                    get_icursor_and_remainder(stream->source_cursor, &icursor, &remainder);
+                    // @NOTE(dubgron): Restore the cursor to the beginning or the end of the source.
+                    stream->play_cursor = wrap_around(stream->play_cursor, (f32)source->samples_count);
 
                     if (!(stream->flags & AudioFlag_Repeating))
                     {

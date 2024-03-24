@@ -2,13 +2,14 @@
 
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
+#include "platform/aporia_os.hpp"
 
 namespace Aporia
 {
     // @TODO(dubgron): Missing audio features:
     //
     // [x] Variable playback speed
-    // [ ] Playing audio in reverse
+    // [x] Playing audio in reverse
     // [ ] Doing fade-in and fade-out
     // [ ] Playing audio at location (spartial)
     // [ ] Handling .wav files
@@ -38,13 +39,17 @@ namespace Aporia
     struct AudioStream
     {
         AudioSource* source = nullptr;
-        f32 source_cursor = 0.f;
+        f32 play_cursor = 0.f;
 
         f32 volume = 1.f;
         f32 playback_speed = 1.f;
 
         AudioFlag flags = AudioFlag_None;
     };
+
+    Mutex audio_mutex;
+
+    f32 master_volume = 1.f;
 
     void audio_init();
     void audio_deinit();

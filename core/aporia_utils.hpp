@@ -3,6 +3,7 @@
 #include <chrono>
 #include <random>
 
+#include "aporia_debug.hpp"
 #include "aporia_memory.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
@@ -114,5 +115,35 @@ namespace Aporia
     T lerp(T a, T b, f64 t)
     {
         return (1.0 - t) * a + t * b;
+    }
+
+    template<typename T> requires std::is_integral_v<T>
+    T wrap_around(T index, T count)
+    {
+        APORIA_ASSERT(count != 0);
+        T quotient = div(index, count).quot;
+        T remainder = index - (quotient * count);
+        return remainder;
+    }
+
+    template<typename T> requires std::is_floating_point_v<T>
+    T wrap_around(T index, T count)
+    {
+        APORIA_ASSERT(count != 0);
+        T quotient = floor(index / count);
+        T remainder = index - (quotient * count);
+        return remainder;
+    }
+
+    // @NOTE(dubgron): Specialization of wrap_around, when we know x >= -y and x < 2y.
+    // It is meant to be used as a cheaper alternative when we rougly know the ranges
+    // of x and y (e.g. like when incrementing or decrementing an index.)
+    template<typename T>
+    T wrap_around_once(T x, T y)
+    {
+        APORIA_ASSERT(y != 0);
+        if (x < 0) return x + y;
+        if (x >= y) return x - y;
+        return x;
     }
 }
