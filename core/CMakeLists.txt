@@ -53,6 +53,7 @@ add_executable(core
     "aporia_input.hpp"
     "aporia_memory.cpp"
     "aporia_memory.hpp"
+    "aporia_pch.hpp"
     "aporia_rendering.cpp"
     "aporia_rendering.hpp"
     "aporia_shaders.cpp"
@@ -77,6 +78,7 @@ add_executable(core
     "platform/aporia_win32.cpp")
 
 set_source_files_properties(
+    "aporia_pch.hpp"
     "platform/aporia_unix.cpp"
     "platform/aporia_win32.cpp"
     PROPERTIES HEADER_FILE_ONLY TRUE)

@@ -1,14 +1,15 @@
 #pragma once
 
-// Standard Library
-#include <cassert>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <random>
+// C Standard Library
+#include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
+// C++ Standard Library
+#include <chrono>
+#include <random>
 
 // Third-Party Libraries
 #include <glm/glm.hpp>
@@ -26,7 +27,6 @@
 #if defined(APORIA_EMSCRIPTEN)
     #include <emscripten.h>
 #endif
-
 
 // Platform
 #if defined(APORIA_WINDOWS)

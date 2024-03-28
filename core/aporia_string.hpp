@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstring>
+#include <string.h>
 
 #include "aporia_memory.hpp"
 #include "aporia_types.hpp"
