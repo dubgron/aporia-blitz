@@ -10,8 +10,8 @@ namespace Aporia
     //
     // [x] Variable playback speed
     // [x] Playing audio in reverse
+    // [x] Playing audio at location (spartial)
     // [ ] Doing fade-in and fade-out
-    // [ ] Playing audio at location (spartial)
     // [ ] Handling .wav files
     //
 
@@ -33,7 +33,8 @@ namespace Aporia
     enum AudioFlag_ : AudioFlag
     {
         AudioFlag_None      = 0x00,
-        AudioFlag_Repeating = 0x01,
+        AudioFlag_Looped    = 0x01,
+        AudioFlag_Spatial   = 0x02,
     };
 
     struct AudioStream
@@ -43,6 +44,10 @@ namespace Aporia
 
         f32 volume = 1.f;
         f32 playback_speed = 1.f;
+
+        v2 position = v2{ 0.f };
+        f32 inner_radius = 250.f;
+        f32 outer_radius = 2500.f;
 
         AudioFlag flags = AudioFlag_None;
     };

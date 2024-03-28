@@ -112,9 +112,24 @@ namespace Aporia
     }
 
     template<typename T>
-    T lerp(T a, T b, f64 t)
+    T lerp(T a, T b, f32 t)
     {
-        return (1.0 - t) * a + t * b;
+        return (1.f - t) * a + t * b;
+    }
+
+    template<typename T>
+    T inverse_lerp(T a, T b, f32 t)
+    {
+        return (t - a) / (b - a);
+    }
+
+    template<typename T>
+    T smoothstep(T a, T b, f32 t)
+    {
+        t = inverse_lerp(a, b, t);
+        t = clamp(t, 0.f, 1.f);
+        t = (3.f  - 2.f * t) * t * t;
+        return t;
     }
 
     template<typename T> requires std::is_integral_v<T>

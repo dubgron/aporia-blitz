@@ -10,6 +10,7 @@
 #undef C
 #undef L
 
+#include "aporia_camera.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 
@@ -29,6 +30,60 @@ namespace Aporia
         *out_remainder = cursor - *out_icursor;
     }
 
+    static void calculate_spatial_sound(AudioStream* stream, f32* out_left, f32* out_right)
+    {
+        v2 stream_position = stream->position;
+        v2 listener_position = active_camera->view.position;
+
+        if (stream_position == listener_position)
+        {
+            constexpr f32 ONE_OVER_SQUARE_ROOT_OF_TWO = 0.7071067f;
+            *out_left = *out_right = ONE_OVER_SQUARE_ROOT_OF_TWO;
+            return;
+        }
+
+        v2 from_listener_to_stream = stream_position - listener_position;
+
+        v2 listener_right = active_camera->view.right_vector;
+        v2 listener_up = active_camera->view.up_vector;
+
+        v2 direction = glm::normalize(from_listener_to_stream);
+        direction.x = glm::dot(direction, listener_right);
+        direction.y = glm::dot(direction, listener_up);
+
+        constexpr v2 speaker_direction_front_left{ -1.f, 0.f };
+        constexpr v2 speaker_direction_front_right{ 1.f, 0.f };
+
+        *out_left = glm::dot(direction, speaker_direction_front_left);
+        *out_right = glm::dot(direction, speaker_direction_front_right);
+
+        *out_left = clamp(*out_left, 0.f, 1.f);
+        *out_right = clamp(*out_right, 0.f, 1.f);
+
+        constexpr f32 stereo_base = 0.667f;
+        *out_left += stereo_base;
+        *out_right += stereo_base;
+
+        f32 distance = glm::length(from_listener_to_stream);
+        if (distance < stream->inner_radius)
+        {
+            f32 closeness = 1.f - (distance / stream->inner_radius);
+
+            *out_left = lerp(*out_left, 1.f, closeness);
+            *out_right = lerp(*out_right, 1.f, closeness);
+        }
+
+        f32 length = sqrt(*out_left * *out_left + *out_right * *out_right);
+        *out_left /= length;
+        *out_right /= length;
+
+        f32 falloff = inverse_lerp(stream->outer_radius, stream->inner_radius, distance);
+        falloff = clamp(falloff, 0.f, 1.f);
+
+        *out_left *= falloff;
+        *out_right *= falloff;
+    }
+
     static void audio_thread_function(f32* buffer, i32 num_samples, i32 num_channels)
     {
         memset(buffer, 0, sizeof(f32) * num_samples * num_channels);
@@ -42,9 +97,8 @@ namespace Aporia
             AudioStream* stream = active_streams[idx];
             AudioSource* source = stream->source;
 
-            f32 direction = stream->playback_speed < 0.f ? -1.f : 1.f;
-
-            if (direction < 0.f && stream->play_cursor == 0.f)
+            f32 play_direction = (stream->playback_speed < 0.f) ? -1.f : 1.f;
+            if (play_direction < 0.f && stream->play_cursor == 0.f)
             {
                 stream->play_cursor = source->samples_count - 1;
             }
@@ -54,18 +108,23 @@ namespace Aporia
 
             f32 final_volume = stream->volume * master_volume;
 
-            i64 icursor; f32 remainder;
+            f32 panning[2] = { 1.f, 1.f };
+            if (stream->flags & AudioFlag_Spatial)
+            {
+                calculate_spatial_sound(stream, &panning[0], &panning[1]);
+            }
 
             while (samples_provided < samples_requested)
             {
+                i64 icursor; f32 remainder;
                 get_icursor_and_remainder(stream->play_cursor, &icursor, &remainder);
 
                 i64 icursor0 = icursor;
-                i64 icursor1 = icursor + direction;
+                i64 icursor1 = icursor + play_direction;
 
                 if (icursor1 < 0 || icursor1 >= source->samples_count)
                 {
-                    if (stream->flags & AudioFlag_Repeating)
+                    if (stream->flags & AudioFlag_Looped)
                     {
                         icursor1 = wrap_around_once(icursor1, source->samples_count);
                     }
@@ -87,7 +146,7 @@ namespace Aporia
                     f32 sample1 = source->samples[src_index1];
                     f32 sampled_value = lerp(sample0, sample1, remainder);
 
-                    buffer[dst_index] += sampled_value * sample_scale * final_volume;
+                    buffer[dst_index] += sampled_value * sample_scale * final_volume * panning[dst_channel];
                 }
 
                 samples_provided += 1;
@@ -99,7 +158,7 @@ namespace Aporia
                     // @NOTE(dubgron): Restore the cursor to the beginning or the end of the source.
                     stream->play_cursor = wrap_around(stream->play_cursor, (f32)source->samples_count);
 
-                    if (!(stream->flags & AudioFlag_Repeating))
+                    if (!(stream->flags & AudioFlag_Looped))
                     {
                         active_streams[idx] = active_streams[active_streams_count - 1];
                         active_streams_count -= 1;
