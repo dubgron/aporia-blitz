@@ -17,9 +17,12 @@ endif()
 
 
 find_package(glm REQUIRED)
-find_package(imgui REQUIRED)
 find_package(sokol REQUIRED)
 find_package(stb REQUIRED)
+
+if (APORIA_DEBUGTOOLS)
+    find_package(imgui REQUIRED)
+endif()
 
 if (NOT APORIA_EMSCRIPTEN)
     find_package(glfw3 REQUIRED)
@@ -88,9 +91,12 @@ target_precompile_headers(core PRIVATE "aporia_pch.hpp")
 target_link_libraries(core
     glfw
     glm
-    imgui
     sokol
     stb)
+
+if (APORIA_DEBUGTOOLS)
+    target_link_libraries(core imgui)
+endif()
 
 if (NOT APORIA_EMSCRIPTEN)
     target_link_libraries(core
