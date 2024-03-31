@@ -46,8 +46,16 @@ namespace Aporia
         static const Color Transparent;
     };
 
-    Color color_from_vec4(f64 r, f64 g, f64 b, f64 a);
-    Color hsv_to_rgb(i64 hue, f64 saturation, f64 value);
+    constexpr i32 HUE_RED       = 0;
+    constexpr i32 HUE_YELLOW    = 60;
+    constexpr i32 HUE_GREEN     = 120;
+    constexpr i32 HUE_CYAN      = 180;
+    constexpr i32 HUE_BLUE      = 240;
+    constexpr i32 HUE_MAGENTA   = 300;
+
+    Color color_from_vec4(f32 r, f32 g, f32 b, f32 a);
+    Color hsv_to_rgb(i32 hue, f32 saturation, f32 value);
+    void rgb_to_hsv(Color rgb, i32* hue, f32* saturation, f32* value);
 
     using Clock = std::chrono::steady_clock;
     using TimePoint = Clock::time_point;
@@ -80,15 +88,15 @@ namespace Aporia
     };
 
     template<typename T> requires std::is_scalar_v<T>
-    T min(T value, T bound)
+    T min(T a, T b)
     {
-        return (value > bound) ? bound : value;
+        return (a > b) ? b : a;
     }
 
     template<typename T> requires std::is_scalar_v<T>
-    T max(T value, T bound)
+    T max(T a, T b)
     {
-        return (value < bound) ? bound : value;
+        return (a < b) ? b : a;
     }
 
     template<typename T> requires std::is_scalar_v<T>
@@ -99,7 +107,6 @@ namespace Aporia
 
     f32 degrees_to_radians(f32 angle_in_degrees);
     f32 radians_to_degrees(f32 angle_in_radians);
-    i32 unwind_angle(i64 angle);
 
     i32 random_range(i32 min, i32 max);
     i64 random_range(i64 min, i64 max);
@@ -114,7 +121,7 @@ namespace Aporia
     template<typename T>
     T lerp(T a, T b, f32 t)
     {
-        return (1.f - t) * a + t * b;
+        return a + (b - a) * t;
     }
 
     template<typename T>

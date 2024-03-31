@@ -135,7 +135,7 @@ namespace Aporia
     const Color Color::Cyan        = Color{  0,  255, 255, 255 };
     const Color Color::Transparent = Color{  0,   0,   0,   0  };
 
-    Color color_from_vec4(f64 r, f64 g, f64 b, f64 a)
+    Color color_from_vec4(f32 r, f32 g, f32 b, f32 a)
     {
         u8 new_r = static_cast<u8>(r * 255);
         u8 new_g = static_cast<u8>(g * 255);
@@ -145,16 +145,16 @@ namespace Aporia
         return Color{ new_r, new_g, new_b, new_a };
     }
 
-    Color hsv_to_rgb(i64 hue, f64 saturation, f64 value)
+    Color hsv_to_rgb(i32 hue, f32 saturation, f32 value)
     {
-        hue = unwind_angle(hue);
-        APORIA_ASSERT(hue >= 0 && hue < 360);
+        constexpr i32 full_circle = 360;
+        hue = wrap_around(hue, full_circle);
 
-        f64 C = saturation * value;
-        f64 X = C * (1.0 - std::abs(std::fmod(hue / 60.0, 2.0) - 1.0));
-        f64 m = value - C;
+        f32 C = saturation * value;
+        f32 X = C * (1.0 - abs(fmod(hue / 60.0, 2.0) - 1.0));
+        f32 m = value - C;
 
-        f64 Rs, Gs, Bs;
+        f32 Rs, Gs, Bs;
         if (hue >= 0 && hue < 60)
         {
             Rs = C;
@@ -203,6 +203,45 @@ namespace Aporia
         return Color{ r, g, b };
     }
 
+    void rgb_to_hsv(Color rgb, i32* hue, f32* saturation, f32* value)
+    {
+        f32 Rs = rgb.r / 255.f;
+        f32 Gs = rgb.g / 255.f;
+        f32 Bs = rgb.b / 255.f;
+
+        f32 C_max = max(max(Rs, Gs), Bs);
+        f32 C_min = min(min(Rs, Gs), Bs);
+        f32 delta = C_max - C_min;
+
+        if (delta == 0)
+        {
+            *hue = 0;
+        }
+        else if (C_max == Rs)
+        {
+            *hue = 60 * fmod((Gs - Bs) / delta, 6.f);
+        }
+        else if (C_max == Gs)
+        {
+            *hue = 60 * ((Bs - Rs) / delta + 2);
+        }
+        else if (C_max == Bs)
+        {
+            *hue = 60 * ((Rs - Gs) / delta + 4);
+        }
+
+        if (C_max == 0)
+        {
+            *saturation = 0;
+        }
+        else
+        {
+            *saturation = delta / C_max;
+        }
+
+        *value = C_max;
+    }
+
     f32 degrees_to_radians(f32 angle_in_degrees)
     {
         return angle_in_degrees / 180.f * M_PI;
@@ -213,26 +252,26 @@ namespace Aporia
         return angle_in_radians / M_PI * 180.f;
     }
 
-    i32 unwind_angle(i64 angle)
-    {
-        constexpr i32 full_angle = 360;
-        return (full_angle + (angle % full_angle)) % full_angle;
-    }
-
     static std::mt19937 random_generator{ std::random_device{}() };
 
     i32 random_range(i32 min, i32 max)
     {
+        if (min == max) return min;
+        APORIA_ASSERT(min < max);
         return std::uniform_int_distribution(min, max)(random_generator);
     }
 
     i64 random_range(i64 min, i64 max)
     {
+        if (min == max) return min;
+        APORIA_ASSERT(min < max);
         return std::uniform_int_distribution(min, max)(random_generator);
     }
 
     f32 random_range(f32 min, f32 max)
     {
+        if (min == max) return min;
+        APORIA_ASSERT(min < max);
         return std::uniform_real_distribution(min, max)(random_generator);
     }
 }

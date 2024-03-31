@@ -56,6 +56,8 @@ add_executable(core
     "aporia_input.hpp"
     "aporia_memory.cpp"
     "aporia_memory.hpp"
+    "aporia_particles.cpp"
+    "aporia_particles.hpp"
     "aporia_pch.hpp"
     "aporia_rendering.cpp"
     "aporia_rendering.hpp"
