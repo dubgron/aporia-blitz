@@ -43,4 +43,5 @@ namespace Aporia
     Texture* get_texture(i64 index);
     SubTexture* get_subtexture(String name);
     void get_subtexture_size(const SubTexture& subtexture, f32* width, f32* height);
+    String get_subtexture_name(const SubTexture& subtexture);
 }

@@ -38,11 +38,25 @@ namespace Aporia
         return (T*)arena_push_uninitialized(arena, size);
     }
 
+    //template<typename T>
+    //T* arena_push(MemoryArena* arena, u64 count = 1)
+    //{
+    //    u64 size = count * sizeof(T);
+    //    return (T*)arena_push(arena, size);
+    //}
+
+    // @NOTE(dubgron): This version is suboptimal if T is a type which is
+    // zero-initializable (i.e. it's a primitive type or is a struct without
+    // any non-zero default initializers for its members).
     template<typename T>
     T* arena_push(MemoryArena* arena, u64 count = 1)
     {
-        u64 size = count * sizeof(T);
-        return (T*)arena_push(arena, size);
+        T* result = arena_push_uninitialized<T>(arena, count);
+        for (u64 idx = 0; idx < count; ++idx)
+        {
+            result[idx] = T{};
+        }
+        return result;
     }
 
     struct ScratchArena

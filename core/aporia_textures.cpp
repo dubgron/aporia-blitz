@@ -302,4 +302,19 @@ namespace Aporia
             *height = (subtexture.v.y - subtexture.u.y) * texture->height;
         }
     }
+
+    String get_subtexture_name(const SubTexture& subtexture)
+    {
+        for (i64 idx = 0; idx < subtextures.bucket_count; ++idx)
+        {
+            if (subtexture == subtextures.buckets[idx].value)
+            {
+                return subtextures.buckets[idx].key;
+            }
+        }
+
+        APORIA_LOG(Warning, "Failed to find subtexture 'u: (%, %), v: (%, %), texture_index: %'!",
+            subtexture.u.x, subtexture.u.y, subtexture.v.x, subtexture.v.y, subtexture.texture_index);
+        return String{};
+    }
 }

@@ -61,6 +61,8 @@ add_executable(core
     "aporia_pch.hpp"
     "aporia_rendering.cpp"
     "aporia_rendering.hpp"
+    "aporia_serialization.cpp"
+    "aporia_serialization.hpp"
     "aporia_shaders.cpp"
     "aporia_shaders.hpp"
     "aporia_string.cpp"
