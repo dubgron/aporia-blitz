@@ -4,64 +4,61 @@
 #include "aporia_types.hpp"
 #include "platform/aporia_os.hpp"
 
-namespace Aporia
+// @TODO(dubgron): Missing audio features:
+//
+// [x] Variable playback speed
+// [x] Playing audio in reverse
+// [x] Playing audio at location (spartial)
+// [ ] Doing fade-in and fade-out
+// [ ] Handling .wav files
+//
+
+constexpr i64 MAX_AURIO_OUTPUT_CHANNELS = 2;
+constexpr i64 MAX_AUDIO_SOURCE_CHANNELS = 2;
+
+struct AudioSource
 {
-    // @TODO(dubgron): Missing audio features:
-    //
-    // [x] Variable playback speed
-    // [x] Playing audio in reverse
-    // [x] Playing audio at location (spartial)
-    // [ ] Doing fade-in and fade-out
-    // [ ] Handling .wav files
-    //
+    i16* samples = nullptr; // Samples from all channels, interleaved.
+    i64 samples_count = 0; // Samples per channel, i.e. mono-samples.
 
-    constexpr i64 MAX_AURIO_OUTPUT_CHANNELS = 2;
-    constexpr i64 MAX_AUDIO_SOURCE_CHANNELS = 2;
+    i32 channels = 0;
+    i32 sample_rate = 0;
 
-    struct AudioSource
-    {
-        i16* samples = nullptr; // Samples from all channels, interleaved.
-        i64 samples_count = 0; // Samples per channel, i.e. mono-samples.
+    String source_file;
+};
 
-        i32 channels = 0;
-        i32 sample_rate = 0;
+using AudioFlag = u8;
+enum AudioFlag_ : AudioFlag
+{
+    AudioFlag_None      = 0x00,
+    AudioFlag_Looped    = 0x01,
+    AudioFlag_Spatial   = 0x02,
+};
 
-        String source_file;
-    };
+struct AudioStream
+{
+    AudioSource* source = nullptr;
+    f32 play_cursor = 0.f;
 
-    using AudioFlag = u8;
-    enum AudioFlag_ : AudioFlag
-    {
-        AudioFlag_None      = 0x00,
-        AudioFlag_Looped    = 0x01,
-        AudioFlag_Spatial   = 0x02,
-    };
+    f32 volume = 1.f;
+    f32 playback_speed = 1.f;
 
-    struct AudioStream
-    {
-        AudioSource* source = nullptr;
-        f32 play_cursor = 0.f;
+    v2 position = v2{ 0.f };
+    f32 inner_radius = 250.f;
+    f32 outer_radius = 2500.f;
 
-        f32 volume = 1.f;
-        f32 playback_speed = 1.f;
+    AudioFlag flags = AudioFlag_None;
+};
 
-        v2 position = v2{ 0.f };
-        f32 inner_radius = 250.f;
-        f32 outer_radius = 2500.f;
+Mutex audio_mutex;
 
-        AudioFlag flags = AudioFlag_None;
-    };
+f32 master_volume = 1.f;
 
-    Mutex audio_mutex;
+void audio_init();
+void audio_deinit();
 
-    f32 master_volume = 1.f;
+i64 audio_load(MemoryArena* arena, String filepath);
+AudioStream audio_create_stream(i64 source_id);
 
-    void audio_init();
-    void audio_deinit();
-
-    i64 audio_load(MemoryArena* arena, String filepath);
-    AudioStream audio_create_stream(i64 source_id);
-
-    void audio_play(AudioStream* stream);
-    void audio_stop(AudioStream* stream);
-}
+void audio_play(AudioStream* stream);
+void audio_stop(AudioStream* stream);

@@ -7,8 +7,8 @@
 
 #if defined(APORIA_DEBUGTOOLS)
 
-#define APORIA_LOG(lvl, fmt, ...)   Aporia::log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
-#define APORIA_LOG_RAW(msg)         Aporia::log_raw(msg)
+#define APORIA_LOG(lvl, fmt, ...)   log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
+#define APORIA_LOG_RAW(msg)         log_raw(msg)
 
 #define APORIA_ASSERT_HELPER(expr, msg) \
     do { if (!(expr)) { \
@@ -24,7 +24,7 @@ bool handling_assertion_failure = false;
     do { if (!(expr)) { \
         if (handling_assertion_failure) APORIA_ASSERT(expr); \
         handling_assertion_failure = true; \
-        APORIA_LOG(Aporia::Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
+        APORIA_LOG(Critical, fmt, ##__VA_ARGS__); APORIA_BREAKPOINT(); assert(expr); \
     } } while(0)
 
 #if defined(__has_builtin) && !defined(__ibmxl__)
@@ -83,56 +83,53 @@ bool handling_assertion_failure = false;
 #define IMGUI_FRAME_BEGIN()         imgui_frame_begin()
 #define IMGUI_FRAME_END()           imgui_frame_end()
 
-namespace Aporia
+enum LogLevel : u8
 {
-    enum LogLevel : u8
-    {
-        Garbage,
-        Verbose,
-        Debug,
-        Info,
-        Warning,
-        Error,
-        Critical,
-        Off,
-    };
+    Garbage,
+    Verbose,
+    Debug,
+    Info,
+    Warning,
+    Error,
+    Critical,
+    Off,
+};
 
-    void logging_init(MemoryArena* arena, String name);
-    void logging_deinit();
+void logging_init(MemoryArena* arena, String name);
+void logging_deinit();
 
-    void log(String file, i32 line, String function, LogLevel level, String message);
-    void log_raw(String message);
+void log(String file, i32 line, String function, LogLevel level, String message);
+void log_raw(String message);
 
-    bool should_log(LogLevel level);
+bool should_log(LogLevel level);
 
-    template<typename T>
-    static void log(String file, i32 line, String function, LogLevel level, T&& arg)
-    {
-        log(file, line, function, level, "%", std::forward<T>(arg));
-    }
-
-    template<typename... Ts>
-    static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
-    {
-        if (!should_log(level))
-        {
-            return;
-        }
-
-        ScratchArena temp = scratch_begin();
-        {
-            String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
-            log(file, line, function, level, formatted_message);
-        }
-        scratch_end(temp);
-    }
-
-    void imgui_init();
-    void imgui_deinit();
-
-    void imgui_frame_begin();
-    void imgui_frame_end();
+template<typename T>
+static void log(String file, i32 line, String function, LogLevel level, T&& arg)
+{
+    log(file, line, function, level, "%", std::forward<T>(arg));
 }
+
+template<typename... Ts>
+static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
+{
+    if (!should_log(level))
+    {
+        return;
+    }
+
+    ScratchArena temp = scratch_begin();
+    {
+        String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
+        log(file, line, function, level, formatted_message);
+    }
+    scratch_end(temp);
+}
+
+void imgui_init();
+void imgui_deinit();
+
+void imgui_frame_begin();
+void imgui_frame_end();
 
 #else
 

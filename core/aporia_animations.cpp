@@ -8,106 +8,103 @@
 #include "aporia_string.hpp"
 #include "aporia_textures.hpp"
 
-namespace Aporia
+static constexpr u64 MAX_ANIMATIONS = 128;
+static HashTable<Animation> all_animations;
+
+static bool operator==(const Animation& animation1, const Animation& animation2)
 {
-    static constexpr u64 MAX_ANIMATIONS = 128;
-    static HashTable<Animation> all_animations;
+    return animation1.frames == animation2.frames
+        && animation1.frame_count == animation2.frame_count
+        && animation1.frame_length == animation2.frame_length;
+}
 
-    static bool operator==(const Animation& animation1, const Animation& animation2)
+void animations_init(MemoryArena* arena)
+{
+    all_animations = hash_table_create<Animation>(arena, MAX_ANIMATIONS);
+}
+
+// @TODO(dubgron): The arena should be parameterized in the future.
+void load_animations(String filepath)
+{
+    ScratchArena temp = scratch_begin();
+    Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
+
+    for (Config_Property* property = parsed_file; property; property = property->next)
     {
-        return animation1.frames == animation2.frames
-            && animation1.frame_count == animation2.frame_count
-            && animation1.frame_length == animation2.frame_length;
+        if (property->category != "animations")
+        {
+            continue;
+        }
+
+        String animation_name = push_string(&memory.persistent, property->field);
+        u64 frame_count = property->literals.node_count;
+
+        Animation animation;
+        animation.frames = arena_push_uninitialized<AnimationFrame>(&memory.persistent, frame_count);
+
+        for (StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
+        {
+            AnimationFrame frame;
+            frame.texture = get_subtexture(frame_node->string);
+
+            animation.frames[animation.frame_count] = frame;
+            animation.frame_count += 1;
+        }
+
+        hash_table_insert(&all_animations, animation_name, animation);
+
+        APORIA_ASSERT(*hash_table_find(&all_animations, animation_name) == animation);
     }
 
-    void animations_init(MemoryArena* arena)
+    scratch_end(temp);
+}
+
+void animation_tick(Entity* entity, f32 frame_time)
+{
+    Animator* animator = &entity->animator;
+
+    if (animator->current_animation.is_empty())
     {
-        all_animations = hash_table_create<Animation>(arena, MAX_ANIMATIONS);
+        return;
     }
 
-    // @TODO(dubgron): The arena should be parameterized in the future.
-    void load_animations(String filepath)
+    Animation* animation = hash_table_find(&all_animations, animator->current_animation);
+    APORIA_ASSERT(animation);
+
+    animator->elapsed_time += frame_time;
+    while (animator->elapsed_time >= animation->frame_length)
     {
-        ScratchArena temp = scratch_begin();
-        Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
+        animator->elapsed_time -= animation->frame_length;
 
-        for (Config_Property* property = parsed_file; property; property = property->next)
+        // The current frame is over. If other animation has been requested, play it.
+        if (!animator->requested_animation.is_empty())
         {
-            if (property->category != "animations")
-            {
-                continue;
-            }
+            animation = hash_table_find(&all_animations, animator->requested_animation);
+            APORIA_ASSERT(animation);
 
-            String animation_name = push_string(&memory.persistent, property->field);
-            u64 frame_count = property->literals.node_count;
-
-            Animation animation;
-            animation.frames = arena_push_uninitialized<AnimationFrame>(&memory.persistent, frame_count);
-
-            for (StringNode* frame_node = property->literals.first; frame_node; frame_node = frame_node->next)
-            {
-                AnimationFrame frame;
-                frame.texture = get_subtexture(frame_node->string);
-
-                animation.frames[animation.frame_count] = frame;
-                animation.frame_count += 1;
-            }
-
-            hash_table_insert(&all_animations, animation_name, animation);
-
-            APORIA_ASSERT(*hash_table_find(&all_animations, animation_name) == animation);
+            animator->current_animation = animator->requested_animation;
+            animator->requested_animation = String{};
         }
 
-        scratch_end(temp);
+        // Increment the current frame and wrap it around, if necessary.
+        animator->current_frame += 1;
+        if (animator->current_frame >= animation->frame_count)
+        {
+            animator->current_frame = 0;
+        }
+
+        entity->texture = *animation->frames[animator->current_frame].texture;
     }
+}
 
-    void animation_tick(Entity* entity, f32 frame_time)
+void animation_request(Animator* animator, String animation)
+{
+    if (animator->current_animation.is_empty())
     {
-        Animator* animator = &entity->animator;
-
-        if (animator->current_animation.is_empty())
-        {
-            return;
-        }
-
-        Animation* animation = hash_table_find(&all_animations, animator->current_animation);
-        APORIA_ASSERT(animation);
-
-        animator->elapsed_time += frame_time;
-        while (animator->elapsed_time >= animation->frame_length)
-        {
-            animator->elapsed_time -= animation->frame_length;
-
-            // The current frame is over. If other animation has been requested, play it.
-            if (!animator->requested_animation.is_empty())
-            {
-                animation = hash_table_find(&all_animations, animator->requested_animation);
-                APORIA_ASSERT(animation);
-
-                animator->current_animation = animator->requested_animation;
-                animator->requested_animation = String{};
-            }
-
-            // Increment the current frame and wrap it around, if necessary.
-            animator->current_frame += 1;
-            if (animator->current_frame >= animation->frame_count)
-            {
-                animator->current_frame = 0;
-            }
-
-            entity->texture = *animation->frames[animator->current_frame].texture;
-        }
+        animator->current_animation = animation;
     }
-
-    void animation_request(Animator* animator, String animation)
+    else if (animator->current_animation != animation)
     {
-        if (animator->current_animation.is_empty())
-        {
-            animator->current_animation = animation;
-        }
-        else if (animator->current_animation != animation)
-        {
-            animator->requested_animation = animation;
-        }
+        animator->requested_animation = animation;
     }
 }

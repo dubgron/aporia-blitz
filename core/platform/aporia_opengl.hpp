@@ -22,8 +22,5 @@
 
 #include <GLFW/glfw3.h>
 
-namespace Aporia
-{
-    // @NOTE(dubgron): It has to be called after creating a window.
-    void opengl_init();
-}
+// @NOTE(dubgron): It has to be called after creating a window.
+void opengl_init();
