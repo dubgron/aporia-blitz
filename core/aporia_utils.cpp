@@ -100,6 +100,23 @@ void fix_path_slashes(String* filepath)
     }
 }
 
+void fix_eol(String* filepath)
+{
+    i64 dst = 0, src = 0;
+    while (src < filepath->length)
+    {
+        if (filepath->data[src] == '\r')
+        {
+            src += 1;
+        }
+        else
+        {
+            filepath->data[dst++] = filepath->data[src++];
+        }
+    }
+    filepath->length = dst;
+}
+
 constexpr u64 FNV_64_PRIME = 0x100000001b3;
 constexpr u64 FNV_64_OFFSET_BIAS = 0xcbf29ce484222325;
 

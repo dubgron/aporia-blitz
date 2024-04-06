@@ -17,9 +17,9 @@ struct String
     bool is_empty() const;
 
     [[nodiscard]] String substr(u64 offset, u64 count = -1) const;
-    String trim() const;
-    String trim_left() const;
-    String trim_right() const;
+    String trim(u8 character = ' ') const;
+    String trim_left(u8 character = ' ') const;
+    String trim_right(u8 character = ' ') const;
 
     StringList split(MemoryArena* arena, u8 delim) const;
 

@@ -14,21 +14,19 @@ bool String::is_empty() const
 
 String String::substr(u64 offset, u64 count /* = -1 */) const
 {
-    APORIA_ASSERT(data);
     APORIA_ASSERT(length >= offset);
     return String{ data + offset, min<u64>(count, length - offset) };
 }
 
-String String::trim() const
+String String::trim(u8 character /* = ' ' */) const
 {
-    return trim_left().trim_right();
+    return trim_left(character).trim_right(character);
 }
 
-String String::trim_left() const
+String String::trim_left(u8 character /* = ' ' */) const
 {
-    APORIA_ASSERT(data);
     String result{ data, length };
-    while (result.length > 0 && *result.data == ' ')
+    while (result.length > 0 && *result.data == character)
     {
         result.data += 1;
         result.length -= 1;
@@ -36,11 +34,10 @@ String String::trim_left() const
     return result;
 }
 
-String String::trim_right() const
+String String::trim_right(u8 character /* = ' ' */) const
 {
-    APORIA_ASSERT(data);
     String result{ data, length };
-    while (result.length > 0 && result.data[result.length - 1] == ' ')
+    while (result.length > 0 && result.data[result.length - 1] == character)
     {
         result.length -= 1;
     }

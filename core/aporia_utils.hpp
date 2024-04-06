@@ -21,8 +21,9 @@ String read_entire_text_file(MemoryArena* arena, String filepath);
 String replace_extension(MemoryArena* arena, String filepath, String ext);
 String extract_filename(String filepath);
 
-// @NOTE(dubgron): Careful! It's an 'in place' transformation.
+// @NOTE(dubgron): Careful! It's an in-place transformation.
 void fix_path_slashes(String* filepath);
+void fix_eol(String* filepath);
 
 u32 get_hash(String string);
 

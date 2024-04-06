@@ -40,6 +40,9 @@ String get_last_error()
 
     String message{ (u8*)buff, size };
 
+    fix_eol(&message);
+    message = message.trim_right('\n');
+
     return push_string(&memory.frame, message);
 }
 
