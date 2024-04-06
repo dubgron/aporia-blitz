@@ -13,5 +13,3 @@ struct GameMemory
 
 extern GameMemory memory;
 extern World world;
-
-void engine_main(String config_filepath);

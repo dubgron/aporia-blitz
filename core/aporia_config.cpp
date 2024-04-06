@@ -509,7 +509,7 @@ bool reload_config_asset(Asset* config_asset)
     bool success = load_engine_config_from_file(config_asset->source_file);
     config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;
 
-    active_window->apply_config();
+    window_apply_config();
     active_camera->apply_config();
 
     adjust_framebuffers_to_render_surface();

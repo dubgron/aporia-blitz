@@ -2,6 +2,7 @@
 
 #include "aporia_memory.hpp"
 #include "aporia_types.hpp"
+#include "aporia_utils.hpp"
 
 struct Particle
 {

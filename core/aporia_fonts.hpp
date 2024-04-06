@@ -3,6 +3,7 @@
 #include "aporia_shaders.hpp"
 #include "aporia_string.hpp"
 #include "aporia_textures.hpp"
+#include "aporia_utils.hpp"
 
 struct FontAtlas
 {

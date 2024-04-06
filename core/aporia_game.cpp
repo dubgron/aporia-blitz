@@ -51,7 +51,7 @@ static void game_draw_frame(f32 frame_time)
     }
 }
 
-static void game_terminate()
+static void game_shutdown()
 {
 }
 
@@ -62,7 +62,7 @@ static void game_main_loop()
 
     arena_clear(&memory.frame);
 
-    active_window->poll_events();
+    window_poll_events();
     input_process_events();
 
     IMGUI_FRAME_BEGIN();
@@ -96,10 +96,10 @@ static void game_main_loop()
 
     IMGUI_FRAME_END();
 
-    active_window->display();
+    window_display();
 }
 
-void engine_main(String config_filepath)
+static void engine_main(String config_filepath)
 {
     // Init
     {
@@ -117,7 +117,7 @@ void engine_main(String config_filepath)
         bool config_loaded_successfully = load_engine_config(config_filepath);
         APORIA_ASSERT(config_loaded_successfully);
 
-        active_window = create_window(&memory.persistent);
+        window_create(&memory.persistent);
         active_camera = create_camera(&memory.persistent);
 
         opengl_init();
@@ -138,7 +138,7 @@ void engine_main(String config_filepath)
 #if defined(APORIA_EMSCRIPTEN)
         emscripten_set_main_loop(game_main_loop, 0, true);
 #else
-        while (active_window->is_open())
+        while (window_is_open())
         {
             game_main_loop();
         }
@@ -147,7 +147,7 @@ void engine_main(String config_filepath)
 
     // Terminate
     {
-        game_terminate();
+        game_shutdown();
 
         LOGGING_DEINIT();
 
@@ -164,7 +164,7 @@ void engine_main(String config_filepath)
         audio_deinit();
         rendering_deinit();
 
-        destroy_active_window();
+        window_destroy();
 
         assets_deinit();
 
