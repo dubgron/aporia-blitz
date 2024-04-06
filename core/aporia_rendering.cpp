@@ -24,7 +24,7 @@
     #define DEBUG_TEXTURE(...)
 #endif
 
-static constexpr u64 MAX_RENDERING_QUEUE_SIZE = 100000;
+static constexpr u64 MAX_RENDER_QUEUE_SIZE = 100000;
 static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
 
 // @NOTE(dubgron); It maps texture units to texture ids.
@@ -292,7 +292,6 @@ static UniformBuffer uniformbuffer_create(u32 max_size, u32 binding_index, Strin
     result.binding_index = binding_index;
     result.block_name = block_name;
 
-
 #if defined(APORIA_EMSCRIPTEN)
     glGenBuffers(1, &result.id);
     glBindBuffer(GL_UNIFORM_BUFFER, result.id);
@@ -352,7 +351,7 @@ struct RenderQueue
     u64 count = 0;
 };
 
-static RenderQueue rendering_queue;
+static RenderQueue render_queue;
 static VertexArray vertex_arrays[2];
 
 static VertexArray* get_vao_from_buffer(BufferType buffer_type)
@@ -405,7 +404,7 @@ static void renderqueue_flush(RenderQueue* render_queue)
                 }
                 return buffer_diff;
             }
-            return z_diff;
+            return z_diff > 0.f ? 1 : -1;
         });
 
     RenderQueueKey* prev_key = &render_queue->data[0];
@@ -620,7 +619,7 @@ void add_light_source(LightSource source)
 
 void rendering_init(MemoryArena* arena)
 {
-    rendering_queue = renderqueue_create(arena, MAX_RENDERING_QUEUE_SIZE);
+    render_queue = renderqueue_create(arena, MAX_RENDER_QUEUE_SIZE);
 
     // Set VertexArray for Quads
     {
@@ -780,7 +779,7 @@ void rendering_frame_end()
         vertexarray_render(quads);
     }
 
-    renderqueue_flush(&rendering_queue);
+    renderqueue_flush(&render_queue);
     framebuffer_unbind();
 
     if (lighting_enabled)
@@ -804,7 +803,7 @@ void rendering_frame_end()
             }
         }
 
-        renderqueue_flush(&rendering_queue);
+        renderqueue_flush(&render_queue);
         framebuffer_unbind();
 
         DEBUG_TEXTURE(masking.color_buffer);
@@ -897,7 +896,7 @@ void rendering_ui_end()
     shader_set_mat4("u_vp_matrix", screen_to_clip);
     shader_set_float("u_camera_zoom", 1.f);
 
-    renderqueue_flush(&rendering_queue);
+    renderqueue_flush(&render_queue);
     framebuffer_unbind();
 }
 
@@ -979,7 +978,7 @@ void draw_entity(const Entity& entity)
         key.vertex[3].tex_coord     = entity.texture.u;
     }
 
-    renderqueue_add(&rendering_queue, key);
+    renderqueue_add(&render_queue, key);
 }
 
 void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
@@ -1008,7 +1007,7 @@ void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::
     key.vertex[3].color     = color;
     key.vertex[3].tex_coord = v2{ 0.f, 1.f };
 
-    renderqueue_add(&rendering_queue, key);
+    renderqueue_add(&render_queue, key);
 }
 
 void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Color::White */, u32 shader_id /* = line_shader */)
@@ -1040,7 +1039,7 @@ void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Col
     key.vertex[3].tex_coord     = normal;
     key.vertex[3].additional    = thickness;
 
-    renderqueue_add(&rendering_queue, key);
+    renderqueue_add(&render_queue, key);
 }
 
 void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
@@ -1069,7 +1068,7 @@ void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 
     key.vertex[3].color         = color;
     key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
 
-    renderqueue_add(&rendering_queue, key);
+    renderqueue_add(&render_queue, key);
 }
 
 // @TODO(dubgron): The current implementation of aligning text is shitty and hard to read, so it needs refactor.
@@ -1290,7 +1289,7 @@ void draw_text(const Text& text)
             key.vertex[3].color         = text.color;
             key.vertex[3].additional    = screen_px_range;
 
-            renderqueue_add(&rendering_queue, key);
+            renderqueue_add(&render_queue, key);
         }
     }
 
