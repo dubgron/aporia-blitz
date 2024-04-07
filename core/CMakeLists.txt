@@ -176,15 +176,13 @@ set_target_properties(core PROPERTIES
     USE_FOLDERS                 ON
     OUTPUT_NAME_RELEASE         "aporia"
     OUTPUT_NAME_DEBUG           "aporia_debug"
-    OUTPUT_NAME_RELWITHDEBINFO  "aporia_dev"
-    OUTPUT_NAME_MINSIZEREL      "aporia_minsize")
+    OUTPUT_NAME_RELWITHDEBINFO  "aporia_dev")
 
 if (NOT APORIA_EMSCRIPTEN)
     set_target_properties(core PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_RELEASE            "${PROJECT_SOURCE_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY_DEBUG              "${PROJECT_SOURCE_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO     "${PROJECT_SOURCE_DIR}/bin"
-        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL         "${PROJECT_SOURCE_DIR}/bin"
         VS_DEBUGGER_WORKING_DIRECTORY               "${PROJECT_SOURCE_DIR}/bin")
 else()
     set_target_properties(core PROPERTIES
