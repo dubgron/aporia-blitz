@@ -201,4 +201,12 @@ endif()
 
 if (MSVC)
     target_sources(core PRIVATE "${PROJECT_SOURCE_DIR}/misc/aporia_core.natvis")
+
+    # Remove old .pdb files
+    add_custom_command(TARGET core PRE_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS -E remove -f "$<TARGET_PDB_FILE:core>")
+
+    # Disable incremental linking
+    target_link_options(core PUBLIC "/INCREMENTAL:NO")
 endif()
