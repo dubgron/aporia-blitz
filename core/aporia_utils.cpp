@@ -16,8 +16,8 @@ String read_entire_file(MemoryArena* arena, String filepath)
     APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
 
     fseek(file, 0, SEEK_END);
-
     u64 size_in_bytes = ftell(file);
+
     u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
 
     fseek(file, 0, SEEK_SET);
@@ -30,33 +30,18 @@ String read_entire_file(MemoryArena* arena, String filepath)
 
 String read_entire_text_file(MemoryArena* arena, String filepath)
 {
-    FILE* file = fopen(*filepath, "r");
+    String result = read_entire_file(arena, filepath);
 
-    if (file == nullptr)
-    {
-        APORIA_LOG(Error, "Failed to open file '%'!", filepath);
-        return String{};
-    }
+    u64 file_size = result.length;
+    fix_eol(&result);
 
-    APORIA_LOG(Info, "Opened file '%' successfully!", filepath);
-
-    fseek(file, 0, SEEK_END);
-
-    u64 size_in_bytes = ftell(file);
-    u8* data = arena_push_uninitialized<u8>(arena, size_in_bytes);
-
-    fseek(file, 0, SEEK_SET);
-    u64 length = fread(data, 1, size_in_bytes, file);
-
-    fclose(file);
-
-    u64 garbage_bytes = size_in_bytes - length;
+    u64 garbage_bytes = file_size - result.length;
     if (garbage_bytes > 0)
     {
         arena_pop(arena, garbage_bytes);
     }
 
-    return String{ data, length };
+    return result;
 }
 
 String replace_extension(MemoryArena* arena, String filepath, String ext)
@@ -108,11 +93,10 @@ void fix_eol(String* filepath)
         if (filepath->data[src] == '\r')
         {
             src += 1;
+            continue;
         }
-        else
-        {
-            filepath->data[dst++] = filepath->data[src++];
-        }
+
+        filepath->data[dst++] = filepath->data[src++];
     }
     filepath->length = dst;
 }
