@@ -2,14 +2,14 @@
 
 #include "aporia_debug.hpp"
 
-World world_init(u64 in_max_entities /* = 10000 */)
+World world_init(i64 in_max_entities /* = 10000 */)
 {
     World result;
     result.max_entities = in_max_entities;
     result.entity_count = 0;
 
     // @TODO(dubgron): The count of the world arena should be more planned out.
-    u64 world_arena_size = 2 * result.max_entities * (sizeof(Entity) + sizeof(EntityNode));
+    i64 world_arena_size = 2 * result.max_entities * (sizeof(Entity) + sizeof(EntityNode));
     result.arena = arena_init(world_arena_size);
     APORIA_LOG(Info, "World has allocated % B of memory.", world_arena_size);
 
@@ -31,8 +31,8 @@ void world_clear(World* world)
     world->entity_count = 0;
     world->free_list = world->entity_list;
 
-    u64 last_idx = world->max_entities - 1;
-    for (u64 idx = 0; idx < last_idx; ++idx)
+    i64 last_idx = world->max_entities - 1;
+    for (i64 idx = 0; idx < last_idx; ++idx)
     {
         world->entity_list[idx].next = &world->entity_list[idx + 1];
         world->entity_list[idx].entity = nullptr;
@@ -74,10 +74,10 @@ EntityID entity_create(World* world, Entity** out_entity)
 
 void entity_destroy(World* world, EntityID entity_id)
 {
-    u64 index = entity_id.index;
-    u64 generation = entity_id.generation;
+    i32 index = entity_id.index;
+    i32 generation = entity_id.generation;
 
-    APORIA_ASSERT_WITH_MESSAGE(index < world->max_entities && generation > 0,
+    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->max_entities && generation >= 0,
         "Invalid Entity ID (index: %, generation: %)!", index, generation);
 
     EntityNode* entity_node = &world->entity_list[index];
@@ -104,10 +104,10 @@ void entity_destroy(World* world, EntityID entity_id)
 
 Entity* entity_get(World* world, EntityID entity_id)
 {
-    u64 index = entity_id.index;
-    u64 generation = entity_id.generation;
+    i32 index = entity_id.index;
+    i32 generation = entity_id.generation;
 
-    APORIA_ASSERT_WITH_MESSAGE(index < world->max_entities && generation > 0,
+    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->max_entities && generation >= 0,
         "Invalid EntityID (index: %, generation: %)!", index, generation);
 
     EntityNode* entity_node = &world->entity_list[index];

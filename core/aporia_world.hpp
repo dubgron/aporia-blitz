@@ -5,13 +5,13 @@
 
 struct EntityID
 {
-    u64 index = 0;
-    u64 generation = 0;
+    i32 index = INDEX_INVALID;
+    i32 generation = INDEX_INVALID;
 };
 
 struct EntityNode
 {
-    u64 generation = 0;
+    i32 generation = INDEX_INVALID;
 
     EntityNode* next = nullptr;
     Entity* entity = nullptr;
@@ -20,16 +20,16 @@ struct EntityNode
 struct World
 {
     MemoryArena arena;
-    u64 max_entities = 0;
+    i64 max_entities = 0;
 
     Entity* entity_array = nullptr;
-    u64 entity_count = 0;
+    i64 entity_count = 0;
 
     EntityNode* entity_list = nullptr;
     EntityNode* free_list = nullptr;
 };
 
-World world_init(u64 in_max_entities = 10000);
+World world_init(i64 in_max_entities = 10000);
 void world_deinit(World* world);
 
 void world_clear(World* world);

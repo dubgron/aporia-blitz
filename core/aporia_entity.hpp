@@ -6,7 +6,8 @@
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"
 
-enum EntityFlag : u64
+using EntityFlag = u64;
+enum EntityFlag_ : EntityFlag
 {
     EntityFlag_None             = 0x00,
     EntityFlag_Visible          = 0x01,
@@ -16,9 +17,9 @@ enum EntityFlag : u64
 
 struct Entity
 {
-    u64 index = 0;
+    i32 index = 0;
 
-    u64 flags = EntityFlag_Visible | EntityFlag_BlockingLight;
+    EntityFlag flags = EntityFlag_Visible | EntityFlag_BlockingLight;
 
     v2 position{ 0.f };
     f32 z = 0.f;
