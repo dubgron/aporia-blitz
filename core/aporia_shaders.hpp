@@ -163,4 +163,7 @@ extern u32 postprocessing_shader;
 extern u32 raymarching_shader;
 extern u32 shadowcasting_shader;
 
+#if defined(APORIA_EDITOR)
 extern u32 editor_grid_shader;
+extern u32 editor_selected_shader;
+#endif

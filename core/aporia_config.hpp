@@ -30,10 +30,12 @@ struct CameraConfig
     f32 zoom_min = 1.f;
 };
 
+#if defined(APORIA_EDITOR)
 struct EditorConfig
 {
     bool display_editor_grid = false;
 };
+#endif
 
 struct ShaderConfig
 {
@@ -68,8 +70,11 @@ struct WindowConfig
 extern WindowConfig window_config;
 extern RenderingConfig rendering_config;
 extern ShaderConfig shader_config;
-extern EditorConfig editor_config;
 extern CameraConfig camera_config;
+
+#if defined(APORIA_EDITOR)
+extern EditorConfig editor_config;
+#endif
 
 struct Config_Property
 {

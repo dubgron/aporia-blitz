@@ -10,8 +10,11 @@
 WindowConfig window_config;
 RenderingConfig rendering_config;
 ShaderConfig shader_config;
-EditorConfig editor_config;
 CameraConfig camera_config;
+
+#if defined(APORIA_EDITOR)
+EditorConfig editor_config;
+#endif
 
 static u8 comment_token                 = ';';
 static u8 inner_property_begin_token    = '(';
@@ -418,7 +421,9 @@ static Config_PropertyDefinition defined_properties[] =
 
     { "rendering", "custom_resolution",   Config_ValueType_Int32,             2, &rendering_config.custom_resolution_width },
 
+#if defined(APORIA_EDITOR)
     { "editor", "display_editor_grid",    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
+#endif
 };
 static constexpr u64 defined_properties_count = ARRAY_COUNT(defined_properties);
 
@@ -503,8 +508,11 @@ bool reload_config_asset(Asset* config_asset)
     window_config = {};
     rendering_config = {};
     shader_config = {};
-    editor_config = {};
     camera_config = {};
+
+#if defined(APORIA_EDITOR)
+    editor_config = {};
+#endif
 
     bool success = load_engine_config_from_file(config_asset->source_file);
     config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;

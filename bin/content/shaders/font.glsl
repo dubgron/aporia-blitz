@@ -16,6 +16,11 @@ layout (location = 2) out flat int out_tex_unit;
 layout (location = 3) out vec2 out_uv;
 layout (location = 4) out float out_screen_px_range;
 
+#if APORIA_EDITOR
+layout (location = 5) in int in_editor_index;
+layout (location = 5) out flat int out_editor_index;
+#endif
+
 void main()
 {
     gl_Position = u_vp_matrix * vec4(in_position, 1.0);
@@ -25,6 +30,10 @@ void main()
     out_tex_unit = in_tex_unit;
     out_uv = in_tex_coord;
     out_screen_px_range = in_screen_px_range * u_camera_zoom;
+
+#if APORIA_EDITOR
+    out_editor_index = in_editor_index;
+#endif
 }
 
 
@@ -42,6 +51,11 @@ uniform sampler2D u_atlas[32];
 
 layout (location = 0) out vec4 out_color;
 
+#if APORIA_EDITOR
+layout (location = 5) in flat int in_editor_index;
+layout (location = 1) out int out_editor_index;
+#endif
+
 float median(float r, float g, float b)
 {
     return max(min(r, g), min(max(r, g), b));
@@ -54,4 +68,10 @@ void main()
     float screen_px_distance = in_screen_px_range * (sd - 0.5);
     float opacity = clamp(screen_px_distance + 0.5, 0.0, 1.0);
     out_color = in_color * opacity;
+
+#if APORIA_EDITOR
+    out_editor_index = in_editor_index;
+    if (opacity == 0.0)
+        discard;
+#endif
 }

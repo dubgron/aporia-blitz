@@ -3,7 +3,6 @@
 #include "aporia_assets.hpp"
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
-#include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 #include "platform/aporia_opengl.hpp"
 
@@ -16,7 +15,10 @@ u32 postprocessing_shader = 0;
 u32 raymarching_shader = 0;
 u32 shadowcasting_shader = 0;
 
+#if defined(APORIA_EDITOR)
 u32 editor_grid_shader = 0;
+u32 editor_selected_shader = 0;
+#endif
 
 static constexpr u64 MAX_SHADERS = 128;
 
@@ -301,12 +303,12 @@ static bool is_shader_status_ok(u32 shader_id, u32 status_type)
 
 static u32 load_shader_from_file(String filepath, u64 subshaders_count)
 {
-    String shader_contents = read_entire_text_file(&memory.persistent, filepath);
+    ScratchArena temp = scratch_begin();
 
     //////////////////////////////////////////////////////////////////////
     // Parse the shader file
 
-    ScratchArena temp = scratch_begin();
+    String shader_contents = read_entire_text_file(temp.arena, filepath);
 
     ShaderData shader_data;
     shader_data.subshaders = arena_push<SubShaderData>(temp.arena, subshaders_count);
@@ -369,6 +371,27 @@ static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     }
 
     APORIA_ASSERT(shader_data.subshaders_count == subshaders_count);
+
+#if defined(APORIA_EDITOR)
+    //////////////////////////////////////////////////////////////////////
+    // Add editor define if compiled with editor
+
+    String editor_define = "\n#define APORIA_EDITOR 1\n";
+
+    for (u64 idx = 0; idx < shader_data.subshaders_count; ++idx)
+    {
+        String contents = shader_data.subshaders[idx].contents;
+        u64 version_begin = contents.find("#version");
+        u64 version_end = contents.find("\n", version_begin) + 1;
+
+        StringList builder;
+        builder.push_node(temp.arena, contents.substr(0, version_end));
+        builder.push_node(temp.arena, editor_define);
+        builder.push_node(temp.arena, contents.substr(version_end));
+
+        shader_data.subshaders[idx].contents = builder.join(temp.arena);
+    }
+#endif
 
     //////////////////////////////////////////////////////////////////////
     // Compile and link subshaders

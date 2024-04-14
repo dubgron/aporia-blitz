@@ -34,10 +34,20 @@ void rendering_flush_to_screen();
 
 void draw_entity(const Entity& entity);
 void draw_rectangle(v2 position, f32 width, f32 height, Color color = Color::White, u32 shader_id = rectangle_shader);
+void draw_rectangle(v2 base, v2 right, v2 up, Color color = Color::White, u32 shader_id = rectangle_shader);
 void draw_line(v2 begin, v2 end, f32 thickness = 1.f, Color color = Color::White, u32 shader_id = line_shader);
 void draw_circle(v2 position, f32 radius, Color color = Color::White, u32 shader_id = circle_shader);
+void draw_circle(v2 position, f32 radius, f32 inner_radius, Color color = Color::White, u32 shader_id = circle_shader);
 void draw_text(const Text& text);
+
+// @HACK(dubgron): We draw triangle as a quad with a duplicate vertex.
+void draw_triangle(v2 p0, v2 p1, v2 p2, Color color = Color::White, u32 shader_id = rectangle_shader);
 
 void get_size_of_render_surface(i32* width, i32* height);
 
 void adjust_framebuffers_to_render_surface();
+
+#if defined(APORIA_EDITOR)
+i32 read_editor_index();
+void set_editor_index(i32 editor_index);
+#endif

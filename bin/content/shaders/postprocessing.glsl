@@ -1,5 +1,3 @@
-#blend src_alpha one_minus_src_alpha
-#blend_op add
 #depth_test off
 #depth_write off
 

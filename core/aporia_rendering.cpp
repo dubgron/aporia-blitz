@@ -24,14 +24,15 @@
     #define DEBUG_TEXTURE(...)
 #endif
 
-static constexpr u64 MAX_RENDER_QUEUE_SIZE = 100000;
-static constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
+constexpr f32 Z_ALWAYS_IN_FRONT = 1.f;
+constexpr f32 Z_ALWAYS_BEHIND = -1.f;
+
+constexpr u64 MAX_RENDER_QUEUE_SIZE = 100000;
+constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
 
 // @NOTE(dubgron); It maps texture units to texture ids.
 static u32 textures_used_in_draw_call[OPENGL_MAX_TEXTURE_UNITS] = { 0 };
 static u32 first_unused_texture_unit = 0;
-
-static constexpr u32 INVALID_TEXTURE_UNIT = -1;
 
 u32 find_or_assign_texture_unit(u32 texture_id)
 {
@@ -65,7 +66,7 @@ u32 find_or_assign_texture_unit(u32 texture_id)
         return texture_unit;
     }
 
-    return INVALID_TEXTURE_UNIT;
+    return INDEX_INVALID;
 }
 
 #if defined(APORIA_EMSCRIPTEN)
@@ -83,7 +84,11 @@ struct Vertex
     texture_unit tex_unit = 0;
     v2 tex_coord{ 0.f };
 
-    f32 additional = 0.f;
+    f32 additional = 0;
+
+#if defined(APORIA_EDITOR)
+    i32 editor_index = -1;
+#endif
 };
 
 struct IndexBuffer
@@ -145,7 +150,7 @@ static VertexBuffer vertexbuffer_create(MemoryArena* arena, u32 max_count, u32 v
     result.max_count = max_count;
     result.vertex_per_object = vertex_per_object;
 
-    result.data = arena_push_uninitialized<Vertex>(arena, result.max_count);
+    result.data = arena_push<Vertex>(arena, result.max_count);
     result.count = 0;
 
     i64 size = result.max_count * sizeof(Vertex);
@@ -201,6 +206,11 @@ static void vertexbuffer_add_layout(VertexBuffer* vertex_buffer)
 
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, additional));
+
+#if defined(APORIA_EDITOR)
+    glEnableVertexAttribArray(5);
+    glVertexAttribIPointer(5, 1, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, editor_index));
+#endif
 
     vertexbuffer_unbind();
 }
@@ -423,7 +433,7 @@ static void renderqueue_flush(RenderQueue* render_queue)
 
         u32 texture_unit = find_or_assign_texture_unit(key->texture_id);
 
-        bool no_available_texture_unit = (texture_unit == INVALID_TEXTURE_UNIT);
+        bool no_available_texture_unit = (texture_unit == INDEX_INVALID);
         bool vertex_buffer_overflow = (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count);
 
         if (no_available_texture_unit || vertex_buffer_overflow)
@@ -454,9 +464,18 @@ static void renderqueue_flush(RenderQueue* render_queue)
 struct Framebuffer
 {
     u32 framebuffer_id = 0;
-    u32 renderbuffer_id = 0;
 
-    Texture color_buffer;
+    i32 width = 0;
+    i32 height = 0;
+    i32 channels = 0;
+
+    u32 color_buffer_id = 0;
+    u32 depth_buffer_id = 0;
+
+#if defined(APORIA_EDITOR)
+    u32 editor_buffer_id = 0;
+#endif
+
     Vertex vertex[4];
 };
 
@@ -471,27 +490,55 @@ static Framebuffer framebuffer_create(i32 width, i32 height)
     Framebuffer result;
 
     // Create new buffers and textures
-    result.color_buffer.width = width;
-    result.color_buffer.height = height;
-    result.color_buffer.channels = 4;
+    result.width = width;
+    result.height = height;
+    result.channels = 4;
 
     glGenFramebuffers(1, &result.framebuffer_id);
     glBindFramebuffer(GL_FRAMEBUFFER, result.framebuffer_id);
 
-    glGenTextures(1, &result.color_buffer.id);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, result.color_buffer.id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result.color_buffer.id, 0);
+    // Create a texture for the color buffer
+    {
+        glGenTextures(1, &result.color_buffer_id);
 
-    glGenRenderbuffers(1, &result.renderbuffer_id);
-    glBindRenderbuffer(GL_RENDERBUFFER, result.renderbuffer_id);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, result.renderbuffer_id);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, result.color_buffer_id);
+
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result.color_buffer_id, 0);
+    }
+
+    // Create a render target for depth and stencil buffers
+    {
+        glGenRenderbuffers(1, &result.depth_buffer_id);
+        glBindRenderbuffer(GL_RENDERBUFFER, result.depth_buffer_id);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, result.depth_buffer_id);
+    }
+
+#if defined(APORIA_EDITOR)
+    // Create a texture for the editor buffer
+    {
+        glGenTextures(1, &result.editor_buffer_id);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, result.editor_buffer_id);
+
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32I, width, height);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, result.editor_buffer_id, 0);
+    }
+
+    GLenum color_attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, color_attachments);
+#endif
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -513,8 +560,13 @@ static Framebuffer framebuffer_create(i32 width, i32 height)
 
 static void framebuffer_destroy(Framebuffer* framebuffer)
 {
-    glDeleteTextures(1, &framebuffer->color_buffer.id);
-    glDeleteRenderbuffers(1, &framebuffer->renderbuffer_id);
+    glDeleteTextures(1, &framebuffer->color_buffer_id);
+    glDeleteRenderbuffers(1, &framebuffer->depth_buffer_id);
+
+#if defined(APORIA_EDITOR)
+    glDeleteTextures(1, &framebuffer->editor_buffer_id);
+#endif
+
     glDeleteFramebuffers(1, &framebuffer->framebuffer_id);
 }
 
@@ -706,8 +758,11 @@ void rendering_init(MemoryArena* arena)
     raymarching_shader = load_shader(SHADERS_DIRECTORY "raymarching.glsl");
     shadowcasting_shader = load_shader(SHADERS_DIRECTORY "shadowcasting.glsl");
 
-    // Setup editor grid shaders
-    editor_grid_shader = load_shader(SHADERS_DIRECTORY "editor_grid.glsl");
+#if defined(APORIA_EDITOR)
+    // Setup editor shaders
+    editor_grid_shader = load_shader(SHADERS_DIRECTORY "editor/grid.glsl");
+    editor_selected_shader = load_shader(SHADERS_DIRECTORY "editor/selected.glsl");
+#endif
 
     unbind_shader();
 }
@@ -737,6 +792,11 @@ void rendering_frame_end()
     framebuffer_bind(temp_framebuffer);
     framebuffer_clear(camera_config.background_color);
 
+#if defined(APORIA_EDITOR)
+    i32 value = -1;
+    glClearTexImage(temp_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
+#endif
+
     const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
     f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
@@ -762,6 +822,7 @@ void rendering_frame_end()
     shader_set_mat4("u_vp_matrix", view_projection_matrix);
     shader_set_float("u_camera_zoom", camera_zoom);
 
+#if defined(APORIA_EDITOR)
     if (editor_config.display_editor_grid)
     {
         bind_shader(editor_grid_shader);
@@ -770,14 +831,20 @@ void rendering_frame_end()
         VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
         u64 idx = quads->vertex_buffer.count;
-        quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, 0.f } };
-        quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, 0.f } };
-        quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, 0.f } };
-        quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, 0.f } };
+        quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, Z_ALWAYS_BEHIND } };
         quads->vertex_buffer.count += 4;
 
         vertexarray_render(quads);
     }
+
+    bind_shader(editor_selected_shader);
+    shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+    shader_set_mat4("u_vp_matrix", view_projection_matrix);
+    shader_set_float("u_time_since_selected", time_since_selected);
+#endif
 
     renderqueue_flush(&render_queue);
     framebuffer_unbind();
@@ -813,7 +880,7 @@ void rendering_frame_end()
 
         uniformbuffer_set_data(&lights_uniform_buffer, light_sources.data, light_sources.count * sizeof(LightSource));
 
-        u32 masking_unit = find_or_assign_texture_unit(masking.color_buffer.id);
+        u32 masking_unit = find_or_assign_texture_unit(masking.color_buffer_id);
 
         bind_shader(raymarching_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
@@ -830,12 +897,12 @@ void rendering_frame_end()
         DEBUG_TEXTURE(raymarching.color_buffer);
 
         // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
-        glViewport(0, 0, temp_framebuffer.color_buffer.width, temp_framebuffer.color_buffer.height);
+        glViewport(0, 0, temp_framebuffer.width, temp_framebuffer.height);
 
         //////////////////////////////////////////////////
         // Shadowcasting Shader
 
-        u32 raymarching_unit = find_or_assign_texture_unit(raymarching.color_buffer.id);
+        u32 raymarching_unit = find_or_assign_texture_unit(raymarching.color_buffer_id);
 
         bind_shader(shadowcasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
@@ -851,7 +918,7 @@ void rendering_frame_end()
 
     DEBUG_TEXTURE(temp_framebuffer.color_buffer);
 
-    u32 temp_framebuffer_unit = find_or_assign_texture_unit(temp_framebuffer.color_buffer.id);
+    u32 temp_framebuffer_unit = find_or_assign_texture_unit(temp_framebuffer.color_buffer_id);
 
     bind_shader(postprocessing_shader);
     shader_set_int("u_framebuffer", temp_framebuffer_unit);
@@ -902,7 +969,7 @@ void rendering_ui_end()
 
 void rendering_flush_to_screen()
 {
-    f32 render_aspect_ratio = (f32)main_framebuffer.color_buffer.width / (f32)main_framebuffer.color_buffer.height;
+    f32 render_aspect_ratio = (f32)main_framebuffer.width / (f32)main_framebuffer.height;
     f32 window_aspect_ratio = (f32)active_window->width / (f32)active_window->height;
 
     i32 offset_x, offset_y, render_width, render_height;
@@ -930,52 +997,58 @@ void rendering_flush_to_screen()
 #if defined(APORIA_EMSCRIPTEN)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, main_framebuffer.framebuffer_id);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height,
+    glBlitFramebuffer(0, 0, main_framebuffer.width, main_framebuffer.height,
         offset_x, offset_y, offset_x + render_width, offset_y + render_height,
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
     glBlitNamedFramebuffer(main_framebuffer.framebuffer_id, 0,
-        0, 0, main_framebuffer.color_buffer.width, main_framebuffer.color_buffer.height,
+        0, 0, main_framebuffer.width, main_framebuffer.height,
         offset_x, offset_y, offset_x + render_width, offset_y + render_height,
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #endif
 }
+
+#if defined(APORIA_EDITOR)
+static i32 forced_entity_index = INDEX_INVALID;
+#endif
 
 void draw_entity(const Entity& entity)
 {
     f32 sin = std::sin(entity.rotation);
     f32 cos = std::cos(entity.rotation);
 
-    v3 right_offset       = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
-    v3 up_offset          = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;
+    v3 right_offset = v3{ cos, sin, 0.f } * entity.width * entity.scale.x;
+    v3 up_offset = v3{ -sin, cos, 0.f } * entity.height * entity.scale.y;
 
     v3 offset_from_center = right_offset * entity.center_of_rotation.x + up_offset * entity.center_of_rotation.y;
-    v3 base_offset        = v3{ entity.position, entity.z } - offset_from_center;
+    v3 base_offset = v3{ entity.position, entity.z } - offset_from_center;
 
     RenderQueueKey key;
-    key.buffer                  = BufferType::Quads;
-    key.shader_id               = entity.shader_id;
+    key.buffer = BufferType::Quads;
+    key.shader_id = entity.shader_id;
 
-    key.vertex[0].position      = base_offset;
-    key.vertex[0].color         = entity.color;
+    key.vertex[0].position = base_offset;
+    key.vertex[1].position = base_offset + right_offset;
+    key.vertex[2].position = base_offset + right_offset + up_offset;
+    key.vertex[3].position = base_offset + up_offset;
 
-    key.vertex[1].position      = base_offset + right_offset;
-    key.vertex[1].color         = entity.color;
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].color = entity.color;
 
-    key.vertex[2].position      = base_offset + right_offset + up_offset;
-    key.vertex[2].color         = entity.color;
-
-    key.vertex[3].position      = base_offset + up_offset;
-    key.vertex[3].color         = entity.color;
+#if defined(APORIA_EDITOR)
+        key.vertex[idx].editor_index = entity.index;
+#endif
+    }
 
     if (Texture* texture = get_texture(entity.texture.texture_index))
     {
-        key.texture_id              = texture->id;
+        key.texture_id = texture->id;
 
-        key.vertex[0].tex_coord     = v2{ entity.texture.u.x, entity.texture.v.y };
-        key.vertex[1].tex_coord     = entity.texture.v;
-        key.vertex[2].tex_coord     = v2{ entity.texture.v.x, entity.texture.u.y };
-        key.vertex[3].tex_coord     = entity.texture.u;
+        key.vertex[0].tex_coord = v2{ entity.texture.u.x, entity.texture.v.y };
+        key.vertex[1].tex_coord = entity.texture.v;
+        key.vertex[2].tex_coord = v2{ entity.texture.v.x, entity.texture.u.y };
+        key.vertex[3].tex_coord = entity.texture.u;
     }
 
     renderqueue_add(&render_queue, key);
@@ -983,29 +1056,40 @@ void draw_entity(const Entity& entity)
 
 void draw_rectangle(v2 position, f32 width, f32 height, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
 {
-    v3 base_offset    = v3{ position, 0.f };
-    v3 right_offset   = v3{ width, 0.f, 0.f };
-    v3 up_offset      = v3{ 0.f, height, 0.f };
+    v2 right = v2{ width, 0.f };
+    v2 up = v2{ 0.f, height };
 
+    draw_rectangle(position, right, up, color, shader_id);
+}
+
+void draw_rectangle(v2 base, v2 right, v2 up, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
+{
     RenderQueueKey key;
-    key.buffer              = BufferType::Quads;
-    key.shader_id           = shader_id;
+    key.buffer = BufferType::Quads;
+    key.shader_id = shader_id;
 
-    key.vertex[0].position  = base_offset;
-    key.vertex[0].color     = color;
+    key.vertex[0].position = v3{ base, Z_ALWAYS_IN_FRONT };
+    key.vertex[0].color = color;
     key.vertex[0].tex_coord = v2{ 0.f, 0.f };
 
-    key.vertex[1].position  = base_offset + right_offset;
-    key.vertex[1].color     = color;
+    key.vertex[1].position = v3{ base + right, Z_ALWAYS_IN_FRONT };
+    key.vertex[1].color = color;
     key.vertex[1].tex_coord = v2{ 1.f, 0.f };
 
-    key.vertex[2].position  = base_offset + right_offset + up_offset;
-    key.vertex[2].color     = color;
+    key.vertex[2].position = v3{ base + right + up, Z_ALWAYS_IN_FRONT };
+    key.vertex[2].color = color;
     key.vertex[2].tex_coord = v2{ 1.f, 1.f };
 
-    key.vertex[3].position  = base_offset + up_offset;
-    key.vertex[3].color     = color;
+    key.vertex[3].position = v3{ base + up, Z_ALWAYS_IN_FRONT };
+    key.vertex[3].color = color;
     key.vertex[3].tex_coord = v2{ 0.f, 1.f };
+
+#if defined(APORIA_EDITOR)
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].editor_index = forced_entity_index;
+    }
+#endif
 
     renderqueue_add(&render_queue, key);
 }
@@ -1016,57 +1100,83 @@ void draw_line(v2 begin, v2 end, f32 thickness /* = 1.f */, Color color /* = Col
     v2 normal = v2{ -direction.y, direction.x };
 
     RenderQueueKey key;
-    key.buffer                  = BufferType::Quads;
-    key.shader_id               = shader_id;
+    key.buffer = BufferType::Quads;
+    key.shader_id = shader_id;
 
-    key.vertex[0].position      = v3{ begin, 0.f };
-    key.vertex[0].color         = color;
-    key.vertex[0].tex_coord     = normal;
-    key.vertex[0].additional    = thickness;
+    key.vertex[0].position = v3{ begin, Z_ALWAYS_IN_FRONT };
+    key.vertex[0].color = color;
+    key.vertex[0].tex_coord = normal;
+    key.vertex[0].additional = thickness;
 
-    key.vertex[1].position      = v3{ begin, 0.f };
-    key.vertex[1].color         = color;
-    key.vertex[1].tex_coord     = -normal;
-    key.vertex[1].additional    = thickness;
+    key.vertex[1].position = v3{ begin, Z_ALWAYS_IN_FRONT };
+    key.vertex[1].color = color;
+    key.vertex[1].tex_coord = -normal;
+    key.vertex[1].additional = thickness;
 
-    key.vertex[2].position      = v3{ end, 0.f };
-    key.vertex[2].color         = color;
-    key.vertex[2].tex_coord     = -normal;
-    key.vertex[2].additional    = thickness;
+    key.vertex[2].position = v3{ end, Z_ALWAYS_IN_FRONT };
+    key.vertex[2].color = color;
+    key.vertex[2].tex_coord = -normal;
+    key.vertex[2].additional = thickness;
 
-    key.vertex[3].position      = v3{ end, 0.f };
-    key.vertex[3].color         = color;
-    key.vertex[3].tex_coord     = normal;
-    key.vertex[3].additional    = thickness;
+    key.vertex[3].position = v3{ end, Z_ALWAYS_IN_FRONT };
+    key.vertex[3].color = color;
+    key.vertex[3].tex_coord = normal;
+    key.vertex[3].additional = thickness;
+
+#if defined(APORIA_EDITOR)
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].editor_index = forced_entity_index;
+    }
+#endif
 
     renderqueue_add(&render_queue, key);
 }
 
 void draw_circle(v2 position, f32 radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
 {
-    v3 base_offset          = v3{ position, 0.f };
-    v3 right_half_offset    = v3{ -radius, 0.f, 0.f };
-    v3 up_half_offset       = v3{ 0.f, radius, 0.f };
+    draw_circle(position, radius, 0.f, color, shader_id);
+}
+
+void draw_circle(v2 position, f32 radius, f32 inner_radius, Color color /* = Color::White */, u32 shader_id /* = circle_shader */)
+{
+    APORIA_ASSERT(inner_radius >= 0.f && inner_radius < radius);
+    f32 inner_radius_normalized = inner_radius / radius;
+
+    v3 base_offset = v3{ position, Z_ALWAYS_IN_FRONT };
+    v3 right_half_offset = v3{ -radius, 0.f, 0.f };
+    v3 up_half_offset = v3{ 0.f, radius, 0.f };
 
     RenderQueueKey key;
-    key.buffer                  = BufferType::Quads;
-    key.shader_id               = shader_id;
+    key.buffer = BufferType::Quads;
+    key.shader_id = shader_id;
 
-    key.vertex[0].position      = base_offset - right_half_offset - up_half_offset;
-    key.vertex[0].color         = color;
-    key.vertex[0].tex_coord     = v2{ -1.f, -1.f };
+    key.vertex[0].position = base_offset - right_half_offset - up_half_offset;
+    key.vertex[0].color = color;
+    key.vertex[0].tex_coord = v2{ -1.f, -1.f };
+    key.vertex[0].additional = inner_radius_normalized;
 
-    key.vertex[1].position      = base_offset + right_half_offset - up_half_offset;
-    key.vertex[1].color         = color;
-    key.vertex[1].tex_coord     = v2{ 1.f, -1.f };
+    key.vertex[1].position = base_offset + right_half_offset - up_half_offset;
+    key.vertex[1].color = color;
+    key.vertex[1].tex_coord = v2{ 1.f, -1.f };
+    key.vertex[1].additional = inner_radius_normalized;
 
-    key.vertex[2].position      = base_offset + right_half_offset + up_half_offset;
-    key.vertex[2].color         = color;
-    key.vertex[2].tex_coord     = v2{ 1.f, 1.f };
+    key.vertex[2].position = base_offset + right_half_offset + up_half_offset;
+    key.vertex[2].color = color;
+    key.vertex[2].tex_coord = v2{ 1.f, 1.f };
+    key.vertex[2].additional = inner_radius_normalized;
 
-    key.vertex[3].position      = base_offset - right_half_offset + up_half_offset;
-    key.vertex[3].color         = color;
-    key.vertex[3].tex_coord     = v2{ -1.f, 1.f };
+    key.vertex[3].position = base_offset - right_half_offset + up_half_offset;
+    key.vertex[3].color = color;
+    key.vertex[3].tex_coord = v2{ -1.f, 1.f };
+    key.vertex[3].additional = inner_radius_normalized;
+
+#if defined(APORIA_EDITOR)
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].editor_index = forced_entity_index;
+    }
+#endif
 
     renderqueue_add(&render_queue, key);
 }
@@ -1089,8 +1199,8 @@ void draw_text(const Text& text)
     }
 
     // Adjust text scaling by the predefined atlas font size
-    f32 effective_font_size   = text.font_size / font.atlas.font_size;
-    f32 screen_px_range       = font.atlas.distance_range * effective_font_size;
+    f32 effective_font_size = text.font_size / font.atlas.font_size;
+    f32 screen_px_range = font.atlas.distance_range * effective_font_size;
 
     f32 sin = std::sin(text.rotation);
     f32 cos = std::cos(text.rotation);
@@ -1165,8 +1275,8 @@ void draw_text(const Text& text)
 
         max_line_alignment = max(max_line_alignment, line_alignments[line_count - 1]);
 
-        static constexpr f32 align_blend[] = { 0.f, 0.5f, 1.f };
-        u64 alignment_id = static_cast<u64>(text.alignment);
+        constexpr f32 align_blend[] = { 0.f, 0.5f, 1.f };
+        u64 alignment_id = to_underlying(text.alignment);
 
         for (u64 idx = 0; idx < line_count; ++idx)
         {
@@ -1243,57 +1353,94 @@ void draw_text(const Text& text)
             const GlyphBounds& atlas_bounds = glyph->atlas_bounds;
             const GlyphBounds& plane_bounds = glyph->plane_bounds;
 
-            v2 texture_size   = v2{ texture->width, texture->height };
+            v2 texture_size = v2{ texture->width, texture->height };
 
-            v2 tex_coord_u    = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
-            v2 tex_coord_v    = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
+            v2 tex_coord_u = v2{ atlas_bounds.left, atlas_bounds.top } / texture_size;
+            v2 tex_coord_v = v2{ atlas_bounds.right, atlas_bounds.bottom } / texture_size;
 
-            f32 width         = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
-            f32 height        = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
+            f32 width = (atlas_bounds.right - atlas_bounds.left) * effective_font_size;
+            f32 height = (atlas_bounds.bottom - atlas_bounds.top) * effective_font_size;
 
             // @NOTE(dubgron): We flip the sign of plane_bounds.bottom because
             // the plane_bounds lives in a space where the y-axis goes downwards.
-            v2 plane_offset   = v2{ plane_bounds.left, -plane_bounds.bottom };
-            v2 align_offset   = v2{ line_alignments[current_line], 0.f };
-            v2 line_offset    = advance + plane_offset + align_offset - center_offset;
+            v2 plane_offset = v2{ plane_bounds.left, -plane_bounds.bottom };
+            v2 align_offset = v2{ line_alignments[current_line], 0.f };
+            v2 line_offset = advance + plane_offset + align_offset - center_offset;
 
-            f32 rotated_x     = cos * line_offset.x - sin * line_offset.y;
-            f32 rotated_y     = sin * line_offset.x + cos * line_offset.y;
+            f32 rotated_x = cos * line_offset.x - sin * line_offset.y;
+            f32 rotated_y = sin * line_offset.x + cos * line_offset.y;
 
-            v2 base_offset    = text.position + v2{ rotated_x, rotated_y } * text.font_size;
-            v2 right_offset   = v2{ cos , sin } * width;
-            v2 up_offset      = v2{ -sin, cos } * height;
+            v2 base_offset = text.position + v2{ rotated_x, rotated_y } * text.font_size;
+            v2 right_offset = v2{ cos , sin } *width;
+            v2 up_offset = v2{ -sin, cos } *height;
 
             RenderQueueKey key;
-            key.buffer                  = BufferType::Quads;
-            key.shader_id               = text.shader_id;
-            key.texture_id              = texture->id;
+            key.buffer = BufferType::Quads;
+            key.shader_id = text.shader_id;
+            key.texture_id = texture->id;
 
-            key.vertex[0].position      = v3{ base_offset, 0.f };
-            key.vertex[0].tex_coord     = v2{ tex_coord_u.x, tex_coord_v.y };
-            key.vertex[0].color         = text.color;
-            key.vertex[0].additional    = screen_px_range;
+            key.vertex[0].position = v3{ base_offset, 0.f };
+            key.vertex[0].color = text.color;
+            key.vertex[0].tex_coord = v2{ tex_coord_u.x, tex_coord_v.y };
+            key.vertex[0].additional = screen_px_range;
 
-            key.vertex[1].position      = v3{ base_offset + right_offset, 0.f };
-            key.vertex[1].tex_coord     = tex_coord_v;
-            key.vertex[1].color         = text.color;
-            key.vertex[1].additional    = screen_px_range;
+            key.vertex[1].position = v3{ base_offset + right_offset, 0.f };
+            key.vertex[1].color = text.color;
+            key.vertex[1].tex_coord = tex_coord_v;
+            key.vertex[1].additional = screen_px_range;
 
-            key.vertex[2].position      = v3{ base_offset + right_offset + up_offset, 0.f };
-            key.vertex[2].tex_coord     = v2{ tex_coord_v.x, tex_coord_u.y };
-            key.vertex[2].color         = text.color;
-            key.vertex[2].additional    = screen_px_range;
+            key.vertex[2].position = v3{ base_offset + right_offset + up_offset, 0.f };
+            key.vertex[2].color = text.color;
+            key.vertex[2].tex_coord = v2{ tex_coord_v.x, tex_coord_u.y };
+            key.vertex[2].additional = screen_px_range;
 
-            key.vertex[3].position      = v3{ base_offset + up_offset, 0.f };
-            key.vertex[3].tex_coord     = tex_coord_u;
-            key.vertex[3].color         = text.color;
-            key.vertex[3].additional    = screen_px_range;
+            key.vertex[3].position = v3{ base_offset + up_offset, 0.f };
+            key.vertex[3].color = text.color;
+            key.vertex[3].tex_coord = tex_coord_u;
+            key.vertex[3].additional = screen_px_range;
+
+#if defined(APORIA_EDITOR)
+            for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+            {
+                key.vertex[idx].editor_index = forced_entity_index;
+            }
+#endif
 
             renderqueue_add(&render_queue, key);
         }
     }
 
     scratch_end(temp);
+}
+
+void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
+{
+    constexpr f32 z = 1.f;
+
+    RenderQueueKey key;
+    key.buffer = BufferType::Quads;
+    key.shader_id = shader_id;
+
+    key.vertex[0].position = v3{ p0, z };
+    key.vertex[0].color = color;
+
+    key.vertex[1].position = v3{ p1, z };
+    key.vertex[1].color = color;
+
+    key.vertex[2].position = v3{ p2, z };
+    key.vertex[2].color = color;
+
+    key.vertex[3].position = v3{ p0, z };
+    key.vertex[2].color = color;
+
+#if defined(APORIA_EDITOR)
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].editor_index = forced_entity_index;
+    }
+#endif
+
+    renderqueue_add(&render_queue, key);
 }
 
 void get_size_of_render_surface(i32* width, i32* height)
@@ -1329,3 +1476,28 @@ void adjust_framebuffers_to_render_surface()
         framebuffer_resize(&raymarching, active_window->width, active_window->height);
     }
 }
+
+#if defined(APORIA_EDITOR)
+i32 read_editor_index()
+{
+    i32 index = INDEX_INVALID;
+
+    v2 mouse_screen_position = get_mouse_screen_position();
+    i32 x_pos = (i32)mouse_screen_position.x;
+    i32 y_pos = (i32)mouse_screen_position.y;
+
+    if (x_pos > 0.f && x_pos < active_window->width && y_pos > 0.f && y_pos < active_window->height)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
+        glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glReadPixels(x_pos, y_pos, 1, 1, GL_RED_INTEGER, GL_INT, &index);
+    }
+
+    return index;
+}
+
+void set_editor_index(i32 editor_index)
+{
+    forced_entity_index = editor_index;
+}
+#endif

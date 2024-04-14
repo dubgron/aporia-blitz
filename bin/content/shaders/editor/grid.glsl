@@ -1,3 +1,4 @@
+// Additive blending
 #blend one one
 #blend_op add
 #depth_test off
@@ -39,6 +40,7 @@ uniform float thick_brightness  = 0.5;
 uniform float axis_brightness   = 1.0;
 
 layout (location = 0) out vec4 out_color;
+layout (location = 1) out int out_editor_index;
 
 vec4 draw_grid(vec2 uv)
 {
@@ -81,4 +83,5 @@ vec4 draw_grid(vec2 uv)
 void main()
 {
     out_color = draw_grid(in_position);
+    out_editor_index = -1;
 }

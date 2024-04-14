@@ -13,6 +13,10 @@
 #include "aporia_rendering.hpp"
 #include "aporia_window.hpp"
 
+#if defined(APORIA_EDITOR)
+#include "editor/aporia_editor.hpp"
+#endif
+
 GameMemory memory;
 World world;
 
@@ -40,15 +44,6 @@ static void game_draw_ui(f32 frame_time)
 
 static void game_draw_frame(f32 frame_time)
 {
-    for (u64 idx = 0; idx < world.entity_count; ++idx)
-    {
-        Entity* entity = &world.entity_array[idx];
-        if (entity_flag_is_set(*entity, EntityFlag_Visible))
-        {
-            animation_tick(entity, frame_time);
-            draw_entity(*entity);
-        }
-    }
 }
 
 static void game_shutdown()
@@ -73,6 +68,10 @@ static void game_main_loop()
         game_simulate_ui(total_time, delta_time);
         game_simulate_frame(total_time, delta_time);
 
+#if defined(APORIA_EDITOR)
+        editor_update(total_time, delta_time);
+#endif
+
         input_clear();
 
         assets_reload_if_dirty(delta_time);
@@ -82,7 +81,21 @@ static void game_main_loop()
 
     rendering_frame_begin();
     {
+        for (u64 idx = 0; idx < world.entity_count; ++idx)
+        {
+            Entity* entity = &world.entity_array[idx];
+            if (entity_flag_is_set(*entity, EntityFlag_Visible))
+            {
+                animation_tick(entity, frame_time);
+                draw_entity(*entity);
+            }
+        }
+
         game_draw_frame(frame_time);
+
+#if defined(APORIA_EDITOR)
+        editor_draw_frame(frame_time);
+#endif
     }
     rendering_frame_end();
 

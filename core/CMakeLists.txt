@@ -1,8 +1,13 @@
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 option(APORIA_DEBUGTOOLS        "Compile with debug tools"      ON)
+option(APORIA_EDITOR            "Compile with editor"           ON)
 option(APORIA_USE_UNITY_BUILD   "Compile using unity build"     ON)
 option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
+
+if (APORIA_EDITOR AND APORIA_EMSCRIPTEN)
+  message(FATAL_ERROR "Building editor with Emscripten is not supported!.")
+endif()
 
 if (WIN32)
     set(APORIA_WINDOWS TRUE)
@@ -14,7 +19,6 @@ elseif (UNIX)
         set(APORIA_LINUX TRUE)
     endif()
 endif()
-
 
 find_package(glm REQUIRED)
 find_package(sokol REQUIRED)
@@ -30,7 +34,7 @@ if (NOT APORIA_EMSCRIPTEN)
     find_package(OpenGL REQUIRED)
 endif()
 
-add_executable(core
+set(APORIA_SOURCE_FILES
     "aporia_animations.cpp"
     "aporia_animations.hpp"
     "aporia_assets.cpp"
@@ -76,13 +80,21 @@ add_executable(core
     "aporia_window.hpp"
     "aporia_world.cpp"
     "aporia_world.hpp"
-    "editor/aporia_commandline.cpp"
     "platform/aporia_opengl.cpp"
     "platform/aporia_opengl.hpp"
     "platform/aporia_os.cpp"
     "platform/aporia_os.hpp"
     "platform/aporia_unix.cpp"
     "platform/aporia_win32.cpp")
+
+if (APORIA_EDITOR)
+    set(APORIA_SOURCE_FILES "${APORIA_SOURCE_FILES}"
+        "editor/aporia_commandline.cpp"
+        "editor/aporia_editor.cpp"
+        "editor/aporia_editor.hpp")
+endif()
+
+add_executable(core "${APORIA_SOURCE_FILES}")
 
 set_source_files_properties(
     "aporia_pch.hpp"
@@ -123,6 +135,10 @@ target_compile_definitions(core PUBLIC _USE_MATH_DEFINES)
 
 if (APORIA_DEBUGTOOLS)
     target_compile_definitions(core PUBLIC APORIA_DEBUGTOOLS)
+endif()
+
+if (APORIA_EDITOR)
+    target_compile_definitions(core PUBLIC APORIA_EDITOR)
 endif()
 
 # Add platform-specific defines
