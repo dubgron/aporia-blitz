@@ -7,27 +7,33 @@
 #include "aporia_window.hpp"
 #include "aporia_world.hpp"
 
-static EntityID selected_entity;
+bool editor_is_open = true;
 f32 time_since_selected = 0.f;
 
-using GizmoType = u8;
-enum GizmoType_ : GizmoType
+static bool editor_is_mouse_within_viewport = false;
+
+static EntityID selected_entity;
+
+enum GizmoType : u8
 {
     GizmoType_Translate,
     GizmoType_Rotate,
     GizmoType_Scale,
 };
 
-using GizmoSpace = u8;
-enum GizmoSpace_ : GizmoSpace
+enum GizmoSpace : u8
 {
     GizmoSpace_World,
     GizmoSpace_Local,
 };
 
-constexpr i32 GIZMO_X_AXIS_INDEX    = INDEX_INVALID - 1;
-constexpr i32 GIZMO_Y_AXIS_INDEX    = INDEX_INVALID - 2;
-constexpr i32 GIZMO_XY_AXIS_INDEX   = INDEX_INVALID - 3;
+enum EditorIndex : i32
+{
+    NOTHING_SELECTED_INDEX  = INDEX_INVALID,
+    GIZMO_X_AXIS_INDEX      = INDEX_INVALID - 1,
+    GIZMO_Y_AXIS_INDEX      = INDEX_INVALID - 2,
+    GIZMO_XY_AXIS_INDEX     = INDEX_INVALID - 3,
+};
 
 const Color GIZMO_X_AXIS_COLOR          = Color::Red;
 const Color GIZMO_Y_AXIS_COLOR          = Color::Green;
@@ -45,10 +51,19 @@ static v2 entity_start_position{ 0.f };
 static f32 entity_start_rotation = 0.f;
 static v2 entity_start_scale{ 0.f };
 
-static i32 gizmo_in_use_index = INDEX_INVALID;
+static i32 gizmo_in_use_index = NOTHING_SELECTED_INDEX;
 
 void editor_update(f32 time, f32 delta_time)
 {
+    if (input_has_been_pressed(Key_F1))
+        editor_is_open = !editor_is_open;
+
+    if (!editor_is_open)
+    {
+        editor_is_mouse_within_viewport = false;
+        return;
+    }
+
     active_camera->control_movement(delta_time);
     active_camera->control_rotation(delta_time);
     active_camera->control_zoom(delta_time);
@@ -80,16 +95,22 @@ void editor_update(f32 time, f32 delta_time)
 
     time_since_selected += delta_time;
 
+    v2 mouse_viewport_position = get_mouse_viewport_position();
+    i32 x_pos = (i32)mouse_viewport_position.x;
+    i32 y_pos = (i32)mouse_viewport_position.y;
+
+    editor_is_mouse_within_viewport = x_pos >= 0 && x_pos <= render_surface_width && y_pos >= 0 && y_pos <= render_surface_height;
+
     i32 index = gizmo_in_use_index;
-    if (gizmo_in_use_index == INDEX_INVALID)
+    if (gizmo_in_use_index == NOTHING_SELECTED_INDEX && editor_is_mouse_within_viewport)
     {
-        index = read_editor_index();
+        index = read_editor_index(x_pos, y_pos);
     }
 
     // @TODO(dubgron): Change it into something like input_get_state(Mouse_Button1).
-    if (input_has_been_pressed(Mouse_Button1))
+    if (editor_is_mouse_within_viewport && input_has_been_pressed(Mouse_Button1))
     {
-        if (index > INDEX_INVALID)
+        if (index > NOTHING_SELECTED_INDEX)
         {
             if (selected_entity.index != index)
             {
@@ -99,31 +120,28 @@ void editor_update(f32 time, f32 delta_time)
                 time_since_selected = 0.f;
             }
         }
-        else if (index < INDEX_INVALID)
-        {
-            Entity* entity = entity_get(&world, selected_entity);
-            APORIA_ASSERT(entity);
-
-            switch (index)
-            {
-                case GIZMO_X_AXIS_INDEX:
-                case GIZMO_Y_AXIS_INDEX:
-                case GIZMO_XY_AXIS_INDEX:
-                {
-                    gizmo_in_use_index = index;
-                    mouse_start_position = get_mouse_world_position();
-                    entity_start_position = entity->position;
-                    entity_start_rotation = entity->rotation;
-                    entity_start_scale = entity->scale;
-                }
-            }
-        }
-        else
+        else if (index == NOTHING_SELECTED_INDEX)
         {
             selected_entity = EntityID{};
         }
+        else switch (index)
+        {
+            case GIZMO_X_AXIS_INDEX:
+            case GIZMO_Y_AXIS_INDEX:
+            case GIZMO_XY_AXIS_INDEX:
+            {
+                Entity* entity = entity_get(&world, selected_entity);
+                APORIA_ASSERT(entity);
+
+                gizmo_in_use_index = index;
+                mouse_start_position = get_mouse_world_position();
+                entity_start_position = entity->position;
+                entity_start_rotation = entity->rotation;
+                entity_start_scale = entity->scale;
+            }
+        }
     }
-    else if (gizmo_in_use_index != INDEX_INVALID && input_has_been_held(Mouse_Button1))
+    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_has_been_held(Mouse_Button1))
     {
         Entity* entity = entity_get(&world, selected_entity);
         APORIA_ASSERT(entity);
@@ -217,13 +235,32 @@ void editor_update(f32 time, f32 delta_time)
     }
     else if (input_has_been_released(Mouse_Button1))
     {
-        gizmo_in_use_index = INDEX_INVALID;
+        gizmo_in_use_index = NOTHING_SELECTED_INDEX;
     }
 }
 
 void editor_draw_frame(f32 frame_time)
 {
-    if (selected_entity.index == INDEX_INVALID)
+    if (!editor_is_open)
+        return;
+
+    ImGui::Begin("Tools");
+
+    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
+    {
+        gizmo_space = GizmoSpace_World;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
+    {
+        gizmo_space = GizmoSpace_Local;
+    }
+
+    ImGui::Checkbox("Is editor open?", &editor_is_open);
+
+    ImGui::End();
+
+    if (selected_entity.index == NOTHING_SELECTED_INDEX)
     {
         return;
     }
@@ -306,7 +343,7 @@ void editor_draw_frame(f32 frame_time)
                     draw_triangle(p0, p1, p2, GIZMO_Y_AXIS_COLOR);
                 }
 
-                set_editor_index(INDEX_INVALID);
+                set_editor_index(NOTHING_SELECTED_INDEX);
             }
             break;
 
@@ -318,7 +355,7 @@ void editor_draw_frame(f32 frame_time)
                 set_editor_index(GIZMO_XY_AXIS_INDEX);
                 draw_circle(start, radius, inner_radius, GIZMO_XY_AXIS_COLOR);
 
-                if (gizmo_in_use_index != INDEX_INVALID)
+                if (gizmo_in_use_index != NOTHING_SELECTED_INDEX)
                 {
                     v2 mouse_start_offset = mouse_start_position - entity_start_position;
                     v2 mouse_current_offset = get_mouse_world_position() - entity_start_position;
@@ -334,7 +371,7 @@ void editor_draw_frame(f32 frame_time)
                     draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
                 }
 
-                set_editor_index(INDEX_INVALID);
+                set_editor_index(NOTHING_SELECTED_INDEX);
             }
             break;
 
@@ -359,7 +396,7 @@ void editor_draw_frame(f32 frame_time)
                 draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
                 draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_Y_AXIS_COLOR);
 
-                set_editor_index(INDEX_INVALID);
+                set_editor_index(NOTHING_SELECTED_INDEX);
             }
             break;
         }

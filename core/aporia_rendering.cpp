@@ -7,21 +7,8 @@
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
 
-// @NOTE(dubgron): We need to set the uvs to (0, 1) and (1, 0), because
-// ImGui expects them to be the coordinates of the top-left corner and
-// the bottom-right corner of the texture (respectively). The default
-// uvs of (0, 0) and (1, 1) are fine for the screen coordinates (where
-// the point (0, 0) is in the top-left corner, and the y axis grows
-// downwards), but an OpenGL texture has its origin at the bottom-left
-// corner of the screen and the y axis grows upwards.
-#if defined(APORIA_DEBUG)
-    #define DEBUG_TEXTURE(texture) \
-        ImGui::Begin("DEBUG | Textures"); \
-        ImGui::Text("ID: %d, Size: %d x %d", (texture).id, (texture).width, (texture).height); \
-        ImGui::Image((void*)(u64)(texture).id, ImVec2{ (f32)(texture).width, (f32)(texture).height }, ImVec2{ 0.f, 1.f }, ImVec2{ 1.f, 0.f }); \
-        ImGui::End();
-#else
-    #define DEBUG_TEXTURE(...)
+#if defined(APORIA_EDITOR)
+#include "editor/aporia_editor.hpp"
 #endif
 
 constexpr f32 Z_ALWAYS_IN_FRONT = 1.f;
@@ -507,8 +494,8 @@ static Framebuffer framebuffer_create(i32 width, i32 height)
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result.color_buffer_id, 0);
     }
 
@@ -735,9 +722,6 @@ void rendering_init(MemoryArena* arena)
         scratch_end(temp);
     }
 
-    // Setup Framebuffers
-    adjust_framebuffers_to_render_surface();
-
 #if defined(APORIA_EMSCRIPTEN)
 #define SHADERS_DIRECTORY "content/shaders_gles/"
 #else
@@ -782,9 +766,79 @@ void rendering_deinit()
     remove_all_shaders();
 }
 
+i32 render_surface_width = 0;
+i32 render_surface_height = 0;
+
+v2_i32 render_surface_offset{ 0 };
+
+i32 viewport_width = 0;
+i32 viewport_height = 0;
+
 void rendering_frame_begin()
 {
     light_sources.count = 0;
+
+#if defined(APORIA_EDITOR)
+    if (editor_is_open)
+    {
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::DockSpaceOverViewport(viewport);
+
+        ImGui::Begin("Viewport");
+
+        ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+        viewport_width = (i32)viewport_size.x;
+        viewport_height = (i32)viewport_size.y;
+
+        i32 x_window, y_window;
+        glfwGetWindowPos(active_window->handle, &x_window, &y_window);
+
+        ImVec2 render_surface_position = ImGui::GetCursorScreenPos();
+        render_surface_offset.x = render_surface_position.x - x_window;
+        render_surface_offset.y = active_window->height - (render_surface_position.y - y_window + viewport_height);
+
+        ImGui::End();
+    }
+    else
+#endif
+    {
+        viewport_width = active_window->width;
+        viewport_height = active_window->height;
+
+        render_surface_offset.x = 0;
+        render_surface_offset.y = 0;
+    }
+
+    i32 old_render_surface_width = render_surface_width;
+    i32 old_render_surface_height = render_surface_height;
+
+    if (rendering_config.is_using_custom_resolution())
+    {
+        render_surface_width = rendering_config.custom_resolution_width;
+        render_surface_height = rendering_config.custom_resolution_height;
+
+#if defined(APORIA_EDITOR)
+        if (editor_is_open)
+        {
+            render_surface_width = render_surface_height * viewport_width / viewport_height;
+        }
+#endif
+    }
+    else
+    {
+        render_surface_width = viewport_width;
+        render_surface_height = viewport_height;
+    }
+
+    APORIA_ASSERT(render_surface_width > 0 && render_surface_height > 0);
+
+    // @TODO(dubgron): We need to check it every frame only for the editor.
+    // Maybe we should make it simpler in builds without the editor.
+    if (render_surface_width != old_render_surface_width || render_surface_height != old_render_surface_height)
+    {
+        active_camera->adjust_aspect_ratio_to_render_surface();
+        adjust_framebuffers_to_render_surface();
+    }
 }
 
 void rendering_frame_end()
@@ -873,8 +927,6 @@ void rendering_frame_end()
         renderqueue_flush(&render_queue);
         framebuffer_unbind();
 
-        DEBUG_TEXTURE(masking.color_buffer);
-
         //////////////////////////////////////////////////
         // Raymarching Shader
 
@@ -893,8 +945,6 @@ void rendering_frame_end()
         framebuffer_clear(Color::Black);
         framebuffer_flush(masking, raymarching_shader);
         framebuffer_unbind();
-
-        DEBUG_TEXTURE(raymarching.color_buffer);
 
         // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
         glViewport(0, 0, temp_framebuffer.width, temp_framebuffer.height);
@@ -915,8 +965,6 @@ void rendering_frame_end()
         framebuffer_flush(raymarching, shadowcasting_shader);
         framebuffer_unbind();
     }
-
-    DEBUG_TEXTURE(temp_framebuffer.color_buffer);
 
     u32 temp_framebuffer_unit = find_or_assign_texture_unit(temp_framebuffer.color_buffer_id);
 
@@ -969,30 +1017,42 @@ void rendering_ui_end()
 
 void rendering_flush_to_screen()
 {
-    f32 render_aspect_ratio = (f32)main_framebuffer.width / (f32)main_framebuffer.height;
-    f32 window_aspect_ratio = (f32)active_window->width / (f32)active_window->height;
+    framebuffer_unbind();
+    framebuffer_clear(Color::Black);
+
+#if defined(APORIA_EDITOR)
+    if (editor_is_open)
+    {
+        ImGui::Begin("Viewport");
+        ImGui::Image((void*)(u64)main_framebuffer.color_buffer_id,
+            ImVec2{ (f32)viewport_width, (f32)viewport_height }, ImVec2{ 0.f, 1.f }, ImVec2{ 1.f, 0.f });
+        ImGui::End();
+
+        return;
+    }
+#endif
+
+    f32 render_aspect_ratio = (f32)render_surface_width / (f32)render_surface_height;
+    f32 window_aspect_ratio = (f32)viewport_width / (f32)viewport_height;
 
     i32 offset_x, offset_y, render_width, render_height;
 
     if (render_aspect_ratio > window_aspect_ratio)
     {
-        render_width = active_window->width;
-        render_height = active_window->width / render_aspect_ratio;
+        render_width = viewport_width;
+        render_height = viewport_width / render_aspect_ratio;
 
         offset_x = 0;
-        offset_y = (active_window->height - render_height) / 2;
+        offset_y = (viewport_height - render_height) / 2;
     }
     else
     {
-        render_width = active_window->height * render_aspect_ratio;
-        render_height = active_window->height;
+        render_width = viewport_height * render_aspect_ratio;
+        render_height = viewport_height;
 
-        offset_x = (active_window->width - render_width) / 2;
+        offset_x = (viewport_width - render_width) / 2;
         offset_y = 0;
     }
-
-    framebuffer_unbind();
-    framebuffer_clear(Color::Black);
 
 #if defined(APORIA_EMSCRIPTEN)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, main_framebuffer.framebuffer_id);
@@ -1443,32 +1503,12 @@ void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 sh
     renderqueue_add(&render_queue, key);
 }
 
-void get_size_of_render_surface(i32* width, i32* height)
-{
-    if (rendering_config.is_using_custom_resolution())
-    {
-        *width = rendering_config.custom_resolution_width;
-        *height = rendering_config.custom_resolution_height;
-    }
-    else
-    {
-        APORIA_ASSERT(active_window);
-        *width = active_window->width;
-        *height = active_window->height;
-    }
-
-    APORIA_ASSERT(*width > 0 && *height > 0);
-}
-
 void adjust_framebuffers_to_render_surface()
 {
-    i32 render_width, render_height;
-    get_size_of_render_surface(&render_width, &render_height);
+    framebuffer_resize(&main_framebuffer, render_surface_width, render_surface_height);
+    framebuffer_resize(&temp_framebuffer, render_surface_width, render_surface_height);
 
-    framebuffer_resize(&main_framebuffer, render_width, render_height);
-    framebuffer_resize(&temp_framebuffer, render_width, render_height);
-
-    glViewport(0, 0, render_width, render_height);
+    glViewport(0, 0, render_surface_width, render_surface_height);
 
     if (lighting_enabled)
     {
@@ -1478,20 +1518,13 @@ void adjust_framebuffers_to_render_surface()
 }
 
 #if defined(APORIA_EDITOR)
-i32 read_editor_index()
+i32 read_editor_index(i32 x_pos, i32 y_pos)
 {
     i32 index = INDEX_INVALID;
 
-    v2 mouse_screen_position = get_mouse_screen_position();
-    i32 x_pos = (i32)mouse_screen_position.x;
-    i32 y_pos = (i32)mouse_screen_position.y;
-
-    if (x_pos > 0.f && x_pos < active_window->width && y_pos > 0.f && y_pos < active_window->height)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
-        glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glReadPixels(x_pos, y_pos, 1, 1, GL_RED_INTEGER, GL_INT, &index);
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+    glReadPixels(x_pos, y_pos, 1, 1, GL_RED_INTEGER, GL_INT, &index);
 
     return index;
 }

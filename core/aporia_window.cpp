@@ -151,20 +151,34 @@ v2 get_mouse_screen_position()
 
 v2 get_mouse_world_position()
 {
-    v2 screen_position = get_mouse_screen_position();
+    v2 mouse_screen_position = get_mouse_screen_position();
+
+    mouse_screen_position -= render_surface_offset;
 
     // @NOTE(dubgron): Precalculated following lines:
     //     screen_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ 2.f / width, 2.f / height, -1.f });
     //     screen_to_clip = glm::translate(screen_to_clip, glm::vec3{ -1.f, -1.f, 0.f });
     m4 screen_to_clip{
-        2.f / active_window->width, 0.f, 0.f, 0.f,
-        0.f, 2.f / active_window->height, 0.f, 0.f,
+        2.f / viewport_width, 0.f, 0.f, 0.f,
+        0.f, 2.f / viewport_height, 0.f, 0.f,
         0.f, 0.f, -1.f, 0.f,
         -1.f, -1.f, 0.f, 1.f };
 
     m4 view_projection_matrix = active_camera->calculate_view_projection_matrix();
     m4 clip_to_world = glm::inverse(view_projection_matrix);
-    v2 world_position = clip_to_world * screen_to_clip * v4{ screen_position, 0.f, 1.f };
+    v2 world_position = clip_to_world * screen_to_clip * v4{ mouse_screen_position, 0.f, 1.f };
 
     return world_position;
+}
+
+v2 get_mouse_viewport_position()
+{
+    v2 mouse_screen_position = get_mouse_screen_position();
+
+    mouse_screen_position -= render_surface_offset;
+
+    mouse_screen_position /= v2{ viewport_width, viewport_height };
+    mouse_screen_position *= v2{ render_surface_width, render_surface_height };
+
+    return mouse_screen_position;
 }

@@ -197,11 +197,8 @@ void Camera::apply_config()
 
 void Camera::adjust_aspect_ratio_to_render_surface()
 {
-    i32 render_width, render_height;
-    get_size_of_render_surface(&render_width, &render_height);
-
     mark_as_dirty(CameraDirtyFlag_Projection);
-    projection.aspect_ratio = (f32)render_width / (f32)render_height;
+    projection.aspect_ratio = (f32)render_surface_width / (f32)render_surface_height;
 }
 
 Camera* create_camera(MemoryArena* arena)

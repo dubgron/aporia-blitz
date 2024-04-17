@@ -3,6 +3,10 @@
 #include "aporia_debug.hpp"
 #include "aporia_utils.hpp"
 
+#if defined(APORIA_EDITOR)
+#include "editor/aporia_editor.hpp"
+#endif
+
 #if defined(APORIA_EMSCRIPTEN)
     int glfwGetGamepadState(int jid, GLFWgamepadstate* state) { return 0; }
     int glfwGetError(const char** description) { return 0; }
@@ -120,6 +124,13 @@ void input_process_events()
     //      widget is active, mouse was clicked over an imgui window, etc."
     input.keys_consumed = io->WantCaptureKeyboard;
     input.cursor_consumed = io->WantCaptureMouse;
+
+#if defined(APORIA_EDITOR)
+    // @TODO(dubgron): When in editor, we should consume all game inputs, but accept all editor inputs.
+    input.keys_consumed = false;
+    input.cursor_consumed = false;
+#endif
+
 #else
     input.keys_consumed = false;
     input.cursor_consumed = false;
