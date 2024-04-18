@@ -1,5 +1,3 @@
-#if defined(APORIA_DEBUGTOOLS)
-
 #include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_input.hpp"
@@ -319,9 +317,13 @@ static int MyCallback(ImGuiInputTextCallbackData* data)
 
 static void commandline_update()
 {
-    if (input_has_been_pressed(Key_Tilde))
+}
+
+static void commandline_draw()
+{
+    if (input_is_pressed(Key_Tilde))
     {
-        if (input_has_been_held(Key_LShift))
+        if (input_is_held(Key_LShift))
         {
             switch (state)
             {
@@ -340,10 +342,7 @@ static void commandline_update()
             }
         }
     }
-}
 
-static void commandline_draw()
-{
     ImGuiViewport* viewport = ImGui::GetMainViewport();
 
     f32 target_small = viewport->Size.y * 0.2f;
@@ -526,5 +525,3 @@ static void commandline_deinit()
     arena_deinit(&command_arena);
     arena_deinit(&suggestion_arena);
 }
-
-#endif

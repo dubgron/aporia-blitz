@@ -243,24 +243,24 @@ void input_process_key_event(Key key, InputAction action);
 void input_process_mouse_event(MouseButton button, InputAction action);
 void input_process_scroll_event(MouseWheel wheel, f32 value);
 
-void input_process_events();
 void input_clear();
+void input_process_events();
 
-i32 input_has_been_pressed(Key key);
-bool input_has_been_held(Key key);
-bool input_has_been_released(Key key);
+i32 input_is_pressed(Key key);
+bool input_is_held(Key key);
+bool input_is_released(Key key);
 
-i32 input_has_been_pressed(MouseButton button);
-bool input_has_been_held(MouseButton button);
-bool input_has_been_released(MouseButton button);
+i32 input_is_pressed(MouseButton button);
+bool input_is_held(MouseButton button);
+bool input_is_released(MouseButton button);
 
-i32 input_has_been_pressed(GamepadButton button);
-bool input_has_been_held(GamepadButton button);
-bool input_has_been_released(GamepadButton button);
+i32 input_is_pressed(GamepadButton button);
+bool input_is_held(GamepadButton button);
+bool input_is_released(GamepadButton button);
 
-i32 input_has_any_key_been_pressed();
-i32 input_has_any_mouse_button_been_pressed();
-i32 input_has_any_gamepad_button_been_pressed();
+i32 input_is_any_key_pressed();
+i32 input_is_any_mouse_button_pressed();
+i32 input_is_any_gamepad_button_pressed();
 
 AnalogInputState input_get_analog_state(MouseWheel wheel);
 AnalogInputState input_get_analog_state(GamepadAnalog analog);

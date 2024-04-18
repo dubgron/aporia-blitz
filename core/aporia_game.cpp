@@ -20,17 +20,11 @@
 GameMemory memory;
 World world;
 
-static Timer frame_timer;
-static f32 total_time = 0.f;
-
-static f32 delta_time = 1.f / 240.f;
-static f32 accumulated_frame_time = 0.f;
-
 static void game_initialize()
 {
 }
 
-static void game_simulate_ui(f32 time, f32 delta_time)
+static void game_handle_input(f32 frame_time)
 {
 }
 
@@ -50,6 +44,12 @@ static void game_shutdown()
 {
 }
 
+static Timer frame_timer;
+static f32 total_time = 0.f;
+
+static f32 delta_time = 1.f / 240.f;
+static f32 accumulated_frame_time = 0.f;
+
 static void game_main_loop()
 {
     f32 frame_time = frame_timer.reset();
@@ -57,27 +57,27 @@ static void game_main_loop()
 
     arena_clear(&memory.frame);
 
+    input_clear();
+
     window_poll_events();
     input_process_events();
 
     IMGUI_FRAME_BEGIN();
 
+#if defined(APORIA_EDITOR)
+    editor_update(frame_time);
+#endif
+
+    game_handle_input(frame_time);
+
     accumulated_frame_time += frame_time;
     while (accumulated_frame_time > delta_time)
     {
-        game_simulate_ui(total_time, delta_time);
         game_simulate_frame(total_time, delta_time);
-
-#if defined(APORIA_EDITOR)
-        editor_update(total_time, delta_time);
-#endif
-
-        input_clear();
-
-        assets_reload_if_dirty(delta_time);
-
         accumulated_frame_time -= delta_time;
     }
+
+    assets_reload_if_dirty(frame_time);
 
     rendering_frame_begin();
     {

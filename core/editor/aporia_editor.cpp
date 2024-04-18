@@ -53,9 +53,9 @@ static v2 entity_start_scale{ 0.f };
 
 static i32 gizmo_in_use_index = NOTHING_SELECTED_INDEX;
 
-void editor_update(f32 time, f32 delta_time)
+void editor_update(f32 frame_time)
 {
-    if (input_has_been_pressed(Key_F1))
+    if (input_is_pressed(Key_F1))
         editor_is_open = !editor_is_open;
 
     if (!editor_is_open)
@@ -64,36 +64,36 @@ void editor_update(f32 time, f32 delta_time)
         return;
     }
 
-    active_camera->control_movement(delta_time);
-    active_camera->control_rotation(delta_time);
-    active_camera->control_zoom(delta_time);
+    active_camera->control_movement(frame_time);
+    active_camera->control_rotation(frame_time);
+    active_camera->control_zoom(frame_time);
 
-    if (!input_has_been_held(Mouse_Button1))
+    if (!input_is_held(Mouse_Button1))
     {
-        if (input_has_been_pressed(Key_Num1))
+        if (input_is_pressed(Key_Num1))
         {
             gizmo_type = GizmoType_Translate;
         }
-        else if (input_has_been_pressed(Key_Num2))
+        else if (input_is_pressed(Key_Num2))
         {
             gizmo_type = GizmoType_Rotate;
         }
-        else if (input_has_been_pressed(Key_Num3))
+        else if (input_is_pressed(Key_Num3))
         {
             gizmo_type = GizmoType_Scale;
         }
 
-        if (input_has_been_pressed(Key_F1))
+        if (input_is_pressed(Key_F1))
         {
             gizmo_space = GizmoSpace_World;
         }
-        else if (input_has_been_pressed(Key_F2))
+        else if (input_is_pressed(Key_F2))
         {
             gizmo_space = GizmoSpace_Local;
         }
     }
 
-    time_since_selected += delta_time;
+    time_since_selected += frame_time;
 
     v2 mouse_viewport_position = get_mouse_viewport_position();
     i32 x_pos = (i32)mouse_viewport_position.x;
@@ -108,7 +108,7 @@ void editor_update(f32 time, f32 delta_time)
     }
 
     // @TODO(dubgron): Change it into something like input_get_state(Mouse_Button1).
-    if (editor_is_mouse_within_viewport && input_has_been_pressed(Mouse_Button1))
+    if (editor_is_mouse_within_viewport && input_is_pressed(Mouse_Button1))
     {
         if (index > NOTHING_SELECTED_INDEX)
         {
@@ -141,7 +141,7 @@ void editor_update(f32 time, f32 delta_time)
             }
         }
     }
-    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_has_been_held(Mouse_Button1))
+    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_is_held(Mouse_Button1))
     {
         Entity* entity = entity_get(&world, selected_entity);
         APORIA_ASSERT(entity);
@@ -210,7 +210,7 @@ void editor_update(f32 time, f32 delta_time)
                     {
                         entity->scale.x = entity_start_scale.x * scale.x;
 
-                        if (input_has_been_held(Key_LShift))
+                        if (input_is_held(Key_LShift))
                         {
                             entity->scale.y = entity_start_scale.y * scale.x;
                         }
@@ -222,7 +222,7 @@ void editor_update(f32 time, f32 delta_time)
                     {
                         entity->scale.y = entity_start_scale.y * scale.y;
 
-                        if (input_has_been_held(Key_LShift))
+                        if (input_is_held(Key_LShift))
                         {
                             entity->scale.x = entity_start_scale.x * scale.y;
                         }
@@ -233,7 +233,7 @@ void editor_update(f32 time, f32 delta_time)
             break;
         }
     }
-    else if (input_has_been_released(Mouse_Button1))
+    else if (input_is_released(Mouse_Button1))
     {
         gizmo_in_use_index = NOTHING_SELECTED_INDEX;
     }
