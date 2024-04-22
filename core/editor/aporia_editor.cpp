@@ -1,5 +1,7 @@
 #include "aporia_editor.hpp"
 
+#include "imgui_internal.h"
+
 #include "aporia_camera.hpp"
 #include "aporia_game.hpp"
 #include "aporia_input.hpp"
@@ -9,8 +11,6 @@
 
 bool editor_is_open = true;
 f32 time_since_selected = 0.f;
-
-static bool editor_is_mouse_within_viewport = false;
 
 static EntityID selected_entity;
 
@@ -55,20 +55,32 @@ static i32 gizmo_in_use_index = NOTHING_SELECTED_INDEX;
 
 void editor_update(f32 frame_time)
 {
+    input_set_active_owner(InputOwner_Editor);
+
     if (input_is_pressed(Key_F1))
         editor_is_open = !editor_is_open;
 
     if (!editor_is_open)
-    {
-        editor_is_mouse_within_viewport = false;
         return;
+
+    time_since_selected += frame_time;
+
+    static const ImGuiID viewport_id = ImHashStr("Viewport");
+
+    ImGuiContext* context = ImGui::GetCurrentContext();
+    bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
+    bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
+
+    if (focused_on_viewport)
+    {
+        active_camera->control_movement(frame_time);
+        active_camera->control_rotation(frame_time);
+        active_camera->control_zoom(frame_time);
     }
 
-    active_camera->control_movement(frame_time);
-    active_camera->control_rotation(frame_time);
-    active_camera->control_zoom(frame_time);
+    InputState left_mouse_button = input_get(Mouse_Button1);
 
-    if (!input_is_held(Mouse_Button1))
+    if (!input_is_held(left_mouse_button))
     {
         if (input_is_pressed(Key_Num1))
         {
@@ -83,32 +95,27 @@ void editor_update(f32 frame_time)
             gizmo_type = GizmoType_Scale;
         }
 
-        if (input_is_pressed(Key_F1))
+        if (input_is_pressed(Key_F2))
         {
-            gizmo_space = GizmoSpace_World;
-        }
-        else if (input_is_pressed(Key_F2))
-        {
-            gizmo_space = GizmoSpace_Local;
+            switch (gizmo_space)
+            {
+                case GizmoSpace_World: gizmo_space = GizmoSpace_Local; break;
+                case GizmoSpace_Local: gizmo_space = GizmoSpace_World; break;
+            }
         }
     }
 
-    time_since_selected += frame_time;
-
-    v2 mouse_viewport_position = get_mouse_viewport_position();
-    i32 x_pos = (i32)mouse_viewport_position.x;
-    i32 y_pos = (i32)mouse_viewport_position.y;
-
-    editor_is_mouse_within_viewport = x_pos >= 0 && x_pos <= render_surface_width && y_pos >= 0 && y_pos <= render_surface_height;
-
     i32 index = gizmo_in_use_index;
-    if (gizmo_in_use_index == NOTHING_SELECTED_INDEX && editor_is_mouse_within_viewport)
+    if (gizmo_in_use_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
     {
+        v2 mouse_viewport_position = get_mouse_viewport_position();
+        i32 x_pos = (i32)mouse_viewport_position.x;
+        i32 y_pos = (i32)mouse_viewport_position.y;
+
         index = read_editor_index(x_pos, y_pos);
     }
 
-    // @TODO(dubgron): Change it into something like input_get_state(Mouse_Button1).
-    if (editor_is_mouse_within_viewport && input_is_pressed(Mouse_Button1))
+    if (mouse_within_viewport && input_is_pressed(left_mouse_button))
     {
         if (index > NOTHING_SELECTED_INDEX)
         {
@@ -141,7 +148,7 @@ void editor_update(f32 frame_time)
             }
         }
     }
-    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_is_held(Mouse_Button1))
+    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_is_held(left_mouse_button))
     {
         Entity* entity = entity_get(&world, selected_entity);
         APORIA_ASSERT(entity);
@@ -233,7 +240,7 @@ void editor_update(f32 frame_time)
             break;
         }
     }
-    else if (input_is_released(Mouse_Button1))
+    else if (input_is_released(left_mouse_button))
     {
         gizmo_in_use_index = NOTHING_SELECTED_INDEX;
     }
@@ -246,6 +253,21 @@ void editor_draw_frame(f32 frame_time)
 
     ImGui::Begin("Tools");
 
+    if (ImGui::RadioButton("Translate", gizmo_type == GizmoType_Translate))
+    {
+        gizmo_type = GizmoType_Translate;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", gizmo_type == GizmoType_Rotate))
+    {
+        gizmo_type = GizmoType_Rotate;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", gizmo_type == GizmoType_Scale))
+    {
+        gizmo_type = GizmoType_Scale;
+    }
+
     if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
     {
         gizmo_space = GizmoSpace_World;
@@ -256,14 +278,25 @@ void editor_draw_frame(f32 frame_time)
         gizmo_space = GizmoSpace_Local;
     }
 
-    ImGui::Checkbox("Is editor open?", &editor_is_open);
+    ImGui::Separator();
+
+    if (ImGui::Button("Play (F1)"))
+    {
+        editor_is_open = !editor_is_open;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset camera"))
+    {
+        active_camera->view = CameraView{};
+        active_camera->projection = CameraProjection{};
+        active_camera->apply_config();
+        active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
+    }
 
     ImGui::End();
 
     if (selected_entity.index == NOTHING_SELECTED_INDEX)
-    {
         return;
-    }
 
     if (Entity* entity = entity_get(&world, selected_entity))
     {
@@ -300,10 +333,13 @@ void editor_draw_frame(f32 frame_time)
 
                 // Draw XY axis
                 {
-                    f32 point_radius = 7.5f * camera_zoom;
+                    // @TODO(dubgron): This should be displayed and work for all gizmos.
+                    {
+                        f32 point_radius = 7.5f * camera_zoom;
 
-                    set_editor_index(GIZMO_XY_AXIS_INDEX);
-                    draw_circle(start, point_radius, Color::White);
+                        set_editor_index(GIZMO_XY_AXIS_INDEX);
+                        draw_circle(start, point_radius, Color::White);
+                    }
 
                     v2 end = start + line_length * (right + up);
 

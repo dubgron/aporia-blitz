@@ -312,13 +312,15 @@ bool should_log(LogLevel level)
     return level >= min_log_level;
 }
 
+#endif
+
+#if defined(APORIA_IMGUI)
+
 void imgui_init()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO* io = &ImGui::GetIO();
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 #if !defined(APORIA_EMSCRIPTEN)
     io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;

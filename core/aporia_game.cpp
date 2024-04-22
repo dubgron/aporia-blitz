@@ -46,6 +46,7 @@ static void game_shutdown()
 
 static Timer frame_timer;
 static f32 total_time = 0.f;
+static f32 game_time = 0.f;
 
 static f32 delta_time = 1.f / 240.f;
 static f32 accumulated_frame_time = 0.f;
@@ -66,16 +67,29 @@ static void game_main_loop()
 
 #if defined(APORIA_EDITOR)
     editor_update(frame_time);
+
+    f32 actual_frame_time = frame_time;
+
+    if (editor_is_open)
+    {
+        frame_time = 0.f;
+    }
 #endif
+
+    game_time += frame_time;
 
     game_handle_input(frame_time);
 
     accumulated_frame_time += frame_time;
     while (accumulated_frame_time > delta_time)
     {
-        game_simulate_frame(total_time, delta_time);
+        game_simulate_frame(game_time, delta_time);
         accumulated_frame_time -= delta_time;
     }
+
+#if defined(APORIA_EDITOR)
+    frame_time = actual_frame_time;
+#endif
 
     assets_reload_if_dirty(frame_time);
 

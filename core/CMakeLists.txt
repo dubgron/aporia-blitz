@@ -6,7 +6,11 @@ option(APORIA_USE_UNITY_BUILD   "Compile using unity build"     ON)
 option(APORIA_EMSCRIPTEN        "Compile with Emscripten"       OFF)
 
 if (APORIA_EDITOR AND APORIA_EMSCRIPTEN)
-  message(FATAL_ERROR "Building editor with Emscripten is not supported!.")
+    message(FATAL_ERROR "Building editor with Emscripten is not supported!.")
+endif()
+
+if (APORIA_EDITOR OR APORIA_DEBUGTOOLS)
+    set(APORIA_IMGUI TRUE)
 endif()
 
 if (WIN32)
@@ -24,7 +28,7 @@ find_package(glm REQUIRED)
 find_package(sokol REQUIRED)
 find_package(stb REQUIRED)
 
-if (APORIA_DEBUGTOOLS)
+if (APORIA_IMGUI)
     find_package(imgui REQUIRED)
 endif()
 
@@ -110,7 +114,7 @@ target_link_libraries(core
     sokol
     stb)
 
-if (APORIA_DEBUGTOOLS)
+if (APORIA_IMGUI)
     target_link_libraries(core imgui)
 endif()
 
@@ -139,6 +143,10 @@ endif()
 
 if (APORIA_EDITOR)
     target_compile_definitions(core PUBLIC APORIA_EDITOR)
+endif()
+
+if (APORIA_IMGUI)
+    target_compile_definitions(core PUBLIC APORIA_IMGUI)
 endif()
 
 # Add platform-specific defines

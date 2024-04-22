@@ -78,11 +78,6 @@ bool handling_assertion_failure = false;
 #define LOGGING_INIT(arena, name)   logging_init(arena, name)
 #define LOGGING_DEINIT()            logging_deinit()
 
-#define IMGUI_INIT()                imgui_init()
-#define IMGUI_DEINIT()              imgui_deinit()
-#define IMGUI_FRAME_BEGIN()         imgui_frame_begin()
-#define IMGUI_FRAME_END()           imgui_frame_end()
-
 enum LogLevel : u8
 {
     Garbage,
@@ -125,12 +120,6 @@ static void log(String file, i32 line, String function, LogLevel level, String f
     scratch_end(temp);
 }
 
-void imgui_init();
-void imgui_deinit();
-
-void imgui_frame_begin();
-void imgui_frame_end();
-
 #else
 
 #define APORIA_LOG(...)
@@ -146,6 +135,23 @@ void imgui_frame_end();
 
 #define LOGGING_INIT(...)
 #define LOGGING_DEINIT()
+
+#endif
+
+#if defined(APORIA_IMGUI)
+
+#define IMGUI_INIT()                imgui_init()
+#define IMGUI_DEINIT()              imgui_deinit()
+#define IMGUI_FRAME_BEGIN()         imgui_frame_begin()
+#define IMGUI_FRAME_END()           imgui_frame_end()
+
+void imgui_init();
+void imgui_deinit();
+
+void imgui_frame_begin();
+void imgui_frame_end();
+
+#else
 
 #define IMGUI_INIT()
 #define IMGUI_DEINIT()

@@ -25,7 +25,8 @@ struct CameraProjection
     m4 matrix{ 1.f };
 };
 
-enum CameraDirtyFlag : u8
+using CameraDirtyFlag = u8;
+enum CameraDirtyFlag_ : CameraDirtyFlag
 {
     CameraDirtyFlag_View        = 0x01,
     CameraDirtyFlag_Projection  = 0x02,

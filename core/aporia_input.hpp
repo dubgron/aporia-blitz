@@ -210,10 +210,30 @@ enum InputFlag_ : InputFlag
     InputFlag_IsRepeated        = 0x04,
 };
 
+enum InputOwner : u8
+{
+    InputOwner_None             = 0x00,
+
+    InputOwner_Game             = 0x01,
+    InputOwner_UI               = 0x02,
+
+#if defined(APORIA_EDITOR)
+    InputOwner_Editor           = 0xfd,
+    InputOwner_CommandLine      = 0xfe,
+#endif
+
+#if defined(APORIA_IMGUI)
+    InputOwner_ImGui            = 0xff,
+#endif
+};
+
 struct InputState
 {
     u8 pressed_count = 0;
     InputFlag flags = InputFlag_None;
+
+    InputOwner owner = InputOwner_None;
+    InputOwner last_owner = InputOwner_None;
 };
 
 struct AnalogInputState
@@ -231,12 +251,6 @@ struct Input
 
     AnalogInputState wheels[MouseWheel_Count];
     AnalogInputState analogs[GamepadAnalog_Count];
-
-    bool keys_consumed = false;
-    bool cursor_consumed = false;
-
-    bool keys_consumed_last_frame = false;
-    bool cursor_consumed_last_frame = false;
 };
 
 void input_process_key_event(Key key, InputAction action);
@@ -246,23 +260,33 @@ void input_process_scroll_event(MouseWheel wheel, f32 value);
 void input_clear();
 void input_process_events();
 
-i32 input_is_pressed(Key key);
+void input_set_active_owner(InputOwner owner);
+
+InputState input_get(Key key);
+InputState input_get(MouseButton button);
+InputState input_get(GamepadButton button);
+
+AnalogInputState input_get(MouseWheel wheel);
+AnalogInputState input_get(GamepadAnalog analog);
+
+bool input_is_pressed(InputState state);
+bool input_is_held(InputState state);
+bool input_is_released(InputState state);
+
+bool input_is_pressed(Key key);
 bool input_is_held(Key key);
 bool input_is_released(Key key);
 
-i32 input_is_pressed(MouseButton button);
+bool input_is_pressed(MouseButton button);
 bool input_is_held(MouseButton button);
 bool input_is_released(MouseButton button);
 
-i32 input_is_pressed(GamepadButton button);
+bool input_is_pressed(GamepadButton button);
 bool input_is_held(GamepadButton button);
 bool input_is_released(GamepadButton button);
 
-i32 input_is_any_key_pressed();
-i32 input_is_any_mouse_button_pressed();
-i32 input_is_any_gamepad_button_pressed();
-
-AnalogInputState input_get_analog_state(MouseWheel wheel);
-AnalogInputState input_get_analog_state(GamepadAnalog analog);
+bool input_is_any_key_pressed();
+bool input_is_any_mouse_button_pressed();
+bool input_is_any_gamepad_button_pressed();
 
 Key string_to_key(String string);

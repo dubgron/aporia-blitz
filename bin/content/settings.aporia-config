@@ -20,7 +20,7 @@
     rotation_key_left       "Q"
     rotation_key_right      "E"
     zoom_key_in             "Space"
-    zoom_key_out            "LShift"
+    zoom_key_out            "LControl"
     zoom_max                20
     zoom_min                0.25
 

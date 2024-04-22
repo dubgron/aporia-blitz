@@ -14,6 +14,9 @@
 
 static Input input;
 
+// @TODO(dubgron): This is weird, we should figure something nicer.
+static InputOwner active_owner = InputOwner_None;
+
 static void input_process_event(InputState* state, InputAction action)
 {
     switch (action)
@@ -87,6 +90,21 @@ void input_process_analog_event(GamepadAnalog analog, f32 value)
 
 void input_clear()
 {
+    constexpr auto input_release_if_owner_changed = []<u64 N>(InputState (&state)[N])
+    {
+        for (u64 idx = 0; idx < N; ++idx)
+        {
+            if (state[idx].owner != InputOwner_None && state[idx].owner != state[idx].last_owner)
+            {
+                input_process_event(&state[idx], InputAction_Released);
+            }
+        }
+    };
+
+    input_release_if_owner_changed(input.keys);
+    input_release_if_owner_changed(input.mouse);
+    input_release_if_owner_changed(input.gamepad);
+
     constexpr auto input_prepare_for_next_frame = []<u64 N>(InputState (&state)[N])
     {
         for (u64 idx = 0; idx < N; ++idx)
@@ -94,6 +112,9 @@ void input_clear()
             // Leave only InputFlag_EndedFrameDown flag.
             state[idx].flags &= InputFlag_EndedFrameDown;
             state[idx].pressed_count = 0;
+
+            state[idx].last_owner = state[idx].owner;
+            state[idx].owner = InputOwner_None;
         }
     };
 
@@ -103,9 +124,6 @@ void input_clear()
 
     ARRAY_ZERO(input.wheels);
     ARRAY_ZERO(input.analogs);
-
-    input.keys_consumed_last_frame = input.keys_consumed;
-    input.cursor_consumed_last_frame = input.cursor_consumed;
 }
 
 void input_process_events()
@@ -128,158 +146,205 @@ void input_process_events()
         }
     }
 
-#if defined(APORIA_DEBUGTOOLS)
-    ImGuiIO* io = &ImGui::GetIO();
+#if defined(APORIA_IMGUI)
 
     // @NOTE(dubgron): According to ImGui comments:
     //  - WantCaptureKeyboard means "InputText active, or an imgui window is focused
     //      and navigation is enabled, etc."
     //  - WantCaptureMouse means "unclicked mouse is hovering over an imgui window,
     //      widget is active, mouse was clicked over an imgui window, etc."
-    input.keys_consumed = io->WantCaptureKeyboard;
-    input.cursor_consumed = io->WantCaptureMouse;
+    //  - WantTextInput means "InputText widget is active."
+    ImGuiIO* io = &ImGui::GetIO();
 
-#if defined(APORIA_EDITOR)
-    // @TODO(dubgron): When in editor, we should consume all game inputs, but accept all editor inputs.
-    input.keys_consumed = false;
-    input.cursor_consumed = false;
-#endif
-
-#else
-    input.keys_consumed = false;
-    input.cursor_consumed = false;
-#endif
-
-    constexpr auto input_release_consumed = []<u64 N>(InputState(&state)[N])
+    constexpr auto input_set_owner = []<u64 N>(InputState(&state)[N], InputOwner owner)
     {
         for (u64 idx = 0; idx < N; ++idx)
         {
-            input_process_event(&state[idx], InputAction_Released);
+            state[idx].owner = owner;
         }
     };
 
-    if (input.keys_consumed)
+#if defined(APORIA_EDITOR)
+    if (editor_is_open && !io->WantTextInput)
     {
-        input_release_consumed(input.keys);
-        input_release_consumed(input.gamepad);
+        input_set_owner(input.keys, InputOwner_Editor);
+        input_set_owner(input.gamepad, InputOwner_Editor);
+    }
+    else
+#endif
+    if (io->WantCaptureKeyboard)
+    {
+        input_set_owner(input.keys, InputOwner_ImGui);
+        input_set_owner(input.gamepad, InputOwner_ImGui);
     }
 
-    if (input.cursor_consumed)
+#if defined(APORIA_EDITOR)
+    input_set_owner(input.mouse, InputOwner_Editor);
+#else
+    if (io->WantCaptureMouse)
     {
-        input_release_consumed(input.mouse);
+        input_set_owner(input.mouse, InputOwner_ImGui);
+    }
+#endif
+
+#endif
+}
+
+void input_set_active_owner(InputOwner owner)
+{
+    active_owner = owner;
+}
+
+static InputState input_get(InputState* state)
+{
+    if (state->owner == InputOwner_None || state->owner == active_owner)
+    {
+        state->owner = active_owner;
+        return *state;
+    }
+    else if (state->last_owner == active_owner)
+    {
+        InputState result;
+        if (state->flags & InputFlag_EndedFrameDown)
+        {
+            result.flags |= InputFlag_WasReleased;
+        }
+        return result;
+    }
+    else
+    {
+        return InputState{};
     }
 }
 
-i32 input_is_pressed(Key key)
+InputState input_get(Key key)
 {
-    InputState state = input.keys[key];
-    return !input.keys_consumed ? state.pressed_count : 0;
+    InputState* state = &input.keys[key];
+    return input_get(state);
+}
+
+InputState input_get(MouseButton button)
+{
+    InputState* state = &input.mouse[button];
+    return input_get(state);
+}
+
+InputState input_get(GamepadButton button)
+{
+    InputState* state = &input.gamepad[button];
+    return input_get(state);
+}
+
+AnalogInputState input_get(MouseWheel wheel)
+{
+    return input.wheels[wheel];
+}
+
+AnalogInputState input_get(GamepadAnalog analog)
+{
+    return input.analogs[analog];
+}
+
+bool input_is_pressed(InputState state)
+{
+    return state.pressed_count > 0;
+}
+
+bool input_is_held(InputState state)
+{
+    return (state.flags & InputFlag_EndedFrameDown);
+}
+
+bool input_is_released(InputState state)
+{
+    return (state.flags & InputFlag_WasReleased);
+}
+
+bool input_is_pressed(Key key)
+{
+    InputState state = input_get(key);
+    return input_is_pressed(state);
 }
 
 bool input_is_held(Key key)
 {
-    InputState state = input.keys[key];
-    return !input.keys_consumed && (state.flags & InputFlag_EndedFrameDown);
+    InputState state = input_get(key);
+    return input_is_held(state);
 }
 
 bool input_is_released(Key key)
 {
-    InputState state = input.keys[key];
-    return !input.keys_consumed_last_frame && (state.flags & InputFlag_WasReleased);
+    InputState state = input_get(key);
+    return input_is_released(state);
 }
 
-i32 input_is_pressed(MouseButton button)
+bool input_is_pressed(MouseButton button)
 {
-    InputState state = input.mouse[button];
-    return !input.cursor_consumed ? state.pressed_count : 0;
+    InputState state = input_get(button);
+    return input_is_pressed(state);
 }
 
 bool input_is_held(MouseButton button)
 {
-    InputState state = input.mouse[button];
-    return !input.cursor_consumed && (state.flags & InputFlag_EndedFrameDown);
+    InputState state = input_get(button);
+    return input_is_held(state);
 }
 
 bool input_is_released(MouseButton button)
 {
-    InputState state = input.mouse[button];
-    return !input.cursor_consumed_last_frame && (state.flags & InputFlag_WasReleased);
+    InputState state = input_get(button);
+    return input_is_released(state);
 }
 
-i32 input_is_pressed(GamepadButton button)
+bool input_is_pressed(GamepadButton button)
 {
-    InputState state = input.gamepad[button];
-    return !input.keys_consumed && state.pressed_count;
+    InputState state = input_get(button);
+    return input_is_pressed(state);
 }
 
 bool input_is_held(GamepadButton button)
 {
-    InputState state = input.gamepad[button];
-    return !input.keys_consumed && (state.flags & InputFlag_EndedFrameDown);
+    InputState state = input_get(button);
+    return input_is_held(state);
 }
 
 bool input_is_released(GamepadButton button)
 {
-    InputState state = input.gamepad[button];
-    return !input.keys_consumed_last_frame && (state.flags & InputFlag_WasReleased);
+    InputState state = input_get(button);
+    return input_is_released(state);
 }
 
-i32 input_is_any_key_pressed()
+bool input_is_any_key_pressed()
 {
-    if (input.keys_consumed_last_frame)
-    {
-        return 0;
-    }
-
-    i32 result = 0;
+    bool result = false;
     for (u64 key_idx = 0; key_idx < ARRAY_COUNT(input.keys); ++key_idx)
     {
         Key key = (Key)key_idx;
-        result += input_is_pressed(key);
+        result |= input_is_pressed(key);
     }
     return result;
 }
 
-i32 input_is_any_mouse_button_pressed()
+bool input_is_any_mouse_button_pressed()
 {
-    if (input.cursor_consumed_last_frame)
-    {
-        return 0;
-    }
-
-    i32 result = 0;
+    bool result = false;
     for (u64 mouse_idx = 0; mouse_idx < ARRAY_COUNT(input.mouse); ++mouse_idx)
     {
         MouseButton button = (MouseButton)mouse_idx;
-        result += input_is_pressed(button);
+        result |= input_is_pressed(button);
     }
     return result;
 }
 
-i32 input_is_any_gamepad_button_pressed()
+bool input_is_any_gamepad_button_pressed()
 {
-    if (input.keys_consumed_last_frame)
-    {
-        return 0;
-    }
-
-    i32 result = 0;
+    bool result = false;
     for (u64 gamepad_idx = 0; gamepad_idx < ARRAY_COUNT(input.gamepad); ++gamepad_idx)
     {
         GamepadButton button = (GamepadButton)gamepad_idx;
-        result += input_is_pressed(button);
+        result |= input_is_pressed(button);
     }
     return result;
-}
-
-AnalogInputState input_get_analog_state(MouseWheel wheel)
-{
-    return !input.cursor_consumed ? input.wheels[wheel] : AnalogInputState{};
-}
-
-AnalogInputState input_get_analog_state(GamepadAnalog analog)
-{
-    return !input.keys_consumed ? input.analogs[analog] : AnalogInputState{};
 }
 
 Key string_to_key(String string)
