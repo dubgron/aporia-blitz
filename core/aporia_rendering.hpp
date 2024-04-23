@@ -43,17 +43,18 @@ void draw_text(const Text& text);
 // @HACK(dubgron): We draw triangle as a quad with a duplicate vertex.
 void draw_triangle(v2 p0, v2 p1, v2 p2, Color color = Color::White, u32 shader_id = rectangle_shader);
 
-void adjust_framebuffers_to_render_surface();
-
 #if defined(APORIA_EDITOR)
-i32 read_editor_index(i32 x_pos, i32 y_pos);
+i32 read_editor_index();
 void set_editor_index(i32 editor_index);
 #endif
 
-extern i32 render_surface_width;
-extern i32 render_surface_height;
-
-extern v2_i32 render_surface_offset;
-
 extern i32 viewport_width;
 extern i32 viewport_height;
+
+extern v2_i32 viewport_offset;
+
+extern i32 game_render_width;
+extern i32 game_render_height;
+
+extern i32 ui_render_width;
+extern i32 ui_render_height;

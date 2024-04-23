@@ -467,7 +467,8 @@ struct Framebuffer
 };
 
 static Framebuffer main_framebuffer;
-static Framebuffer temp_framebuffer;
+static Framebuffer game_framebuffer;
+static Framebuffer ui_framebuffer;
 
 static Framebuffer framebuffer_create(i32 width, i32 height)
 {
@@ -566,6 +567,7 @@ static void framebuffer_resize(Framebuffer* framebuffer, i32 width, i32 height)
 static void framebuffer_bind(const Framebuffer& framebuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.framebuffer_id);
+    glViewport(0, 0, framebuffer.width, framebuffer.height);
 }
 
 static void framebuffer_unbind()
@@ -758,97 +760,149 @@ void rendering_deinit()
         vertexarray_destroy(&vertex_arrays[idx]);
     }
 
+    framebuffer_destroy(&ui_framebuffer);
+    framebuffer_destroy(&game_framebuffer);
     framebuffer_destroy(&main_framebuffer);
+
     if (lighting_enabled)
     {
         disable_lighting();
     }
+
     remove_all_shaders();
 }
 
-i32 render_surface_width = 0;
-i32 render_surface_height = 0;
-
-v2_i32 render_surface_offset{ 0 };
-
 i32 viewport_width = 0;
 i32 viewport_height = 0;
+
+v2_i32 viewport_offset{ 0 };
+
+i32 game_render_width = 0;
+i32 game_render_height = 0;
+
+i32 ui_render_width = 0;
+i32 ui_render_height = 0;
 
 void rendering_frame_begin()
 {
     light_sources.count = 0;
 
-#if defined(APORIA_EDITOR)
-    if (editor_is_open)
+    // @TODO(dubgron): We need to check it every frame only for the editor.
+    // Maybe we should make it simpler in builds without the editor.
+
+    // Maybe resize the main framebuffer (and lighting framebuffers)
     {
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::DockSpaceOverViewport(viewport);
+        i32 old_viewport_width = viewport_width;
+        i32 old_viewport_height = viewport_height;
 
-        ImGui::Begin("Viewport");
-
-        ImVec2 viewport_size = ImGui::GetContentRegionAvail();
-        viewport_width = (i32)viewport_size.x;
-        viewport_height = (i32)viewport_size.y;
-
-        i32 x_window, y_window;
-        glfwGetWindowPos(active_window->handle, &x_window, &y_window);
-
-        ImVec2 render_surface_position = ImGui::GetCursorScreenPos();
-        render_surface_offset.x = render_surface_position.x - x_window;
-        render_surface_offset.y = active_window->height - (render_surface_position.y - y_window + viewport_height);
-
-        ImGui::End();
-    }
-    else
-#endif
-    {
         viewport_width = active_window->width;
         viewport_height = active_window->height;
 
-        render_surface_offset.x = 0;
-        render_surface_offset.y = 0;
-    }
-
-    i32 old_render_surface_width = render_surface_width;
-    i32 old_render_surface_height = render_surface_height;
-
-    if (rendering_config.is_using_custom_resolution())
-    {
-        render_surface_width = rendering_config.custom_resolution_width;
-        render_surface_height = rendering_config.custom_resolution_height;
+        viewport_offset.x = 0;
+        viewport_offset.y = 0;
 
 #if defined(APORIA_EDITOR)
         if (editor_is_open)
         {
-            render_surface_width = render_surface_height * viewport_width / viewport_height;
+            ImGui::Begin("Viewport");
+
+            ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+            viewport_width = (i32)viewport_size.x;
+            viewport_height = (i32)viewport_size.y;
+
+            i32 x_window, y_window;
+            glfwGetWindowPos(active_window->handle, &x_window, &y_window);
+
+            ImVec2 viewport_position = ImGui::GetCursorScreenPos();
+            viewport_offset.x = viewport_position.x - x_window;
+            viewport_offset.y = active_window->height - (viewport_position.y - y_window + viewport_height);
+
+            ImGui::End();
         }
 #endif
-    }
-    else
-    {
-        render_surface_width = viewport_width;
-        render_surface_height = viewport_height;
+
+        APORIA_ASSERT(viewport_width > 0 && viewport_height > 0);
+
+        if (viewport_width != old_viewport_width || viewport_height != old_viewport_height)
+        {
+            framebuffer_resize(&main_framebuffer, viewport_width, viewport_height);
+
+            if (lighting_enabled)
+            {
+                framebuffer_resize(&masking, active_window->width, active_window->height);
+                framebuffer_resize(&raymarching, active_window->width, active_window->height);
+            }
+        }
     }
 
-    APORIA_ASSERT(render_surface_width > 0 && render_surface_height > 0);
-
-    // @TODO(dubgron): We need to check it every frame only for the editor.
-    // Maybe we should make it simpler in builds without the editor.
-    if (render_surface_width != old_render_surface_width || render_surface_height != old_render_surface_height)
+    // Maybe resize the game framebuffer
     {
-        active_camera->adjust_aspect_ratio_to_render_surface();
-        adjust_framebuffers_to_render_surface();
+        i32 old_game_render_width = game_render_width;
+        i32 old_game_render_height = game_render_height;
+
+        game_render_width = viewport_width;
+        game_render_height = viewport_height;
+
+        if (rendering_config.is_using_custom_game_resolution())
+        {
+            game_render_width = rendering_config.custom_game_resolution_width;
+            game_render_height = rendering_config.custom_game_resolution_height;
+
+#if defined(APORIA_EDITOR)
+            if (editor_is_open)
+            {
+                game_render_width = game_render_height * viewport_width / viewport_height;
+            }
+#endif
+        }
+
+        APORIA_ASSERT(game_render_width > 0 && game_render_height > 0);
+
+        if (game_render_width != old_game_render_width || game_render_height != old_game_render_height)
+        {
+            active_camera->adjust_aspect_ratio_to_render_surface();
+            framebuffer_resize(&game_framebuffer, game_render_width, game_render_height);
+        }
+    }
+
+    // Maybe resize the UI framebuffer
+    {
+        i32 old_ui_render_width = ui_render_width;
+        i32 old_ui_render_height = ui_render_height;
+
+        ui_render_width = viewport_width;
+        ui_render_height = viewport_height;
+
+        if (rendering_config.is_using_custom_ui_resolution())
+        {
+            ui_render_width = rendering_config.custom_ui_resolution_width;
+            ui_render_height = rendering_config.custom_ui_resolution_height;
+
+#if defined(APORIA_EDITOR)
+            if (editor_is_open)
+            {
+                ui_render_width = ui_render_height * viewport_width / viewport_height;
+            }
+#endif
+        }
+
+        APORIA_ASSERT(ui_render_width > 0 && ui_render_height > 0);
+
+        if (ui_render_width != old_ui_render_width || ui_render_height != old_ui_render_height)
+        {
+            framebuffer_resize(&ui_framebuffer, ui_render_width, ui_render_height);
+        }
     }
 }
 
 void rendering_frame_end()
 {
-    framebuffer_bind(temp_framebuffer);
-    framebuffer_clear(camera_config.background_color);
+    framebuffer_bind(game_framebuffer);
+    framebuffer_clear(Color::Transparent);
 
 #if defined(APORIA_EDITOR)
     i32 value = -1;
-    glClearTexImage(temp_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
+    glClearTexImage(game_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
 #endif
 
     const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
@@ -876,41 +930,17 @@ void rendering_frame_end()
     shader_set_mat4("u_vp_matrix", view_projection_matrix);
     shader_set_float("u_camera_zoom", camera_zoom);
 
-#if defined(APORIA_EDITOR)
-    if (editor_config.display_editor_grid)
-    {
-        bind_shader(editor_grid_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
-
-        VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
-
-        u64 idx = quads->vertex_buffer.count;
-        quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.count += 4;
-
-        vertexarray_render(quads);
-    }
-
-    bind_shader(editor_selected_shader);
-    shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-    shader_set_mat4("u_vp_matrix", view_projection_matrix);
-    shader_set_float("u_time_since_selected", time_since_selected);
-#endif
-
     renderqueue_flush(&render_queue);
     framebuffer_unbind();
 
+#if defined(APORIA_EDITOR)
+    if (!editor_is_open && lighting_enabled)
+#else
     if (lighting_enabled)
+#endif
     {
         //////////////////////////////////////////////////
         // Masking Shader
-
-        // @NOTE(dubgron): Resize the viewport to the size of the window
-        // before rendering the lights to keep the highest fidelity.
-        glViewport(0, 0, active_window->width, active_window->height);
 
         framebuffer_bind(masking);
         framebuffer_clear(Color::Transparent);
@@ -946,9 +976,6 @@ void rendering_frame_end()
         framebuffer_flush(masking, raymarching_shader);
         framebuffer_unbind();
 
-        // @NOTE(dubgron): Resize the viewport back to the size of the buffer.
-        glViewport(0, 0, temp_framebuffer.width, temp_framebuffer.height);
-
         //////////////////////////////////////////////////
         // Shadowcasting Shader
 
@@ -961,21 +988,10 @@ void rendering_frame_end()
         shader_set_float2("u_window_size", active_window->width, active_window->height);
         shader_set_uint("u_num_lights", light_sources.count);
 
-        framebuffer_bind(temp_framebuffer);
+        framebuffer_bind(game_framebuffer);
         framebuffer_flush(raymarching, shadowcasting_shader);
         framebuffer_unbind();
     }
-
-    u32 temp_framebuffer_unit = find_or_assign_texture_unit(temp_framebuffer.color_buffer_id);
-
-    bind_shader(postprocessing_shader);
-    shader_set_int("u_framebuffer", temp_framebuffer_unit);
-
-    // @NOTE(dubgron): The temporary framebuffer is here to avoid FBO's Feedback Loop.
-    // See https://www.khronos.org/opengl/wiki/Framebuffer_Object#Feedback_Loops.
-    framebuffer_bind(main_framebuffer);
-    framebuffer_flush(temp_framebuffer, postprocessing_shader);
-    framebuffer_unbind();
 }
 
 void rendering_ui_begin()
@@ -984,10 +1000,10 @@ void rendering_ui_begin()
 
 void rendering_ui_end()
 {
-    framebuffer_bind(main_framebuffer);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    framebuffer_bind(ui_framebuffer);
+    framebuffer_clear(Color::Transparent);
 
-    m4 screen_to_clip = glm::ortho<f32>(0.f, active_window->width, 0.f, active_window->height);
+    m4 screen_to_clip = glm::ortho<f32>(0.f, ui_render_width, 0.f, ui_render_height);
 
     // Initialize texture sampler
     static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -1017,6 +1033,87 @@ void rendering_ui_end()
 
 void rendering_flush_to_screen()
 {
+    framebuffer_bind(main_framebuffer);
+    framebuffer_clear(camera_config.background_color);
+
+#if defined(APORIA_EDITOR)
+    // Draw the editor grid
+    if (editor_is_open && editor_config.display_editor_grid)
+    {
+        const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
+
+        bind_shader(editor_grid_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
+
+        u64 idx = quads->vertex_buffer.count;
+        quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, Z_ALWAYS_BEHIND } };
+        quads->vertex_buffer.count += 4;
+
+        vertexarray_render(quads);
+    }
+#endif
+
+    // Draw the game and the UI.
+    {
+        u32 game_framebuffer_unit = find_or_assign_texture_unit(game_framebuffer.color_buffer_id);
+        u32 ui_framebuffer_unit = find_or_assign_texture_unit(ui_framebuffer.color_buffer_id);
+
+        bind_shader(postprocessing_shader);
+        shader_set_int("u_game_framebuffer", game_framebuffer_unit);
+        shader_set_int("u_ui_framebuffer", ui_framebuffer_unit);
+
+        framebuffer_flush(game_framebuffer, postprocessing_shader);
+    }
+
+#if defined(APORIA_EDITOR)
+    // Draw the editor UI
+    if (editor_is_open)
+    {
+        i32 value = -1;
+        glClearTexImage(main_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
+
+        const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
+
+        // Initialize texture sampler
+        static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
+
+        f32 camera_zoom = 1.f / active_camera->projection.zoom;
+
+        bind_shader(default_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(rectangle_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(line_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(circle_shader);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+
+        bind_shader(font_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_float("u_camera_zoom", camera_zoom);
+
+        bind_shader(editor_selected_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_float("u_time_since_selected", time_since_selected);
+
+        editor_draw_frame();
+
+        renderqueue_flush(&render_queue);
+    }
+#endif
+
     framebuffer_unbind();
     framebuffer_clear(Color::Black);
 
@@ -1032,22 +1129,22 @@ void rendering_flush_to_screen()
     }
 #endif
 
-    f32 render_aspect_ratio = (f32)render_surface_width / (f32)render_surface_height;
-    f32 window_aspect_ratio = (f32)viewport_width / (f32)viewport_height;
+    f32 game_aspect_ratio = (f32)game_render_width / (f32)game_render_height;
+    f32 viewport_aspect_ratio = (f32)viewport_width / (f32)viewport_height;
 
     i32 offset_x, offset_y, render_width, render_height;
 
-    if (render_aspect_ratio > window_aspect_ratio)
+    if (game_aspect_ratio > viewport_aspect_ratio)
     {
         render_width = viewport_width;
-        render_height = viewport_width / render_aspect_ratio;
+        render_height = viewport_width / game_aspect_ratio;
 
         offset_x = 0;
         offset_y = (viewport_height - render_height) / 2;
     }
     else
     {
-        render_width = viewport_height * render_aspect_ratio;
+        render_width = viewport_height * game_aspect_ratio;
         render_height = viewport_height;
 
         offset_x = (viewport_width - render_width) / 2;
@@ -1057,12 +1154,12 @@ void rendering_flush_to_screen()
 #if defined(APORIA_EMSCRIPTEN)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, main_framebuffer.framebuffer_id);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, main_framebuffer.width, main_framebuffer.height,
+    glBlitFramebuffer(0, 0, viewport_width, viewport_height,
         offset_x, offset_y, offset_x + render_width, offset_y + render_height,
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #else
     glBlitNamedFramebuffer(main_framebuffer.framebuffer_id, 0,
-        0, 0, main_framebuffer.width, main_framebuffer.height,
+        0, 0, viewport_width, viewport_height,
         offset_x, offset_y, offset_x + render_width, offset_y + render_height,
         GL_COLOR_BUFFER_BIT, GL_NEAREST);
 #endif
@@ -1503,28 +1600,26 @@ void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 sh
     renderqueue_add(&render_queue, key);
 }
 
-void adjust_framebuffers_to_render_surface()
-{
-    framebuffer_resize(&main_framebuffer, render_surface_width, render_surface_height);
-    framebuffer_resize(&temp_framebuffer, render_surface_width, render_surface_height);
-
-    glViewport(0, 0, render_surface_width, render_surface_height);
-
-    if (lighting_enabled)
-    {
-        framebuffer_resize(&masking, active_window->width, active_window->height);
-        framebuffer_resize(&raymarching, active_window->width, active_window->height);
-    }
-}
-
 #if defined(APORIA_EDITOR)
-i32 read_editor_index(i32 x_pos, i32 y_pos)
+i32 read_editor_index()
 {
     i32 index = INDEX_INVALID;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer.framebuffer_id);
+    v2 mouse_viewport_position = get_mouse_viewport_position();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, main_framebuffer.framebuffer_id);
     glReadBuffer(GL_COLOR_ATTACHMENT1);
-    glReadPixels(x_pos, y_pos, 1, 1, GL_RED_INTEGER, GL_INT, &index);
+    glReadPixels(mouse_viewport_position.x, mouse_viewport_position.y, 1, 1, GL_RED_INTEGER, GL_INT, &index);
+
+    if (index == INDEX_INVALID)
+    {
+        mouse_viewport_position /= v2{ viewport_width, viewport_height };
+        mouse_viewport_position *= v2{ game_render_width, game_render_height };
+
+        glBindFramebuffer(GL_FRAMEBUFFER, game_framebuffer.framebuffer_id);
+        glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glReadPixels(mouse_viewport_position.x, mouse_viewport_position.y, 1, 1, GL_RED_INTEGER, GL_INT, &index);
+    }
 
     return index;
 }

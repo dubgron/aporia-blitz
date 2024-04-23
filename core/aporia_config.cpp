@@ -393,36 +393,37 @@ struct Config_PropertyDefinition
 
 static Config_PropertyDefinition defined_properties[] =
 {
-    { "window", "title",                  Config_ValueType_String,            1, &window_config.title },
-    { "window", "size",                   Config_ValueType_Int32,             2, &window_config.width },
-    { "window", "vsync",                  Config_ValueType_Boolean,           1, &window_config.vsync },
-    { "window", "position",               Config_ValueType_Int32,             2, &window_config.position },
+    { "window", "title",                    Config_ValueType_String,            1, &window_config.title },
+    { "window", "size",                     Config_ValueType_Int32,             2, &window_config.width },
+    { "window", "vsync",                    Config_ValueType_Boolean,           1, &window_config.vsync },
+    { "window", "position",                 Config_ValueType_Int32,             2, &window_config.position },
 
-    { "camera", "fov",                    Config_ValueType_Float32,           1, &camera_config.fov },
-    { "camera", "background_color",       Config_ValueType_Uint8,             4, &camera_config.background_color },
-    { "camera", "movement_speed",         Config_ValueType_Float32,           1, &camera_config.movement_speed },
-    { "camera", "rotation_speed",         Config_ValueType_Float32,           1, &camera_config.rotation_speed },
-    { "camera", "zoom_speed",             Config_ValueType_Float32,           1, &camera_config.zoom_speed },
-    { "camera", "movement_key_up",        Config_ValueType_Key,               1, &camera_config.movement_key_up },
-    { "camera", "movement_key_down",      Config_ValueType_Key,               1, &camera_config.movement_key_down },
-    { "camera", "movement_key_left",      Config_ValueType_Key,               1, &camera_config.movement_key_left },
-    { "camera", "movement_key_right",     Config_ValueType_Key,               1, &camera_config.movement_key_right },
-    { "camera", "rotation_key_left",      Config_ValueType_Key,               1, &camera_config.rotation_key_left },
-    { "camera", "rotation_key_right",     Config_ValueType_Key,               1, &camera_config.rotation_key_right },
-    { "camera", "zoom_key_in",            Config_ValueType_Key,               1, &camera_config.zoom_key_in },
-    { "camera", "zoom_key_out",           Config_ValueType_Key,               1, &camera_config.zoom_key_out },
-    { "camera", "zoom_max",               Config_ValueType_Float32,           1, &camera_config.zoom_max },
-    { "camera", "zoom_min",               Config_ValueType_Float32,           1, &camera_config.zoom_min },
+    { "camera", "fov",                      Config_ValueType_Float32,           1, &camera_config.fov },
+    { "camera", "background_color",         Config_ValueType_Uint8,             4, &camera_config.background_color },
+    { "camera", "movement_speed",           Config_ValueType_Float32,           1, &camera_config.movement_speed },
+    { "camera", "rotation_speed",           Config_ValueType_Float32,           1, &camera_config.rotation_speed },
+    { "camera", "zoom_speed",               Config_ValueType_Float32,           1, &camera_config.zoom_speed },
+    { "camera", "movement_key_up",          Config_ValueType_Key,               1, &camera_config.movement_key_up },
+    { "camera", "movement_key_down",        Config_ValueType_Key,               1, &camera_config.movement_key_down },
+    { "camera", "movement_key_left",        Config_ValueType_Key,               1, &camera_config.movement_key_left },
+    { "camera", "movement_key_right",       Config_ValueType_Key,               1, &camera_config.movement_key_right },
+    { "camera", "rotation_key_left",        Config_ValueType_Key,               1, &camera_config.rotation_key_left },
+    { "camera", "rotation_key_right",       Config_ValueType_Key,               1, &camera_config.rotation_key_right },
+    { "camera", "zoom_key_in",              Config_ValueType_Key,               1, &camera_config.zoom_key_in },
+    { "camera", "zoom_key_out",             Config_ValueType_Key,               1, &camera_config.zoom_key_out },
+    { "camera", "zoom_max",                 Config_ValueType_Float32,           1, &camera_config.zoom_max },
+    { "camera", "zoom_min",                 Config_ValueType_Float32,           1, &camera_config.zoom_min },
 
-    { "shader", "default.blend",          Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
-    { "shader", "default.blend_op",       Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
-    { "shader", "default.depth_test",     Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
-    { "shader", "default.depth_write",    Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
+    { "shader", "default.blend",            Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
+    { "shader", "default.blend_op",         Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },
+    { "shader", "default.depth_test",       Config_ValueType_ShaderDepthTest,   1, &shader_config.default_properties.depth_test },
+    { "shader", "default.depth_write",      Config_ValueType_ShaderDepthWrite,  1, &shader_config.default_properties.depth_write },
 
-    { "rendering", "custom_resolution",   Config_ValueType_Int32,             2, &rendering_config.custom_resolution_width },
+    { "rendering", "custom_game_resolution",Config_ValueType_Int32,             2, &rendering_config.custom_game_resolution_width },
+    { "rendering", "custom_ui_resolution",  Config_ValueType_Int32,             2, &rendering_config.custom_ui_resolution_width },
 
 #if defined(APORIA_EDITOR)
-    { "editor", "display_editor_grid",    Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
+    { "editor", "display_editor_grid",      Config_ValueType_Boolean,           1, &editor_config.display_editor_grid },
 #endif
 };
 static constexpr u64 defined_properties_count = ARRAY_COUNT(defined_properties);
@@ -519,8 +520,6 @@ bool reload_config_asset(Asset* config_asset)
 
     window_apply_config();
     active_camera->apply_config();
-
-    adjust_framebuffers_to_render_surface();
 
     return success;
 }

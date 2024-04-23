@@ -44,12 +44,20 @@ struct ShaderConfig
 
 struct RenderingConfig
 {
-    i32 custom_resolution_width = 0;
-    i32 custom_resolution_height = 0;
+    i32 custom_game_resolution_width = 0;
+    i32 custom_game_resolution_height = 0;
 
-    bool is_using_custom_resolution() const
+    i32 custom_ui_resolution_width = 0;
+    i32 custom_ui_resolution_height = 0;
+
+    bool is_using_custom_game_resolution() const
     {
-        return custom_resolution_width > 0 && custom_resolution_height > 0;
+        return custom_game_resolution_width > 0 && custom_game_resolution_height > 0;
+    }
+
+    bool is_using_custom_ui_resolution() const
+    {
+        return custom_ui_resolution_width > 0 && custom_ui_resolution_height > 0;
     }
 };
 

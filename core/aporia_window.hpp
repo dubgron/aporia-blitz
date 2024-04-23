@@ -30,5 +30,5 @@ bool window_is_open();
 void window_apply_config();
 
 v2 get_mouse_screen_position();
-v2 get_mouse_world_position();
 v2 get_mouse_viewport_position();
+v2 get_mouse_world_position();

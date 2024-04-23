@@ -23,11 +23,16 @@ void main()
 
 layout (location = 0) in vec2 in_tex_coord;
 
-uniform sampler2D u_framebuffer;
+uniform sampler2D u_game_framebuffer;
+uniform sampler2D u_ui_framebuffer;
 
 layout (location = 0) out vec4 out_color;
 
 void main()
 {
-    out_color = texture(u_framebuffer, in_tex_coord);
+    vec4 game_color = texture(u_game_framebuffer, in_tex_coord);
+    vec4 ui_color = texture(u_ui_framebuffer, in_tex_coord);
+
+    float t = ui_color.a;
+    out_color = mix(game_color, ui_color, t);
 }

@@ -63,6 +63,53 @@ void editor_update(f32 frame_time)
     if (!editor_is_open)
         return;
 
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::DockSpaceOverViewport(viewport);
+
+    ImGui::Begin("Tools");
+
+    if (ImGui::RadioButton("Translate", gizmo_type == GizmoType_Translate))
+    {
+        gizmo_type = GizmoType_Translate;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", gizmo_type == GizmoType_Rotate))
+    {
+        gizmo_type = GizmoType_Rotate;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", gizmo_type == GizmoType_Scale))
+    {
+        gizmo_type = GizmoType_Scale;
+    }
+
+    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
+    {
+        gizmo_space = GizmoSpace_World;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
+    {
+        gizmo_space = GizmoSpace_Local;
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Button("Play (F1)"))
+    {
+        editor_is_open = !editor_is_open;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset camera"))
+    {
+        active_camera->view = CameraView{};
+        active_camera->projection = CameraProjection{};
+        active_camera->apply_config();
+        active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
+    }
+
+    ImGui::End();
+
     time_since_selected += frame_time;
 
     static const ImGuiID viewport_id = ImHashStr("Viewport");
@@ -108,11 +155,7 @@ void editor_update(f32 frame_time)
     i32 index = gizmo_in_use_index;
     if (gizmo_in_use_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
     {
-        v2 mouse_viewport_position = get_mouse_viewport_position();
-        i32 x_pos = (i32)mouse_viewport_position.x;
-        i32 y_pos = (i32)mouse_viewport_position.y;
-
-        index = read_editor_index(x_pos, y_pos);
+        index = read_editor_index();
     }
 
     if (mouse_within_viewport && input_is_pressed(left_mouse_button))
@@ -246,55 +289,8 @@ void editor_update(f32 frame_time)
     }
 }
 
-void editor_draw_frame(f32 frame_time)
+void editor_draw_frame()
 {
-    if (!editor_is_open)
-        return;
-
-    ImGui::Begin("Tools");
-
-    if (ImGui::RadioButton("Translate", gizmo_type == GizmoType_Translate))
-    {
-        gizmo_type = GizmoType_Translate;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", gizmo_type == GizmoType_Rotate))
-    {
-        gizmo_type = GizmoType_Rotate;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", gizmo_type == GizmoType_Scale))
-    {
-        gizmo_type = GizmoType_Scale;
-    }
-
-    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
-    {
-        gizmo_space = GizmoSpace_World;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
-    {
-        gizmo_space = GizmoSpace_Local;
-    }
-
-    ImGui::Separator();
-
-    if (ImGui::Button("Play (F1)"))
-    {
-        editor_is_open = !editor_is_open;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Reset camera"))
-    {
-        active_camera->view = CameraView{};
-        active_camera->projection = CameraProjection{};
-        active_camera->apply_config();
-        active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
-    }
-
-    ImGui::End();
-
     if (selected_entity.index == NOTHING_SELECTED_INDEX)
         return;
 

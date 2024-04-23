@@ -106,18 +106,23 @@ static void game_main_loop()
         }
 
         game_draw_frame(frame_time);
-
-#if defined(APORIA_EDITOR)
-        editor_draw_frame(frame_time);
-#endif
     }
     rendering_frame_end();
+
+#if defined(APORIA_EDITOR)
+    if (!editor_is_open)
+    {
+#endif
 
     rendering_ui_begin();
     {
         game_draw_ui(frame_time);
     }
     rendering_ui_end();
+
+#if defined(APORIA_EDITOR)
+    }
+#endif
 
     rendering_flush_to_screen();
 
