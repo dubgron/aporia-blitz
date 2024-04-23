@@ -16,7 +16,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#if defined(APORIA_DEBUGTOOLS)
+#if defined(APORIA_IMGUI)
     #include <imgui.h>
     #include <backends/imgui_impl_glfw.h>
     #include <backends/imgui_impl_opengl3.h>
