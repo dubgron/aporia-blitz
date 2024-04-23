@@ -26,7 +26,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          emcmake cmake . -DAPORIA_EMSCRIPTEN=ON
+          emcmake cmake . -DAPORIA_EMSCRIPTEN=ON -DAPORIA_EDITOR=OFF
 
       - name: Build with Emscripten
         run: |
