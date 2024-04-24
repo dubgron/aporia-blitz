@@ -10,14 +10,22 @@ using EntityFlag = u64;
 enum EntityFlag_ : EntityFlag
 {
     EntityFlag_None             = 0x00,
-    EntityFlag_Visible          = 0x01,
-    EntityFlag_BlockingLight    = 0x02,
-    EntityFlag_CollisionEnabled = 0x04,
+    EntityFlag_Active           = 0x01,
+    EntityFlag_Visible          = 0x02,
+    EntityFlag_BlockingLight    = 0x04,
+    EntityFlag_CollisionEnabled = 0x08,
+};
+
+struct EntityID
+{
+    i32 index = INDEX_INVALID;
+    i32 generation = INDEX_INVALID;
 };
 
 struct Entity
 {
-    i32 index = 0;
+    EntityID id;
+    Entity* next = nullptr;
 
     EntityFlag flags = EntityFlag_Visible | EntityFlag_BlockingLight;
 
@@ -40,9 +48,10 @@ struct Entity
     Collider collider;
 };
 
-bool entity_flag_is_set(const Entity& entity, EntityFlag flag);
-void entity_flag_set(Entity* entity, EntityFlag flag);
-void entity_flag_unset(Entity* entity, EntityFlag flag);
+bool entity_flags_has_all(const Entity& entity, EntityFlag flags);
+bool entity_flags_has_any(const Entity& entity, EntityFlag flags);
+void entity_flags_set(Entity* entity, EntityFlag flags);
+void entity_flags_unset(Entity* entity, EntityFlag flags);
 
 void entity_ajust_size_to_texture(Entity* entity);
 

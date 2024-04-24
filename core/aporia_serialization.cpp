@@ -6,7 +6,7 @@
         next = old, pop = (MemoryArena*)1)
 
 template<typename T>
-void serialize_write(Serializer* serializer, T value)
+static void serialize_write(Serializer* serializer, T value)
 {
     u64 size = sizeof(T);
     void* data = serializer->buffer.data + serializer->offset;
@@ -16,7 +16,7 @@ void serialize_write(Serializer* serializer, T value)
 }
 
 template<typename T>
-void serialize_write_array(Serializer* serializer, T* array, u64 count)
+static void serialize_write_array(Serializer* serializer, T* array, u64 count)
 {
     u64 size = sizeof(T) * count;
     void* data = serializer->buffer.data + serializer->offset;
@@ -26,7 +26,7 @@ void serialize_write_array(Serializer* serializer, T* array, u64 count)
 }
 
 template<typename T>
-void serialize_read(Serializer* serializer, T* out_value)
+static void serialize_read(Serializer* serializer, T* out_value)
 {
     u64 size = sizeof(T);
     void* data = serializer->buffer.data + serializer->offset;
@@ -36,7 +36,7 @@ void serialize_read(Serializer* serializer, T* out_value)
 }
 
 template<typename T>
-void serialize_read_array(Serializer* serializer, T** out_array, u64 count)
+static void serialize_read_array(Serializer* serializer, T** out_array, u64 count)
 {
     u64 size = sizeof(T) * count;
     void* data = serializer->buffer.data + serializer->offset;
@@ -53,18 +53,18 @@ void serialize_read_array(Serializer* serializer, T** out_array, u64 count)
     }
 }
 
-void serialize_write(Serializer* serializer, String string)
+static void serialize_write(Serializer* serializer, String string)
 {
     serialize_write(serializer, string.length);
     serialize_write_array(serializer, string.data, string.length);
 }
-void serialize_read(Serializer* serializer, String* string)
+static void serialize_read(Serializer* serializer, String* string)
 {
     serialize_read(serializer, &string->length);
     serialize_read_array(serializer, &string->data, string->length);
 }
 
-void serialize_write(Serializer* serializer, const SubTexture& subtexture)
+static void serialize_write(Serializer* serializer, const SubTexture& subtexture)
 {
     String subtexture_name;
     if (subtexture.texture_index != INDEX_INVALID)
@@ -74,7 +74,7 @@ void serialize_write(Serializer* serializer, const SubTexture& subtexture)
     serialize_write(serializer, subtexture_name);
 }
 
-void serialize_read(Serializer* serializer, SubTexture* subtexture)
+static void serialize_read(Serializer* serializer, SubTexture* subtexture)
 {
     String subtexture_name;
     serialize_read(serializer, &subtexture_name);
@@ -84,7 +84,7 @@ void serialize_read(Serializer* serializer, SubTexture* subtexture)
     }
 }
 
-void serialize_write(Serializer* serializer, const Animator& animator)
+static void serialize_write(Serializer* serializer, const Animator& animator)
 {
     serialize_write(serializer, animator.current_animation);
     serialize_write(serializer, animator.requested_animation);
@@ -93,7 +93,7 @@ void serialize_write(Serializer* serializer, const Animator& animator)
     serialize_write(serializer, animator.elapsed_time);
 }
 
-void serialize_read(Serializer* serializer, Animator* animator)
+static void serialize_read(Serializer* serializer, Animator* animator)
 {
     serialize_read(serializer, &animator->current_animation);
     serialize_read(serializer, &animator->requested_animation);
@@ -102,19 +102,19 @@ void serialize_read(Serializer* serializer, Animator* animator)
     serialize_read(serializer, &animator->elapsed_time);
 }
 
-void serialize_write(Serializer* serializer, const Collider_Polygon& polygon)
+static void serialize_write(Serializer* serializer, const Collider_Polygon& polygon)
 {
     serialize_write(serializer, polygon.point_count);
     serialize_write_array(serializer, polygon.points, polygon.point_count);
 }
 
-void serialize_read(Serializer* serializer, Collider_Polygon* polygon)
+static void serialize_read(Serializer* serializer, Collider_Polygon* polygon)
 {
     serialize_read(serializer, &polygon->point_count);
     serialize_read_array(serializer, &polygon->points, polygon->point_count);
 }
 
-void serialize_write(Serializer* serializer, const Collider& collider)
+static void serialize_write(Serializer* serializer, const Collider& collider)
 {
     serialize_write(serializer, collider.type);
     switch (collider.type)
@@ -125,7 +125,7 @@ void serialize_write(Serializer* serializer, const Collider& collider)
     }
 }
 
-void serialize_read(Serializer* serializer, Collider* collider)
+static void serialize_read(Serializer* serializer, Collider* collider)
 {
     serialize_read(serializer, &collider->type);
     switch (collider->type)
@@ -136,9 +136,9 @@ void serialize_read(Serializer* serializer, Collider* collider)
     }
 }
 
-void entity_serialize(Serializer* serializer, const Entity& entity)
+static void entity_serialize(Serializer* serializer, const Entity& entity)
 {
-    serialize_write(serializer, entity.index);
+    serialize_write(serializer, entity.id);
 
     serialize_write(serializer, entity.flags);
 
@@ -160,9 +160,9 @@ void entity_serialize(Serializer* serializer, const Entity& entity)
     serialize_write(serializer, entity.collider);
 }
 
-void entity_deserialize(Serializer* serializer, Entity* entity, World* world)
+static void entity_deserialize(Serializer* serializer, Entity* entity, World* world)
 {
-    serialize_read(serializer, &entity->index);
+    serialize_read(serializer, &entity->id);
 
     serialize_read(serializer, &entity->flags);
 
@@ -191,33 +191,14 @@ void entity_deserialize(Serializer* serializer, Entity* entity, World* world)
 String world_serialize(MemoryArena* arena, const World& world)
 {
     Serializer serializer;
-    serializer.buffer = push_string(arena, MEGABYTES(1));
+    serializer.buffer = push_string(arena, MEGABYTES(5));
 
-    serialize_write(&serializer, world.max_entities);
+    serialize_write(&serializer, world.entity_max_count);
     serialize_write(&serializer, world.entity_count);
 
-    for (i64 idx = 0; idx < world.entity_count; ++idx)
+    for (i32 idx = 0; idx < world.entity_count; ++idx)
     {
         entity_serialize(&serializer, world.entity_array[idx]);
-    }
-
-    u64 relevant_list_items = 0;
-    for (i64 idx = world.max_entities - 1; idx >= 0; --idx)
-    {
-        if (world.entity_list[idx].generation > 0)
-        {
-            relevant_list_items = idx + 1;
-            break;
-        }
-    }
-    serialize_write(&serializer, relevant_list_items);
-
-    u64* generational_indices;
-    serialize_read_array(&serializer, &generational_indices, relevant_list_items);
-
-    for (u64 idx = 0; idx < relevant_list_items; ++idx)
-    {
-        generational_indices[idx] = world.entity_list[idx].generation;
     }
 
     u64 unused_memory = serializer.buffer.length - serializer.offset;
@@ -231,39 +212,26 @@ World world_deserialize(String serialized)
     Serializer serializer;
     serializer.buffer = serialized;
 
-    u64 max_entities;
-    serialize_read(&serializer, &max_entities);
-    World world = world_init(max_entities);
+    i32 entity_max_count;
+    serialize_read(&serializer, &entity_max_count);
+    World world = world_init(entity_max_count);
 
     serialize_read(&serializer, &world.entity_count);
 
-    for (u64 idx = 0; idx < world.entity_count; ++idx)
+    for (i32 idx = 0; idx < world.entity_count; ++idx)
     {
         Entity* entity = &world.entity_array[idx];
         entity_deserialize(&serializer, entity, &world);
-
-        world.entity_list[entity->index].entity = entity;
     }
 
-    u64 relevant_list_items;
-    serialize_read(&serializer, &relevant_list_items);
-
-    u64* generational_indices;
-    serialize_read_array(&serializer, &generational_indices, relevant_list_items);
-
-    for (u64 idx = 0; idx < relevant_list_items; ++idx)
-    {
-        world.entity_list[idx].generation = generational_indices[idx];
-    }
-
-    // Reconstruct the free_list, starting from the end of the entity_list.
     world.free_list = nullptr;
-    for (i64 idx = world.max_entities - 1; idx >= 0; --idx)
+    for (i32 idx = 0; idx < world.entity_count; ++idx)
     {
-        if (world.entity_list[idx].entity == nullptr)
+        Entity* entity = &world.entity_array[idx];
+        if (!entity_flags_has_any(*entity, EntityFlag_Active))
         {
-            world.entity_list[idx].next = world.free_list;
-            world.free_list = &world.entity_list[idx];
+            entity->next = world.free_list;
+            world.free_list = entity;
         }
     }
 

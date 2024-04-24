@@ -2,21 +2,17 @@
 
 #include "aporia_debug.hpp"
 
-World world_init(i64 in_max_entities /* = 10000 */)
+World world_init(i32 max_entities /* = 10000 */)
 {
     World result;
-    result.max_entities = in_max_entities;
-    result.entity_count = 0;
+    result.entity_max_count = max_entities;
 
     // @TODO(dubgron): The count of the world arena should be more planned out.
-    i64 world_arena_size = 2 * result.max_entities * (sizeof(Entity) + sizeof(EntityNode));
+    i64 world_arena_size = result.entity_max_count * sizeof(Entity) * 2;
     result.arena = arena_init(world_arena_size);
     APORIA_LOG(Info, "World has allocated % B of memory.", world_arena_size);
 
-    result.entity_array = arena_push<Entity>(&result.arena, result.max_entities);
-    result.entity_list = arena_push<EntityNode>(&result.arena, result.max_entities);
-
-    world_clear(&result);
+    result.entity_array = arena_push<Entity>(&result.arena, result.entity_max_count);
 
     return result;
 }
@@ -26,50 +22,35 @@ void world_deinit(World* world)
     arena_deinit(&world->arena);
 }
 
-void world_clear(World* world)
-{
-    world->entity_count = 0;
-    world->free_list = world->entity_list;
-
-    i64 last_idx = world->max_entities - 1;
-    for (i64 idx = 0; idx < last_idx; ++idx)
-    {
-        world->entity_list[idx].next = &world->entity_list[idx + 1];
-        world->entity_list[idx].entity = nullptr;
-    }
-
-    world->entity_list[last_idx].next = nullptr;
-    world->entity_list[last_idx].entity = nullptr;
-}
-
 EntityID entity_create(World* world, Entity** out_entity)
 {
-    APORIA_ASSERT_WITH_MESSAGE(world->free_list,
-        "The free list is empty! Can't create new Entity");
+    Entity* entity = nullptr;
 
-    // Pop an element from the free list.
-    EntityNode* free_node = world->free_list;
-    world->free_list = world->free_list->next;
-
-    // Get a new entity from the end of the array.
-    Entity* new_entity = &world->entity_array[world->entity_count];
-    world->entity_count += 1;
-
-    // Clean up the new entity and assign the index of the node.
-    *new_entity = Entity{};
-    new_entity->index = INDEX_IN_ARRAY(free_node, world->entity_list);
-
-    // Assign the new entity to the node and increment the generation.
-    free_node->entity = new_entity;
-    free_node->generation += 1;
-
-    // Assign the output entity, if required.
-    if (out_entity)
+    if (world->free_list)
     {
-        *out_entity = new_entity;
+        entity = world->free_list;
+        world->free_list = world->free_list->next;
+    }
+    else
+    {
+        APORIA_ASSERT_WITH_MESSAGE(world->entity_count < world->entity_max_count,
+            "The entity array is full! Can't create a new Entity!");
+
+        entity = &world->entity_array[world->entity_count];
+        world->entity_count += 1;
+
+        entity->id.index = INDEX_IN_ARRAY(entity, world->entity_array);
+        entity->id.generation = 0;
     }
 
-    return EntityID{ new_entity->index, free_node->generation };
+    entity_flags_set(entity, EntityFlag_Active);
+
+    if (out_entity)
+    {
+        *out_entity = entity;
+    }
+
+    return entity->id;
 }
 
 void entity_destroy(World* world, EntityID entity_id)
@@ -77,29 +58,24 @@ void entity_destroy(World* world, EntityID entity_id)
     i32 index = entity_id.index;
     i32 generation = entity_id.generation;
 
-    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->max_entities && generation >= 0,
+    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->entity_max_count && generation >= 0,
         "Invalid Entity ID (index: %, generation: %)!", index, generation);
 
-    EntityNode* entity_node = &world->entity_list[index];
+    Entity* entity = &world->entity_array[index];
 
-    APORIA_ASSERT_WITH_MESSAGE(entity_node->generation == generation,
+    APORIA_ASSERT_WITH_MESSAGE(entity->id.generation == generation,
         "Generation mismatch! Tried to remove Entity with ID (index: %, generation: %), but only found ID (index: %, generation: %)!",
-        index, generation, index, entity_node->generation);
+        index, generation, index, entity->id.generation);
 
-    APORIA_ASSERT_WITH_MESSAGE(entity_node->entity != nullptr,
-        "Entity with ID (index: %, generation: %) is null!", index, generation);
+    APORIA_ASSERT_WITH_MESSAGE(entity_flags_has_all(*entity, EntityFlag_Active),
+        "Entity with ID (index: %, generation: %) is not alive!", index, generation);
 
-    Entity* last_entity = &world->entity_array[world->entity_count - 1];
+    entity_flags_unset(entity, EntityFlag_Active);
 
-    // Swap the removed entity with the end of the entity array and redirect its node.
-    *entity_node->entity = *last_entity;
-    world->entity_list[last_entity->index].entity = entity_node->entity;
-    world->entity_count -= 1;
+    entity->id.generation += 1;
 
-    // Clear the node of the removed entity and push it onto the free list.
-    entity_node->entity = nullptr;
-    entity_node->next = world->free_list;
-    world->free_list = entity_node;
+    entity->next = world->free_list;
+    world->free_list = entity;
 }
 
 Entity* entity_get(World* world, EntityID entity_id)
@@ -107,14 +83,14 @@ Entity* entity_get(World* world, EntityID entity_id)
     i32 index = entity_id.index;
     i32 generation = entity_id.generation;
 
-    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->max_entities && generation >= 0,
+    APORIA_ASSERT_WITH_MESSAGE(index >= 0 && index < world->entity_max_count && generation >= 0,
         "Invalid EntityID (index: %, generation: %)!", index, generation);
 
-    EntityNode* entity_node = &world->entity_list[index];
-    if (entity_node->generation != generation)
+    Entity* entity = &world->entity_array[index];
+    if (entity->id.generation != generation)
     {
         return nullptr;
     }
 
-    return entity_node->entity;
+    return entity;
 }

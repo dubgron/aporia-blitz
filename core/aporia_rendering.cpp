@@ -948,7 +948,7 @@ void rendering_frame_end()
         for (u64 idx = 0; idx < world.entity_count; ++idx)
         {
             const Entity& entity = world.entity_array[idx];
-            if (entity_flag_is_set(entity, EntityFlag_Visible) && entity_flag_is_set(entity, EntityFlag_BlockingLight))
+            if (entity_flags_has_all(entity, EntityFlag_Active | EntityFlag_Visible | EntityFlag_BlockingLight))
             {
                 draw_entity(entity);
             }
@@ -1194,7 +1194,7 @@ void draw_entity(const Entity& entity)
         key.vertex[idx].color = entity.color;
 
 #if defined(APORIA_EDITOR)
-        key.vertex[idx].editor_index = entity.index;
+        key.vertex[idx].editor_index = entity.id.index;
 #endif
     }
 

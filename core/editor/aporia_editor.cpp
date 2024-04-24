@@ -164,7 +164,7 @@ void editor_update(f32 frame_time)
         {
             if (selected_entity.index != index)
             {
-                i32 generation = world.entity_list[index].generation;
+                i32 generation = world.entity_array[index].id.generation;
                 selected_entity = EntityID{ index, generation };
 
                 time_since_selected = 0.f;
