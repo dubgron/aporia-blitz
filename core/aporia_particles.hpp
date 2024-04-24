@@ -16,8 +16,8 @@ struct Particle
     Color color;
 };
 
-using EmitterFlag = u32;
-enum EmitterFlag_ : EmitterFlag
+using EmitterFlags = u32;
+enum EmitterFlag_ : EmitterFlags
 {
     EmitterFlag_None        = 0x00,
     EmitterFlag_FadeOut     = 0x01,
@@ -39,7 +39,7 @@ struct Emitter
     // many emitters without a need to duplicate this data
     // in all of them.
 
-    EmitterFlag flags = EmitterFlag_None;
+    EmitterFlags flags = EmitterFlag_None;
 
     f32 particles_per_second = 0.f;
 

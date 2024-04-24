@@ -25,8 +25,8 @@ struct CameraProjection
     m4 matrix{ 1.f };
 };
 
-using CameraDirtyFlag = u8;
-enum CameraDirtyFlag_ : CameraDirtyFlag
+using CameraDirtyFlags = u8;
+enum CameraDirtyFlag_ : CameraDirtyFlags
 {
     CameraDirtyFlag_View        = 0x01,
     CameraDirtyFlag_Projection  = 0x02,
@@ -38,10 +38,10 @@ struct Camera
     CameraProjection projection;
 
     m4 view_projection_matrix{ 1.f };
-    u8 dirty_flags = CameraDirtyFlag_View | CameraDirtyFlag_Projection;
+    CameraDirtyFlags dirty_flags = CameraDirtyFlag_View | CameraDirtyFlag_Projection;
 
-    void mark_as_dirty(CameraDirtyFlag flag) { dirty_flags |= flag; }
-    bool is_marked_dirty(CameraDirtyFlag flag) { return dirty_flags & flag; }
+    void mark_as_dirty(CameraDirtyFlags flag) { dirty_flags |= flag; }
+    bool is_marked_dirty(CameraDirtyFlags flag) { return dirty_flags & flag; }
 
     const m4& calculate_view_projection_matrix();
 

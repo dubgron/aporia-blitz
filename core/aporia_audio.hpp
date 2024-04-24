@@ -27,8 +27,8 @@ struct AudioSource
     String source_file;
 };
 
-using AudioFlag = u8;
-enum AudioFlag_ : AudioFlag
+using AudioFlags = u8;
+enum AudioFlag_ : AudioFlags
 {
     AudioFlag_None      = 0x00,
     AudioFlag_Looped    = 0x01,
@@ -47,7 +47,7 @@ struct AudioStream
     f32 inner_radius = 250.f;
     f32 outer_radius = 2500.f;
 
-    AudioFlag flags = AudioFlag_None;
+    AudioFlags flags = AudioFlag_None;
 };
 
 Mutex audio_mutex;

@@ -6,13 +6,15 @@
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"
 
-using EntityFlag = u64;
-enum EntityFlag_ : EntityFlag
+using EntityFlags = u64;
+enum EntityFlag_ : EntityFlags
 {
     EntityFlag_None             = 0x00,
     EntityFlag_Active           = 0x01,
+
     EntityFlag_Visible          = 0x02,
     EntityFlag_BlockingLight    = 0x04,
+
     EntityFlag_CollisionEnabled = 0x08,
 };
 
@@ -27,7 +29,7 @@ struct Entity
     EntityID id;
     Entity* next = nullptr;
 
-    EntityFlag flags = EntityFlag_Visible | EntityFlag_BlockingLight;
+    EntityFlags flags = EntityFlag_Visible | EntityFlag_BlockingLight;
 
     v2 position{ 0.f };
     f32 z = 0.f;
@@ -48,10 +50,10 @@ struct Entity
     Collider collider;
 };
 
-bool entity_flags_has_all(const Entity& entity, EntityFlag flags);
-bool entity_flags_has_any(const Entity& entity, EntityFlag flags);
-void entity_flags_set(Entity* entity, EntityFlag flags);
-void entity_flags_unset(Entity* entity, EntityFlag flags);
+bool entity_flags_has_all(const Entity& entity, EntityFlags flags);
+bool entity_flags_has_any(const Entity& entity, EntityFlags flags);
+void entity_flags_set(Entity* entity, EntityFlags flags);
+void entity_flags_unset(Entity* entity, EntityFlags flags);
 
 void entity_ajust_size_to_texture(Entity* entity);
 

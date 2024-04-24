@@ -2,22 +2,22 @@
 
 #include "aporia_game.hpp"
 
-bool entity_flags_has_all(const Entity& entity, EntityFlag flags)
+bool entity_flags_has_all(const Entity& entity, EntityFlags flags)
 {
     return (entity.flags & flags) == flags;
 }
 
-bool entity_flags_has_any(const Entity& entity, EntityFlag flags)
+bool entity_flags_has_any(const Entity& entity, EntityFlags flags)
 {
     return (entity.flags & flags) != 0;
 }
 
-void entity_flags_set(Entity* entity, EntityFlag flags)
+void entity_flags_set(Entity* entity, EntityFlags flags)
 {
     entity->flags |= flags;
 }
 
-void entity_flags_unset(Entity* entity, EntityFlag flags)
+void entity_flags_unset(Entity* entity, EntityFlags flags)
 {
     entity->flags &= ~flags;
 }

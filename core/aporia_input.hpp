@@ -201,8 +201,8 @@ enum InputAction : u8
     InputAction_Repeat,
 };
 
-using InputFlag = u8;
-enum InputFlag_ : InputFlag
+using InputFlags = u8;
+enum InputFlag_ : InputFlags
 {
     InputFlag_None              = 0x00,
     InputFlag_EndedFrameDown    = 0x01,
@@ -230,7 +230,7 @@ enum InputOwner : u8
 struct InputState
 {
     u8 pressed_count = 0;
-    InputFlag flags = InputFlag_None;
+    InputFlags flags = InputFlag_None;
 
     InputOwner owner = InputOwner_None;
     InputOwner last_owner = InputOwner_None;
