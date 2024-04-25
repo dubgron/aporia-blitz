@@ -10,9 +10,9 @@
     fov                     360
     aspect_ratio            1.7778
     background_color        80 80 102 255
-    movement_speed          100
+    movement_speed          500
     rotation_speed          2
-    zoom_speed              1.5
+    zoom_speed              2
     movement_key_up         "W"
     movement_key_down       "S"
     movement_key_left       "A"

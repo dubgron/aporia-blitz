@@ -12,10 +12,14 @@ struct World
     i32 entity_count = 0;
 
     Entity* free_list = nullptr;
+
+    Entity* entity_array_last_frame = nullptr;
 };
 
 World world_init(i32 max_entities = 10000);
 void world_deinit(World* world);
+
+void world_next_frame(World* world);
 
 EntityID entity_create(World* world, Entity** out_entity = nullptr);
 void entity_destroy(World* world, EntityID entity_id);

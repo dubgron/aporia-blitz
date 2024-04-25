@@ -241,6 +241,16 @@ void rgb_to_hsv(Color rgb, i32* hue, f32* saturation, f32* value)
     *value = C_max;
 }
 
+Color lerp(Color c0, Color c1, f32 t)
+{
+    Color result;
+    result.r = lerp(c0.r, c1.r, t);
+    result.g = lerp(c0.g, c1.g, t);
+    result.b = lerp(c0.b, c1.b, t);
+    result.a = lerp(c0.a, c1.a, t);
+    return result;
+}
+
 f32 degrees_to_radians(f32 angle_in_degrees)
 {
     return angle_in_degrees / 180.f * M_PI;

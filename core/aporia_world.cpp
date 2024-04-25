@@ -4,22 +4,33 @@
 
 World world_init(i32 max_entities /* = 10000 */)
 {
-    World result;
-    result.entity_max_count = max_entities;
+    World world;
+    world.entity_max_count = max_entities;
 
     // @TODO(dubgron): The count of the world arena should be more planned out.
-    i64 world_arena_size = result.entity_max_count * sizeof(Entity) * 2;
-    result.arena = arena_init(world_arena_size);
+    i64 world_arena_size = world.entity_max_count * sizeof(Entity) * 4;
+    world.arena = arena_init(world_arena_size);
     APORIA_LOG(Info, "World has allocated % B of memory.", world_arena_size);
 
-    result.entity_array = arena_push<Entity>(&result.arena, result.entity_max_count);
+    world.entity_array = arena_push<Entity>(&world.arena, world.entity_max_count);
+    world.entity_array_last_frame = arena_push<Entity>(&world.arena, world.entity_max_count);
 
-    return result;
+    return world;
 }
 
 void world_deinit(World* world)
 {
     arena_deinit(&world->arena);
+}
+
+void world_next_frame(World* world)
+{
+    for (i64 idx = 0; idx < world->entity_count; ++idx)
+    {
+        entity_flags_unset(&world->entity_array[idx], EntityFlag_SkipFrameInterpolation);
+    }
+
+    memcpy(world->entity_array_last_frame, world->entity_array, world->entity_count * sizeof(Entity));
 }
 
 EntityID entity_create(World* world, Entity** out_entity)

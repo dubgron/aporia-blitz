@@ -56,6 +56,8 @@ Color color_from_vec4(f32 r, f32 g, f32 b, f32 a);
 Color hsv_to_rgb(i32 hue, f32 saturation, f32 value);
 void rgb_to_hsv(Color rgb, i32* hue, f32* saturation, f32* value);
 
+Color lerp(Color c0, Color c1, f32 t);
+
 using Clock = std::chrono::steady_clock;
 using TimePoint = Clock::time_point;
 using Duration = Clock::duration;

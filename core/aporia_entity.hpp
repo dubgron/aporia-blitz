@@ -9,13 +9,15 @@
 using EntityFlags = u64;
 enum EntityFlag_ : EntityFlags
 {
-    EntityFlag_None             = 0x00,
-    EntityFlag_Active           = 0x01,
+    EntityFlag_None                     = 0x00,
+    EntityFlag_Active                   = 0x01,
 
-    EntityFlag_Visible          = 0x02,
-    EntityFlag_BlockingLight    = 0x04,
+    EntityFlag_Visible                  = 0x02,
+    EntityFlag_BlockingLight            = 0x04,
 
-    EntityFlag_CollisionEnabled = 0x08,
+    EntityFlag_CollisionEnabled         = 0x08,
+
+    EntityFlag_SkipFrameInterpolation   = 0x10,
 };
 
 struct EntityID
@@ -58,3 +60,5 @@ void entity_flags_unset(Entity* entity, EntityFlags flags);
 void entity_ajust_size_to_texture(Entity* entity);
 
 Collider entity_collider_from_local_to_world(const Entity& entity);
+
+Entity entity_lerp(const Entity& e0, const Entity& e1, f32 t);

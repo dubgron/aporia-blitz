@@ -70,3 +70,17 @@ Collider entity_collider_from_local_to_world(const Entity& entity)
     }
     return result;
 }
+
+Entity entity_lerp(const Entity& e0, const Entity& e1, f32 t)
+{
+    Entity result = e0;
+    result.position = lerp(e0.position, e1.position, t);
+    result.z = lerp(e0.z, e1.z, t);
+    result.rotation = lerp(e0.rotation, e1.rotation, t);
+    result.center_of_rotation = lerp(e0.center_of_rotation, e1.center_of_rotation, t);
+    result.width = lerp(e0.width, e1.width, t);
+    result.height = lerp(e0.height, e1.height, t);
+    result.scale = lerp(e0.scale, e1.scale, t);
+    result.color = lerp(e0.color, e1.color, t);
+    return result;
+}

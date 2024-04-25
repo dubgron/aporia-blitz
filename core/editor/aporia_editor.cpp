@@ -63,6 +63,14 @@ void editor_update(f32 frame_time)
     if (!editor_is_open)
         return;
 
+    time_since_selected += frame_time;
+
+    // @TODO(dubgron): This feels weird, there's probably a better solution.
+    for (i32 idx = 0; idx < world.entity_count; ++idx)
+    {
+        entity_flags_set(&world.entity_array[idx], EntityFlag_SkipFrameInterpolation);
+    }
+
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::DockSpaceOverViewport(viewport);
 
@@ -109,8 +117,6 @@ void editor_update(f32 frame_time)
     }
 
     ImGui::End();
-
-    time_since_selected += frame_time;
 
     static const ImGuiID viewport_id = ImHashStr("Viewport");
 
