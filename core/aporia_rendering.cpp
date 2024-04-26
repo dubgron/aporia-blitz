@@ -930,6 +930,18 @@ void rendering_frame_end()
     shader_set_mat4("u_vp_matrix", view_projection_matrix);
     shader_set_float("u_camera_zoom", camera_zoom);
 
+#if defined(APORIA_EDITOR)
+    if (selected_entity.index != INDEX_INVALID)
+    {
+        bind_shader(editor_selected_shader);
+        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
+        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_float("u_time_since_selected", time_since_selected);
+
+        editor_draw_selected_entity();
+    }
+#endif
+
     renderqueue_flush(&render_queue);
     framebuffer_unbind();
 
@@ -1071,44 +1083,38 @@ void rendering_flush_to_screen()
     }
 
 #if defined(APORIA_EDITOR)
-    // Draw the editor UI
-    if (editor_is_open)
-    {
-        i32 value = -1;
-        glClearTexImage(main_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
+    i32 value = -1;
+    glClearTexImage(main_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
 
-        const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
+    // Draw editor gizmos
+    if (selected_entity.index != INDEX_INVALID)
+    {
+        m4 viewport_to_clip = glm::ortho<f32>(0.f, viewport_width, 0.f, viewport_height);
+        f32 camera_zoom = 1.f / active_camera->projection.zoom;
 
         // Initialize texture sampler
         static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
             16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 };
 
-        f32 camera_zoom = 1.f / active_camera->projection.zoom;
-
         bind_shader(default_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_mat4("u_vp_matrix", viewport_to_clip);
 
         bind_shader(rectangle_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_mat4("u_vp_matrix", viewport_to_clip);
 
         bind_shader(line_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_mat4("u_vp_matrix", viewport_to_clip);
 
         bind_shader(circle_shader);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_mat4("u_vp_matrix", viewport_to_clip);
 
         bind_shader(font_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
+        shader_set_mat4("u_vp_matrix", viewport_to_clip);
         shader_set_float("u_camera_zoom", camera_zoom);
 
-        bind_shader(editor_selected_shader);
-        shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
-        shader_set_mat4("u_vp_matrix", view_projection_matrix);
-        shader_set_float("u_time_since_selected", time_since_selected);
-
-        editor_draw_frame();
+        editor_draw_gizmos();
 
         renderqueue_flush(&render_queue);
     }

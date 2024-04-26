@@ -10,9 +10,9 @@
 #include "aporia_world.hpp"
 
 bool editor_is_open = true;
-f32 time_since_selected = 0.f;
 
-static EntityID selected_entity;
+EntityID selected_entity;
+f32 time_since_selected = 0.f;
 
 enum GizmoType : u8
 {
@@ -61,7 +61,11 @@ void editor_update(f32 frame_time)
         editor_is_open = !editor_is_open;
 
     if (!editor_is_open)
+    {
+        selected_entity = EntityID{};
+        time_since_selected = 0.f;
         return;
+    }
 
     time_since_selected += frame_time;
 
@@ -295,148 +299,162 @@ void editor_update(f32 frame_time)
     }
 }
 
-void editor_draw_frame()
+void editor_draw_selected_entity()
 {
-    if (selected_entity.index == NOTHING_SELECTED_INDEX)
+    Entity* entity = entity_get(&world, selected_entity);
+    if (!entity)
         return;
 
-    if (Entity* entity = entity_get(&world, selected_entity))
+    // @HACK(dubgron): It's stupid and there should be an easier way to do it.
+    u32 shader = entity->shader_id;
+    f32 z = entity->z;
+    entity->shader_id = editor_selected_shader;
+    entity->z = 0.99f;
+    draw_entity(*entity);
+    entity->shader_id = shader;
+    entity->z = z;
+}
+
+void editor_draw_gizmos()
+{
+    Entity* entity = entity_get(&world, selected_entity);
+    if (!entity)
+        return;
+
+    f32 line_thickness = 5.f;
+    f32 line_length = 100.f;
+    f32 end_size = 25.f;
+
+    const m4& world_to_clip = active_camera->calculate_view_projection_matrix();
+
+    // @NOTE(dubgron): Precalculated following lines:
+    //     viewport_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ width / 2.f, height / 2.f, -1.f });
+    //     viewport_to_clip = glm::translate(viewport_to_clip, glm::vec3{ width / 2.f, height / 2.f, 0.f });
+    m4 clip_to_viewport{
+        viewport_width / 2.f, 0.f, 0.f, 0.f,
+        0.f, viewport_height / 2.f, 0.f, 0.f,
+        0.f, 0.f, -1.f, 0.f,
+        viewport_width / 2.f, viewport_height / 2.f, 0.f, 1.f };
+
+    v2 start = clip_to_viewport * world_to_clip * v4{ entity->position, 0.f, 1.f };
+
+    m2 camera_rotation = active_camera->view.matrix;
+
+    switch (gizmo_type)
     {
-        // @HACK(dubgron): It's stupid and there should be an easier way to do it.
-        u32 shader = entity->shader_id;
-        f32 z = entity->z;
-        entity->shader_id = editor_selected_shader;
-        entity->z = 0.99f;
-        draw_entity(*entity);
-        entity->shader_id = shader;
-        entity->z = z;
-
-        f32 camera_zoom = active_camera->projection.zoom;
-
-        // Draw gizmos
-        f32 line_thickness = 5.f * camera_zoom;
-        f32 line_length = 100.f * camera_zoom;
-        f32 end_size = 25.f * camera_zoom;
-
-        v2 start = entity->position;
-
-        switch (gizmo_type)
+        case GizmoType_Translate:
         {
-            case GizmoType_Translate:
+            v2 right = v2{ 1.f, 0.f };
+
+            if (gizmo_space == GizmoSpace_Local)
+                right = v2{ cos(entity->rotation), sin(entity->rotation) };
+
+            right = camera_rotation * right;
+            v2 up = v2{ -right.y, right.x };
+
+            // Draw XY axis
             {
-                v2 right = v2{ 1.f, 0.f };
-                v2 up = v2{ 0.f, 1.f };
-
-                if (gizmo_space == GizmoSpace_Local)
+                // @TODO(dubgron): This should be displayed and work for all gizmos.
                 {
-                    right = v2{ cos(entity->rotation), sin(entity->rotation) };
-                    up = v2{ -right.y, right.x };
+                    f32 point_radius = 7.5f;
+
+                    set_editor_index(GIZMO_XY_AXIS_INDEX);
+                    draw_circle(start, point_radius, Color::White);
                 }
 
-                // Draw XY axis
-                {
-                    // @TODO(dubgron): This should be displayed and work for all gizmos.
-                    {
-                        f32 point_radius = 7.5f * camera_zoom;
+                v2 end = start + line_length * (right + up);
 
-                        set_editor_index(GIZMO_XY_AXIS_INDEX);
-                        draw_circle(start, point_radius, Color::White);
-                    }
+                f32 xy_plane_size = end_size;
+                v2 xy_plane_right = xy_plane_size * right;
+                v2 xy_plane_up = xy_plane_size * up;
 
-                    v2 end = start + line_length * (right + up);
+                draw_rectangle(start, xy_plane_right, xy_plane_up, GIZMO_XY_PLANE_COLOR);
 
-                    f32 xy_plane_size = end_size;
-                    v2 xy_plane_right = xy_plane_size * right;
-                    v2 xy_plane_up = xy_plane_size * up;
-
-                    draw_rectangle(start, xy_plane_right, xy_plane_up, GIZMO_XY_PLANE_COLOR);
-
-                    draw_line(start + xy_plane_right, start + xy_plane_right + xy_plane_up, line_thickness / 2.f, GIZMO_X_AXIS_COLOR);
-                    draw_line(start + xy_plane_up, start + xy_plane_right + xy_plane_up, line_thickness / 2.f, GIZMO_Y_AXIS_COLOR);
-                }
-
-                // Draw X axis
-                {
-                    v2 end = start + line_length * right;
-
-                    set_editor_index(GIZMO_X_AXIS_INDEX);
-
-                    draw_line(start, end, line_thickness, GIZMO_X_AXIS_COLOR);
-                    v2 p0 = end + end_size * right;
-                    v2 p1 = end + end_size * up / 3.f;
-                    v2 p2 = end - end_size * up / 3.f;
-                    draw_triangle(p0, p1, p2, GIZMO_X_AXIS_COLOR);
-                }
-
-                // Draw Y axis
-                {
-                    v2 end = start + line_length * up;
-
-                    set_editor_index(GIZMO_Y_AXIS_INDEX);
-
-                    draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
-                    v2 p0 = end + end_size * up;
-                    v2 p1 = end + end_size * right / 3.f;
-                    v2 p2 = end - end_size * right / 3.f;
-                    draw_triangle(p0, p1, p2, GIZMO_Y_AXIS_COLOR);
-                }
-
-                set_editor_index(NOTHING_SELECTED_INDEX);
+                draw_line(start + xy_plane_right, start + xy_plane_right + xy_plane_up, line_thickness / 2.f, GIZMO_X_AXIS_COLOR);
+                draw_line(start + xy_plane_up, start + xy_plane_right + xy_plane_up, line_thickness / 2.f, GIZMO_Y_AXIS_COLOR);
             }
-            break;
 
-            case GizmoType_Rotate:
+            // Draw X axis
             {
-                f32 radius = line_length;
-                f32 inner_radius = radius - line_thickness;
-
-                set_editor_index(GIZMO_XY_AXIS_INDEX);
-                draw_circle(start, radius, inner_radius, GIZMO_XY_AXIS_COLOR);
-
-                if (gizmo_in_use_index != NOTHING_SELECTED_INDEX)
-                {
-                    v2 mouse_start_offset = mouse_start_position - entity_start_position;
-                    v2 mouse_current_offset = get_mouse_world_position() - entity_start_position;
-
-                    f32 rotation_line_thickness = 3.f * camera_zoom;
-
-                    v2 dir = glm::normalize(mouse_start_offset);
-                    v2 end = start + inner_radius * dir;
-                    draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
-
-                    dir = glm::normalize(mouse_current_offset);
-                    end = start + inner_radius * dir;
-                    draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
-                }
-
-                set_editor_index(NOTHING_SELECTED_INDEX);
-            }
-            break;
-
-            case GizmoType_Scale:
-            {
-                v2 right = v2{ cos(entity->rotation), sin(entity->rotation) };
-                v2 up = v2{ -right.y, right.x };
-
                 v2 end = start + line_length * right;
-                f32 box_size = end_size * 0.75f;
-                v2 center_offset = (right + up) * box_size / 2.f;
 
                 set_editor_index(GIZMO_X_AXIS_INDEX);
 
                 draw_line(start, end, line_thickness, GIZMO_X_AXIS_COLOR);
-                draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_X_AXIS_COLOR);
+                v2 p0 = end + end_size * right;
+                v2 p1 = end + end_size * up / 3.f;
+                v2 p2 = end - end_size * up / 3.f;
+                draw_triangle(p0, p1, p2, GIZMO_X_AXIS_COLOR);
+            }
 
-                end = start + line_length * up;
+            // Draw Y axis
+            {
+                v2 end = start + line_length * up;
 
                 set_editor_index(GIZMO_Y_AXIS_INDEX);
 
                 draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
-                draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_Y_AXIS_COLOR);
-
-                set_editor_index(NOTHING_SELECTED_INDEX);
+                v2 p0 = end + end_size * up;
+                v2 p1 = end + end_size * right / 3.f;
+                v2 p2 = end - end_size * right / 3.f;
+                draw_triangle(p0, p1, p2, GIZMO_Y_AXIS_COLOR);
             }
-            break;
+
+            set_editor_index(NOTHING_SELECTED_INDEX);
         }
+        break;
+
+        case GizmoType_Rotate:
+        {
+            f32 radius = line_length;
+            f32 inner_radius = radius - line_thickness;
+
+            set_editor_index(GIZMO_XY_AXIS_INDEX);
+            draw_circle(start, radius, inner_radius, GIZMO_XY_AXIS_COLOR);
+
+            if (gizmo_in_use_index != NOTHING_SELECTED_INDEX)
+            {
+                v2 mouse_start_offset = mouse_start_position - entity_start_position;
+                v2 mouse_current_offset = get_mouse_world_position() - entity_start_position;
+
+                f32 rotation_line_thickness = 3.f;
+
+                v2 dir = glm::normalize(mouse_start_offset);
+                v2 end = start + inner_radius * dir;
+                draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
+
+                dir = glm::normalize(mouse_current_offset);
+                end = start + inner_radius * dir;
+                draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
+            }
+
+            set_editor_index(NOTHING_SELECTED_INDEX);
+        }
+        break;
+
+        case GizmoType_Scale:
+        {
+            v2 right = camera_rotation * v2{ cos(entity->rotation), sin(entity->rotation) };
+            v2 up = v2{ -right.y, right.x };
+
+            v2 end = start + line_length * right;
+            f32 box_size = end_size * 0.75f;
+            v2 center_offset = (right + up) * box_size / 2.f;
+
+            set_editor_index(GIZMO_X_AXIS_INDEX);
+
+            draw_line(start, end, line_thickness, GIZMO_X_AXIS_COLOR);
+            draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_X_AXIS_COLOR);
+
+            end = start + line_length * up;
+
+            set_editor_index(GIZMO_Y_AXIS_INDEX);
+
+            draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
+            draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_Y_AXIS_COLOR);
+
+            set_editor_index(NOTHING_SELECTED_INDEX);
+        }
+        break;
     }
 }
