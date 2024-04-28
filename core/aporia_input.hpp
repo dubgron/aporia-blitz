@@ -272,18 +272,22 @@ AnalogInputState input_get(GamepadAnalog analog);
 bool input_is_pressed(InputState state);
 bool input_is_held(InputState state);
 bool input_is_released(InputState state);
+bool input_is_repeated(InputState state);
 
 bool input_is_pressed(Key key);
 bool input_is_held(Key key);
 bool input_is_released(Key key);
+bool input_is_repeated(Key key);
 
 bool input_is_pressed(MouseButton button);
 bool input_is_held(MouseButton button);
 bool input_is_released(MouseButton button);
+bool input_is_repeated(MouseButton button);
 
 bool input_is_pressed(GamepadButton button);
 bool input_is_held(GamepadButton button);
 bool input_is_released(GamepadButton button);
+bool input_is_repeated(GamepadButton button);
 
 bool input_is_any_key_pressed();
 bool input_is_any_mouse_button_pressed();

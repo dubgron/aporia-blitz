@@ -11,7 +11,7 @@
 
 bool editor_is_open = true;
 
-EntityID selected_entity;
+EntityID selected_entity_id;
 f32 time_since_selected = 0.f;
 
 enum GizmoType : u8
@@ -41,17 +41,125 @@ const Color GIZMO_XY_AXIS_COLOR         = Color::Blue;
 const Color GIZMO_XY_PLANE_COLOR        = Color{ 0, 0, 255, 85 };
 const Color GIZMO_ROTATION_LINE_COLOR   = Color{ 255, 200, 0 };
 
+static i32 gizmo_index = NOTHING_SELECTED_INDEX;
 static GizmoType gizmo_type = GizmoType_Translate;
 static GizmoSpace gizmo_space = GizmoSpace_World;
 
 static v2 mouse_start_position{ 0.f };
+static Entity selected_entity;
 
-// Entity start transform
-static v2 entity_start_position{ 0.f };
-static f32 entity_start_rotation = 0.f;
-static v2 entity_start_scale{ 0.f };
+enum EditorActionType : u32
+{
+    EditorActionType_Invalid,
+    EditorActionType_SelectEntity,
+    EditorActionType_ModifyEntity,
+};
 
-static i32 gizmo_in_use_index = NOTHING_SELECTED_INDEX;
+struct EditorAction
+{
+    EditorActionType type = EditorActionType_Invalid;
+
+    EntityID entity_id;
+    EntityID prev_entity_id;
+
+    Entity entity;
+    Entity prev_entity;
+};
+
+// @TODO(dubgron): Use a resizable pool with a free list to make the history as long as it needs to be.
+constexpr i64 MAX_EDITOR_ACTIONS_COUNT = 64;
+static EditorAction action_history[MAX_EDITOR_ACTIONS_COUNT];
+static i64 action_history_begin = 0;
+static i64 action_history_end = 0;
+
+#define RING_BUFFER_INDEX_INCREMENT(index) do { index += 1; if (index == MAX_EDITOR_ACTIONS_COUNT) index = 0; } while(0)
+#define RING_BUFFER_INDEX_DECREMENT(index) do { index -= 1; if (index == -1) index = MAX_EDITOR_ACTIONS_COUNT - 1; } while(0)
+
+static void editor_select_entity(EntityID new_entity_id)
+{
+    if (selected_entity_id.index == new_entity_id.index && selected_entity_id.generation == new_entity_id.generation)
+        return;
+
+    EditorAction* action = &action_history[action_history_end];
+    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+
+    if (action_history_begin == action_history_end)
+        RING_BUFFER_INDEX_INCREMENT(action_history_begin);
+
+    action->type = EditorActionType_SelectEntity;
+    action->entity_id = new_entity_id;
+    action->prev_entity_id = selected_entity_id;
+
+    selected_entity_id = new_entity_id;
+}
+
+static void editor_modify_entity(Entity* entity)
+{
+    EditorAction* action = &action_history[action_history_end];
+    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+
+    if (action_history_begin == action_history_end)
+        RING_BUFFER_INDEX_INCREMENT(action_history_begin);
+
+    action->type = EditorActionType_ModifyEntity;
+    action->entity = *entity;
+    action->prev_entity = selected_entity;
+}
+
+static void editor_try_undo_last_action()
+{
+    if (action_history_begin == action_history_end)
+        return;
+
+    RING_BUFFER_INDEX_DECREMENT(action_history_end);
+
+    EditorAction last_action = action_history[action_history_end];
+    switch (last_action.type)
+    {
+        case EditorActionType_SelectEntity:
+        {
+            selected_entity_id = last_action.prev_entity_id;
+        }
+        break;
+
+        case EditorActionType_ModifyEntity:
+        {
+            Entity* entity = entity_get(&world, selected_entity_id);
+            APORIA_ASSERT(entity);
+
+            *entity = last_action.prev_entity;
+        }
+        break;
+    }
+}
+
+static void editor_try_redo_last_action()
+{
+    EditorAction last_action = action_history[action_history_end];
+
+    if (last_action.type == EditorActionType_Invalid)
+        return;
+
+    switch (last_action.type)
+    {
+        case EditorActionType_SelectEntity:
+        {
+            selected_entity_id = last_action.entity_id;
+        }
+        break;
+
+        case EditorActionType_ModifyEntity:
+        {
+            Entity* entity = entity_get(&world, selected_entity_id);
+            APORIA_ASSERT(entity);
+
+            *entity = last_action.entity;
+        }
+        break;
+    }
+
+    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+}
 
 void editor_update(f32 frame_time)
 {
@@ -61,11 +169,7 @@ void editor_update(f32 frame_time)
         editor_is_open = !editor_is_open;
 
     if (!editor_is_open)
-    {
-        selected_entity = EntityID{};
-        time_since_selected = 0.f;
         return;
-    }
 
     time_since_selected += frame_time;
 
@@ -160,10 +264,25 @@ void editor_update(f32 frame_time)
                 case GizmoSpace_Local: gizmo_space = GizmoSpace_World; break;
             }
         }
+
+        if (input_is_held(Key_LControl))
+        {
+            InputState key_z = input_get(Key_Z);
+            if (input_is_pressed(key_z) || input_is_repeated(key_z))
+            {
+                editor_try_undo_last_action();
+            }
+
+            InputState key_y = input_get(Key_Y);
+            if (input_is_pressed(key_y) || input_is_repeated(key_y))
+            {
+                editor_try_redo_last_action();
+            }
+        }
     }
 
-    i32 index = gizmo_in_use_index;
-    if (gizmo_in_use_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
+    i32 index = gizmo_index;
+    if (gizmo_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
     {
         index = read_editor_index();
     }
@@ -172,17 +291,15 @@ void editor_update(f32 frame_time)
     {
         if (index > NOTHING_SELECTED_INDEX)
         {
-            if (selected_entity.index != index)
-            {
-                i32 generation = world.entity_array[index].id.generation;
-                selected_entity = EntityID{ index, generation };
+            i32 generation = world.entity_array[index].id.generation;
+            EntityID new_entity_id = EntityID{ index, generation };
+            editor_select_entity(new_entity_id);
 
-                time_since_selected = 0.f;
-            }
+            time_since_selected = 0.f;
         }
         else if (index == NOTHING_SELECTED_INDEX)
         {
-            selected_entity = EntityID{};
+            editor_select_entity(EntityID{});
         }
         else switch (index)
         {
@@ -190,118 +307,129 @@ void editor_update(f32 frame_time)
             case GIZMO_Y_AXIS_INDEX:
             case GIZMO_XY_AXIS_INDEX:
             {
-                Entity* entity = entity_get(&world, selected_entity);
+                Entity* entity = entity_get(&world, selected_entity_id);
                 APORIA_ASSERT(entity);
 
-                gizmo_in_use_index = index;
+                gizmo_index = index;
                 mouse_start_position = get_mouse_world_position();
-                entity_start_position = entity->position;
-                entity_start_rotation = entity->rotation;
-                entity_start_scale = entity->scale;
+                selected_entity = *entity;
             }
         }
     }
-    else if (gizmo_in_use_index != NOTHING_SELECTED_INDEX && input_is_held(left_mouse_button))
+    else if (gizmo_index != NOTHING_SELECTED_INDEX)
     {
-        Entity* entity = entity_get(&world, selected_entity);
+        Entity* entity = entity_get(&world, selected_entity_id);
         APORIA_ASSERT(entity);
 
-        v2 mouse_current_position = get_mouse_world_position();
-
-        v2 mouse_start_offset = mouse_start_position - entity_start_position;
-        v2 mouse_current_offset = mouse_current_position - entity_start_position;
-
-        switch (gizmo_type)
+        if (input_is_held(left_mouse_button))
         {
-            case GizmoType_Translate:
+            v2 mouse_current_position = get_mouse_world_position();
+
+            v2 mouse_start_offset = mouse_start_position - selected_entity.position;
+            v2 mouse_current_offset = mouse_current_position - selected_entity.position;
+
+            switch (gizmo_type)
             {
-                v2 right = v2{ 1.f, 0.f };
-                v2 up = v2{ 0.f, 1.f };
-
-                if (gizmo_space == GizmoSpace_Local)
+                case GizmoType_Translate:
                 {
-                    right = v2{ cos(entity->rotation), sin(entity->rotation) };
-                    up = v2{ -right.y, right.x };
-                }
+                    v2 right = v2{ 1.f, 0.f };
+                    v2 up = v2{ 0.f, 1.f };
 
-                v2 mouse_offset = mouse_current_position - mouse_start_position;
-
-                switch (index)
-                {
-                    case GIZMO_X_AXIS_INDEX:
+                    if (gizmo_space == GizmoSpace_Local)
                     {
-                        entity->position = entity_start_position + glm::dot(mouse_offset, right) * right;
+                        right = v2{ cos(entity->rotation), sin(entity->rotation) };
+                        up = v2{ -right.y, right.x };
                     }
-                    break;
 
-                    case GIZMO_Y_AXIS_INDEX:
+                    v2 mouse_offset = mouse_current_position - mouse_start_position;
+
+                    switch (index)
                     {
-                        entity->position = entity_start_position + glm::dot(mouse_offset, up) * up;
-                    }
-                    break;
-
-                    case GIZMO_XY_AXIS_INDEX:
-                    {
-                        entity->position = entity_start_position + mouse_offset;
-                    }
-                    break;
-                }
-            }
-            break;
-
-            case GizmoType_Rotate:
-            {
-                APORIA_ASSERT(index == GIZMO_XY_AXIS_INDEX);
-
-                f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
-                f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
-
-                entity->rotation = entity_start_rotation + (current_angle - base_angle);
-            }
-            break;
-
-            case GizmoType_Scale:
-            {
-                v2 scale = mouse_current_offset / mouse_start_offset;
-
-                switch (index)
-                {
-                    case GIZMO_X_AXIS_INDEX:
-                    {
-                        entity->scale.x = entity_start_scale.x * scale.x;
-
-                        if (input_is_held(Key_LShift))
+                        case GIZMO_X_AXIS_INDEX:
                         {
-                            entity->scale.y = entity_start_scale.y * scale.x;
+                            entity->position = selected_entity.position + glm::dot(mouse_offset, right) * right;
                         }
+                        break;
 
-                    }
-                    break;
-
-                    case GIZMO_Y_AXIS_INDEX:
-                    {
-                        entity->scale.y = entity_start_scale.y * scale.y;
-
-                        if (input_is_held(Key_LShift))
+                        case GIZMO_Y_AXIS_INDEX:
                         {
-                            entity->scale.x = entity_start_scale.x * scale.y;
+                            entity->position = selected_entity.position + glm::dot(mouse_offset, up) * up;
                         }
+                        break;
+
+                        case GIZMO_XY_AXIS_INDEX:
+                        {
+                            entity->position = selected_entity.position + mouse_offset;
+                        }
+                        break;
                     }
-                    break;
                 }
+                break;
+
+                case GizmoType_Rotate:
+                {
+                    APORIA_ASSERT(index == GIZMO_XY_AXIS_INDEX);
+
+                    f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
+                    f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
+
+                    entity->rotation = selected_entity.rotation + (current_angle - base_angle);
+                }
+                break;
+
+                case GizmoType_Scale:
+                {
+                    v2 scale = mouse_current_offset / mouse_start_offset;
+
+                    switch (index)
+                    {
+                        case GIZMO_X_AXIS_INDEX:
+                        {
+                            entity->scale.x = selected_entity.scale.x * scale.x;
+
+                            if (input_is_held(Key_LControl))
+                            {
+                                entity->scale.y = selected_entity.scale.y * scale.x;
+                            }
+
+                        }
+                        break;
+
+                        case GIZMO_Y_AXIS_INDEX:
+                        {
+                            entity->scale.y = selected_entity.scale.y * scale.y;
+
+                            if (input_is_held(Key_LControl))
+                            {
+                                entity->scale.x = selected_entity.scale.x * scale.y;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
             }
-            break;
         }
-    }
-    else if (input_is_released(left_mouse_button))
-    {
-        gizmo_in_use_index = NOTHING_SELECTED_INDEX;
+        else if (input_is_released(left_mouse_button))
+        {
+            switch (gizmo_type)
+            {
+                case GizmoType_Translate:
+                case GizmoType_Rotate:
+                case GizmoType_Scale:
+                {
+                    editor_modify_entity(entity);
+                }
+            }
+
+            gizmo_index = NOTHING_SELECTED_INDEX;
+        }
     }
 }
 
 void editor_draw_selected_entity()
 {
-    Entity* entity = entity_get(&world, selected_entity);
+    Entity* entity = entity_get(&world, selected_entity_id);
     if (!entity)
         return;
 
@@ -317,7 +445,7 @@ void editor_draw_selected_entity()
 
 void editor_draw_gizmos()
 {
-    Entity* entity = entity_get(&world, selected_entity);
+    Entity* entity = entity_get(&world, selected_entity_id);
     if (!entity)
         return;
 
@@ -412,10 +540,10 @@ void editor_draw_gizmos()
             set_editor_index(GIZMO_XY_AXIS_INDEX);
             draw_circle(start, radius, inner_radius, GIZMO_XY_AXIS_COLOR);
 
-            if (gizmo_in_use_index != NOTHING_SELECTED_INDEX)
+            if (gizmo_index != NOTHING_SELECTED_INDEX)
             {
-                v2 mouse_start_offset = mouse_start_position - entity_start_position;
-                v2 mouse_current_offset = get_mouse_world_position() - entity_start_position;
+                v2 mouse_start_offset = mouse_start_position - selected_entity.position;
+                v2 mouse_current_offset = get_mouse_world_position() - selected_entity.position;
 
                 f32 rotation_line_thickness = 3.f;
 

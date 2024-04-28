@@ -931,7 +931,7 @@ void rendering_frame_end()
     shader_set_float("u_camera_zoom", camera_zoom);
 
 #if defined(APORIA_EDITOR)
-    if (selected_entity.index != INDEX_INVALID)
+    if (editor_is_open && selected_entity_id.index != INDEX_INVALID)
     {
         bind_shader(editor_selected_shader);
         shader_set_int_array("u_atlas", sampler, OPENGL_MAX_TEXTURE_UNITS);
@@ -1087,7 +1087,7 @@ void rendering_flush_to_screen()
     glClearTexImage(main_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
 
     // Draw editor gizmos
-    if (selected_entity.index != INDEX_INVALID)
+    if (editor_is_open && selected_entity_id.index != INDEX_INVALID)
     {
         m4 viewport_to_clip = glm::ortho<f32>(0.f, viewport_width, 0.f, viewport_height);
         f32 camera_zoom = 1.f / active_camera->projection.zoom;

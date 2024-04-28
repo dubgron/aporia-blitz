@@ -195,7 +195,7 @@ void input_set_active_owner(InputOwner owner)
     active_owner = owner;
 }
 
-static InputState input_get(InputState* state)
+static InputState input_resolve_ownership(InputState* state)
 {
     if (state->owner == InputOwner_None || state->owner == active_owner)
     {
@@ -220,19 +220,19 @@ static InputState input_get(InputState* state)
 InputState input_get(Key key)
 {
     InputState* state = &input.keys[key];
-    return input_get(state);
+    return input_resolve_ownership(state);
 }
 
 InputState input_get(MouseButton button)
 {
     InputState* state = &input.mouse[button];
-    return input_get(state);
+    return input_resolve_ownership(state);
 }
 
 InputState input_get(GamepadButton button)
 {
     InputState* state = &input.gamepad[button];
-    return input_get(state);
+    return input_resolve_ownership(state);
 }
 
 AnalogInputState input_get(MouseWheel wheel)
@@ -260,6 +260,11 @@ bool input_is_released(InputState state)
     return (state.flags & InputFlag_WasReleased);
 }
 
+bool input_is_repeated(InputState state)
+{
+    return (state.flags & InputFlag_IsRepeated);
+}
+
 bool input_is_pressed(Key key)
 {
     InputState state = input_get(key);
@@ -276,6 +281,12 @@ bool input_is_released(Key key)
 {
     InputState state = input_get(key);
     return input_is_released(state);
+}
+
+bool input_is_repeated(Key key)
+{
+    InputState state = input_get(key);
+    return input_is_repeated(state);
 }
 
 bool input_is_pressed(MouseButton button)
@@ -296,6 +307,12 @@ bool input_is_released(MouseButton button)
     return input_is_released(state);
 }
 
+bool input_is_repeated(MouseButton button)
+{
+    InputState state = input_get(button);
+    return input_is_repeated(state);
+}
+
 bool input_is_pressed(GamepadButton button)
 {
     InputState state = input_get(button);
@@ -312,6 +329,12 @@ bool input_is_released(GamepadButton button)
 {
     InputState state = input_get(button);
     return input_is_released(state);
+}
+
+bool input_is_repeated(GamepadButton button)
+{
+    InputState state = input_get(button);
+    return input_is_repeated(state);
 }
 
 bool input_is_any_key_pressed()

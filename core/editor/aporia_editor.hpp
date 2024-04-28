@@ -10,6 +10,5 @@ void editor_draw_gizmos();
 
 extern bool editor_is_open;
 
-// @NOTE(dubgron): Only set if editor_is_open is true.
-extern EntityID selected_entity;
+extern EntityID selected_entity_id;
 extern f32 time_since_selected;
