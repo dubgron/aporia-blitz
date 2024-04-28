@@ -37,6 +37,10 @@ struct Collider
         Collider_Circle circle;
         Collider_Polygon polygon;
     };
+
+    // @HACK(dubgron): Until Clang-17 and GCC-13, those compilers didn't properly
+    // compile anonymous unions of structs without default constructors.
+    Collider() {};
 };
 
 bool collision_point_to_aabb(v2 point, const Collider_AABB& aabb);
