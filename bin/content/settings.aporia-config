@@ -6,8 +6,12 @@
     vsync                   false
     icon                    "content/icon.png"
 
+[rendering]
+    ; custom_game_resolution  320 180
+    ; custom_ui_resolution    1280 720
+
 [camera]
-    fov                     360
+    ; fov                     360
     aspect_ratio            1.7778
     background_color        80 80 102 255
     movement_speed          500

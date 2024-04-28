@@ -8,12 +8,15 @@
 
 struct CameraConfig
 {
-    f32 fov = 1.f;
+    f32 fov = 0.f;
     Color background_color;
 
     f32 movement_speed = 0.f;
     f32 rotation_speed = 0.f;
     f32 zoom_speed = 0.f;
+
+    f32 zoom_max = 1.f;
+    f32 zoom_min = 1.f;
 
     Key movement_key_up = Key_W;
     Key movement_key_down = Key_S;
@@ -25,9 +28,6 @@ struct CameraConfig
 
     Key zoom_key_in = Key_Space;
     Key zoom_key_out = Key_LShift;
-
-    f32 zoom_max = 1.f;
-    f32 zoom_min = 1.f;
 };
 
 #if defined(APORIA_EDITOR)

@@ -403,6 +403,8 @@ static Config_PropertyDefinition defined_properties[] =
     { "camera", "movement_speed",           Config_ValueType_Float32,           1, &camera_config.movement_speed },
     { "camera", "rotation_speed",           Config_ValueType_Float32,           1, &camera_config.rotation_speed },
     { "camera", "zoom_speed",               Config_ValueType_Float32,           1, &camera_config.zoom_speed },
+    { "camera", "zoom_max",                 Config_ValueType_Float32,           1, &camera_config.zoom_max },
+    { "camera", "zoom_min",                 Config_ValueType_Float32,           1, &camera_config.zoom_min },
     { "camera", "movement_key_up",          Config_ValueType_Key,               1, &camera_config.movement_key_up },
     { "camera", "movement_key_down",        Config_ValueType_Key,               1, &camera_config.movement_key_down },
     { "camera", "movement_key_left",        Config_ValueType_Key,               1, &camera_config.movement_key_left },
@@ -411,8 +413,6 @@ static Config_PropertyDefinition defined_properties[] =
     { "camera", "rotation_key_right",       Config_ValueType_Key,               1, &camera_config.rotation_key_right },
     { "camera", "zoom_key_in",              Config_ValueType_Key,               1, &camera_config.zoom_key_in },
     { "camera", "zoom_key_out",             Config_ValueType_Key,               1, &camera_config.zoom_key_out },
-    { "camera", "zoom_max",                 Config_ValueType_Float32,           1, &camera_config.zoom_max },
-    { "camera", "zoom_min",                 Config_ValueType_Float32,           1, &camera_config.zoom_min },
 
     { "shader", "default.blend",            Config_ValueType_ShaderBlend,       2, &shader_config.default_properties.blend },
     { "shader", "default.blend_op",         Config_ValueType_ShaderBlendOp,     1, &shader_config.default_properties.blend_op },

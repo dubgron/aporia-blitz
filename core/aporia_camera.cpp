@@ -192,7 +192,19 @@ void Camera::follow(v2 to_follow, f32 delta_time)
 void Camera::apply_config()
 {
     adjust_aspect_ratio_to_render_surface();
-    projection.fov = camera_config.fov;
+
+    if (camera_config.fov > 0.f)
+    {
+        projection.fov = camera_config.fov;
+    }
+    else if (rendering_config.custom_game_resolution_height > 0)
+    {
+        projection.fov = rendering_config.custom_game_resolution_height / 2.f;
+    }
+    else
+    {
+        projection.fov = window_config.height / 2.f;
+    }
 }
 
 void Camera::adjust_aspect_ratio_to_render_surface()
