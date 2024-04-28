@@ -379,33 +379,33 @@ void editor_update(f32 frame_time)
 
                 case GizmoType_Scale:
                 {
-                    v2 scale = mouse_current_offset / mouse_start_offset;
+                    v2 scale{ 1.f };
+
+                    v2 right = v2{ cos(entity->rotation), sin(entity->rotation) };
+                    v2 up = v2{ -right.y, right.x };
 
                     switch (index)
                     {
                         case GIZMO_X_AXIS_INDEX:
                         {
-                            entity->scale.x = selected_entity.scale.x * scale.x;
+                            scale.x = glm::dot(mouse_current_offset, right) / glm::dot(mouse_start_offset, right);
 
                             if (input_is_held(Key_LControl))
-                            {
-                                entity->scale.y = selected_entity.scale.y * scale.x;
-                            }
-
+                                scale.y = scale.x;
                         }
                         break;
 
                         case GIZMO_Y_AXIS_INDEX:
                         {
-                            entity->scale.y = selected_entity.scale.y * scale.y;
+                            scale.y = glm::dot(mouse_current_offset, up) / glm::dot(mouse_start_offset, up);
 
                             if (input_is_held(Key_LControl))
-                            {
-                                entity->scale.x = selected_entity.scale.x * scale.y;
-                            }
+                                scale.x = scale.y;
                         }
                         break;
                     }
+
+                    entity->scale = selected_entity.scale * scale;
                 }
                 break;
             }
