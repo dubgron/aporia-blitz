@@ -30,9 +30,15 @@ enum GizmoSpace : u8
 enum EditorIndex : i32
 {
     NOTHING_SELECTED_INDEX  = INDEX_INVALID,
-    GIZMO_X_AXIS_INDEX      = INDEX_INVALID - 1,
-    GIZMO_Y_AXIS_INDEX      = INDEX_INVALID - 2,
-    GIZMO_XY_AXIS_INDEX     = INDEX_INVALID - 3,
+
+    TRANSLATE_X_AXIS_INDEX  = INDEX_INVALID - 1,
+    TRANSLATE_Y_AXIS_INDEX  = INDEX_INVALID - 2,
+    TRANSLATE_XY_AXIS_INDEX = INDEX_INVALID - 3,
+
+    ROTATE_INDEX            = INDEX_INVALID - 4,
+
+    SCALE_X_AXIS_INDEX      = INDEX_INVALID - 5,
+    SCALE_Y_AXIS_INDEX      = INDEX_INVALID - 6,
 };
 
 const Color GIZMO_X_AXIS_COLOR          = Color::Red;
@@ -42,7 +48,7 @@ const Color GIZMO_XY_PLANE_COLOR        = Color{ 0, 0, 255, 85 };
 const Color GIZMO_ROTATION_LINE_COLOR   = Color{ 255, 200, 0 };
 
 static i32 gizmo_index = NOTHING_SELECTED_INDEX;
-static GizmoType gizmo_type = GizmoType_Translate;
+static GizmoType displayed_gizmo_type = GizmoType_Translate;
 static GizmoSpace gizmo_space = GizmoSpace_World;
 
 static v2 mouse_start_position{ 0.f };
@@ -184,19 +190,19 @@ void editor_update(f32 frame_time)
 
     ImGui::Begin("Tools");
 
-    if (ImGui::RadioButton("Translate", gizmo_type == GizmoType_Translate))
+    if (ImGui::RadioButton("Translate", displayed_gizmo_type == GizmoType_Translate))
     {
-        gizmo_type = GizmoType_Translate;
+        displayed_gizmo_type = GizmoType_Translate;
     }
     ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", gizmo_type == GizmoType_Rotate))
+    if (ImGui::RadioButton("Rotate", displayed_gizmo_type == GizmoType_Rotate))
     {
-        gizmo_type = GizmoType_Rotate;
+        displayed_gizmo_type = GizmoType_Rotate;
     }
     ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", gizmo_type == GizmoType_Scale))
+    if (ImGui::RadioButton("Scale", displayed_gizmo_type == GizmoType_Scale))
     {
-        gizmo_type = GizmoType_Scale;
+        displayed_gizmo_type = GizmoType_Scale;
     }
 
     if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
@@ -245,15 +251,15 @@ void editor_update(f32 frame_time)
     {
         if (input_is_pressed(Key_Num1))
         {
-            gizmo_type = GizmoType_Translate;
+            displayed_gizmo_type = GizmoType_Translate;
         }
         else if (input_is_pressed(Key_Num2))
         {
-            gizmo_type = GizmoType_Rotate;
+            displayed_gizmo_type = GizmoType_Rotate;
         }
         else if (input_is_pressed(Key_Num3))
         {
-            gizmo_type = GizmoType_Scale;
+            displayed_gizmo_type = GizmoType_Scale;
         }
 
         if (input_is_pressed(Key_F2))
@@ -301,25 +307,45 @@ void editor_update(f32 frame_time)
         {
             editor_select_entity(EntityID{});
         }
-        else switch (index)
+        else
         {
-            case GIZMO_X_AXIS_INDEX:
-            case GIZMO_Y_AXIS_INDEX:
-            case GIZMO_XY_AXIS_INDEX:
-            {
-                Entity* entity = entity_get(&world, selected_entity_id);
-                APORIA_ASSERT(entity);
+            Entity* entity = entity_get(&world, selected_entity_id);
+            APORIA_ASSERT(entity);
 
-                gizmo_index = index;
-                mouse_start_position = get_mouse_world_position();
-                selected_entity = *entity;
-            }
+            gizmo_index = index;
+            mouse_start_position = get_mouse_world_position();
+            selected_entity = *entity;
         }
     }
     else if (gizmo_index != NOTHING_SELECTED_INDEX)
     {
         Entity* entity = entity_get(&world, selected_entity_id);
         APORIA_ASSERT(entity);
+
+        GizmoType gizmo_type;
+        switch (gizmo_index)
+        {
+            case TRANSLATE_X_AXIS_INDEX:
+            case TRANSLATE_Y_AXIS_INDEX:
+            case TRANSLATE_XY_AXIS_INDEX:
+            {
+                gizmo_type = GizmoType_Translate;
+            }
+            break;
+
+            case ROTATE_INDEX:
+            {
+                gizmo_type = GizmoType_Rotate;
+            }
+            break;
+
+            case SCALE_X_AXIS_INDEX:
+            case SCALE_Y_AXIS_INDEX:
+            {
+                gizmo_type = GizmoType_Scale;
+            }
+            break;
+        }
 
         if (input_is_held(left_mouse_button))
         {
@@ -343,21 +369,21 @@ void editor_update(f32 frame_time)
 
                     v2 mouse_offset = mouse_current_position - mouse_start_position;
 
-                    switch (index)
+                    switch (gizmo_index)
                     {
-                        case GIZMO_X_AXIS_INDEX:
+                        case TRANSLATE_X_AXIS_INDEX:
                         {
                             entity->position = selected_entity.position + glm::dot(mouse_offset, right) * right;
                         }
                         break;
 
-                        case GIZMO_Y_AXIS_INDEX:
+                        case TRANSLATE_Y_AXIS_INDEX:
                         {
                             entity->position = selected_entity.position + glm::dot(mouse_offset, up) * up;
                         }
                         break;
 
-                        case GIZMO_XY_AXIS_INDEX:
+                        case TRANSLATE_XY_AXIS_INDEX:
                         {
                             entity->position = selected_entity.position + mouse_offset;
                         }
@@ -368,8 +394,6 @@ void editor_update(f32 frame_time)
 
                 case GizmoType_Rotate:
                 {
-                    APORIA_ASSERT(index == GIZMO_XY_AXIS_INDEX);
-
                     f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
                     f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
 
@@ -384,9 +408,9 @@ void editor_update(f32 frame_time)
                     v2 right = v2{ cos(entity->rotation), sin(entity->rotation) };
                     v2 up = v2{ -right.y, right.x };
 
-                    switch (index)
+                    switch (gizmo_index)
                     {
-                        case GIZMO_X_AXIS_INDEX:
+                        case SCALE_X_AXIS_INDEX:
                         {
                             scale.x = glm::dot(mouse_current_offset, right) / glm::dot(mouse_start_offset, right);
 
@@ -395,7 +419,7 @@ void editor_update(f32 frame_time)
                         }
                         break;
 
-                        case GIZMO_Y_AXIS_INDEX:
+                        case SCALE_Y_AXIS_INDEX:
                         {
                             scale.y = glm::dot(mouse_current_offset, up) / glm::dot(mouse_start_offset, up);
 
@@ -468,7 +492,11 @@ void editor_draw_gizmos()
 
     m2 camera_rotation = active_camera->view.matrix;
 
-    switch (gizmo_type)
+    f32 point_radius = 7.5f;
+    set_editor_index(TRANSLATE_XY_AXIS_INDEX);
+    draw_circle(start, point_radius, Color::White);
+
+    switch (displayed_gizmo_type)
     {
         case GizmoType_Translate:
         {
@@ -482,14 +510,6 @@ void editor_draw_gizmos()
 
             // Draw XY axis
             {
-                // @TODO(dubgron): This should be displayed and work for all gizmos.
-                {
-                    f32 point_radius = 7.5f;
-
-                    set_editor_index(GIZMO_XY_AXIS_INDEX);
-                    draw_circle(start, point_radius, Color::White);
-                }
-
                 v2 end = start + line_length * (right + up);
 
                 f32 xy_plane_size = end_size;
@@ -506,7 +526,7 @@ void editor_draw_gizmos()
             {
                 v2 end = start + line_length * right;
 
-                set_editor_index(GIZMO_X_AXIS_INDEX);
+                set_editor_index(TRANSLATE_X_AXIS_INDEX);
 
                 draw_line(start, end, line_thickness, GIZMO_X_AXIS_COLOR);
                 v2 p0 = end + end_size * right;
@@ -519,7 +539,7 @@ void editor_draw_gizmos()
             {
                 v2 end = start + line_length * up;
 
-                set_editor_index(GIZMO_Y_AXIS_INDEX);
+                set_editor_index(TRANSLATE_Y_AXIS_INDEX);
 
                 draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
                 v2 p0 = end + end_size * up;
@@ -527,8 +547,6 @@ void editor_draw_gizmos()
                 v2 p2 = end - end_size * right / 3.f;
                 draw_triangle(p0, p1, p2, GIZMO_Y_AXIS_COLOR);
             }
-
-            set_editor_index(NOTHING_SELECTED_INDEX);
         }
         break;
 
@@ -537,10 +555,10 @@ void editor_draw_gizmos()
             f32 radius = line_length;
             f32 inner_radius = radius - line_thickness;
 
-            set_editor_index(GIZMO_XY_AXIS_INDEX);
+            set_editor_index(ROTATE_INDEX);
             draw_circle(start, radius, inner_radius, GIZMO_XY_AXIS_COLOR);
 
-            if (gizmo_index != NOTHING_SELECTED_INDEX)
+            if (gizmo_index == ROTATE_INDEX)
             {
                 v2 mouse_start_offset = mouse_start_position - selected_entity.position;
                 v2 mouse_current_offset = get_mouse_world_position() - selected_entity.position;
@@ -555,8 +573,6 @@ void editor_draw_gizmos()
                 end = start + inner_radius * dir;
                 draw_line(start, end, rotation_line_thickness, GIZMO_ROTATION_LINE_COLOR);
             }
-
-            set_editor_index(NOTHING_SELECTED_INDEX);
         }
         break;
 
@@ -569,20 +585,20 @@ void editor_draw_gizmos()
             f32 box_size = end_size * 0.75f;
             v2 center_offset = (right + up) * box_size / 2.f;
 
-            set_editor_index(GIZMO_X_AXIS_INDEX);
+            set_editor_index(SCALE_X_AXIS_INDEX);
 
             draw_line(start, end, line_thickness, GIZMO_X_AXIS_COLOR);
             draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_X_AXIS_COLOR);
 
             end = start + line_length * up;
 
-            set_editor_index(GIZMO_Y_AXIS_INDEX);
+            set_editor_index(SCALE_Y_AXIS_INDEX);
 
             draw_line(start, end, line_thickness, GIZMO_Y_AXIS_COLOR);
             draw_rectangle(end - center_offset, right * box_size, up * box_size, GIZMO_Y_AXIS_COLOR);
-
-            set_editor_index(NOTHING_SELECTED_INDEX);
         }
         break;
     }
+
+    set_editor_index(NOTHING_SELECTED_INDEX);
 }
