@@ -77,6 +77,8 @@ set(APORIA_CORE_SOURCE_FILES
     "core/aporia_input.hpp"
     "core/aporia_memory.cpp"
     "core/aporia_memory.hpp"
+    "core/aporia_parser.cpp"
+    "core/aporia_parser.hpp"
     "core/aporia_particles.cpp"
     "core/aporia_particles.hpp"
     "core/aporia_pch.hpp"

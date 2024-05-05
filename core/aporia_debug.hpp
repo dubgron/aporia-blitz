@@ -94,6 +94,8 @@ void logging_init(MemoryArena* arena, String name);
 void logging_deinit();
 
 void log(String file, i32 line, String function, LogLevel level, String message);
+void log(String file, i32 line, i32 column, LogLevel level, String message);
+void log(LogLevel level, String message);
 void log_raw(String message);
 
 bool should_log(LogLevel level);

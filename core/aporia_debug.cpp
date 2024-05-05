@@ -196,9 +196,7 @@ static void flush_logs_to_file()
 void logging_init(MemoryArena* arena, String name)
 {
     if (!does_directory_exist("logs/"))
-    {
         make_directory("logs/");
-    }
 
     log_name = push_string(arena, name);
     log_filepath = sprintf(arena, "logs/%_latest.log", log_name);
@@ -235,9 +233,7 @@ void logging_deinit()
 void log(String file, i32 line, String function, LogLevel level, String message)
 {
     if (!should_log(level))
-    {
         return;
-    }
 
     ScratchArena temp = scratch_begin();
     {
@@ -247,39 +243,64 @@ void log(String file, i32 line, String function, LogLevel level, String message)
         String formatted_message = sprintf(temp.arena, "[%] (%@%:%) %: %",
             current_timestamp, filename, function, line, to_string(level), message);
 
-        // Log to console
+        log(level, formatted_message);
+    }
+    scratch_end(temp);
+}
+
+void log(String file, i32 line, i32 column, LogLevel level, String message)
+{
+    if (!should_log(level))
+        return;
+
+    ScratchArena temp = scratch_begin();
+    {
+        String current_timestamp = format_timestamp(temp.arena, "%H:%M:%S.%%");
+        String filename = extract_filename(file);
+
+        String formatted_message = sprintf(temp.arena, "[%] (%:%,%) %: %",
+            current_timestamp, filename, line, column, to_string(level), message);
+
+        log(level, formatted_message);
+    }
+    scratch_end(temp);
+}
+
+void log(LogLevel level, String message)
+{
+    // Log to console
+    ScratchArena temp = scratch_begin();
+    {
+        String console_message = sprintf(temp.arena, log_level_color_format(level), message);
+
+        if (will_buffer_overflow_after_append(console_buffer, console_message))
         {
-            String console_message = sprintf(temp.arena, log_level_color_format(level), formatted_message);
-
-            if (will_buffer_overflow_after_append(console_buffer, console_message))
-            {
-                flush_logs_to_console();
-            }
-
-            buffer_add_line(&console_buffer, console_message);
-
-            if (level >= flush_to_console_level)
-            {
-                flush_logs_to_console();
-            }
+            flush_logs_to_console();
         }
 
-        // Log to file
+        buffer_add_line(&console_buffer, console_message);
+
+        if (level >= flush_to_console_level)
         {
-            if (will_buffer_overflow_after_append(file_buffer, formatted_message))
-            {
-                flush_logs_to_file();
-            }
-
-            buffer_add_line(&file_buffer, formatted_message);
-
-            if (level >= flush_to_file_level)
-            {
-                flush_logs_to_file();
-            }
+            flush_logs_to_console();
         }
     }
     scratch_end(temp);
+
+    // Log to file
+    {
+        if (will_buffer_overflow_after_append(file_buffer, message))
+        {
+            flush_logs_to_file();
+        }
+
+        buffer_add_line(&file_buffer, message);
+
+        if (level >= flush_to_file_level)
+        {
+            flush_logs_to_file();
+        }
+    }
 }
 
 void log_raw(String message)
