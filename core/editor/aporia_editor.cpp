@@ -78,19 +78,16 @@ static EditorAction action_history[MAX_EDITOR_ACTIONS_COUNT];
 static i64 action_history_begin = 0;
 static i64 action_history_end = 0;
 
-#define RING_BUFFER_INDEX_INCREMENT(index) do { index += 1; if (index == MAX_EDITOR_ACTIONS_COUNT) index = 0; } while(0)
-#define RING_BUFFER_INDEX_DECREMENT(index) do { index -= 1; if (index == -1) index = MAX_EDITOR_ACTIONS_COUNT - 1; } while(0)
-
 static void editor_select_entity(EntityID new_entity_id)
 {
     if (selected_entity_id.index == new_entity_id.index && selected_entity_id.generation == new_entity_id.generation)
         return;
 
     EditorAction* action = &action_history[action_history_end];
-    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
 
     if (action_history_begin == action_history_end)
-        RING_BUFFER_INDEX_INCREMENT(action_history_begin);
+        ring_buffer_increment_index(&action_history_begin, MAX_EDITOR_ACTIONS_COUNT);
 
     action->type = EditorActionType_SelectEntity;
     action->entity_id = new_entity_id;
@@ -102,10 +99,10 @@ static void editor_select_entity(EntityID new_entity_id)
 static void editor_modify_entity(Entity* entity)
 {
     EditorAction* action = &action_history[action_history_end];
-    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
 
     if (action_history_begin == action_history_end)
-        RING_BUFFER_INDEX_INCREMENT(action_history_begin);
+        ring_buffer_increment_index(&action_history_begin, MAX_EDITOR_ACTIONS_COUNT);
 
     action->type = EditorActionType_ModifyEntity;
     action->entity = *entity;
@@ -117,7 +114,7 @@ static void editor_try_undo_last_action()
     if (action_history_begin == action_history_end)
         return;
 
-    RING_BUFFER_INDEX_DECREMENT(action_history_end);
+    ring_buffer_decrement_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
 
     EditorAction last_action = action_history[action_history_end];
     switch (last_action.type)
@@ -164,7 +161,7 @@ static void editor_try_redo_last_action()
         break;
     }
 
-    RING_BUFFER_INDEX_INCREMENT(action_history_end);
+    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
 }
 
 void editor_update(f32 frame_time)

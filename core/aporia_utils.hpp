@@ -158,14 +158,16 @@ T wrap_around(T index, T count)
     return remainder;
 }
 
-// @NOTE(dubgron): Specialization of wrap_around, when we know x >= -y and x < 2y.
-// It is meant to be used as a cheaper alternative when we rougly know the ranges
-// of x and y (e.g. like when incrementing or decrementing an index.)
 template<typename T>
-T wrap_around_once(T x, T y)
+void ring_buffer_increment_index(T* index, T count)
 {
-    APORIA_ASSERT(y != 0);
-    if (x < 0) return x + y;
-    if (x >= y) return x - y;
-    return x;
+    *index += 1;
+    if (*index == count) *index = 0;
+}
+
+template<typename T>
+void ring_buffer_decrement_index(T* index, T count)
+{
+    *index -= 1;
+    if (*index == -1) *index = count - 1;
 }

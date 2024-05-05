@@ -124,7 +124,8 @@ static void audio_thread_function(f32* buffer, i32 num_samples, i32 num_channels
             {
                 if (stream->flags & AudioFlag_Looped)
                 {
-                    icursor1 = wrap_around_once(icursor1, source->samples_count);
+                    if (icursor1 == -1) icursor = source->samples_count - 1;
+                    else if (icursor1 == source->samples_count) icursor = 0;
                 }
                 else
                 {
