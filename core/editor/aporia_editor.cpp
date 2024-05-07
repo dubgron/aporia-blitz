@@ -51,8 +51,8 @@ static i32 gizmo_index = NOTHING_SELECTED_INDEX;
 static GizmoType displayed_gizmo_type = GizmoType_Translate;
 static GizmoSpace gizmo_space = GizmoSpace_World;
 
-static v2 mouse_start_position{ 0.f };
-static Entity selected_entity;
+static v2 mouse_initial_position{ 0.f };
+static Entity entity_initial_state;
 
 enum EditorActionType : u32
 {
@@ -65,63 +65,81 @@ struct EditorAction
 {
     EditorActionType type = EditorActionType_Invalid;
 
-    EntityID entity_id;
-    EntityID prev_entity_id;
-
-    Entity entity;
-    Entity prev_entity;
+    Entity entity_state;
 };
 
-// @TODO(dubgron): Use a resizable pool with a free list to make the history as long as it needs to be.
-constexpr i64 MAX_EDITOR_ACTIONS_COUNT = 64;
+// @TODO(dubgron): Use a resizable array to make the history as long as it needs to be.
+constexpr i64 MAX_EDITOR_ACTIONS_COUNT = 256;
 static EditorAction action_history[MAX_EDITOR_ACTIONS_COUNT];
-static i64 action_history_begin = 0;
-static i64 action_history_end = 0;
+static i64 action_history_cursor = 0;
+static i64 action_history_count = 0;
+static i64 action_history_redos = 0;
+
+static EditorAction* editor_make_new_action()
+{
+    EditorAction* action = &action_history[action_history_cursor];
+    ring_buffer_increment_index(&action_history_cursor, MAX_EDITOR_ACTIONS_COUNT);
+
+    action_history_count += 1;
+    if (action_history_count > MAX_EDITOR_ACTIONS_COUNT)
+        action_history_count = MAX_EDITOR_ACTIONS_COUNT;
+
+    action_history_redos = 0;
+
+    return action;
+}
 
 static void editor_select_entity(EntityID new_entity_id)
 {
     if (selected_entity_id.index == new_entity_id.index && selected_entity_id.generation == new_entity_id.generation)
         return;
 
-    EditorAction* action = &action_history[action_history_end];
-    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
-
-    if (action_history_begin == action_history_end)
-        ring_buffer_increment_index(&action_history_begin, MAX_EDITOR_ACTIONS_COUNT);
-
+    EditorAction* action = editor_make_new_action();
     action->type = EditorActionType_SelectEntity;
-    action->entity_id = new_entity_id;
-    action->prev_entity_id = selected_entity_id;
 
     selected_entity_id = new_entity_id;
+    if (selected_entity_id.index != INDEX_INVALID)
+    {
+        action->entity_state = *entity_get(&world, selected_entity_id);
+    }
 }
 
 static void editor_modify_entity(Entity* entity)
 {
-    EditorAction* action = &action_history[action_history_end];
-    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
-
-    if (action_history_begin == action_history_end)
-        ring_buffer_increment_index(&action_history_begin, MAX_EDITOR_ACTIONS_COUNT);
-
+    EditorAction* action = editor_make_new_action();
     action->type = EditorActionType_ModifyEntity;
-    action->entity = *entity;
-    action->prev_entity = selected_entity;
+    action->entity_state = *entity;
 }
 
 static void editor_try_undo_last_action()
 {
-    if (action_history_begin == action_history_end)
+    if (action_history_count == 0)
         return;
 
-    ring_buffer_decrement_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
+    ring_buffer_decrement_index(&action_history_cursor, MAX_EDITOR_ACTIONS_COUNT);
+    action_history_count -= 1;
+    action_history_redos += 1;
 
-    EditorAction last_action = action_history[action_history_end];
-    switch (last_action.type)
+    Entity* prev_entity_state = nullptr;
+    if (action_history_count == 0)
+    {
+        static Entity default_entity;
+        prev_entity_state = &default_entity;
+    }
+    else
+    {
+        i64 prev_cursor = action_history_cursor;
+        ring_buffer_decrement_index(&prev_cursor, MAX_EDITOR_ACTIONS_COUNT);
+
+        prev_entity_state = &action_history[prev_cursor].entity_state;
+    }
+
+    EditorAction* last_action = &action_history[action_history_cursor];
+    switch (last_action->type)
     {
         case EditorActionType_SelectEntity:
         {
-            selected_entity_id = last_action.prev_entity_id;
+            selected_entity_id = prev_entity_state->id;
         }
         break;
 
@@ -130,7 +148,7 @@ static void editor_try_undo_last_action()
             Entity* entity = entity_get(&world, selected_entity_id);
             APORIA_ASSERT(entity);
 
-            *entity = last_action.prev_entity;
+            *entity = *prev_entity_state;
         }
         break;
     }
@@ -138,16 +156,20 @@ static void editor_try_undo_last_action()
 
 static void editor_try_redo_last_action()
 {
-    EditorAction last_action = action_history[action_history_end];
-
-    if (last_action.type == EditorActionType_Invalid)
+    if (action_history_redos == 0)
         return;
+
+    EditorAction last_action = action_history[action_history_cursor];
+
+    ring_buffer_increment_index(&action_history_cursor, MAX_EDITOR_ACTIONS_COUNT);
+    action_history_count += 1;
+    action_history_redos -= 1;
 
     switch (last_action.type)
     {
         case EditorActionType_SelectEntity:
         {
-            selected_entity_id = last_action.entity_id;
+            selected_entity_id = last_action.entity_state.id;
         }
         break;
 
@@ -156,12 +178,10 @@ static void editor_try_redo_last_action()
             Entity* entity = entity_get(&world, selected_entity_id);
             APORIA_ASSERT(entity);
 
-            *entity = last_action.entity;
+            *entity = last_action.entity_state;
         }
         break;
     }
-
-    ring_buffer_increment_index(&action_history_end, MAX_EDITOR_ACTIONS_COUNT);
 }
 
 void editor_update(f32 frame_time)
@@ -310,8 +330,8 @@ void editor_update(f32 frame_time)
             APORIA_ASSERT(entity);
 
             gizmo_index = index;
-            mouse_start_position = get_mouse_world_position();
-            selected_entity = *entity;
+            mouse_initial_position = get_mouse_world_position();
+            entity_initial_state = *entity;
         }
     }
     else if (gizmo_index != NOTHING_SELECTED_INDEX)
@@ -348,8 +368,8 @@ void editor_update(f32 frame_time)
         {
             v2 mouse_current_position = get_mouse_world_position();
 
-            v2 mouse_start_offset = mouse_start_position - selected_entity.position;
-            v2 mouse_current_offset = mouse_current_position - selected_entity.position;
+            v2 mouse_start_offset = mouse_initial_position - entity_initial_state.position;
+            v2 mouse_current_offset = mouse_current_position - entity_initial_state.position;
 
             switch (gizmo_type)
             {
@@ -364,25 +384,25 @@ void editor_update(f32 frame_time)
                         up = v2{ -right.y, right.x };
                     }
 
-                    v2 mouse_offset = mouse_current_position - mouse_start_position;
+                    v2 mouse_offset = mouse_current_position - mouse_initial_position;
 
                     switch (gizmo_index)
                     {
                         case TRANSLATE_X_AXIS_INDEX:
                         {
-                            entity->position = selected_entity.position + glm::dot(mouse_offset, right) * right;
+                            entity->position = entity_initial_state.position + glm::dot(mouse_offset, right) * right;
                         }
                         break;
 
                         case TRANSLATE_Y_AXIS_INDEX:
                         {
-                            entity->position = selected_entity.position + glm::dot(mouse_offset, up) * up;
+                            entity->position = entity_initial_state.position + glm::dot(mouse_offset, up) * up;
                         }
                         break;
 
                         case TRANSLATE_XY_AXIS_INDEX:
                         {
-                            entity->position = selected_entity.position + mouse_offset;
+                            entity->position = entity_initial_state.position + mouse_offset;
                         }
                         break;
                     }
@@ -394,7 +414,7 @@ void editor_update(f32 frame_time)
                     f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
                     f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
 
-                    entity->rotation = selected_entity.rotation + (current_angle - base_angle);
+                    entity->rotation = entity_initial_state.rotation + (current_angle - base_angle);
                 }
                 break;
 
@@ -426,7 +446,7 @@ void editor_update(f32 frame_time)
                         break;
                     }
 
-                    entity->scale = selected_entity.scale * scale;
+                    entity->scale = entity_initial_state.scale * scale;
                 }
                 break;
             }
@@ -557,8 +577,8 @@ void editor_draw_gizmos()
 
             if (gizmo_index == ROTATE_INDEX)
             {
-                v2 mouse_start_offset = mouse_start_position - selected_entity.position;
-                v2 mouse_current_offset = get_mouse_world_position() - selected_entity.position;
+                v2 mouse_start_offset = mouse_initial_position - entity_initial_state.position;
+                v2 mouse_current_offset = get_mouse_world_position() - entity_initial_state.position;
 
                 f32 rotation_line_thickness = 3.f;
 
