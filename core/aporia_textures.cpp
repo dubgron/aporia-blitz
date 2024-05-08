@@ -5,10 +5,10 @@
 #include <stb_image.h>
 
 #include "aporia_assets.hpp"
-#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
 #include "aporia_hash_table.hpp"
+#include "aporia_parser.hpp"
 #include "aporia_utils.hpp"
 
 static constexpr u64 MAX_TEXTURES = 32;
@@ -61,21 +61,45 @@ static bool operator==(const SubTexture& subtexture1, const SubTexture& subtextu
 bool load_texture_atlas(String filepath)
 {
     ScratchArena temp = scratch_begin();
-    Config_Property* parsed_file = parse_config_from_file(temp.arena, filepath);
+    ParseTreeNode* parsed_file = parse_from_file(temp.arena, filepath);
+
+    ParseTreeNode* subtextures_node = nullptr;
 
     String texture_filepath;
-    for (Config_Property* property = parsed_file; property; property = property->next)
+    for (ParseTreeNode* node = parsed_file->child_first; node; node = node->next)
     {
-        if (property->category == "meta" && property->field == "filepath")
+        APORIA_ASSERT(node->type == ParseTreeNode_Category);
+        if (node->name == "meta")
         {
-            texture_filepath = property->literals.first->string;
-            break;
+            for (ParseTreeNode* meta = node->child_first; meta; meta = meta->next)
+            {
+                APORIA_ASSERT(meta->type == ParseTreeNode_Field && meta->child_count == 1);
+                if (meta->name == "filepath")
+                {
+                    ParseTreeNode* filepath_node = meta->child_first;
+                    APORIA_ASSERT(filepath_node->type == ParseTreeNode_String);
+
+                    texture_filepath = filepath_node->string_value;
+                    break;
+                }
+            }
+        }
+
+        if (node->type == ParseTreeNode_Category && node->name == "subtextures")
+        {
+            subtextures_node = node;
         }
     }
 
     if (texture_filepath.length == 0)
     {
-        APORIA_LOG(Error, "Failed to get [meta.filepath] property from %s", filepath);
+        APORIA_LOG(Error, "Failed to find [meta.filepath] property in %s", filepath);
+        return false;
+    }
+
+    if (!subtextures_node)
+    {
+        APORIA_LOG(Error, "Failed to find [subtextures] category in %s", filepath);
         return false;
     }
 
@@ -86,22 +110,32 @@ bool load_texture_atlas(String filepath)
         subtextures = hash_table_create<SubTexture>(&memory.persistent, MAX_SUBTEXTURES);
     }
 
-    for (Config_Property* property = parsed_file; property; property = property->next)
+    for (ParseTreeNode* subtexture_node = subtextures_node->child_first; subtexture_node; subtexture_node = subtexture_node->next)
     {
-        if (property->category != "subtextures")
-        {
-            continue;
-        }
-
-        String name = push_string(&memory.persistent, property->field);
+        APORIA_ASSERT(subtexture_node->type == ParseTreeNode_Struct && subtexture_node->child_count == 2);
+        String name = push_string(&memory.persistent, subtexture_node->name);
 
         if (hash_table_find(&subtextures, name) != nullptr)
         {
             APORIA_LOG(Warning, "There is more than one subtexture named '%'! One of them will be overwritten!", name);
         }
 
-        v2 u{ string_to_float(property->inner->literals.first->string), string_to_float(property->inner->literals.last->string) };
-        v2 v{ string_to_float(property->inner->next->literals.first->string), string_to_float(property->inner->next->literals.last->string) };
+        ParseTreeNode* u_node = subtexture_node->child_first;
+        APORIA_ASSERT(u_node->type == ParseTreeNode_Field && u_node->child_count == 2);
+
+        ParseTreeNode* u_x_node = u_node->child_first;
+        ParseTreeNode* u_y_node = u_node->child_last;
+        APORIA_ASSERT(u_x_node->type == ParseTreeNode_Float && u_y_node->type == ParseTreeNode_Float);
+
+        ParseTreeNode* v_node = subtexture_node->child_last;
+        APORIA_ASSERT(v_node->type == ParseTreeNode_Field && v_node->child_count == 2);
+
+        ParseTreeNode* v_x_node = v_node->child_first;
+        ParseTreeNode* v_y_node = v_node->child_last;
+        APORIA_ASSERT(v_node->child_first->type == ParseTreeNode_Float && v_node->child_last->type == ParseTreeNode_Float);
+
+        v2 u{ u_x_node->float_value, u_y_node->float_value };
+        v2 v{ v_x_node->float_value, v_y_node->float_value };
 
         SubTexture subtexture;
         subtexture.u = u;

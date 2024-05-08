@@ -8,7 +8,7 @@
 template<typename T>
 static void serialize_write(Serializer* serializer, T value)
 {
-    u64 size = sizeof(T);
+    i64 size = sizeof(T);
     void* data = serializer->buffer.data + serializer->offset;
     serializer->offset += size;
 
@@ -16,9 +16,9 @@ static void serialize_write(Serializer* serializer, T value)
 }
 
 template<typename T>
-static void serialize_write_array(Serializer* serializer, T* array, u64 count)
+static void serialize_write_array(Serializer* serializer, T* array, i64 count)
 {
-    u64 size = sizeof(T) * count;
+    i64 size = sizeof(T) * count;
     void* data = serializer->buffer.data + serializer->offset;
     serializer->offset += size;
 
@@ -28,7 +28,7 @@ static void serialize_write_array(Serializer* serializer, T* array, u64 count)
 template<typename T>
 static void serialize_read(Serializer* serializer, T* out_value)
 {
-    u64 size = sizeof(T);
+    i64 size = sizeof(T);
     void* data = serializer->buffer.data + serializer->offset;
     serializer->offset += size;
 
@@ -36,9 +36,9 @@ static void serialize_read(Serializer* serializer, T* out_value)
 }
 
 template<typename T>
-static void serialize_read_array(Serializer* serializer, T** out_array, u64 count)
+static void serialize_read_array(Serializer* serializer, T** out_array, i64 count)
 {
-    u64 size = sizeof(T) * count;
+    i64 size = sizeof(T) * count;
     void* data = serializer->buffer.data + serializer->offset;
     serializer->offset += size;
 
@@ -201,7 +201,7 @@ String world_serialize(MemoryArena* arena, const World& world)
         entity_serialize(&serializer, world.entity_array[idx]);
     }
 
-    u64 unused_memory = serializer.buffer.length - serializer.offset;
+    i64 unused_memory = serializer.buffer.length - serializer.offset;
     arena_pop(arena, unused_memory);
 
     return String{ serializer.buffer.data, serializer.offset };

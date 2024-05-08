@@ -14,9 +14,9 @@
     ; fov                     360
     aspect_ratio            1.7778
     background_color        80 80 102 255
-    movement_speed          500
-    rotation_speed          2
-    zoom_speed              2
+    movement_speed          500.0
+    rotation_speed          2.0
+    zoom_speed              2.0
     movement_key_up         "W"
     movement_key_down       "S"
     movement_key_left       "A"
@@ -25,14 +25,17 @@
     rotation_key_right      "E"
     zoom_key_in             "Space"
     zoom_key_out            "LShift"
-    zoom_max                20
+    zoom_max                20.0
     zoom_min                0.25
 
-[shader]
-    default.blend           "src_alpha" "one_minus_src_alpha"
-    default.blend_op        "add"
-    default.depth_test      "lequal"
-    default.depth_write     "on"
+[shaders]
+    defaults
+    {
+        blend           "src_alpha" "one_minus_src_alpha"
+        blend_op        "add"
+        depth_test      "lequal"
+        depth_write     "on"
+    }
 
 [editor]
     display_editor_grid     true

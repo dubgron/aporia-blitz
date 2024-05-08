@@ -1,8 +1,8 @@
 #include "aporia_fonts.hpp"
 
-#include "aporia_config.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
+#include "aporia_parser.hpp"
 #include "aporia_utils.hpp"
 
 static constexpr u64 MAX_FONTS = 10;
@@ -40,21 +40,29 @@ void load_font(String name, String filepath)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    Config_Property* parsed_file = parse_config_from_file(temp.arena, config_filepath);
+    ParseTreeNode* parsed_file = parse_from_file(temp.arena, config_filepath);
 
     u64 glyphs_count = 0;
     u64 kerning_count = 0;
 
-    // TODO(dubgron): Config properties should have info how many fields each category has.
-    for (Config_Property* property = parsed_file; property; property = property->next)
+    for (ParseTreeNode* node = parsed_file->child_first; node; node = node->next)
     {
-        if (property->category == "glyphs")
+        APORIA_ASSERT(node->type == ParseTreeNode_Category);
+        if (node->name == "data")
         {
-            glyphs_count += 1;
-        }
-        else if (property->category == "kerning")
-        {
-            kerning_count += 1;
+            for (ParseTreeNode* data_node = node->child_first; data_node; data_node = data_node->next)
+            {
+                if (data_node->name == "glyphs")
+                {
+                    APORIA_ASSERT(data_node->type = ParseTreeNode_ArrayOfStructs);
+                    glyphs_count = data_node->child_count;
+                }
+                else if (data_node->name == "kerning")
+                {
+                    APORIA_ASSERT(data_node->type = ParseTreeNode_ArrayOfStructs);
+                    kerning_count = data_node->child_count;
+                }
+            }
         }
     }
 
@@ -62,131 +70,162 @@ void load_font(String name, String filepath)
     result.glyphs = arena_push_uninitialized<Glyph>(&memory.persistent, glyphs_count);
     result.kerning = arena_push_uninitialized<Kerning>(&memory.persistent, kerning_count);
 
-    for (Config_Property* property = parsed_file; property; property = property->next)
+    for (ParseTreeNode* node = parsed_file->child_first; node; node = node->next)
     {
-        if (property->category == "atlas")
+        APORIA_ASSERT(node->type == ParseTreeNode_Category);
+        if (node->name == "atlas")
         {
-            if (property->field == "size")
+            for (ParseTreeNode* atlas_node = node->child_first; atlas_node; atlas_node = atlas_node->next)
             {
-                result.atlas.font_size = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "distance_range")
-            {
-                result.atlas.distance_range = string_to_float(property->literals.first->string);
-            }
-        }
-        else if (property->category == "metrics")
-        {
-            if (property->field == "em_size")
-            {
-                result.metrics.em_size = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "line_height")
-            {
-                result.metrics.line_height = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "descender")
-            {
-                result.metrics.descender_y = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "ascender")
-            {
-                result.metrics.ascender_y = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "underline_y")
-            {
-                result.metrics.underline_y = string_to_float(property->literals.first->string);
-            }
-            else if (property->field == "underline_thickness")
-            {
-                result.metrics.underline_thickness = string_to_float(property->literals.first->string);
-            }
-        }
-        else if (property->category == "glyphs")
-        {
-            Glyph glyph;
-
-            for (Config_Property* glyph_property = property->inner; glyph_property; glyph_property = glyph_property->next)
-            {
-                if (glyph_property->field == "advance")
+                if (atlas_node->name == "size")
                 {
-                    glyph.advance = string_to_float(glyph_property->literals.first->string);
+                    get_value_from_node(atlas_node, &result.atlas.font_size);
                 }
-                else if (glyph_property->field == "atlas_bounds")
+                else if (atlas_node->name == "distance_range")
                 {
-                    for (Config_Property* atlas_property = glyph_property->inner; atlas_property; atlas_property = atlas_property->next)
+                    get_value_from_node(atlas_node, &result.atlas.distance_range);
+                }
+            }
+        }
+        else if (node->name == "metrics")
+        {
+            for (ParseTreeNode* metrics_node = node->child_first; metrics_node; metrics_node = metrics_node->next)
+            {
+                if (metrics_node->name == "em_size")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.em_size);
+                }
+                else if (metrics_node->name == "line_height")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.line_height);
+                }
+                else if (metrics_node->name == "descender")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.descender_y);
+                }
+                else if (metrics_node->name == "ascender")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.ascender_y);
+                }
+                else if (metrics_node->name == "underline_y")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.underline_y);
+                }
+                else if (metrics_node->name == "underline_thickness")
+                {
+                    get_value_from_node(metrics_node, &result.metrics.underline_thickness);
+                }
+            }
+        }
+        else if (node->name == "data")
+        {
+            for (ParseTreeNode* data_node = node->child_first; data_node; data_node = data_node->next)
+            {
+                if (data_node->name == "glyphs")
+                {
+                    APORIA_ASSERT(data_node->type = ParseTreeNode_ArrayOfStructs);
+                    for (ParseTreeNode* array_node = data_node->child_first; array_node; array_node = array_node->next)
                     {
-                        if (atlas_property->field == "bottom")
+                        APORIA_ASSERT(array_node->type == ParseTreeNode_Struct);
+
+                        Glyph glyph;
+
+                        for (ParseTreeNode* glyph_node = array_node->child_first; glyph_node; glyph_node = glyph_node->next)
                         {
-                            glyph.atlas_bounds.bottom = string_to_float(atlas_property->literals.first->string);
+                            if (glyph_node->name == "advance")
+                            {
+                                APORIA_ASSERT(glyph_node->type == ParseTreeNode_Field);
+                                get_value_from_node(glyph_node, &glyph.advance);
+                            }
+                            else if (glyph_node->name == "atlas_bounds")
+                            {
+                                APORIA_ASSERT(glyph_node->type == ParseTreeNode_Struct);
+                                for (ParseTreeNode* atlas_bounds_node = glyph_node->child_first; atlas_bounds_node; atlas_bounds_node = atlas_bounds_node->next)
+                                {
+                                    if (atlas_bounds_node->name == "bottom")
+                                    {
+                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.bottom);
+                                    }
+                                    else if (atlas_bounds_node->name == "left")
+                                    {
+                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.left);
+                                    }
+                                    else if (atlas_bounds_node->name == "right")
+                                    {
+                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.right);
+                                    }
+                                    else if (atlas_bounds_node->name == "top")
+                                    {
+                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.top);
+                                    }
+                                }
+                            }
+                            else if (glyph_node->name == "plane_bounds")
+                            {
+                                APORIA_ASSERT(glyph_node->type == ParseTreeNode_Struct);
+                                for (ParseTreeNode* plane_bounds_node = glyph_node->child_first; plane_bounds_node; plane_bounds_node = plane_bounds_node->next)
+                                {
+                                    if (plane_bounds_node->name == "bottom")
+                                    {
+                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.bottom);
+                                    }
+                                    else if (plane_bounds_node->name == "left")
+                                    {
+                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.left);
+                                    }
+                                    else if (plane_bounds_node->name == "right")
+                                    {
+                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.right);
+                                    }
+                                    else if (plane_bounds_node->name == "top")
+                                    {
+                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.top);
+                                    }
+                                }
+                            }
+                            else if (glyph_node->name == "unicode")
+                            {
+                                APORIA_ASSERT(glyph_node->type == ParseTreeNode_Field);
+                                get_value_from_node(glyph_node, &glyph.unicode);
+                            }
+
                         }
-                        else if (atlas_property->field == "left")
-                        {
-                            glyph.atlas_bounds.left = string_to_float(atlas_property->literals.first->string);
-                        }
-                        else if (atlas_property->field == "right")
-                        {
-                            glyph.atlas_bounds.right = string_to_float(atlas_property->literals.first->string);
-                        }
-                        else if (atlas_property->field == "top")
-                        {
-                            glyph.atlas_bounds.top = string_to_float(atlas_property->literals.first->string);
-                        }
+                        result.glyphs[result.glyphs_count] = glyph;
+                        result.glyphs_count += 1;
                     }
                 }
-                else if (glyph_property->field == "plane_bounds")
+                else if (data_node->name == "kerning")
                 {
-                    for (Config_Property* plane_property = glyph_property->inner; plane_property; plane_property = plane_property->next)
+                    APORIA_ASSERT(data_node->type = ParseTreeNode_ArrayOfStructs);
+
+                    for (ParseTreeNode* array_node = data_node->child_first; array_node; array_node = array_node->next)
                     {
-                        if (plane_property->field == "bottom")
+                        APORIA_ASSERT(array_node->type == ParseTreeNode_Struct);
+
+                        Kerning kerning;
+
+                        for (ParseTreeNode* kerning_node = array_node->child_first; kerning_node; kerning_node = kerning_node->next)
                         {
-                            glyph.plane_bounds.bottom = string_to_float(plane_property->literals.first->string);
+                            APORIA_ASSERT(kerning_node->type == ParseTreeNode_Field);
+                            if (kerning_node->name == "advance")
+                            {
+                                get_value_from_node(kerning_node, &kerning.advance);
+                            }
+                            else if (kerning_node->name == "unicode_1")
+                            {
+                                get_value_from_node(kerning_node, &kerning.unicode_1);
+                            }
+                            else if (kerning_node->name == "unicode_2")
+                            {
+                                get_value_from_node(kerning_node, &kerning.unicode_2);
+                            }
                         }
-                        else if (plane_property->field == "left")
-                        {
-                            glyph.plane_bounds.left = string_to_float(plane_property->literals.first->string);
-                        }
-                        else if (plane_property->field == "right")
-                        {
-                            glyph.plane_bounds.right = string_to_float(plane_property->literals.first->string);
-                        }
-                        else if (plane_property->field == "top")
-                        {
-                            glyph.plane_bounds.top = string_to_float(plane_property->literals.first->string);
-                        }
+
+                        result.kerning[result.kerning_count] = kerning;
+                        result.kerning_count += 1;
                     }
                 }
-                else if (glyph_property->field == "unicode")
-                {
-                    glyph.unicode = string_to_int(glyph_property->literals.first->string);
-                }
             }
-
-            result.glyphs[result.glyphs_count] = glyph;
-            result.glyphs_count += 1;
-        }
-        else if (property->category == "kerning")
-        {
-            Kerning kerning;
-
-            for (Config_Property* kerning_property = property->inner; kerning_property; kerning_property = kerning_property->next)
-            {
-                if (kerning_property->field == "advance")
-                {
-                    kerning.advance = string_to_float(kerning_property->literals.first->string);
-                }
-                else if (kerning_property->field == "unicode_1")
-                {
-                    kerning.unicode_1 = string_to_int(kerning_property->literals.first->string);
-                }
-                else if (kerning_property->field == "unicode_2")
-                {
-                    kerning.unicode_2 = string_to_int(kerning_property->literals.first->string);
-                }
-            }
-
-            result.kerning[result.kerning_count] = kerning;
-            result.kerning_count += 1;
         }
     }
 

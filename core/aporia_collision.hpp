@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aporia_types.hpp"
+#include "aporia_utils.hpp"
 
 enum ColliderType : u8
 {

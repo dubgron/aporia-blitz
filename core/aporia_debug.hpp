@@ -3,7 +3,6 @@
 #include "aporia_memory.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
-#include "aporia_utils.hpp"
 
 #if defined(APORIA_DEBUGTOOLS)
 
