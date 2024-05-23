@@ -16,6 +16,8 @@ struct World
     Entity* entity_array_last_frame = nullptr;
 };
 
+extern World world;
+
 World world_init(i32 max_entities = 10000);
 void world_deinit(World* world);
 

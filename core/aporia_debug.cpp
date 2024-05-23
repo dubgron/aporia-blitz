@@ -104,7 +104,7 @@ static LogBuffer console_buffer;
 static LogBuffer file_buffer;
 
 static String log_name;
-static String log_filepath;
+static CString log_filepath;
 static String log_timestamp;
 
 static LogLevel min_log_level = Verbose;
@@ -183,7 +183,7 @@ static void flush_logs_to_file()
 {
     if (file_buffer.length > 0)
     {
-        FILE* log_file = fopen(*log_filepath, "ab");
+        FILE* log_file = fopen(log_filepath, "ab");
         assert(log_file);
 
         fwrite(file_buffer.data, file_buffer.length, 1, log_file);
@@ -199,14 +199,14 @@ void logging_init(MemoryArena* arena, String name)
         make_directory("logs/");
 
     log_name = push_string(arena, name);
-    log_filepath = sprintf(arena, "logs/%_latest.log", log_name);
+    log_filepath = tprintf("logs/%_latest.log", log_name).cstring(arena);
     log_timestamp = format_timestamp(arena, "%Y-%m-%d_%H-%M-%S");
 
-    constexpr u64 buffer_size = MEGABYTES(1);
+    constexpr u64 buffer_size = MEGABYTES(10);
     console_buffer = buffer_create(arena, buffer_size);
     file_buffer = buffer_create(arena, buffer_size);
 
-    FILE* log_file = fopen(*log_filepath, "wb");
+    FILE* log_file = fopen(log_filepath, "wb");
     assert(log_file);
     fclose(log_file);
 }

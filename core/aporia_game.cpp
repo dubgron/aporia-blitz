@@ -12,6 +12,7 @@
 #include "aporia_debug.hpp"
 #include "aporia_rendering.hpp"
 #include "aporia_window.hpp"
+#include "aporia_world.hpp"
 
 #if defined(APORIA_EDITOR)
 #include "editor/aporia_editor.hpp"

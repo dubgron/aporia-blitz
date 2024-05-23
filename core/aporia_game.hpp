@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aporia_memory.hpp"
-#include "aporia_world.hpp"
 
 struct GameMemory
 {
@@ -12,4 +11,3 @@ struct GameMemory
 };
 
 extern GameMemory memory;
-extern World world;

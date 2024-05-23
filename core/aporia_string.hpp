@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "aporia_game.hpp"
 #include "aporia_memory.hpp"
 #include "aporia_types.hpp"
 
@@ -163,4 +164,10 @@ template<typename T, typename... Ts>
     scratch_end(temp);
 
     return result;
+}
+
+template<typename T, typename... Ts>
+[[nodiscard]] String tprintf(String format, T arg, Ts... args)
+{
+    return sprintf(&memory.frame, format, arg, args...);
 }
