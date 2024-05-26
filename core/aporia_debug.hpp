@@ -4,6 +4,9 @@
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 #if defined(APORIA_DEBUGTOOLS)
 
 #define APORIA_LOG(lvl, fmt, ...)   log(__FILE__, __LINE__, __func__, lvl, fmt, ##__VA_ARGS__)
@@ -109,14 +112,26 @@ template<typename... Ts>
 static void log(String file, i32 line, String function, LogLevel level, String format, Ts&&... args)
 {
     if (!should_log(level))
-    {
         return;
-    }
 
     ScratchArena temp = scratch_begin();
     {
         String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
         log(file, line, function, level, formatted_message);
+    }
+    scratch_end(temp);
+}
+
+template<typename... Ts>
+void log(String file, i32 line, i32 column, LogLevel level, String format, Ts&&... args)
+{
+    if (!should_log(level))
+        return;
+
+    ScratchArena temp = scratch_begin();
+    {
+        String formatted_message = sprintf(temp.arena, format, std::forward<Ts>(args)...);
+        log(file, line, column, level, formatted_message);
     }
     scratch_end(temp);
 }

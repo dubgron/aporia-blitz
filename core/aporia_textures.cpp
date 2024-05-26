@@ -121,21 +121,11 @@ bool load_texture_atlas(String filepath)
         }
 
         ParseTreeNode* u_node = subtexture_node->child_first;
-        APORIA_ASSERT(u_node->type == ParseTreeNode_Field && u_node->child_count == 2);
-
-        ParseTreeNode* u_x_node = u_node->child_first;
-        ParseTreeNode* u_y_node = u_node->child_last;
-        APORIA_ASSERT(u_x_node->type == ParseTreeNode_Float && u_y_node->type == ParseTreeNode_Float);
-
         ParseTreeNode* v_node = subtexture_node->child_last;
-        APORIA_ASSERT(v_node->type == ParseTreeNode_Field && v_node->child_count == 2);
 
-        ParseTreeNode* v_x_node = v_node->child_first;
-        ParseTreeNode* v_y_node = v_node->child_last;
-        APORIA_ASSERT(v_node->child_first->type == ParseTreeNode_Float && v_node->child_last->type == ParseTreeNode_Float);
-
-        v2 u{ u_x_node->float_value, u_y_node->float_value };
-        v2 v{ v_x_node->float_value, v_y_node->float_value };
+        v2 u, v;
+        get_value_from_field(u_node, &u[0], 2);
+        get_value_from_field(v_node, &v[0], 2);
 
         SubTexture subtexture;
         subtexture.u = u;

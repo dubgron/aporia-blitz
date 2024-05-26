@@ -17,19 +17,19 @@ CameraConfig camera_config;
 EditorConfig editor_config;
 #endif
 
-static void get_value_from_node(ParseTreeNode* node, Key* out_value)
+static void get_value_from_field(ParseTreeNode* node, Key* out_value)
 {
     String string;
-    get_value_from_node(node, &string);
+    get_value_from_field(node, &string);
     *out_value = string_to_key(string);
 }
 
-static void get_value_from_node(ParseTreeNode* node, ShaderBlend* out_value, i64 count)
+static void get_value_from_field(ParseTreeNode* node, ShaderBlend* out_value, i64 count)
 {
     ScratchArena temp = scratch_begin();
     {
         String* strings = arena_push_uninitialized<String>(temp.arena, count);
-        get_value_from_node(node, strings, count);
+        get_value_from_field(node, strings, count);
 
         for (i64 idx = 0; idx < count; ++idx)
             out_value[idx] = string_to_shader_blend(strings[idx]);
@@ -37,24 +37,24 @@ static void get_value_from_node(ParseTreeNode* node, ShaderBlend* out_value, i64
     scratch_end(temp);
 }
 
-static void get_value_from_node(ParseTreeNode* node, ShaderBlendOp* out_value)
+static void get_value_from_field(ParseTreeNode* node, ShaderBlendOp* out_value)
 {
     String string;
-    get_value_from_node(node, &string);
+    get_value_from_field(node, &string);
     *out_value = string_to_shader_blend_op(string);
 }
 
-static void get_value_from_node(ParseTreeNode* node, ShaderDepthTest* out_value)
+static void get_value_from_field(ParseTreeNode* node, ShaderDepthTest* out_value)
 {
     String string;
-    get_value_from_node(node, &string);
+    get_value_from_field(node, &string);
     *out_value = string_to_shader_depth_test(string);
 }
 
-static void get_value_from_node(ParseTreeNode* node, ShaderDepthWrite* out_value)
+static void get_value_from_field(ParseTreeNode* node, ShaderDepthWrite* out_value)
 {
     String string;
-    get_value_from_node(node, &string);
+    get_value_from_field(node, &string);
     *out_value = string_to_shader_depth_write(string);
 }
 
@@ -80,20 +80,20 @@ static bool load_engine_config_from_file(String filepath)
                 APORIA_ASSERT(window_node->type == ParseTreeNode_Field);
                 if (window_node->name == "title")
                 {
-                    get_value_from_node(window_node, &window_config.title);
+                    get_value_from_field(window_node, &window_config.title);
                     window_config.title = push_string(&memory.persistent, window_config.title);
                 }
                 else if (window_node->name == "size")
                 {
-                    get_value_from_node(window_node, &window_config.width, 2);
+                    get_value_from_field(window_node, &window_config.width, 2);
                 }
                 else if (window_node->name == "vsync")
                 {
-                    get_value_from_node(window_node, &window_config.vsync);
+                    get_value_from_field(window_node, &window_config.vsync);
                 }
                 else if (window_node->name == "position")
                 {
-                    get_value_from_node(window_node, &window_config.position[0], 2);
+                    get_value_from_field(window_node, &window_config.position[0], 2);
                 }
             }
         }
@@ -104,63 +104,63 @@ static bool load_engine_config_from_file(String filepath)
                 APORIA_ASSERT(camera_node->type == ParseTreeNode_Field);
                 if (camera_node->name == "fov")
                 {
-                    get_value_from_node(camera_node, &camera_config.fov);
+                    get_value_from_field(camera_node, &camera_config.fov);
                 }
                 else if (camera_node->name == "background_color")
                 {
-                    get_value_from_node(camera_node, &camera_config.background_color.r, 4);
+                    get_value_from_field(camera_node, &camera_config.background_color.r, 4);
                 }
                 else if (camera_node->name == "movement_speed")
                 {
-                    get_value_from_node(camera_node, &camera_config.movement_speed);
+                    get_value_from_field(camera_node, &camera_config.movement_speed);
                 }
                 else if (camera_node->name == "rotation_speed")
                 {
-                    get_value_from_node(camera_node, &camera_config.rotation_speed);
+                    get_value_from_field(camera_node, &camera_config.rotation_speed);
                 }
                 else if (camera_node->name == "zoom_speed")
                 {
-                    get_value_from_node(camera_node, &camera_config.zoom_speed);
+                    get_value_from_field(camera_node, &camera_config.zoom_speed);
                 }
                 else if (camera_node->name == "zoom_max")
                 {
-                    get_value_from_node(camera_node, &camera_config.zoom_max);
+                    get_value_from_field(camera_node, &camera_config.zoom_max);
                 }
                 else if (camera_node->name == "zoom_min")
                 {
-                    get_value_from_node(camera_node, &camera_config.zoom_min);
+                    get_value_from_field(camera_node, &camera_config.zoom_min);
                 }
                 else if (camera_node->name == "movement_key_up")
                 {
-                    get_value_from_node(camera_node, &camera_config.movement_key_up);
+                    get_value_from_field(camera_node, &camera_config.movement_key_up);
                 }
                 else if (camera_node->name == "movement_key_down")
                 {
-                    get_value_from_node(camera_node, &camera_config.movement_key_down);
+                    get_value_from_field(camera_node, &camera_config.movement_key_down);
                 }
                 else if (camera_node->name == "movement_key_left")
                 {
-                    get_value_from_node(camera_node, &camera_config.movement_key_left);
+                    get_value_from_field(camera_node, &camera_config.movement_key_left);
                 }
                 else if (camera_node->name == "movement_key_right")
                 {
-                    get_value_from_node(camera_node, &camera_config.movement_key_right);;
+                    get_value_from_field(camera_node, &camera_config.movement_key_right);;
                 }
                 else if (camera_node->name == "rotation_key_left")
                 {
-                    get_value_from_node(camera_node, &camera_config.rotation_key_left);
+                    get_value_from_field(camera_node, &camera_config.rotation_key_left);
                 }
                 else if (camera_node->name == "rotation_key_right")
                 {
-                    get_value_from_node(camera_node, &camera_config.rotation_key_right);;
+                    get_value_from_field(camera_node, &camera_config.rotation_key_right);;
                 }
                 else if (camera_node->name == "zoom_key_in")
                 {
-                    get_value_from_node(camera_node, &camera_config.zoom_key_in);
+                    get_value_from_field(camera_node, &camera_config.zoom_key_in);
                 }
                 else if (camera_node->name == "zoom_key_out")
                 {
-                    get_value_from_node(camera_node, &camera_config.zoom_key_out);
+                    get_value_from_field(camera_node, &camera_config.zoom_key_out);
                 }
             }
         }
@@ -176,19 +176,19 @@ static bool load_engine_config_from_file(String filepath)
                         APORIA_ASSERT(defaults_node->type == ParseTreeNode_Field);
                         if (defaults_node->name == "blend")
                         {
-                            get_value_from_node(defaults_node, &shader_config.default_properties.blend[0], 2);
+                            get_value_from_field(defaults_node, &shader_config.default_properties.blend[0], 2);
                         }
                         else if (defaults_node->name == "blend_op")
                         {
-                            get_value_from_node(defaults_node, &shader_config.default_properties.blend_op);
+                            get_value_from_field(defaults_node, &shader_config.default_properties.blend_op);
                         }
                         else if (defaults_node->name == "depth_test")
                         {
-                            get_value_from_node(defaults_node, &shader_config.default_properties.depth_test);
+                            get_value_from_field(defaults_node, &shader_config.default_properties.depth_test);
                         }
                         else if (defaults_node->name == "depth_write")
                         {
-                            get_value_from_node(defaults_node, &shader_config.default_properties.depth_write);
+                            get_value_from_field(defaults_node, &shader_config.default_properties.depth_write);
                         }
                     }
                 }
@@ -201,11 +201,11 @@ static bool load_engine_config_from_file(String filepath)
                 APORIA_ASSERT(rendering_node->type == ParseTreeNode_Field);
                 if (rendering_node->name == "custom_game_resolution")
                 {
-                    get_value_from_node(rendering_node, &rendering_config.custom_game_resolution_width, 2);
+                    get_value_from_field(rendering_node, &rendering_config.custom_game_resolution_width, 2);
                 }
                 else if (rendering_node->name == "custom_ui_resolution")
                 {
-                    get_value_from_node(rendering_node, &rendering_config.custom_ui_resolution_width, 2);
+                    get_value_from_field(rendering_node, &rendering_config.custom_ui_resolution_width, 2);
                 }
             }
         }
@@ -217,7 +217,7 @@ static bool load_engine_config_from_file(String filepath)
                 APORIA_ASSERT(editor_node->type == ParseTreeNode_Field);
                 if (editor_node->name == "display_editor_grid")
                 {
-                    get_value_from_node(editor_node, &editor_config.display_editor_grid);
+                    get_value_from_field(editor_node, &editor_config.display_editor_grid);
                 }
             }
         }

@@ -91,6 +91,7 @@ ScratchArena scratch_begin(MemoryArena* conflict /* = nullptr */)
         {
             result.arena = temp_arena;
             result.pos = temp_arena->pos;
+            break;
         }
     }
     return result;

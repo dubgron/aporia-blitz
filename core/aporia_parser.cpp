@@ -1,6 +1,7 @@
 #include "aporia_parser.hpp"
 
 #include "aporia_debug.hpp"
+#include "aporia_utils.hpp"
 
 static bool is_newline(u8 c)
 {
@@ -20,6 +21,11 @@ static bool is_alpha(u8 c)
 static bool is_number(u8 c)
 {
     return c >= '0' && c <= '9';
+}
+
+static bool is_hexadecimal(u8 c)
+{
+    return is_number(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }
 
 static bool is_alphanumeric(u8 c)
@@ -53,8 +59,7 @@ enum TokenKind : i16
     Token_StructEnd     = '}',
 
     Token_Identifier    = 256,
-    Token_Integer,
-    Token_Float,
+    Token_Number,
     Token_String,
 
     Token_Keyword_True,
@@ -66,12 +71,16 @@ enum TokenKind : i16
 struct Token
 {
     TokenKind type = Token_Invalid;
+    ValueFlags value_flags = ValueFlag_None;
+
     i32 pos = -1;
 
     union
     {
         i64 int_value = 0;
-        f64 float_value;
+        u64 uint_value;
+        f64 float64_value;
+        f32 float32_value;
         String string_value;
         bool bool_value;
     };
@@ -89,6 +98,100 @@ struct Lexer
 
     String source_filepath;
 };
+
+struct TokenInfo
+{
+    i32 line_number = 0;
+    i16 column_begin = 0;
+    i16 column_end = 0;
+
+    String context;
+};
+
+static TokenInfo find_token_in_buffer(Lexer* lexer, Token* token)
+{
+    TokenInfo result;
+
+    i64 line_begin, line_end = INDEX_INVALID;
+    do
+    {
+        line_begin = line_end + 1;
+        line_end = lexer->buffer.find_eol(line_begin);
+        result.line_number += 1;
+    } while (line_end < token->pos);
+
+    result.column_begin = token->pos - line_begin + 1;
+    result.column_end = lexer->cursor - line_begin;
+
+    constexpr i64 max_context_lines = 2;
+    i64 context_lines_count = 0;
+
+    while (line_begin > 0 && context_lines_count < max_context_lines)
+    {
+        i64 prev_begin = lexer->buffer.rfind('\n', line_begin - 2) + 1;
+        String prev_line = lexer->buffer.substr(prev_begin, line_begin - prev_begin);
+
+        bool is_line_empty = true;
+        for (i64 idx = 0; idx < prev_line.length; ++idx)
+        {
+            if (!is_space(prev_line.data[idx]))
+            {
+                is_line_empty = false;
+                break;
+            }
+        }
+
+        if (is_line_empty)
+            break;
+
+        line_begin = prev_begin;
+        context_lines_count += 1;
+    }
+
+    result.context = lexer->buffer.substr(line_begin, line_end - line_begin);
+
+    return result;
+}
+
+template<typename... Ts>
+static void report_parsing_error(Lexer* lexer, Token* token, String format, Ts&&... args)
+{
+    if (lexer->error_occured)
+        return;
+
+    TokenInfo token_info = find_token_in_buffer(lexer, token);
+
+    log(lexer->source_filepath, token_info.line_number, token_info.column_begin, Error, format, args...);
+
+    log(Error, "");
+    log(Error, token_info.context);
+
+    ScratchArena temp = scratch_begin();
+    {
+        String underline = push_string(temp.arena, token_info.column_end);
+        memset(underline.data, ' ', token_info.column_begin - 1);
+        memset(underline.data + token_info.column_begin - 1, '^', token_info.column_end - token_info.column_begin + 1);
+        log(Error, underline);
+        log(Error, "");
+    }
+    scratch_end(temp);
+
+    lexer->error_occured = true;
+}
+
+static void report_parsing_error(Lexer* lexer, String message)
+{
+    report_parsing_error(lexer, &lexer->last_token, message);
+}
+
+static void report_detail(Lexer* lexer, String message)
+{
+    if (!lexer->error_occured)
+        return;
+
+    TokenInfo token_info = find_token_in_buffer(lexer, &lexer->last_token);
+    log(lexer->source_filepath, token_info.line_number, token_info.column_begin, Error, message);
+}
 
 static u8 peek_next_character(Lexer* lexer)
 {
@@ -132,7 +235,7 @@ static Token make_one_character_token(Lexer* lexer, TokenKind type)
 static Token make_number(Lexer* lexer)
 {
     Token token;
-    token.type = Token_Integer;
+    token.type = Token_Number;
     token.pos = lexer->cursor;
 
     u8 c = peek_next_character(lexer);
@@ -144,6 +247,52 @@ static Token make_number(Lexer* lexer)
 
         consume_character(lexer);
         c = peek_next_character(lexer);
+    }
+    else if (c == '0')
+    {
+        consume_character(lexer);
+        c = peek_next_character(lexer);
+
+        if (c == 'x' || c == 'X')
+        {
+            consume_character(lexer);
+            c = peek_next_character(lexer);
+
+            u64 num_of_digits = 0;
+            u64 hex_value = 0;
+            while (is_hexadecimal(c))
+            {
+                u8 hex_digit = 0;
+
+                if (is_number(c))
+                    hex_digit = c - '0';
+                else if (c >= 'A' && c <= 'F')
+                    hex_digit = 10 + c - 'A';
+                else if (c >= 'a' && c <= 'f')
+                    hex_digit = 10 + c - 'a';
+
+                hex_value = (hex_value << 4) + hex_digit;
+
+                if (num_of_digits == 16)
+                    report_parsing_error(lexer, &token, "Hex number is too long (16 character maximum.)");
+
+                num_of_digits += 1;
+
+                consume_character(lexer);
+                c = peek_next_character(lexer);
+            }
+
+            token.uint_value = hex_value;
+            token.value_flags |= ValueFlag_Hex;
+
+            if (num_of_digits == 0)
+                report_parsing_error(lexer, &token, "Expected some hexadecimal characters after \"0x\", but found none.");
+
+            if (num_of_digits > 16)
+                token.value_flags |= ValueFlag_RequiresFloat64;
+
+            return token;
+        }
     }
 
     i64 int_part = 0;
@@ -158,24 +307,36 @@ static Token make_number(Lexer* lexer)
 
     if (c == '.')
     {
-        token.type = Token_Float;
-
         consume_character(lexer);
         c = peek_next_character(lexer);
 
         f64 float_part = 0.0;
         f64 running_10s = 0.1f;
+        u64 significant_figures = 0;
         while (is_number(c))
         {
             u8 digit = c - '0';
             float_part += digit * running_10s;
             running_10s /= 10.f;
 
+            significant_figures += 1;
+
             consume_character(lexer);
             c = peek_next_character(lexer);
         }
 
-        token.float_value = (int_part + float_part) * sign;
+        // @HACK(dubgron): This is just an approximation.
+        if (significant_figures > 8)
+        {
+            token.float64_value = (int_part + float_part) * sign;
+            token.value_flags |= ValueFlag_RequiresFloat64;
+        }
+        else
+        {
+            token.float32_value = (int_part + float_part) * sign;
+        }
+
+        token.value_flags |= ValueFlag_Float;
     }
     else
     {
@@ -304,95 +465,6 @@ static void consume_token(Lexer* lexer)
 
 //////////////////////////////////////////////////
 
-struct TokenInfo
-{
-    i32 line_number = 0;
-    i16 column_begin = 0;
-    i16 column_end = 0;
-
-    String context;
-};
-
-static TokenInfo find_token_in_buffer(Lexer* lexer, Token* token)
-{
-    TokenInfo result;
-
-    i64 line_begin, line_end = INDEX_INVALID;
-    do
-    {
-        line_begin = line_end + 1;
-        line_end = lexer->buffer.find_eol(line_begin);
-        result.line_number += 1;
-    }
-    while (line_end < token->pos);
-
-    result.column_begin = token->pos - line_begin + 1;
-    result.column_end = lexer->cursor - line_begin;
-
-    constexpr i64 max_context_lines = 2;
-    i64 context_lines_count = 0;
-
-    while (line_begin > 0 && context_lines_count < max_context_lines)
-    {
-        i64 prev_begin = lexer->buffer.rfind('\n', line_begin - 2) + 1;
-        String prev_line = lexer->buffer.substr(prev_begin, line_begin - prev_begin);
-
-        bool is_line_empty = true;
-        for (i64 idx = 0; idx < prev_line.length; ++idx)
-        {
-            if (!is_space(prev_line.data[idx]))
-            {
-                is_line_empty = false;
-                break;
-            }
-        }
-
-        if (is_line_empty)
-            break;
-
-        line_begin = prev_begin;
-        context_lines_count += 1;
-    }
-
-    result.context = lexer->buffer.substr(line_begin, line_end - line_begin);
-
-    return result;
-}
-
-static void report_parsing_error(Lexer* lexer, String message)
-{
-    if (lexer->error_occured)
-        return;
-
-    TokenInfo token_info = find_token_in_buffer(lexer, &lexer->last_token);
-
-    log(lexer->source_filepath, token_info.line_number, token_info.column_begin, Error, message);
-
-    log(Error, "");
-    log(Error, token_info.context);
-
-    ScratchArena temp = scratch_begin();
-    {
-        String underline = push_string(temp.arena, token_info.column_end);
-        memset(underline.data, ' ', token_info.column_begin - 1);
-        memset(underline.data + token_info.column_begin - 1, '^', token_info.column_end - token_info.column_begin + 1);
-        log(Error, underline);
-        log(Error, "");
-    }
-    scratch_end(temp);
-
-    lexer->error_occured = true;
-}
-
-static void report_detail(Lexer* lexer, String message)
-{
-    if (!lexer->error_occured)
-        return;
-
-    TokenInfo token_info = find_token_in_buffer(lexer, &lexer->last_token);
-    log(lexer->source_filepath, token_info.line_number, token_info.column_begin, Error, message);
-}
-
 static void consume_comments(Lexer* lexer)
 {
     Token* token = peek_next_token(lexer);
@@ -403,7 +475,7 @@ static void consume_comments(Lexer* lexer)
     }
 }
 
-static ParseTreeNode* make_ast_node(MemoryArena* arena, ParseTreeNode* parent)
+static ParseTreeNode* make_parse_tree_node(MemoryArena* arena, ParseTreeNode* parent)
 {
     if (parent->child_count > 0)
     {
@@ -451,8 +523,7 @@ static bool is_literal(TokenKind token_type)
 {
     switch (token_type)
     {
-        case Token_Integer:
-        case Token_Float:
+        case Token_Number:
         case Token_String:
         case Token_Keyword_True:
         case Token_Keyword_False:
@@ -470,17 +541,29 @@ static void parse_literals(MemoryArena* arena, Lexer* lexer, ParseTreeNode* pare
 
     while (token->type == type_of_literals)
     {
-        ParseTreeNode* node = make_ast_node(arena, parent);
+        ParseTreeNode* node = make_parse_tree_node(arena, parent);
 
-        if (token->type == Token_Integer)
+        if (token->type == Token_Number)
         {
-            node->type = ParseTreeNode_Integer;
-            node->int_value = token->int_value;
-        }
-        else if (token->type == Token_Float)
-        {
-            node->type = ParseTreeNode_Float;
-            node->float_value = token->float_value;
+            node->type = ParseTreeNode_Number;
+
+            if (token->value_flags & ValueFlag_Float)
+            {
+                node->float64_value = token->float64_value;
+                node->value_flags |= ValueFlag_Float;
+            }
+            else if (token->value_flags & ValueFlag_Hex)
+            {
+                node->uint_value = token->uint_value;
+                node->value_flags |= ValueFlag_Hex;
+            }
+            else
+            {
+                node->int_value = token->int_value;
+            }
+
+            if (token->value_flags & ValueFlag_RequiresFloat64)
+                node->value_flags |= ValueFlag_RequiresFloat64;
         }
         else if (token->type == Token_String)
         {
@@ -514,9 +597,8 @@ static void parse_literals(MemoryArena* arena, Lexer* lexer, ParseTreeNode* pare
 
         switch (type_of_literals)
         {
-            case Token_Integer: report_detail(lexer, "Integer expected.");   break;
-            case Token_Float:   report_detail(lexer, "Float expected.");      break;
-            case Token_String:  report_detail(lexer, "String expected.");     break;
+            case Token_Number: report_detail(lexer, "Number expected.");   break;
+            case Token_String: report_detail(lexer, "String expected.");     break;
 
             case Token_Keyword_True:
             case Token_Keyword_False:
@@ -545,7 +627,7 @@ static void parse_struct(MemoryArena* arena, Lexer* lexer, ParseTreeNode* parent
                 make_node_into_array(arena, parent);
             }
 
-            node = make_ast_node(arena, parent);
+            node = make_parse_tree_node(arena, parent);
         }
 
         node->type = ParseTreeNode_Struct;
@@ -584,7 +666,7 @@ static void parse_field(MemoryArena* arena, Lexer* lexer, ParseTreeNode* parent)
     Token* token = peek_next_token(lexer);
     APORIA_ASSERT(token->type == Token_Identifier);
 
-    ParseTreeNode* node = make_ast_node(arena, parent);
+    ParseTreeNode* node = make_parse_tree_node(arena, parent);
     node->type = ParseTreeNode_Field;
     node->name = push_string(arena, token->string_value);
 
@@ -628,7 +710,7 @@ static void parse_category(MemoryArena* arena, Lexer* lexer, ParseTreeNode* pare
         return;
     }
 
-    ParseTreeNode* node = make_ast_node(arena, parent);
+    ParseTreeNode* node = make_parse_tree_node(arena, parent);
     node->type = ParseTreeNode_Category;
     node->name = push_string(arena, token->string_value);
 
@@ -733,8 +815,19 @@ void print_parse_tree(ParseTreeNode* node, i32 depth /* = -1 */)
         case ParseTreeNode_Struct:          APORIA_LOG(Debug, "% %", indent, node->name); break;
         case ParseTreeNode_ArrayOfStructs:  APORIA_LOG(Debug, "% %", indent, node->name); break;
 
-        case ParseTreeNode_Integer:         APORIA_LOG(Debug, "% %", indent, node->int_value); break;
-        case ParseTreeNode_Float:           APORIA_LOG(Debug, "% %", indent, node->float_value); break;
+        case ParseTreeNode_Number:
+        {
+            if (node->value_flags & ValueFlag_Float)
+                if (node->value_flags * ValueFlag_RequiresFloat64)
+                    APORIA_LOG(Debug, "% %", indent, node->float64_value);
+                else
+                    APORIA_LOG(Debug, "% %", indent, node->float32_value);
+            if (node->value_flags & ValueFlag_Hex)
+                APORIA_LOG(Debug, "% %", indent, node->uint_value);
+            else
+                APORIA_LOG(Debug, "% %", indent, node->int_value);
+        }
+        break;
 
         case ParseTreeNode_String:          APORIA_LOG(Debug, "% \"%\"", indent, node->string_value); break;
         case ParseTreeNode_Boolean:         APORIA_LOG(Debug, "% %", indent, node->bool_value ? "true" : "false"); break;

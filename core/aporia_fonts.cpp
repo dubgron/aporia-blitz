@@ -79,11 +79,11 @@ void load_font(String name, String filepath)
             {
                 if (atlas_node->name == "size")
                 {
-                    get_value_from_node(atlas_node, &result.atlas.font_size);
+                    get_value_from_field(atlas_node, &result.atlas.font_size);
                 }
                 else if (atlas_node->name == "distance_range")
                 {
-                    get_value_from_node(atlas_node, &result.atlas.distance_range);
+                    get_value_from_field(atlas_node, &result.atlas.distance_range);
                 }
             }
         }
@@ -93,27 +93,27 @@ void load_font(String name, String filepath)
             {
                 if (metrics_node->name == "em_size")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.em_size);
+                    get_value_from_field(metrics_node, &result.metrics.em_size);
                 }
                 else if (metrics_node->name == "line_height")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.line_height);
+                    get_value_from_field(metrics_node, &result.metrics.line_height);
                 }
                 else if (metrics_node->name == "descender")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.descender_y);
+                    get_value_from_field(metrics_node, &result.metrics.descender_y);
                 }
                 else if (metrics_node->name == "ascender")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.ascender_y);
+                    get_value_from_field(metrics_node, &result.metrics.ascender_y);
                 }
                 else if (metrics_node->name == "underline_y")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.underline_y);
+                    get_value_from_field(metrics_node, &result.metrics.underline_y);
                 }
                 else if (metrics_node->name == "underline_thickness")
                 {
-                    get_value_from_node(metrics_node, &result.metrics.underline_thickness);
+                    get_value_from_field(metrics_node, &result.metrics.underline_thickness);
                 }
             }
         }
@@ -135,7 +135,7 @@ void load_font(String name, String filepath)
                             if (glyph_node->name == "advance")
                             {
                                 APORIA_ASSERT(glyph_node->type == ParseTreeNode_Field);
-                                get_value_from_node(glyph_node, &glyph.advance);
+                                get_value_from_field(glyph_node, &glyph.advance);
                             }
                             else if (glyph_node->name == "atlas_bounds")
                             {
@@ -144,19 +144,19 @@ void load_font(String name, String filepath)
                                 {
                                     if (atlas_bounds_node->name == "bottom")
                                     {
-                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.bottom);
+                                        get_value_from_field(atlas_bounds_node, &glyph.atlas_bounds.bottom);
                                     }
                                     else if (atlas_bounds_node->name == "left")
                                     {
-                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.left);
+                                        get_value_from_field(atlas_bounds_node, &glyph.atlas_bounds.left);
                                     }
                                     else if (atlas_bounds_node->name == "right")
                                     {
-                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.right);
+                                        get_value_from_field(atlas_bounds_node, &glyph.atlas_bounds.right);
                                     }
                                     else if (atlas_bounds_node->name == "top")
                                     {
-                                        get_value_from_node(atlas_bounds_node, &glyph.atlas_bounds.top);
+                                        get_value_from_field(atlas_bounds_node, &glyph.atlas_bounds.top);
                                     }
                                 }
                             }
@@ -167,26 +167,26 @@ void load_font(String name, String filepath)
                                 {
                                     if (plane_bounds_node->name == "bottom")
                                     {
-                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.bottom);
+                                        get_value_from_field(plane_bounds_node, &glyph.plane_bounds.bottom);
                                     }
                                     else if (plane_bounds_node->name == "left")
                                     {
-                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.left);
+                                        get_value_from_field(plane_bounds_node, &glyph.plane_bounds.left);
                                     }
                                     else if (plane_bounds_node->name == "right")
                                     {
-                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.right);
+                                        get_value_from_field(plane_bounds_node, &glyph.plane_bounds.right);
                                     }
                                     else if (plane_bounds_node->name == "top")
                                     {
-                                        get_value_from_node(plane_bounds_node, &glyph.plane_bounds.top);
+                                        get_value_from_field(plane_bounds_node, &glyph.plane_bounds.top);
                                     }
                                 }
                             }
                             else if (glyph_node->name == "unicode")
                             {
                                 APORIA_ASSERT(glyph_node->type == ParseTreeNode_Field);
-                                get_value_from_node(glyph_node, &glyph.unicode);
+                                get_value_from_field(glyph_node, &glyph.unicode);
                             }
 
                         }
@@ -209,15 +209,15 @@ void load_font(String name, String filepath)
                             APORIA_ASSERT(kerning_node->type == ParseTreeNode_Field);
                             if (kerning_node->name == "advance")
                             {
-                                get_value_from_node(kerning_node, &kerning.advance);
+                                get_value_from_field(kerning_node, &kerning.advance);
                             }
                             else if (kerning_node->name == "unicode_1")
                             {
-                                get_value_from_node(kerning_node, &kerning.unicode_1);
+                                get_value_from_field(kerning_node, &kerning.unicode_1);
                             }
                             else if (kerning_node->name == "unicode_2")
                             {
-                                get_value_from_node(kerning_node, &kerning.unicode_2);
+                                get_value_from_field(kerning_node, &kerning.unicode_2);
                             }
                         }
 
