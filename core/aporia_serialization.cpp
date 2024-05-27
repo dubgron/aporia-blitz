@@ -1,5 +1,7 @@
 #include "aporia_serialization.hpp"
 
+#include "aporia_parser.hpp"
+
 #define push_context_arena(serializer, arena) \
     for (MemoryArena *old = serializer->context_arena, *next = (arena), *pop = 0; \
         (serializer->context_arena = next, !pop); \
@@ -235,5 +237,402 @@ World world_deserialize(String serialized)
         }
     }
 
+    return world;
+}
+
+//////////////////////////////////////////////////
+
+static void serialize_text_write(StringList* builder, MemoryArena* arena, String name)
+{
+    builder->push_node(arena, name);
+}
+
+template<typename T>
+static void serialize_text_write(StringList* builder, MemoryArena* arena, String name, T value)
+{
+    builder->push_node(arena, sprintf(arena, "% %", name, value));
+}
+
+template<typename T>
+static void serialize_text_write(StringList* builder, MemoryArena* arena, String name, T value1, T value2)
+{
+    builder->push_node(arena, sprintf(arena, "% % %", name, value1, value2));
+}
+
+static void serialize_text_write(StringList* builder, MemoryArena* arena, String name, String string)
+{
+    builder->push_node(arena, sprintf(arena, "% \"%\"", name, string));
+}
+
+static void serialize_text_write(StringList* builder, MemoryArena* arena, String name, const Collider& collider)
+{
+    builder->push_node(arena, sprintf(arena, "% % ; %", name, (u32)collider.type, collider_type_to_string(collider.type)));
+}
+
+template<typename T>
+static void serialize_text_write_as_hex(StringList* builder, MemoryArena* arena, String name, T value)
+{
+    ScratchArena temp = scratch_begin(arena);
+    builder->push_node(arena, sprintf(arena, "% % ; %", name, to_hex(temp.arena, value), value));
+    scratch_end(temp);
+}
+
+template<typename T>
+static void serialize_text_write_as_hex(StringList* builder, MemoryArena* arena, String name, T value1, T value2)
+{
+    ScratchArena temp = scratch_begin(arena);
+    builder->push_node(arena, sprintf(arena, "% % % ; % %", name, to_hex(temp.arena, value1), to_hex(temp.arena, value2), value1, value2));
+    scratch_end(temp);
+}
+
+static void serialize_text_write_as_hex(StringList* builder, MemoryArena* arena, String name, Color color)
+{
+    ScratchArena temp = scratch_begin(arena);
+    builder->push_node(arena, sprintf(arena, "% % ; % % % %", name, to_hex(temp.arena, *(u32*)&color), +color.r, +color.g, +color.b, +color.a));
+    scratch_end(temp);
+}
+
+static void entity_serialize_to_text(MemoryArena* arena, StringList* builder, const Entity& entity)
+{
+    const Entity default_entity;
+    ScratchArena temp = scratch_begin(arena);
+
+    serialize_text_write(builder, arena, "{");
+
+    serialize_text_write(builder, arena, "  id", entity.id.index, entity.id.generation);
+
+    if (entity.flags != default_entity.flags)
+        serialize_text_write_as_hex(builder, arena, "  flags", entity.flags);
+
+    if (entity.position != default_entity.position)
+        serialize_text_write_as_hex(builder, arena, "  position", entity.position.x, entity.position.y);
+
+    if (entity.z != default_entity.z)
+        serialize_text_write_as_hex(builder, arena, "  z", entity.z);
+
+    if (entity.rotation != default_entity.rotation)
+        serialize_text_write_as_hex(builder, arena, "  rotation", entity.rotation);
+
+    if (entity.center_of_rotation != default_entity.center_of_rotation)
+        serialize_text_write_as_hex(builder, arena, "  center_of_rotation", entity.center_of_rotation.x, entity.center_of_rotation.y);
+
+    if (entity.width != default_entity.width)
+        serialize_text_write_as_hex(builder, arena, "  width", entity.width);
+
+    if (entity.height != default_entity.height)
+        serialize_text_write_as_hex(builder, arena, "  height", entity.height);
+
+    if (entity.scale != default_entity.scale)
+        serialize_text_write_as_hex(builder, arena, "  scale", entity.scale.x, entity.scale.y);
+
+    if (entity.texture.texture_index != INDEX_INVALID)
+    {
+        String subtexture_name = get_subtexture_name(entity.texture);
+        serialize_text_write(builder, arena, "  texture", subtexture_name);
+    }
+
+    if (entity.color != default_entity.color)
+        serialize_text_write_as_hex(builder, arena, "  color", entity.color);
+
+    if (entity.shader_id != default_entity.shader_id)
+        serialize_text_write(builder, arena, "  shader_id", entity.shader_id);
+
+    if (entity.animator.current_animation != default_entity.animator.current_animation)
+    {
+        serialize_text_write(builder, arena, "  animator {");
+
+        serialize_text_write(builder, arena, "    current_animation", entity.animator.current_animation);
+        serialize_text_write(builder, arena, "    requested_animation", entity.animator.requested_animation);
+
+        serialize_text_write(builder, arena, "    current_frame", entity.animator.current_frame);
+        serialize_text_write_as_hex(builder, arena, "    elapsed_time", entity.animator.elapsed_time);
+
+        serialize_text_write(builder, arena, "  }");
+    }
+
+    if (entity.collider.type != ColliderType_None)
+    {
+        serialize_text_write(builder, arena, "  collider {");
+
+        serialize_text_write(builder, arena, "    type", entity.collider);
+
+        switch (entity.collider.type)
+        {
+            case ColliderType_AABB:
+            {
+                serialize_text_write_as_hex(builder, arena, "    base", entity.collider.aabb.base.x, entity.collider.aabb.base.y);
+                serialize_text_write_as_hex(builder, arena, "    width", entity.collider.aabb.width);
+                serialize_text_write_as_hex(builder, arena, "    height", entity.collider.aabb.height);
+            }
+            break;
+
+            case ColliderType_Circle:
+            {
+                serialize_text_write_as_hex(builder, arena, "    base", entity.collider.circle.base.x, entity.collider.circle.base.y);
+                serialize_text_write_as_hex(builder, arena, "    radius", entity.collider.circle.radius);
+            }
+            break;
+
+            case ColliderType_Polygon:
+            {
+                serialize_text_write(builder, arena, "    point_count", entity.collider.polygon.point_count);
+
+                if (entity.collider.polygon.point_count > 0)
+                {
+                    serialize_text_write(builder, arena, "    points");
+
+                    for (i64 idx = 0; idx < entity.collider.polygon.point_count; ++idx)
+                    {
+                        v2 point = entity.collider.polygon.points[idx];
+                        serialize_text_write_as_hex(builder, arena, "     ", point.x, point.y);
+                    }
+                }
+            }
+            break;
+        }
+
+        serialize_text_write(builder, arena, "  }");
+    }
+
+    serialize_text_write(builder, arena, "}");
+
+    scratch_end(temp);
+}
+
+String world_serialize_to_text(MemoryArena* arena, const World& world)
+{
+    MemoryArena temp = arena_init(MEGABYTES(20));
+
+    StringList builder;
+    serialize_text_write(&builder, &temp, "[world]");
+    serialize_text_write(&builder, &temp, "entity_max_count", world.entity_max_count);
+    serialize_text_write(&builder, &temp, "entity_count", world.entity_count);
+
+    if (world.entity_count > 0)
+    {
+        serialize_text_write(&builder, &temp, "entity_array");
+        for (i32 idx = 0; idx < world.entity_count; ++idx)
+        {
+            entity_serialize_to_text(&temp, &builder, world.entity_array[idx]);
+        }
+    }
+
+    String result = builder.join(arena, "\n");
+    arena_deinit(&temp);
+
+    return result;
+}
+
+static Entity entity_deserialize_from_text(World* world, ParseTreeNode* field)
+{
+    Entity entity;
+
+    for (ParseTreeNode* node = field->child_first; node; node = node->next)
+    {
+        if (node->name == "id")
+        {
+            get_value_from_field(node, &entity.id.index, 2);
+        }
+        else if (node->name == "flags")
+        {
+            get_value_from_field(node, &entity.flags);
+        }
+        else if (node->name == "position")
+        {
+            get_value_from_field(node, (f32*)&entity.position, 2);
+        }
+        else if (node->name == "z")
+        {
+            get_value_from_field(node, &entity.z);
+        }
+        else if (node->name == "rotation")
+        {
+            get_value_from_field(node, &entity.rotation);
+        }
+        else if (node->name == "center_of_rotation")
+        {
+            get_value_from_field(node, (f32*)&entity.center_of_rotation, 2);
+        }
+        else if (node->name == "width")
+        {
+            get_value_from_field(node, &entity.width);
+        }
+        else if (node->name == "height")
+        {
+            get_value_from_field(node, &entity.height);
+        }
+        else if (node->name == "scale")
+        {
+            get_value_from_field(node, &entity.scale[0], 2);
+        }
+        else if (node->name == "texture")
+        {
+            String subtexture_name;
+            get_value_from_field(node, &subtexture_name);
+            if (subtexture_name.length > 0)
+            {
+                entity.texture = *get_subtexture(subtexture_name);
+            }
+        }
+        else if (node->name == "color")
+        {
+            if (node->child_count == 1 && node->child_first->value_flags & ValueFlag_Hex)
+            {
+                get_value_from_field(node, (u32*)&entity.color);
+            }
+            else
+            {
+                get_value_from_field(node, &entity.color.r, node->child_count);
+            }
+        }
+        else if (node->name == "shader_id")
+        {
+            get_value_from_field(node, &entity.shader_id);
+        }
+        else if (node->name == "animator")
+        {
+            for (ParseTreeNode* anim_node = node->child_first; anim_node; anim_node = anim_node->next)
+            {
+                if (anim_node->name == "current_animation")
+                {
+                    String current_animation;
+                    get_value_from_field(anim_node, &current_animation);
+                    entity.animator.current_animation = push_string(&world->arena, current_animation);
+                }
+                else if (anim_node->name == "requested_animation")
+                {
+                    String requested_animation;
+                    get_value_from_field(anim_node, &requested_animation);
+                    entity.animator.requested_animation = push_string(&world->arena, requested_animation);
+                }
+                else if (anim_node->name == "current_frame")
+                {
+                    get_value_from_field(anim_node, &entity.animator.current_frame);
+                }
+                else if (anim_node->name == "elapsed_time")
+                {
+                    get_value_from_field(anim_node, &entity.animator.elapsed_time);
+                }
+            }
+        }
+        else if (node->name == "collider")
+        {
+            for (ParseTreeNode* coll_node = node->child_first; coll_node; coll_node = coll_node->next)
+            {
+                if (coll_node->name == "type")
+                {
+                    get_value_from_field(coll_node, (u8*)&entity.collider.type);
+                    break;
+                }
+            }
+
+            switch (entity.collider.type)
+            {
+                case ColliderType_AABB:
+                {
+                    for (ParseTreeNode* coll_node = node->child_first; coll_node; coll_node = coll_node->next)
+                    {
+                        if (coll_node->name == "base")
+                        {
+                            get_value_from_field(coll_node, (f32*)&entity.collider.aabb.base, 2);
+                        }
+                        else if (coll_node->name == "width")
+                        {
+                            get_value_from_field(coll_node, &entity.collider.aabb.width);
+                        }
+                        else if (coll_node->name == "height")
+                        {
+                            get_value_from_field(coll_node, &entity.collider.aabb.height);
+                        }
+                    }
+                }
+                break;
+
+                case ColliderType_Circle:
+                {
+                    for (ParseTreeNode* coll_node = node->child_first; coll_node; coll_node = coll_node->next)
+                    {
+                        if (coll_node->name == "base")
+                        {
+                            get_value_from_field(coll_node, (f32*)&entity.collider.circle.base, 2);
+                        }
+                        else if (coll_node->name == "radius")
+                        {
+                            get_value_from_field(coll_node, &entity.collider.circle.radius);
+                        }
+                    }
+                }
+                break;
+
+                case ColliderType_Polygon:
+                {
+                    for (ParseTreeNode* coll_node = node->child_first; coll_node; coll_node = coll_node->next)
+                    {
+                        if (coll_node->name == "point_count")
+                        {
+                            get_value_from_field(coll_node, &entity.collider.polygon.point_count);
+                            break;
+                        }
+                    }
+
+                    entity.collider.polygon.points = arena_push_uninitialized<v2>(&world->arena, entity.collider.polygon.point_count);
+
+                    for (ParseTreeNode* coll_node = node->child_first; coll_node; coll_node = coll_node->next)
+                    {
+                        if (coll_node->name == "points")
+                        {
+                            get_value_from_field(coll_node, (f32*)entity.collider.polygon.points, entity.collider.polygon.point_count * 2);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    return entity;
+}
+
+World world_deserialize_from_text(String serialized)
+{
+    World world;
+
+    MemoryArena temp = arena_init(MEGABYTES(40));
+    ParseTreeNode* parsed = parse_from_memory(&temp, serialized);
+
+    for (ParseTreeNode* category = parsed->child_first; category; category = category->next)
+    {
+        if (category->name == "world")
+        {
+            for (ParseTreeNode* field = category->child_first; field; field = field->next)
+            {
+                if (field->name == "entity_max_count")
+                {
+                    get_value_from_field(field, &world.entity_max_count);
+                    break;
+                }
+            }
+
+            world = world_init(world.entity_max_count);
+
+            for (ParseTreeNode* field = category->child_first; field; field = field->next)
+            {
+                if (field->name == "entity_count")
+                {
+                    get_value_from_field(field, &world.entity_count);
+                }
+                else if (field->name == "entity_array")
+                {
+                    for (ParseTreeNode* node = field->child_first; node; node = node->next)
+                    {
+                        Entity entity = entity_deserialize_from_text(&world, node);
+                        world.entity_array[entity.id.index] = entity;
+                    }
+                }
+            }
+        }
+    }
+
+    arena_deinit(&temp);
     return world;
 }

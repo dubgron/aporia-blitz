@@ -17,3 +17,6 @@ struct Serializer
 
 String world_serialize(MemoryArena* arena, const World& world);
 World world_deserialize(String serialized);
+
+String world_serialize_to_text(MemoryArena* arena, const World& world);
+World world_deserialize_from_text(String serialized);

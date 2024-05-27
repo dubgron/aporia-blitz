@@ -85,6 +85,11 @@ i64 string_to_int(String string);
 f32 string_to_float(String string);
 bool string_to_bool(String string);
 
+String to_hex(MemoryArena* arena, i64 value);
+String to_hex(MemoryArena* arena, u64 value);
+String to_hex(MemoryArena* arena, u32 value);
+String to_hex(MemoryArena* arena, f32 value);
+
 String to_string(MemoryArena* arena, i64 value);
 String to_string(MemoryArena* arena, i32 value);
 String to_string(MemoryArena* arena, i16 value);

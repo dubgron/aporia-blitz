@@ -5,6 +5,7 @@
 
 enum ColliderType : u8
 {
+    ColliderType_None,
     ColliderType_AABB,
     ColliderType_Circle,
     ColliderType_Polygon,
@@ -25,13 +26,13 @@ struct Collider_Circle
 
 struct Collider_Polygon
 {
-    v2* points = nullptr;
     i64 point_count = 0;
+    v2* points = nullptr;
 };
 
 struct Collider
 {
-    ColliderType type = ColliderType_AABB;
+    ColliderType type = ColliderType_None;
     union
     {
         Collider_AABB aabb = {};
@@ -62,3 +63,5 @@ void draw_collider(const Collider& collider, f32 thickness = 1.f, Color color = 
 void draw_collider_aabb(const Collider_AABB& aabb, f32 thickness = 1.f, Color color = Color::Magenta);
 void draw_collider_circle(const Collider_Circle& circle, f32 thickness = 1.f, Color color = Color::Magenta);
 void draw_collider_polygon(const Collider_Polygon& polygon, f32 thickness = 1.f, Color color = Color::Magenta);
+
+String collider_type_to_string(ColliderType type);

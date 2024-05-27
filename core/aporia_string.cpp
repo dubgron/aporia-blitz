@@ -474,6 +474,26 @@ static String sprintf_cstyle(MemoryArena* arena, String format, Ts&&... args)
     return push_string(arena, log_buffer);
 }
 
+String to_hex(MemoryArena* arena, i64 value)
+{
+    return sprintf_cstyle(arena, "0x%016x", value);
+}
+
+String to_hex(MemoryArena* arena, u64 value)
+{
+    return sprintf_cstyle(arena, "0x%016x", value);
+}
+
+String to_hex(MemoryArena* arena, u32 value)
+{
+    return sprintf_cstyle(arena, "0x%08x", value);
+}
+
+String to_hex(MemoryArena* arena, f32 value)
+{
+    return to_hex(arena, *(u32*)&value);
+}
+
 String to_string(MemoryArena* arena, i64 value)
 {
     return sprintf_cstyle(arena, "%lld", value);

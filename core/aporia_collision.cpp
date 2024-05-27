@@ -312,3 +312,17 @@ void draw_collider_polygon(const Collider_Polygon& polygon, f32 thickness /* = 1
         draw_line(polygon.points[idx], polygon.points[idx + 1], thickness, color);
     }
 }
+
+String collider_type_to_string(ColliderType type)
+{
+    switch (type)
+    {
+        case ColliderType_None:     return "None";
+        case ColliderType_AABB:     return "AABB";
+        case ColliderType_Circle:   return "Circle";
+        case ColliderType_Polygon:  return "Polygon";
+    }
+
+    APORIA_UNREACHABLE();
+    return "Invalid";
+}
