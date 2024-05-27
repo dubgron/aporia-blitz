@@ -100,7 +100,7 @@ static void editor_select_entity(EntityID new_entity_id)
     selected_entity_id = new_entity_id;
     if (selected_entity_id.index != INDEX_INVALID)
     {
-        action->entity_state = *entity_get(&world, selected_entity_id);
+        action->entity_state = *entity_get(&current_world, selected_entity_id);
     }
 }
 
@@ -145,7 +145,7 @@ static void editor_try_undo_last_action()
 
         case EditorActionType_ModifyEntity:
         {
-            Entity* entity = entity_get(&world, selected_entity_id);
+            Entity* entity = entity_get(&current_world, selected_entity_id);
             APORIA_ASSERT(entity);
 
             *entity = *prev_entity_state;
@@ -175,7 +175,7 @@ static void editor_try_redo_last_action()
 
         case EditorActionType_ModifyEntity:
         {
-            Entity* entity = entity_get(&world, selected_entity_id);
+            Entity* entity = entity_get(&current_world, selected_entity_id);
             APORIA_ASSERT(entity);
 
             *entity = last_action.entity_state;
@@ -197,9 +197,9 @@ void editor_update(f32 frame_time)
     time_since_selected += frame_time;
 
     // @TODO(dubgron): This feels weird, there's probably a better solution.
-    for (i32 idx = 0; idx < world.entity_count; ++idx)
+    for (i32 idx = 0; idx < current_world.entity_count; ++idx)
     {
-        entity_flags_set(&world.entity_array[idx], EntityFlag_SkipFrameInterpolation);
+        entity_flags_set(&current_world.entity_array[idx], EntityFlag_SkipFrameInterpolation);
     }
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -314,7 +314,7 @@ void editor_update(f32 frame_time)
     {
         if (index > NOTHING_SELECTED_INDEX)
         {
-            i32 generation = world.entity_array[index].id.generation;
+            i32 generation = current_world.entity_array[index].id.generation;
             EntityID new_entity_id = EntityID{ index, generation };
             editor_select_entity(new_entity_id);
 
@@ -326,7 +326,7 @@ void editor_update(f32 frame_time)
         }
         else
         {
-            Entity* entity = entity_get(&world, selected_entity_id);
+            Entity* entity = entity_get(&current_world, selected_entity_id);
             APORIA_ASSERT(entity);
 
             gizmo_index = index;
@@ -336,7 +336,7 @@ void editor_update(f32 frame_time)
     }
     else if (gizmo_index != NOTHING_SELECTED_INDEX)
     {
-        Entity* entity = entity_get(&world, selected_entity_id);
+        Entity* entity = entity_get(&current_world, selected_entity_id);
         APORIA_ASSERT(entity);
 
         GizmoType gizmo_type;
@@ -470,7 +470,7 @@ void editor_update(f32 frame_time)
 
 void editor_draw_selected_entity()
 {
-    Entity* entity = entity_get(&world, selected_entity_id);
+    Entity* entity = entity_get(&current_world, selected_entity_id);
     if (!entity)
         return;
 
@@ -486,7 +486,7 @@ void editor_draw_selected_entity()
 
 void editor_draw_gizmos()
 {
-    Entity* entity = entity_get(&world, selected_entity_id);
+    Entity* entity = entity_get(&current_world, selected_entity_id);
     if (!entity)
         return;
 

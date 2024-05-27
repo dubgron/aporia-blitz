@@ -84,7 +84,7 @@ static void game_main_loop()
     accumulated_frame_time += frame_time;
     while (accumulated_frame_time > delta_time)
     {
-        world_next_frame(&world);
+        world_next_frame(&current_world);
 
         game_simulate_frame(game_time, delta_time);
         accumulated_frame_time -= delta_time;
@@ -92,9 +92,9 @@ static void game_main_loop()
 
     rendering_frame_begin();
     {
-        for (i64 idx = 0; idx < world.entity_count; ++idx)
+        for (i64 idx = 0; idx < current_world.entity_count; ++idx)
         {
-            Entity* entity = &world.entity_array[idx];
+            Entity* entity = &current_world.entity_array[idx];
             if (entity_flags_has_all(*entity, EntityFlag_Active | EntityFlag_Visible))
             {
                 animation_tick(entity, frame_time);
@@ -106,7 +106,7 @@ static void game_main_loop()
                 else
                 {
                     f32 alpha = accumulated_frame_time / delta_time;
-                    Entity entity_interpolated = entity_lerp(world.entity_array_last_frame[idx], *entity, alpha);
+                    Entity entity_interpolated = entity_lerp(current_world.entity_array_last_frame[idx], *entity, alpha);
                     draw_entity(entity_interpolated);
                 }
             }
@@ -165,7 +165,7 @@ static void engine_main(String config_filepath)
         animations_init(&memory.persistent);
         audio_init();
 
-        world = world_init();
+        current_world = world_init();
 
         IMGUI_INIT();
 
@@ -174,7 +174,7 @@ static void engine_main(String config_filepath)
 
     // Update
     {
-        world_next_frame(&world);
+        world_next_frame(&current_world);
 
 #if defined(APORIA_EMSCRIPTEN)
         emscripten_set_main_loop(game_main_loop, 0, true);
@@ -200,7 +200,7 @@ static void engine_main(String config_filepath)
 
         IMGUI_DEINIT();
 
-        world_deinit(&world);
+        world_deinit(&current_world);
 
         audio_deinit();
         rendering_deinit();

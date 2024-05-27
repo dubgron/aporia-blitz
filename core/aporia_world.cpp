@@ -2,6 +2,8 @@
 
 #include "aporia_debug.hpp"
 
+World current_world;
+
 World world_init(i32 max_entities /* = 10000 */)
 {
     World world;

@@ -6,6 +6,7 @@
 #include "aporia_game.hpp"
 #include "aporia_utils.hpp"
 #include "aporia_window.hpp"
+#include "aporia_world.hpp"
 
 #if defined(APORIA_EDITOR)
 #include "editor/aporia_editor.hpp"
@@ -957,9 +958,9 @@ void rendering_frame_end()
         framebuffer_bind(masking);
         framebuffer_clear(Color::Transparent);
 
-        for (u64 idx = 0; idx < world.entity_count; ++idx)
+        for (u64 idx = 0; idx < current_world.entity_count; ++idx)
         {
-            const Entity& entity = world.entity_array[idx];
+            const Entity& entity = current_world.entity_array[idx];
             if (entity_flags_has_all(entity, EntityFlag_Active | EntityFlag_Visible | EntityFlag_BlockingLight))
             {
                 draw_entity(entity);
