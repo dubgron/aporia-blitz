@@ -84,6 +84,10 @@ struct Token
         String string_value;
         bool bool_value;
     };
+
+    // @HACK(dubgron): Until Clang-17 and GCC-13, those compilers didn't properly
+    // compile anonymous unions of structs without default constructors.
+    Token() {};
 };
 
 struct Lexer
@@ -436,7 +440,8 @@ static Token make_new_token(Lexer* lexer)
 
     if (c == ';')
     {
-        Token token{ Token_Comment };
+        Token token;
+        token.type = Token_Comment;
         token.pos = lexer->cursor + 1;
 
         consume_until_new_line(lexer);
@@ -609,7 +614,7 @@ static void parse_literals(MemoryArena* arena, Lexer* lexer, ParseTreeNode* pare
     }
 }
 
-void parse_field(MemoryArena* arena, Lexer* lexer, ParseTreeNode* parent);
+static void parse_field(MemoryArena* arena, Lexer* lexer, ParseTreeNode* parent);
 
 static void parse_struct(MemoryArena* arena, Lexer* lexer, ParseTreeNode* parent)
 {
