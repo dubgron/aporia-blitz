@@ -112,6 +112,8 @@ struct TokenInfo
     String context;
 };
 
+#if defined(APORIA_DEBUGTOOLS)
+
 static TokenInfo find_token_in_buffer(Lexer* lexer, Token* token)
 {
     TokenInfo result;
@@ -196,6 +198,14 @@ static void report_detail(Lexer* lexer, String message)
     TokenInfo token_info = find_token_in_buffer(lexer, &lexer->last_token);
     log(lexer->source_filepath, token_info.line_number, token_info.column_begin, Error, message);
 }
+
+#else
+
+#define find_token_in_buffer(...)
+#define report_parsing_error(...)
+#define report_detail(...)
+
+#endif
 
 static u8 peek_next_character(Lexer* lexer)
 {
