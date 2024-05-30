@@ -42,6 +42,7 @@ void draw_text(const Text& text);
 
 // @HACK(dubgron): We draw triangle as a quad with a duplicate vertex.
 void draw_triangle(v2 p0, v2 p1, v2 p2, Color color = Color::White, u32 shader_id = rectangle_shader);
+void draw_quad(v2 position, f32 width, f32 height, SubTexture* subtexture = nullptr, Color color = Color::White, u32 shader_id = default_shader);
 
 #if defined(APORIA_EDITOR)
 i32 read_editor_index();

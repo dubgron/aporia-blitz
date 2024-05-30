@@ -1579,22 +1579,20 @@ void draw_text(const Text& text)
 
 void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)
 {
-    constexpr f32 z = 1.f;
-
     RenderQueueKey key;
     key.buffer = BufferType::Quads;
     key.shader_id = shader_id;
 
-    key.vertex[0].position = v3{ p0, z };
+    key.vertex[0].position = v3{ p0, Z_ALWAYS_IN_FRONT };
     key.vertex[0].color = color;
 
-    key.vertex[1].position = v3{ p1, z };
+    key.vertex[1].position = v3{ p1, Z_ALWAYS_IN_FRONT };
     key.vertex[1].color = color;
 
-    key.vertex[2].position = v3{ p2, z };
+    key.vertex[2].position = v3{ p2, Z_ALWAYS_IN_FRONT };
     key.vertex[2].color = color;
 
-    key.vertex[3].position = v3{ p0, z };
+    key.vertex[3].position = v3{ p0, Z_ALWAYS_IN_FRONT };
     key.vertex[2].color = color;
 
 #if defined(APORIA_EDITOR)
@@ -1603,6 +1601,44 @@ void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 sh
         key.vertex[idx].editor_index = forced_entity_index;
     }
 #endif
+
+    renderqueue_add(&render_queue, key);
+}
+
+void draw_quad(v2 position, f32 width, f32 height, SubTexture* subtexture /* = nullptr */, Color color /* = Color::White */, u32 shader_id /* = default_shader */)
+{
+    constexpr f32 z = 1.f;
+
+    RenderQueueKey key;
+    key.buffer = BufferType::Quads;
+    key.shader_id = shader_id;
+
+    key.vertex[0].position = v3{ position, z };
+    key.vertex[1].position = v3{ position.x + width, position.y, z };
+    key.vertex[2].position = v3{ position.x + width, position.y + height, z };
+    key.vertex[3].position = v3{ position.x, position.y + height, z };
+
+    for (i64 idx = 0; idx < ARRAY_COUNT(key.vertex); ++idx)
+    {
+        key.vertex[idx].color = color;
+
+#if defined(APORIA_EDITOR)
+        key.vertex[idx].editor_index = forced_entity_index;
+#endif
+    }
+
+    if (subtexture)
+    {
+        if (Texture* texture = get_texture(subtexture->texture_index))
+        {
+            key.texture_id = texture->id;
+
+            key.vertex[0].tex_coord = v2{ subtexture->u.x, subtexture->v.y };
+            key.vertex[1].tex_coord = subtexture->v;
+            key.vertex[2].tex_coord = v2{ subtexture->v.x, subtexture->u.y };
+            key.vertex[3].tex_coord = subtexture->u;
+        }
+    }
 
     renderqueue_add(&render_queue, key);
 }

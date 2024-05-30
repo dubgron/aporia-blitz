@@ -19,7 +19,6 @@
 #endif
 
 GameMemory memory;
-World world;
 
 static void game_initialize()
 {
