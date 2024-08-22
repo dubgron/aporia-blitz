@@ -16,9 +16,9 @@ f32 time_since_selected = 0.f;
 
 enum GizmoType : u8
 {
-    GizmoType_Translate,
-    GizmoType_Rotate,
-    GizmoType_Scale,
+    Gizmo_Translate,
+    Gizmo_Rotate,
+    Gizmo_Scale,
 };
 
 enum GizmoSpace : u8
@@ -48,7 +48,7 @@ const Color GIZMO_XY_PLANE_COLOR        = Color{ 0, 0, 255, 85 };
 const Color GIZMO_ROTATION_LINE_COLOR   = Color{ 255, 200, 0 };
 
 static i32 gizmo_index = NOTHING_SELECTED_INDEX;
-static GizmoType displayed_gizmo_type = GizmoType_Translate;
+static GizmoType displayed_gizmo_type = Gizmo_Translate;
 static GizmoSpace gizmo_space = GizmoSpace_World;
 
 static v2 mouse_initial_position{ 0.f };
@@ -56,14 +56,14 @@ static Entity entity_initial_state;
 
 enum EditorActionType : u32
 {
-    EditorActionType_Invalid,
-    EditorActionType_SelectEntity,
-    EditorActionType_ModifyEntity,
+    EditorAction_Invalid,
+    EditorAction_SelectEntity,
+    EditorAction_ModifyEntity,
 };
 
 struct EditorAction
 {
-    EditorActionType type = EditorActionType_Invalid;
+    EditorActionType type = EditorAction_Invalid;
 
     Entity entity_state;
 };
@@ -95,7 +95,7 @@ static void editor_select_entity(EntityID new_entity_id)
         return;
 
     EditorAction* action = editor_make_new_action();
-    action->type = EditorActionType_SelectEntity;
+    action->type = EditorAction_SelectEntity;
 
     selected_entity_id = new_entity_id;
     if (selected_entity_id.index != INDEX_INVALID)
@@ -107,7 +107,7 @@ static void editor_select_entity(EntityID new_entity_id)
 static void editor_modify_entity(Entity* entity)
 {
     EditorAction* action = editor_make_new_action();
-    action->type = EditorActionType_ModifyEntity;
+    action->type = EditorAction_ModifyEntity;
     action->entity_state = *entity;
 }
 
@@ -137,13 +137,13 @@ static void editor_try_undo_last_action()
     EditorAction* last_action = &action_history[action_history_cursor];
     switch (last_action->type)
     {
-        case EditorActionType_SelectEntity:
+        case EditorAction_SelectEntity:
         {
             selected_entity_id = prev_entity_state->id;
         }
         break;
 
-        case EditorActionType_ModifyEntity:
+        case EditorAction_ModifyEntity:
         {
             Entity* entity = entity_get(&current_world, selected_entity_id);
             APORIA_ASSERT(entity);
@@ -167,13 +167,13 @@ static void editor_try_redo_last_action()
 
     switch (last_action.type)
     {
-        case EditorActionType_SelectEntity:
+        case EditorAction_SelectEntity:
         {
             selected_entity_id = last_action.entity_state.id;
         }
         break;
 
-        case EditorActionType_ModifyEntity:
+        case EditorAction_ModifyEntity:
         {
             Entity* entity = entity_get(&current_world, selected_entity_id);
             APORIA_ASSERT(entity);
@@ -207,33 +207,6 @@ void editor_update(f32 frame_time)
 
     ImGui::Begin("Tools");
 
-    if (ImGui::RadioButton("Translate", displayed_gizmo_type == GizmoType_Translate))
-    {
-        displayed_gizmo_type = GizmoType_Translate;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", displayed_gizmo_type == GizmoType_Rotate))
-    {
-        displayed_gizmo_type = GizmoType_Rotate;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", displayed_gizmo_type == GizmoType_Scale))
-    {
-        displayed_gizmo_type = GizmoType_Scale;
-    }
-
-    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
-    {
-        gizmo_space = GizmoSpace_World;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
-    {
-        gizmo_space = GizmoSpace_Local;
-    }
-
-    ImGui::Separator();
-
     if (ImGui::Button("Play (F1)"))
     {
         editor_is_open = !editor_is_open;
@@ -247,20 +220,34 @@ void editor_update(f32 frame_time)
         active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
     }
 
-    ImGui::End();
+    ImGui::Separator();
 
-    static const ImGuiID viewport_id = ImHashStr("Viewport");
-
-    ImGuiContext* context = ImGui::GetCurrentContext();
-    bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
-    bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
-
-    if (focused_on_viewport)
+    if (ImGui::RadioButton("Translate", displayed_gizmo_type == Gizmo_Translate))
     {
-        active_camera->control_movement(frame_time);
-        active_camera->control_rotation(frame_time);
-        active_camera->control_zoom(frame_time);
+        displayed_gizmo_type = Gizmo_Translate;
     }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", displayed_gizmo_type == Gizmo_Rotate))
+    {
+        displayed_gizmo_type = Gizmo_Rotate;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", displayed_gizmo_type == Gizmo_Scale))
+    {
+        displayed_gizmo_type = Gizmo_Scale;
+    }
+
+    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
+    {
+        gizmo_space = GizmoSpace_World;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
+    {
+        gizmo_space = GizmoSpace_Local;
+    }
+
+    ImGui::End();
 
     InputState left_mouse_button = input_get(Mouse_Button1);
 
@@ -268,15 +255,15 @@ void editor_update(f32 frame_time)
     {
         if (input_is_pressed(Key_Num1))
         {
-            displayed_gizmo_type = GizmoType_Translate;
+            displayed_gizmo_type = Gizmo_Translate;
         }
         else if (input_is_pressed(Key_Num2))
         {
-            displayed_gizmo_type = GizmoType_Rotate;
+            displayed_gizmo_type = Gizmo_Rotate;
         }
         else if (input_is_pressed(Key_Num3))
         {
-            displayed_gizmo_type = GizmoType_Scale;
+            displayed_gizmo_type = Gizmo_Scale;
         }
 
         if (input_is_pressed(Key_F2))
@@ -302,6 +289,19 @@ void editor_update(f32 frame_time)
                 editor_try_redo_last_action();
             }
         }
+    }
+
+    static const ImGuiID viewport_id = ImHashStr("Viewport");
+
+    ImGuiContext* context = ImGui::GetCurrentContext();
+    bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
+    bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
+
+    if (focused_on_viewport)
+    {
+        active_camera->control_movement(frame_time);
+        active_camera->control_rotation(frame_time);
+        active_camera->control_zoom(frame_time);
     }
 
     i32 index = gizmo_index;
@@ -346,20 +346,20 @@ void editor_update(f32 frame_time)
             case TRANSLATE_Y_AXIS_INDEX:
             case TRANSLATE_XY_AXIS_INDEX:
             {
-                gizmo_type = GizmoType_Translate;
+                gizmo_type = Gizmo_Translate;
             }
             break;
 
             case ROTATE_INDEX:
             {
-                gizmo_type = GizmoType_Rotate;
+                gizmo_type = Gizmo_Rotate;
             }
             break;
 
             case SCALE_X_AXIS_INDEX:
             case SCALE_Y_AXIS_INDEX:
             {
-                gizmo_type = GizmoType_Scale;
+                gizmo_type = Gizmo_Scale;
             }
             break;
         }
@@ -373,7 +373,7 @@ void editor_update(f32 frame_time)
 
             switch (gizmo_type)
             {
-                case GizmoType_Translate:
+                case Gizmo_Translate:
                 {
                     v2 right = v2{ 1.f, 0.f };
                     v2 up = v2{ 0.f, 1.f };
@@ -409,7 +409,7 @@ void editor_update(f32 frame_time)
                 }
                 break;
 
-                case GizmoType_Rotate:
+                case Gizmo_Rotate:
                 {
                     f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
                     f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
@@ -418,7 +418,7 @@ void editor_update(f32 frame_time)
                 }
                 break;
 
-                case GizmoType_Scale:
+                case Gizmo_Scale:
                 {
                     v2 scale{ 1.f };
 
@@ -455,9 +455,9 @@ void editor_update(f32 frame_time)
         {
             switch (gizmo_type)
             {
-                case GizmoType_Translate:
-                case GizmoType_Rotate:
-                case GizmoType_Scale:
+                case Gizmo_Translate:
+                case Gizmo_Rotate:
+                case Gizmo_Scale:
                 {
                     editor_modify_entity(entity);
                 }
@@ -515,7 +515,7 @@ void editor_draw_gizmos()
 
     switch (displayed_gizmo_type)
     {
-        case GizmoType_Translate:
+        case Gizmo_Translate:
         {
             v2 right = v2{ 1.f, 0.f };
 
@@ -567,7 +567,7 @@ void editor_draw_gizmos()
         }
         break;
 
-        case GizmoType_Rotate:
+        case Gizmo_Rotate:
         {
             f32 radius = line_length;
             f32 inner_radius = radius - line_thickness;
@@ -593,7 +593,7 @@ void editor_draw_gizmos()
         }
         break;
 
-        case GizmoType_Scale:
+        case Gizmo_Scale:
         {
             v2 right = camera_rotation * v2{ cos(entity->rotation), sin(entity->rotation) };
             v2 up = v2{ -right.y, right.x };

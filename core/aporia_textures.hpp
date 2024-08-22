@@ -33,7 +33,7 @@ struct SubTexture
 };
 
 // @NOTE(dubgron): Atlas refers to the config file describing the subtextures inside a texture.
-bool load_texture_atlas(String filepath);
+i64 load_texture_atlas(String filepath);
 
 i64 find_or_load_texture_index(String filepath);
 bool reload_texture_asset(Asset* texture_asset);

@@ -58,7 +58,7 @@ static bool operator==(const SubTexture& subtexture1, const SubTexture& subtextu
     return subtexture1.u == subtexture2.u && subtexture1.v == subtexture2.v && subtexture1.texture_index == subtexture2.texture_index;
 }
 
-bool load_texture_atlas(String filepath)
+i64 load_texture_atlas(String filepath)
 {
     ScratchArena temp = scratch_begin();
     ParseTreeNode* parsed_file = parse_from_file(temp.arena, filepath);
@@ -73,19 +73,15 @@ bool load_texture_atlas(String filepath)
         {
             for (ParseTreeNode* meta = node->child_first; meta; meta = meta->next)
             {
-                APORIA_ASSERT(meta->type == ParseTreeNode_Field && meta->child_count == 1);
                 if (meta->name == "filepath")
                 {
-                    ParseTreeNode* filepath_node = meta->child_first;
-                    APORIA_ASSERT(filepath_node->type == ParseTreeNode_String);
-
-                    texture_filepath = filepath_node->string_value;
+                    get_value_from_field(meta, &texture_filepath);
                     break;
                 }
             }
         }
 
-        if (node->type == ParseTreeNode_Category && node->name == "subtextures")
+        if (node->name == "subtextures")
         {
             subtextures_node = node;
         }
@@ -93,14 +89,14 @@ bool load_texture_atlas(String filepath)
 
     if (texture_filepath.length == 0)
     {
-        APORIA_LOG(Error, "Failed to find [meta.filepath] property in %s", filepath);
-        return false;
+        APORIA_LOG(Error, "Failed to find [meta.filepath] property in '%'", filepath);
+        return INDEX_INVALID;
     }
 
     if (!subtextures_node)
     {
-        APORIA_LOG(Error, "Failed to find [subtextures] category in %s", filepath);
-        return false;
+        APORIA_LOG(Error, "Failed to find [subtextures] category in '%'", filepath);
+        return INDEX_INVALID;
     }
 
     i64 atlas_texture = find_or_load_texture_index(texture_filepath);
@@ -140,7 +136,7 @@ bool load_texture_atlas(String filepath)
 
     scratch_end(temp);
 
-    return true;
+    return atlas_texture;
 }
 
 static i64 add_texture(const Texture& texture)
