@@ -94,10 +94,12 @@ static void editor_select_entity(EntityID new_entity_id)
     if (selected_entity_id.index == new_entity_id.index && selected_entity_id.generation == new_entity_id.generation)
         return;
 
+    selected_entity_id = new_entity_id;
+
     EditorAction* action = editor_make_new_action();
     action->type = EditorAction_SelectEntity;
+    action->entity_state.id = selected_entity_id;
 
-    selected_entity_id = new_entity_id;
     if (selected_entity_id.index != INDEX_INVALID)
     {
         action->entity_state = *entity_get(&current_world, selected_entity_id);
