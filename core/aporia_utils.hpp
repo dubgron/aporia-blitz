@@ -23,6 +23,7 @@ void fix_path_slashes(String* filepath);
 void fix_eol(String* filepath);
 
 u32 get_hash(String string);
+u32 get_hash(void* data, u64 size);
 
 struct Color
 {
@@ -55,6 +56,9 @@ constexpr i32 HUE_BLUE      = 240;
 constexpr i32 HUE_MAGENTA   = 300;
 
 Color color_from_vec4(f32 r, f32 g, f32 b, f32 a);
+Color color_from_vec4(v4 vec);
+v4 vec4_from_color(Color color);
+
 Color hsv_to_rgb(i32 hue, f32 saturation, f32 value);
 void rgb_to_hsv(Color rgb, i32* hue, f32* saturation, f32* value);
 

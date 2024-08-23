@@ -22,6 +22,17 @@ void entity_flags_unset(Entity* entity, EntityFlags flags)
     entity->flags &= ~flags;
 }
 
+String entity_type_to_string(EntityType type)
+{
+    switch (type)
+    {
+        case Entity_None: return "None";
+        case Entity_Player: return "Player";
+
+        default: return "INVALID";
+    }
+}
+
 void entity_ajust_size_to_texture(Entity* entity)
 {
     get_subtexture_size(entity->texture, &entity->width, &entity->height);

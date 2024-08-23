@@ -208,47 +208,95 @@ void editor_update(f32 frame_time)
     ImGui::DockSpaceOverViewport(viewport);
 
     ImGui::Begin("Tools");
+    {
+        if (ImGui::Button("Play (F1)"))
+        {
+            editor_is_open = !editor_is_open;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Reset camera"))
+        {
+            active_camera->view = CameraView{};
+            active_camera->projection = CameraProjection{};
+            active_camera->apply_config();
+            active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
+        }
 
-    if (ImGui::Button("Play (F1)"))
-    {
-        editor_is_open = !editor_is_open;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Reset camera"))
-    {
-        active_camera->view = CameraView{};
-        active_camera->projection = CameraProjection{};
-        active_camera->apply_config();
-        active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
-    }
+        ImGui::Separator();
 
-    ImGui::Separator();
+        if (ImGui::RadioButton("Translate", displayed_gizmo_type == Gizmo_Translate))
+        {
+            displayed_gizmo_type = Gizmo_Translate;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Rotate", displayed_gizmo_type == Gizmo_Rotate))
+        {
+            displayed_gizmo_type = Gizmo_Rotate;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Scale", displayed_gizmo_type == Gizmo_Scale))
+        {
+            displayed_gizmo_type = Gizmo_Scale;
+        }
 
-    if (ImGui::RadioButton("Translate", displayed_gizmo_type == Gizmo_Translate))
-    {
-        displayed_gizmo_type = Gizmo_Translate;
+        if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
+        {
+            gizmo_space = GizmoSpace_World;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
+        {
+            gizmo_space = GizmoSpace_Local;
+        }
     }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", displayed_gizmo_type == Gizmo_Rotate))
-    {
-        displayed_gizmo_type = Gizmo_Rotate;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", displayed_gizmo_type == Gizmo_Scale))
-    {
-        displayed_gizmo_type = Gizmo_Scale;
-    }
+    ImGui::End();
 
-    if (ImGui::RadioButton("World", gizmo_space == GizmoSpace_World))
+    ImGui::Begin("Entities");
     {
-        gizmo_space = GizmoSpace_World;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Local", gizmo_space == GizmoSpace_Local))
-    {
-        gizmo_space = GizmoSpace_Local;
-    }
+        if (selected_entity_id.index != INDEX_INVALID)
+        {
+            Entity* selected_entity = entity_get(&current_world, selected_entity_id);
+            u32 before_hash = get_hash(selected_entity, sizeof(Entity));
 
+            if (ImGui::BeginCombo("Entity Type", *entity_type_to_string(selected_entity->type)))
+            {
+                for (u32 n = 0; n < EntityType_Count; ++n)
+                {
+                    EntityType type = (EntityType)n;
+                    bool is_selected = (selected_entity->type == type);
+
+                    if (ImGui::Selectable(*entity_type_to_string(type), is_selected))
+                        selected_entity->type = type;
+
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if (selected_entity->type != Entity_None)
+            {
+                ImGui::DragFloat3("Position", &selected_entity->position[0]);
+
+                ImGui::DragFloat("Rotation", &selected_entity->rotation);
+                ImGui::DragFloat2("Center of Rotation", &selected_entity->center_of_rotation[0]);
+
+                ImGui::DragFloat2("Size", &selected_entity->width);
+                ImGui::DragFloat2("Scale", &selected_entity->scale[0]);
+
+                v4 color = vec4_from_color(selected_entity->color);
+                ImGui::ColorEdit4("Color", &color[0]);
+                selected_entity->color = color_from_vec4(color);
+            }
+
+            // TODO(dubgron): Action should be registered only when editing is finished.
+            u32 after_hash = get_hash(selected_entity, sizeof(Entity));
+            if (before_hash != after_hash)
+            {
+                editor_modify_entity(selected_entity);
+            }
+        }
+    }
     ImGui::End();
 
     InputState left_mouse_button = input_get(Mouse_Button1);
@@ -455,16 +503,7 @@ void editor_update(f32 frame_time)
         }
         else if (input_is_released(left_mouse_button))
         {
-            switch (gizmo_type)
-            {
-                case Gizmo_Translate:
-                case Gizmo_Rotate:
-                case Gizmo_Scale:
-                {
-                    editor_modify_entity(entity);
-                }
-            }
-
+            editor_modify_entity(entity);
             gizmo_index = NOTHING_SELECTED_INDEX;
         }
     }

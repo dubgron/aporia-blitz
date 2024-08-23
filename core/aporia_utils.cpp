@@ -124,6 +124,12 @@ u32 get_hash(String string)
     return (u32)fnv1a_hash(string);
 }
 
+u32 get_hash(void* data, u64 size)
+{
+    String s{ (u8*)data, size };
+    return get_hash(s);
+}
+
 const Color Color::Black       = Color{  0,   0,   0,  255 };
 const Color Color::White       = Color{ 255, 255, 255, 255 };
 const Color Color::Red         = Color{ 255,  0,   0,  255 };
@@ -136,12 +142,27 @@ const Color Color::Transparent = Color{  0,   0,   0,   0  };
 
 Color color_from_vec4(f32 r, f32 g, f32 b, f32 a)
 {
-    u8 new_r = static_cast<u8>(r * 255);
-    u8 new_g = static_cast<u8>(g * 255);
-    u8 new_b = static_cast<u8>(b * 255);
-    u8 new_a = static_cast<u8>(a * 255);
+    u8 new_r = (u8)(r * 255);
+    u8 new_g = (u8)(g * 255);
+    u8 new_b = (u8)(b * 255);
+    u8 new_a = (u8)(a * 255);
 
     return Color{ new_r, new_g, new_b, new_a };
+}
+
+Color color_from_vec4(v4 vec)
+{
+    return color_from_vec4(vec.r, vec.g, vec.b, vec.a);
+}
+
+v4 vec4_from_color(Color color)
+{
+    f32 r = (f32)(color.r / 255.f);
+    f32 g = (f32)(color.g / 255.f);
+    f32 b = (f32)(color.b / 255.f);
+    f32 a = (f32)(color.a / 255.f);
+
+    return v4{ r, g, b, a };
 }
 
 Color hsv_to_rgb(i32 hue, f32 saturation, f32 value)

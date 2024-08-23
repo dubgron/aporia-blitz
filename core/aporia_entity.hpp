@@ -3,6 +3,7 @@
 #include "aporia_animations.hpp"
 #include "aporia_collision.hpp"
 #include "aporia_shaders.hpp"
+#include "aporia_string.hpp"
 #include "aporia_textures.hpp"
 #include "aporia_utils.hpp"
 
@@ -20,6 +21,14 @@ enum EntityFlag_ : EntityFlags
     EntityFlag_SkipFrameInterpolation   = 0x10,
 };
 
+enum EntityType : u32
+{
+    Entity_None = 0,
+    Entity_Player = 1,
+
+    EntityType_Count,
+};
+
 struct EntityID
 {
     i32 index = INDEX_INVALID;
@@ -32,6 +41,7 @@ struct Entity
     Entity* next = nullptr;
 
     EntityFlags flags = EntityFlag_Visible | EntityFlag_BlockingLight;
+    EntityType type = Entity_None;
 
     v2 position{ 0.f };
     f32 z = 0.f;
@@ -56,6 +66,8 @@ bool entity_flags_has_all(const Entity& entity, EntityFlags flags);
 bool entity_flags_has_any(const Entity& entity, EntityFlags flags);
 void entity_flags_set(Entity* entity, EntityFlags flags);
 void entity_flags_unset(Entity* entity, EntityFlags flags);
+
+String entity_type_to_string(EntityType type);
 
 void entity_ajust_size_to_texture(Entity* entity);
 
