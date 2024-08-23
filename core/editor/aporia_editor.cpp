@@ -248,10 +248,32 @@ void editor_update(f32 frame_time)
         {
             gizmo_space = GizmoSpace_Local;
         }
+
+        ImGui::Separator();
+
+        if (ImGui::Button("Create Entity"))
+        {
+            selected_entity_id = entity_create(&current_world);
+        }
     }
     ImGui::End();
 
-    ImGui::Begin("Entities");
+    ImGui::Begin("World");
+    {
+        for (u64 idx = 0; idx < current_world.entity_count; ++idx)
+        {
+            const Entity& entity = current_world.entity_array[idx];
+            if (entity.id.index == INDEX_INVALID)
+                continue;
+
+            String name = tprintf("Entity (ID = %, GEN = %)", entity.id.index, entity.id.generation);
+            if (ImGui::Selectable(*name, selected_entity_id == entity.id))
+                selected_entity_id = entity.id;
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Properties");
     {
         if (selected_entity_id.index != INDEX_INVALID)
         {
