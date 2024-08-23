@@ -7,7 +7,6 @@
 #include "aporia_assets.hpp"
 #include "aporia_debug.hpp"
 #include "aporia_game.hpp"
-#include "aporia_hash_table.hpp"
 #include "aporia_parser.hpp"
 #include "aporia_utils.hpp"
 
@@ -19,7 +18,7 @@ static constexpr u64 MAX_SUBTEXTURES = 2048;
 static Texture textures[MAX_TEXTURES];
 static u64 last_valid_texture_idx = 0;
 
-static HashTable<SubTexture> subtextures;
+HashTable<SubTexture> subtextures;
 
 Bitmap load_bitmap(MemoryArena* arena, String filepath)
 {
@@ -53,9 +52,9 @@ Bitmap load_bitmap(MemoryArena* arena, String filepath)
     return result;
 }
 
-static bool operator==(const SubTexture& subtexture1, const SubTexture& subtexture2)
+bool operator==(const SubTexture& tex0, const SubTexture& tex1)
 {
-    return subtexture1.u == subtexture2.u && subtexture1.v == subtexture2.v && subtexture1.texture_index == subtexture2.texture_index;
+    return tex0.u == tex1.u && tex0.v == tex1.v && tex0.texture_index == tex1.texture_index;
 }
 
 i64 load_texture_atlas(String filepath)
@@ -323,6 +322,9 @@ void get_subtexture_size(const SubTexture& subtexture, f32* width, f32* height)
 
 String get_subtexture_name(const SubTexture& subtexture)
 {
+    if (subtexture.texture_index == INDEX_INVALID)
+        return "INVALID";
+
     for (i64 idx = 0; idx < subtextures.bucket_count; ++idx)
     {
         if (subtexture == subtextures.buckets[idx].value)

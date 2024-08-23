@@ -2,6 +2,11 @@
 
 #include "aporia_game.hpp"
 
+bool operator==(EntityID id0, EntityID id1)
+{
+    return id0.index == id1.index && id0.generation == id1.generation;
+}
+
 bool entity_flags_has_all(const Entity& entity, EntityFlags flags)
 {
     return (entity.flags & flags) == flags;

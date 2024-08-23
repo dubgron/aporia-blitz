@@ -35,6 +35,8 @@ struct EntityID
     i32 generation = INDEX_INVALID;
 };
 
+bool operator==(EntityID id0, EntityID id1);
+
 struct Entity
 {
     EntityID id;

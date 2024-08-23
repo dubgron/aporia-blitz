@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aporia_assets.hpp"
+#include "aporia_hash_table.hpp"
 #include "aporia_string.hpp"
 #include "aporia_types.hpp"
 
@@ -31,6 +32,10 @@ struct SubTexture
     v2 v{ 0.f };
     i64 texture_index = INDEX_INVALID;
 };
+
+extern HashTable<SubTexture> subtextures;
+
+bool operator==(const SubTexture& tex0, const SubTexture& tex1);
 
 // @NOTE(dubgron): Atlas refers to the config file describing the subtextures inside a texture.
 i64 load_texture_atlas(String filepath);

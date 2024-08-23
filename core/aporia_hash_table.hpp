@@ -1,7 +1,9 @@
 #pragma once
 
+#include "aporia_debug.hpp"
 #include "aporia_memory.hpp"
 #include "aporia_string.hpp"
+#include "aporia_utils.hpp"
 
 constexpr i64 FIRST_VALID_HASH = 0;
 constexpr i64 NEVER_OCCUPIED_HASH = -1;

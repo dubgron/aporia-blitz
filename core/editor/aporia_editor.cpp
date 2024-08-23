@@ -284,6 +284,42 @@ void editor_update(f32 frame_time)
                 ImGui::DragFloat2("Size", &selected_entity->width);
                 ImGui::DragFloat2("Scale", &selected_entity->scale[0]);
 
+                ImGui::Separator();
+
+                static bool fit_size_by_default = false;
+
+                if (ImGui::BeginCombo("Texture", *get_subtexture_name(selected_entity->texture)))
+                {
+                    for (u32 idx = 0; idx < subtextures.bucket_count; ++idx)
+                    {
+                        const SubTexture& texture = subtextures.buckets[idx].value;
+                        if (texture.texture_index == INDEX_INVALID)
+                            continue;
+
+                        bool is_selected = (texture == selected_entity->texture);
+
+                        if (ImGui::Selectable(*get_subtexture_name(texture), is_selected))
+                        {
+                            selected_entity->texture = texture;
+
+                            if (fit_size_by_default)
+                                entity_ajust_size_to_texture(selected_entity);
+                        }
+
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+
+                if (ImGui::Button("Fit Size to Texture"))
+                    entity_ajust_size_to_texture(selected_entity);
+
+                ImGui::SameLine();
+                ImGui::Checkbox("Fit by Default", &fit_size_by_default);
+
+                ImGui::Separator();
+
                 v4 color = vec4_from_color(selected_entity->color);
                 ImGui::ColorEdit4("Color", &color[0]);
                 selected_entity->color = color_from_vec4(color);
