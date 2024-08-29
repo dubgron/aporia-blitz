@@ -4,6 +4,7 @@
 #include "aporia_config.hpp"
 #include "aporia_input.hpp"
 #include "aporia_rendering.hpp"
+#include "aporia_window.hpp"
 
 Camera* active_camera = nullptr;
 
@@ -109,74 +110,75 @@ void Camera::zoom(f32 zoom)
 
 void Camera::control_movement(f32 delta_time)
 {
-    f32 movement_speed = camera_config.movement_speed * delta_time;
-    v2 movement{ 0.f };
+    if (input_is_held(Key_LShift))
+        return;
 
-    if (input_is_held(camera_config.movement_key_up))
+    static v2 initial_mouse_position, initial_camera_position;
+
+    v2 current_mouse_position = get_mouse_viewport_position();
+
+    InputState right_mouse_button = input_get(Mouse_Right);
+    if (input_is_pressed(right_mouse_button))
     {
-        movement.y += movement_speed;
+        initial_mouse_position = current_mouse_position;
+        initial_camera_position = view.position;
     }
-
-    if (input_is_held(camera_config.movement_key_down))
+    else if (input_is_held(right_mouse_button))
     {
-        movement.y -= movement_speed;
-    }
+        v2 mouse_position_offset = current_mouse_position - initial_mouse_position;
+        v2 rotated_mouse_offset = mouse_position_offset.x * view.right_vector + mouse_position_offset.y * view.up_vector;
 
-    if (input_is_held(camera_config.movement_key_left))
-    {
-        movement.x -= movement_speed;
-    }
-
-    if (input_is_held(camera_config.movement_key_right))
-    {
-        movement.x += movement_speed;
-    }
-
-    if (movement.x || movement.y)
-    {
-        v2 to_move = view.right_vector * movement.x + view.up_vector * movement.y;
-        move(to_move);
+        v2 new_position = initial_camera_position - rotated_mouse_offset * projection.zoom;
+        set_position(new_position);
     }
 }
 
 void Camera::control_rotation(f32 delta_time)
 {
-    f32 rotation_speed = camera_config.rotation_speed * delta_time;
-    f32 rotation = 0.f;
+    if (!input_is_held(Key_LShift))
+        return;
 
-    if (input_is_held(camera_config.rotation_key_left))
+    static v2 initial_rotation_right, initial_rotation_up;
+    static v2 initial_camera_right, initial_camera_up;
+
+    v2 current_mouse_position = get_mouse_viewport_position();
+    v2 half_viewport_size{ viewport_width / 2.f, viewport_height / 2.f };
+
+    InputState right_mouse_button = input_get(Mouse_Right);
+    if (input_is_pressed(right_mouse_button))
     {
-        rotation += rotation_speed;
+        initial_rotation_right = glm::normalize(current_mouse_position - half_viewport_size);
+        initial_rotation_up = v2{ -initial_rotation_right.y, initial_rotation_right.x };
+
+        initial_camera_right = view.right_vector;
+        initial_camera_up = view.up_vector;
     }
-
-    if (input_is_held(camera_config.rotation_key_right))
+    else if (input_is_held(right_mouse_button))
     {
-        rotation -= rotation_speed;
-    }
+        v2 rotation_dir = glm::normalize(current_mouse_position - half_viewport_size);
 
-    if (rotation)
-    {
-        rotate(rotation);
+        v2 projected_dir = glm::dot(initial_rotation_right, rotation_dir) * initial_camera_right
+            - glm::dot(initial_rotation_up, rotation_dir) * initial_camera_up;
+
+        f32 new_rotation = std::atan2(projected_dir.y, projected_dir.x);
+        set_rotation(new_rotation);
     }
 }
 
 void Camera::control_zoom(f32 delta_time)
 {
-    f32 zoom_speed = camera_config.zoom_speed * delta_time;
-    f32 zoom = 0.f;
-
-    if (input_is_held(camera_config.zoom_key_in))
+    f32 zoom_dir = -input_get(Mouse_VerticalWheel).end_value;
+    if (zoom_dir != 0.f)
     {
-        zoom -= zoom_speed;
-    }
+        f32 zoom_speed = camera_config.zoom_speed * delta_time;
+        f32 zoom = zoom_speed * zoom_dir;
 
-    if (input_is_held(camera_config.zoom_key_out))
-    {
-        zoom += zoom_speed;
-    }
+        if (input_is_held(Key_LShift))
+            zoom *= 5.f;
 
-    if (zoom)
-    {
+        if (input_is_held(Key_LControl))
+            zoom /= 5.f;
+
         f32 new_zoom = std::clamp(projection.zoom + zoom, camera_config.zoom_min, camera_config.zoom_max);
         set_zoom(new_zoom);
     }

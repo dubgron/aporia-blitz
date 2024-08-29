@@ -51,8 +51,8 @@ static i32 gizmo_index = NOTHING_SELECTED_INDEX;
 static GizmoType displayed_gizmo_type = Gizmo_Translate;
 static GizmoSpace gizmo_space = GizmoSpace_World;
 
-static v2 mouse_initial_position{ 0.f };
-static Entity entity_initial_state;
+static v2 initial_mouse_position{ 0.f };
+static Entity initial_entity_state;
 
 enum EditorActionType : u32
 {
@@ -403,9 +403,9 @@ void editor_update(f32 frame_time)
 
     ImGuiContext* context = ImGui::GetCurrentContext();
     bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
-    bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
+    //bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
 
-    if (focused_on_viewport)
+    if (mouse_within_viewport)
     {
         active_camera->control_movement(frame_time);
         active_camera->control_rotation(frame_time);
@@ -438,8 +438,8 @@ void editor_update(f32 frame_time)
             APORIA_ASSERT(entity);
 
             gizmo_index = index;
-            mouse_initial_position = get_mouse_world_position();
-            entity_initial_state = *entity;
+            initial_mouse_position = get_mouse_world_position();
+            initial_entity_state = *entity;
         }
     }
     else if (gizmo_index != NOTHING_SELECTED_INDEX)
@@ -476,8 +476,8 @@ void editor_update(f32 frame_time)
         {
             v2 mouse_current_position = get_mouse_world_position();
 
-            v2 mouse_start_offset = mouse_initial_position - entity_initial_state.position;
-            v2 mouse_current_offset = mouse_current_position - entity_initial_state.position;
+            v2 mouse_start_offset = initial_mouse_position - initial_entity_state.position;
+            v2 mouse_current_offset = mouse_current_position - initial_entity_state.position;
 
             switch (gizmo_type)
             {
@@ -492,25 +492,25 @@ void editor_update(f32 frame_time)
                         up = v2{ -right.y, right.x };
                     }
 
-                    v2 mouse_offset = mouse_current_position - mouse_initial_position;
+                    v2 mouse_offset = mouse_current_position - initial_mouse_position;
 
                     switch (gizmo_index)
                     {
                         case TRANSLATE_X_AXIS_INDEX:
                         {
-                            entity->position = entity_initial_state.position + glm::dot(mouse_offset, right) * right;
+                            entity->position = initial_entity_state.position + glm::dot(mouse_offset, right) * right;
                         }
                         break;
 
                         case TRANSLATE_Y_AXIS_INDEX:
                         {
-                            entity->position = entity_initial_state.position + glm::dot(mouse_offset, up) * up;
+                            entity->position = initial_entity_state.position + glm::dot(mouse_offset, up) * up;
                         }
                         break;
 
                         case TRANSLATE_XY_AXIS_INDEX:
                         {
-                            entity->position = entity_initial_state.position + mouse_offset;
+                            entity->position = initial_entity_state.position + mouse_offset;
                         }
                         break;
                     }
@@ -522,7 +522,7 @@ void editor_update(f32 frame_time)
                     f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
                     f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
 
-                    entity->rotation = entity_initial_state.rotation + (current_angle - base_angle);
+                    entity->rotation = initial_entity_state.rotation + (current_angle - base_angle);
                 }
                 break;
 
@@ -554,7 +554,7 @@ void editor_update(f32 frame_time)
                         break;
                     }
 
-                    entity->scale = entity_initial_state.scale * scale;
+                    entity->scale = initial_entity_state.scale * scale;
                 }
                 break;
             }
@@ -676,8 +676,8 @@ void editor_draw_gizmos()
 
             if (gizmo_index == ROTATE_INDEX)
             {
-                v2 mouse_start_offset = mouse_initial_position - entity_initial_state.position;
-                v2 mouse_current_offset = get_mouse_world_position() - entity_initial_state.position;
+                v2 mouse_start_offset = initial_mouse_position - initial_entity_state.position;
+                v2 mouse_current_offset = get_mouse_world_position() - initial_entity_state.position;
 
                 f32 rotation_line_thickness = 3.f;
 

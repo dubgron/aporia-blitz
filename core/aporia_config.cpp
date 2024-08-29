@@ -130,38 +130,6 @@ static bool load_engine_config_from_file(String filepath)
                 {
                     get_value_from_field(camera_node, &camera_config.zoom_min);
                 }
-                else if (camera_node->name == "movement_key_up")
-                {
-                    get_value_from_field(camera_node, &camera_config.movement_key_up);
-                }
-                else if (camera_node->name == "movement_key_down")
-                {
-                    get_value_from_field(camera_node, &camera_config.movement_key_down);
-                }
-                else if (camera_node->name == "movement_key_left")
-                {
-                    get_value_from_field(camera_node, &camera_config.movement_key_left);
-                }
-                else if (camera_node->name == "movement_key_right")
-                {
-                    get_value_from_field(camera_node, &camera_config.movement_key_right);;
-                }
-                else if (camera_node->name == "rotation_key_left")
-                {
-                    get_value_from_field(camera_node, &camera_config.rotation_key_left);
-                }
-                else if (camera_node->name == "rotation_key_right")
-                {
-                    get_value_from_field(camera_node, &camera_config.rotation_key_right);;
-                }
-                else if (camera_node->name == "zoom_key_in")
-                {
-                    get_value_from_field(camera_node, &camera_config.zoom_key_in);
-                }
-                else if (camera_node->name == "zoom_key_out")
-                {
-                    get_value_from_field(camera_node, &camera_config.zoom_key_out);
-                }
             }
         }
         else if (node->name == "shaders")

@@ -43,7 +43,6 @@ bool make_directory(String dir_path)
 
 Mutex mutex_create()
 {
-
     Mutex result;
     pthread_mutex_init((pthread_mutex_t*)result.handle, nullptr);
     return result;

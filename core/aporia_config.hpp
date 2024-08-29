@@ -17,17 +17,6 @@ struct CameraConfig
 
     f32 zoom_max = 1.f;
     f32 zoom_min = 1.f;
-
-    Key movement_key_up = Key_W;
-    Key movement_key_down = Key_S;
-    Key movement_key_left = Key_A;
-    Key movement_key_right = Key_D;
-
-    Key rotation_key_left = Key_Q;
-    Key rotation_key_right = Key_E;
-
-    Key zoom_key_in = Key_Space;
-    Key zoom_key_out = Key_LShift;
 };
 
 #if defined(APORIA_EDITOR)
