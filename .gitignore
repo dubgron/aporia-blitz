@@ -1,6 +1,10 @@
 # CMake generator results
 build/
 
+# Visual Studio files
+.vs/
+*.sln
+
 # Build results
 *.exe
 *.lib
