@@ -10,6 +10,7 @@
 #include "aporia_world.hpp"
 
 bool editor_is_open = true;
+f32 editor_grid_size = 100.f;
 
 EntityID selected_entity_id;
 f32 time_since_selected = 0.f;
@@ -207,6 +208,191 @@ void editor_update(f32 frame_time)
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::DockSpaceOverViewport(viewport);
 
+    static const ImGuiID viewport_id = ImHashStr("Viewport");
+
+    ImGuiContext* context = ImGui::GetCurrentContext();
+    bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
+    //bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
+
+    if (mouse_within_viewport)
+    {
+        active_camera->control_movement(frame_time);
+        active_camera->control_rotation(frame_time);
+        active_camera->control_zoom(frame_time);
+    }
+
+    i32 index = gizmo_index;
+    if (gizmo_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
+    {
+        index = read_editor_index();
+    }
+
+    InputState left_mouse_button = input_get(Mouse_Button1);
+
+    if (!input_is_held(left_mouse_button))
+    {
+        if (input_is_pressed(Key_Num1))
+        {
+            displayed_gizmo_type = Gizmo_Translate;
+        }
+        else if (input_is_pressed(Key_Num2))
+        {
+            displayed_gizmo_type = Gizmo_Rotate;
+        }
+        else if (input_is_pressed(Key_Num3))
+        {
+            displayed_gizmo_type = Gizmo_Scale;
+        }
+
+        if (input_is_pressed(Key_F2))
+        {
+            switch (gizmo_space)
+            {
+                case GizmoSpace_World: gizmo_space = GizmoSpace_Local; break;
+                case GizmoSpace_Local: gizmo_space = GizmoSpace_World; break;
+            }
+        }
+
+        if (input_is_held(Key_LControl))
+        {
+            InputState key_z = input_get(Key_Z);
+            if (input_is_pressed(key_z) || input_is_repeated(key_z))
+            {
+                editor_try_undo_last_action();
+            }
+
+            InputState key_y = input_get(Key_Y);
+            if (input_is_pressed(key_y) || input_is_repeated(key_y))
+            {
+                editor_try_redo_last_action();
+            }
+        }
+    }
+
+    v2 mouse_current_position = get_mouse_world_position();
+
+    if (mouse_within_viewport && input_is_pressed(left_mouse_button))
+    {
+        if (index > NOTHING_SELECTED_INDEX)
+        {
+            i32 generation = current_world.entity_array[index].id.generation;
+            EntityID new_entity_id = EntityID{ index, generation };
+            editor_select_entity(new_entity_id);
+
+            time_since_selected = 0.f;
+        }
+        else if (index == NOTHING_SELECTED_INDEX)
+        {
+            editor_select_entity(EntityID{});
+        }
+        else
+        {
+            Entity* entity = entity_get(&current_world, selected_entity_id);
+            APORIA_ASSERT(entity);
+
+            gizmo_index = index;
+            initial_mouse_position = get_mouse_world_position();
+            initial_entity_state = *entity;
+        }
+    }
+    else if (gizmo_index != NOTHING_SELECTED_INDEX)
+    {
+        Entity* entity = entity_get(&current_world, selected_entity_id);
+        APORIA_ASSERT(entity);
+
+        if (input_is_held(left_mouse_button))
+        {
+            v2 mouse_start_offset = initial_mouse_position - initial_entity_state.position;
+            v2 mouse_current_offset = mouse_current_position - initial_entity_state.position;
+
+            switch (gizmo_index)
+            {
+                case TRANSLATE_X_AXIS_INDEX:
+                case TRANSLATE_Y_AXIS_INDEX:
+                case TRANSLATE_XY_AXIS_INDEX:
+                {
+                    v2 right = v2{ 1.f, 0.f };
+                    v2 up = v2{ 0.f, 1.f };
+
+                    if (gizmo_space == GizmoSpace_Local)
+                    {
+                        right = v2{ cos(entity->rotation), sin(entity->rotation) };
+                        up = v2{ -right.y, right.x };
+                    }
+
+                    v2 mouse_offset = mouse_current_position - initial_mouse_position;
+                    bool snap_to_grid = input_is_held(Key_LShift);
+
+                    entity->position = initial_entity_state.position;
+
+                    if (gizmo_index == TRANSLATE_X_AXIS_INDEX || gizmo_index == TRANSLATE_XY_AXIS_INDEX)
+                    {
+                        entity->position += glm::dot(mouse_offset, right) * right;
+
+                        if (snap_to_grid)
+                            entity->position.x = std::floor(mouse_current_position.x / editor_grid_size) * editor_grid_size;
+                    }
+
+                    if (gizmo_index == TRANSLATE_Y_AXIS_INDEX || gizmo_index == TRANSLATE_XY_AXIS_INDEX)
+                    {
+                        entity->position += glm::dot(mouse_offset, up) * up;
+
+                        if (snap_to_grid)
+                            entity->position.y = std::floor(mouse_current_position.y / editor_grid_size) * editor_grid_size;
+                    }
+                }
+                break;
+
+                case ROTATE_INDEX:
+                {
+                    f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
+                    f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
+
+                    entity->rotation = initial_entity_state.rotation + (current_angle - base_angle);
+                }
+                break;
+
+                case SCALE_X_AXIS_INDEX:
+                case SCALE_Y_AXIS_INDEX:
+                {
+                    v2 scale{ 1.f };
+
+                    v2 right = v2{ cos(entity->rotation), sin(entity->rotation) };
+                    v2 up = v2{ -right.y, right.x };
+
+                    switch (gizmo_index)
+                    {
+                        case SCALE_X_AXIS_INDEX:
+                        {
+                            scale.x = glm::dot(mouse_current_offset, right) / glm::dot(mouse_start_offset, right);
+
+                            if (input_is_held(Key_LShift))
+                                scale.y = scale.x;
+                        }
+                        break;
+
+                        case SCALE_Y_AXIS_INDEX:
+                        {
+                            scale.y = glm::dot(mouse_current_offset, up) / glm::dot(mouse_start_offset, up);
+
+                            if (input_is_held(Key_LShift))
+                                scale.x = scale.y;
+                        }
+                        break;
+                    }
+
+                    entity->scale = initial_entity_state.scale * scale;
+                }
+                break;
+            }
+        }
+        else if (input_is_released(left_mouse_button))
+        {
+            editor_modify_entity(entity);
+            gizmo_index = NOTHING_SELECTED_INDEX;
+        }
+    }
+
     ImGui::Begin("Tools");
     {
         if (ImGui::Button("Play (F1)"))
@@ -263,7 +449,7 @@ void editor_update(f32 frame_time)
         for (u64 idx = 0; idx < current_world.entity_count; ++idx)
         {
             const Entity& entity = current_world.entity_array[idx];
-            if (entity.id.index == INDEX_INVALID)
+            if (!entity_flags_has_all(entity, EntityFlag_Active) || entity.id.index == INDEX_INVALID)
                 continue;
 
             String name = tprintf("Entity (ID = %, GEN = %)", entity.id.index, entity.id.generation);
@@ -356,215 +542,6 @@ void editor_update(f32 frame_time)
         }
     }
     ImGui::End();
-
-    InputState left_mouse_button = input_get(Mouse_Button1);
-
-    if (!input_is_held(left_mouse_button))
-    {
-        if (input_is_pressed(Key_Num1))
-        {
-            displayed_gizmo_type = Gizmo_Translate;
-        }
-        else if (input_is_pressed(Key_Num2))
-        {
-            displayed_gizmo_type = Gizmo_Rotate;
-        }
-        else if (input_is_pressed(Key_Num3))
-        {
-            displayed_gizmo_type = Gizmo_Scale;
-        }
-
-        if (input_is_pressed(Key_F2))
-        {
-            switch (gizmo_space)
-            {
-                case GizmoSpace_World: gizmo_space = GizmoSpace_Local; break;
-                case GizmoSpace_Local: gizmo_space = GizmoSpace_World; break;
-            }
-        }
-
-        if (input_is_held(Key_LControl))
-        {
-            InputState key_z = input_get(Key_Z);
-            if (input_is_pressed(key_z) || input_is_repeated(key_z))
-            {
-                editor_try_undo_last_action();
-            }
-
-            InputState key_y = input_get(Key_Y);
-            if (input_is_pressed(key_y) || input_is_repeated(key_y))
-            {
-                editor_try_redo_last_action();
-            }
-        }
-    }
-
-    static const ImGuiID viewport_id = ImHashStr("Viewport");
-
-    ImGuiContext* context = ImGui::GetCurrentContext();
-    bool mouse_within_viewport = context->HoveredWindow && (context->HoveredWindow->ID == viewport_id);
-    //bool focused_on_viewport = context->NavWindow && (context->NavWindow->ID == viewport_id);
-
-    if (mouse_within_viewport)
-    {
-        active_camera->control_movement(frame_time);
-        active_camera->control_rotation(frame_time);
-        active_camera->control_zoom(frame_time);
-    }
-
-    i32 index = gizmo_index;
-    if (gizmo_index == NOTHING_SELECTED_INDEX && mouse_within_viewport)
-    {
-        index = read_editor_index();
-    }
-
-    if (mouse_within_viewport && input_is_pressed(left_mouse_button))
-    {
-        if (index > NOTHING_SELECTED_INDEX)
-        {
-            i32 generation = current_world.entity_array[index].id.generation;
-            EntityID new_entity_id = EntityID{ index, generation };
-            editor_select_entity(new_entity_id);
-
-            time_since_selected = 0.f;
-        }
-        else if (index == NOTHING_SELECTED_INDEX)
-        {
-            editor_select_entity(EntityID{});
-        }
-        else
-        {
-            Entity* entity = entity_get(&current_world, selected_entity_id);
-            APORIA_ASSERT(entity);
-
-            gizmo_index = index;
-            initial_mouse_position = get_mouse_world_position();
-            initial_entity_state = *entity;
-        }
-    }
-    else if (gizmo_index != NOTHING_SELECTED_INDEX)
-    {
-        Entity* entity = entity_get(&current_world, selected_entity_id);
-        APORIA_ASSERT(entity);
-
-        GizmoType gizmo_type;
-        switch (gizmo_index)
-        {
-            case TRANSLATE_X_AXIS_INDEX:
-            case TRANSLATE_Y_AXIS_INDEX:
-            case TRANSLATE_XY_AXIS_INDEX:
-            {
-                gizmo_type = Gizmo_Translate;
-            }
-            break;
-
-            case ROTATE_INDEX:
-            {
-                gizmo_type = Gizmo_Rotate;
-            }
-            break;
-
-            case SCALE_X_AXIS_INDEX:
-            case SCALE_Y_AXIS_INDEX:
-            {
-                gizmo_type = Gizmo_Scale;
-            }
-            break;
-        }
-
-        if (input_is_held(left_mouse_button))
-        {
-            v2 mouse_current_position = get_mouse_world_position();
-
-            v2 mouse_start_offset = initial_mouse_position - initial_entity_state.position;
-            v2 mouse_current_offset = mouse_current_position - initial_entity_state.position;
-
-            switch (gizmo_type)
-            {
-                case Gizmo_Translate:
-                {
-                    v2 right = v2{ 1.f, 0.f };
-                    v2 up = v2{ 0.f, 1.f };
-
-                    if (gizmo_space == GizmoSpace_Local)
-                    {
-                        right = v2{ cos(entity->rotation), sin(entity->rotation) };
-                        up = v2{ -right.y, right.x };
-                    }
-
-                    v2 mouse_offset = mouse_current_position - initial_mouse_position;
-
-                    switch (gizmo_index)
-                    {
-                        case TRANSLATE_X_AXIS_INDEX:
-                        {
-                            entity->position = initial_entity_state.position + glm::dot(mouse_offset, right) * right;
-                        }
-                        break;
-
-                        case TRANSLATE_Y_AXIS_INDEX:
-                        {
-                            entity->position = initial_entity_state.position + glm::dot(mouse_offset, up) * up;
-                        }
-                        break;
-
-                        case TRANSLATE_XY_AXIS_INDEX:
-                        {
-                            entity->position = initial_entity_state.position + mouse_offset;
-                        }
-                        break;
-                    }
-                }
-                break;
-
-                case Gizmo_Rotate:
-                {
-                    f32 base_angle = atan2(mouse_start_offset.y, mouse_start_offset.x);
-                    f32 current_angle = atan2(mouse_current_offset.y, mouse_current_offset.x);
-
-                    entity->rotation = initial_entity_state.rotation + (current_angle - base_angle);
-                }
-                break;
-
-                case Gizmo_Scale:
-                {
-                    v2 scale{ 1.f };
-
-                    v2 right = v2{ cos(entity->rotation), sin(entity->rotation) };
-                    v2 up = v2{ -right.y, right.x };
-
-                    switch (gizmo_index)
-                    {
-                        case SCALE_X_AXIS_INDEX:
-                        {
-                            scale.x = glm::dot(mouse_current_offset, right) / glm::dot(mouse_start_offset, right);
-
-                            if (input_is_held(Key_LControl))
-                                scale.y = scale.x;
-                        }
-                        break;
-
-                        case SCALE_Y_AXIS_INDEX:
-                        {
-                            scale.y = glm::dot(mouse_current_offset, up) / glm::dot(mouse_start_offset, up);
-
-                            if (input_is_held(Key_LControl))
-                                scale.x = scale.y;
-                        }
-                        break;
-                    }
-
-                    entity->scale = initial_entity_state.scale * scale;
-                }
-                break;
-            }
-        }
-        else if (input_is_released(left_mouse_button))
-        {
-            editor_modify_entity(entity);
-            gizmo_index = NOTHING_SELECTED_INDEX;
-        }
-    }
 }
 
 void editor_draw_selected_entity()
