@@ -10,15 +10,16 @@
 using EntityFlags = u64;
 enum EntityFlag_ : EntityFlags
 {
-    EntityFlag_None                     = 0x00,
-    EntityFlag_Active                   = 0x01,
+    EntityFlag_None                         = 0x0000,
 
-    EntityFlag_Visible                  = 0x02,
-    EntityFlag_BlockingLight            = 0x04,
+    EntityFlag_Active                       = 0x0001,
+    EntityFlag_DestroyedThisFrame           = 0x0002,
 
-    EntityFlag_CollisionEnabled         = 0x08,
+    EntityFlag_Visible                      = 0x0010,
+    EntityFlag_BlockingLight                = 0x0020,
+    EntityFlag_SkipInterpolationNextFrame   = 0x0040,
 
-    EntityFlag_SkipFrameInterpolation   = 0x10,
+    EntityFlag_CollisionEnabled             = 0x0100,
 };
 
 enum EntityType : u32

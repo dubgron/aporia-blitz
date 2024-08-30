@@ -29,7 +29,17 @@ void world_next_frame(World* world)
 {
     for (i64 idx = 0; idx < world->entity_count; ++idx)
     {
-        entity_flags_unset(&world->entity_array[idx], EntityFlag_SkipFrameInterpolation);
+        Entity* entity = &world->entity_array[idx];
+
+        entity_flags_unset(entity, EntityFlag_SkipInterpolationNextFrame);
+
+        if (entity_flags_has_all(*entity, EntityFlag_DestroyedThisFrame))
+        {
+            entity->next = world->free_list;
+            world->free_list = entity;
+
+            entity_flags_unset(entity, EntityFlag_DestroyedThisFrame);
+        }
     }
 
     memcpy(world->entity_array_last_frame, world->entity_array, world->entity_count * sizeof(Entity));
@@ -84,11 +94,9 @@ void entity_destroy(World* world, EntityID entity_id)
         "Entity with ID (index: %, generation: %) is not alive!", index, generation);
 
     entity_flags_unset(entity, EntityFlag_Active);
+    entity_flags_set(entity, EntityFlag_DestroyedThisFrame);
 
     entity->id.generation += 1;
-
-    entity->next = world->free_list;
-    world->free_list = entity;
 }
 
 Entity* entity_get(World* world, EntityID entity_id)

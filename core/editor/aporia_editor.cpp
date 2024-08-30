@@ -199,12 +199,6 @@ void editor_update(f32 frame_time)
 
     time_since_selected += frame_time;
 
-    // @TODO(dubgron): This feels weird, there's probably a better solution.
-    for (i32 idx = 0; idx < current_world.entity_count; ++idx)
-    {
-        entity_flags_set(&current_world.entity_array[idx], EntityFlag_SkipFrameInterpolation);
-    }
-
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::DockSpaceOverViewport(viewport);
 

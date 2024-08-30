@@ -73,6 +73,8 @@ static void game_main_loop()
     if (editor_is_open)
     {
         frame_time = 0.f;
+
+        world_next_frame(&current_world);
     }
 #endif
 
@@ -98,7 +100,14 @@ static void game_main_loop()
             {
                 animation_tick(entity, frame_time);
 
-                if (entity_flags_has_all(*entity, EntityFlag_SkipFrameInterpolation))
+#if defined(APORIA_EDITOR)
+                if (editor_is_open)
+                {
+                    draw_entity(*entity);
+                }
+                else
+#endif
+                if (entity_flags_has_all(*entity, EntityFlag_SkipInterpolationNextFrame))
                 {
                     draw_entity(*entity);
                 }
