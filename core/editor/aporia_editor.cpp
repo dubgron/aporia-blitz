@@ -434,27 +434,52 @@ void editor_update(f32 frame_time)
         {
             gizmo_space = GizmoSpace_Local;
         }
-
-        ImGui::Separator();
-
-        if (ImGui::Button("Create Entity"))
-        {
-            selected_entity_id = entity_create(&current_world);
-        }
     }
     ImGui::End();
 
     ImGui::Begin("World");
     {
-        for (u64 idx = 0; idx < current_world.entity_count; ++idx)
+        float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        if (ImGui::BeginChild("##scrolling_region", ImVec2(0, -footer_height_to_reserve), true))
         {
-            const Entity& entity = current_world.entity_array[idx];
-            if (!entity_flags_has_all(entity, EntityFlag_Active) || entity.id.index == INDEX_INVALID)
-                continue;
+            for (u64 idx = 0; idx < current_world.entity_count; ++idx)
+            {
+                const Entity& entity = current_world.entity_array[idx];
+                if (!entity_flags_has_all(entity, EntityFlag_Active))
+                    continue;
 
-            String name = tprintf("Entity (ID = %, GEN = %)", entity.id.index, entity.id.generation);
-            if (ImGui::Selectable(*name, selected_entity_id == entity.id))
-                selected_entity_id = entity.id;
+                String name = tprintf("Entity (ID = %, GEN = %)", entity.id.index, entity.id.generation);
+                if (ImGui::Selectable(*name, selected_entity_id == entity.id))
+                    selected_entity_id = entity.id;
+            }
+
+            ImGui::EndChild();
+        }
+
+        if (ImGui::Button("Create Entity"))
+        {
+            selected_entity_id = entity_create(&current_world);
+        }
+        if (selected_entity_id.index != INDEX_INVALID)
+        {
+            ImGui::SameLine();
+            if (ImGui::Button("Destroy Entity"))
+            {
+                entity_destroy(&current_world, selected_entity_id);
+                selected_entity_id = EntityID{};
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Copy Entity"))
+            {
+                Entity* entity = entity_get(&current_world, selected_entity_id);
+                APORIA_ASSERT(entity);
+
+                Entity* new_entity = nullptr;
+                selected_entity_id = entity_create(&current_world, &new_entity);
+                EntityID id = new_entity->id;
+                *new_entity = *entity;
+                new_entity->id = id;
+            }
         }
     }
     ImGui::End();
