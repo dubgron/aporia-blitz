@@ -321,7 +321,9 @@ void editor_update(f32 frame_time)
                     }
 
                     v2 mouse_offset = mouse_current_position - initial_mouse_position;
+
                     bool snap_to_grid = input_is_held(Key_LShift);
+                    f32 snap_resolution = editor_grid_size / 2.f;
 
                     entity->position = initial_entity_state.position;
 
@@ -330,7 +332,7 @@ void editor_update(f32 frame_time)
                         entity->position += glm::dot(mouse_offset, right) * right;
 
                         if (snap_to_grid)
-                            entity->position.x = std::floor(mouse_current_position.x / editor_grid_size) * editor_grid_size;
+                            entity->position.x = std::floor(mouse_current_position.x / snap_resolution) * snap_resolution;
                     }
 
                     if (gizmo_index == TRANSLATE_Y_AXIS_INDEX || gizmo_index == TRANSLATE_XY_AXIS_INDEX)
@@ -338,7 +340,7 @@ void editor_update(f32 frame_time)
                         entity->position += glm::dot(mouse_offset, up) * up;
 
                         if (snap_to_grid)
-                            entity->position.y = std::floor(mouse_current_position.y / editor_grid_size) * editor_grid_size;
+                            entity->position.y = std::floor(mouse_current_position.y / snap_resolution) * snap_resolution;
                     }
                 }
                 break;
