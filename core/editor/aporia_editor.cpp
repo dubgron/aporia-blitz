@@ -532,7 +532,7 @@ void editor_update(f32 frame_time)
                             selected_entity->texture = texture;
 
                             if (fit_size_by_default)
-                                entity_ajust_size_to_texture(selected_entity);
+                                entity_adjust_size_to_texture(selected_entity);
                         }
 
                         if (is_selected)
@@ -542,7 +542,7 @@ void editor_update(f32 frame_time)
                 }
 
                 if (ImGui::Button("Fit Size to Texture"))
-                    entity_ajust_size_to_texture(selected_entity);
+                    entity_adjust_size_to_texture(selected_entity);
 
                 ImGui::SameLine();
                 ImGui::Checkbox("Fit by Default", &fit_size_by_default);
@@ -554,7 +554,7 @@ void editor_update(f32 frame_time)
                 selected_entity->color = color_from_vec4(color);
             }
 
-            // TODO(dubgron): Action should be registered only when editing is finished.
+            // @TODO(dubgron): Action should be registered only when editing is finished.
             u32 after_hash = get_hash(selected_entity, sizeof(Entity));
             if (before_hash != after_hash)
             {

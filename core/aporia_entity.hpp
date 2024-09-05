@@ -72,7 +72,7 @@ void entity_flags_unset(Entity* entity, EntityFlags flags);
 
 String entity_type_to_string(EntityType type);
 
-void entity_ajust_size_to_texture(Entity* entity);
+void entity_adjust_size_to_texture(Entity* entity);
 
 Collider entity_collider_from_local_to_world(const Entity& entity);
 

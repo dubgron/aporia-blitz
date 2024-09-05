@@ -38,7 +38,7 @@ String entity_type_to_string(EntityType type)
     }
 }
 
-void entity_ajust_size_to_texture(Entity* entity)
+void entity_adjust_size_to_texture(Entity* entity)
 {
     get_subtexture_size(entity->texture, &entity->width, &entity->height);
 }
