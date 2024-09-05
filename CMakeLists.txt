@@ -40,6 +40,7 @@ endif()
 find_package(glm REQUIRED)
 find_package(sokol REQUIRED)
 find_package(stb REQUIRED)
+find_package(zlib REQUIRED)
 
 if (APORIA_IMGUI)
     find_package(imgui REQUIRED)
@@ -127,7 +128,8 @@ target_link_libraries(aporia
     glfw
     glm
     sokol
-    stb)
+    stb
+    zlib)
 
 if (APORIA_IMGUI)
     target_link_libraries(aporia imgui)
