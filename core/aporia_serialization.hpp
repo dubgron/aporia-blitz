@@ -12,7 +12,7 @@ struct Serializer
 
     // Idea: have a separate data segment to store arrays
 
-    MemoryArena* context_arena = nullptr;
+    MemoryArena* arena = nullptr;
 };
 
 String world_serialize(MemoryArena* arena, const World& world);

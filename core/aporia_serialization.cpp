@@ -2,11 +2,6 @@
 
 #include "aporia_parser.hpp"
 
-#define push_context_arena(serializer, arena) \
-    for (MemoryArena *old = serializer->context_arena, *next = (arena), *pop = 0; \
-        (serializer->context_arena = next, !pop); \
-        next = old, pop = (MemoryArena*)1)
-
 template<typename T>
 static void serialize_write(Serializer* serializer, T value)
 {
@@ -20,11 +15,14 @@ static void serialize_write(Serializer* serializer, T value)
 template<typename T>
 static void serialize_write_array(Serializer* serializer, T* array, i64 count)
 {
-    i64 size = sizeof(T) * count;
-    void* data = serializer->buffer.data + serializer->offset;
-    serializer->offset += size;
+    if (count > 0)
+    {
+        i64 size = sizeof(T) * count;
+        void* data = serializer->buffer.data + serializer->offset;
+        serializer->offset += size;
 
-    memcpy(data, array, size);
+        memcpy(data, array, size);
+    }
 }
 
 template<typename T>
@@ -40,18 +38,14 @@ static void serialize_read(Serializer* serializer, T* out_value)
 template<typename T>
 static void serialize_read_array(Serializer* serializer, T** out_array, i64 count)
 {
-    i64 size = sizeof(T) * count;
-    void* data = serializer->buffer.data + serializer->offset;
-    serializer->offset += size;
+    if (count > 0)
+    {
+        i64 size = sizeof(T) * count;
+        void* data = serializer->buffer.data + serializer->offset;
+        serializer->offset += size;
 
-    if (serializer->context_arena)
-    {
-        *out_array = arena_push_uninitialized<T>(serializer->context_arena, count);
+        *out_array = arena_push_uninitialized<T>(serializer->arena, count);
         memcpy(*out_array, data, size);
-    }
-    else
-    {
-        *out_array = (T*)data;
     }
 }
 
@@ -60,6 +54,7 @@ static void serialize_write(Serializer* serializer, String string)
     serialize_write(serializer, string.length);
     serialize_write_array(serializer, string.data, string.length);
 }
+
 static void serialize_read(Serializer* serializer, String* string)
 {
     serialize_read(serializer, &string->length);
@@ -184,10 +179,7 @@ static void entity_deserialize(Serializer* serializer, Entity* entity, World* wo
 
     serialize_read(serializer, &entity->animator);
 
-    push_context_arena(serializer, &world->arena)
-    {
-        serialize_read(serializer, &entity->collider);
-    }
+    serialize_read(serializer, &entity->collider);
 }
 
 String world_serialize(MemoryArena* arena, const World& world)
@@ -217,6 +209,8 @@ World world_deserialize(String serialized)
     i32 entity_max_count;
     serialize_read(&serializer, &entity_max_count);
     World world = world_init(entity_max_count);
+
+    serializer.arena = &world.arena;
 
     serialize_read(&serializer, &world.entity_count);
 
