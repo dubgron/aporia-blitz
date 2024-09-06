@@ -88,7 +88,7 @@ template<typename T>
 void hash_table_expand(MemoryArena* arena, HashTable<T>* hash_table)
 {
     u64 required_count;
-    if ((hash_table->valid_buckets * 2 + 1) * 100 < MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
+    if (hash_table->valid_buckets * 2 * 100 <= MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
     {
         required_count = hash_table->bucket_count;
     }
@@ -109,6 +109,8 @@ void hash_table_expand(MemoryArena* arena, HashTable<T>* hash_table)
             hash_table_insert(&result, bucket->key, bucket->value);
         }
     }
+
+    *hash_table = result;
 }
 
 template<typename T>
@@ -127,7 +129,7 @@ T* hash_table_insert(HashTable<T>* hash_table, String key, T value)
     //      occupied_buckets / bucket_count >= max_load_factor_percent / 100
     // Therefore, we say:
     //      occupied_buckets * 100 >= max_load_factor_percent * bucket_count
-    if ((hash_table->occupied_buckets + 1) * 100 >= MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
+    if (hash_table->occupied_buckets * 100 >= MAX_LOAD_FACTOR_PERCENT * hash_table->bucket_count)
     {
         APORIA_LOG(Warning, "The hash table is full! Failed to insert at key '%'!", key);
         return nullptr;
