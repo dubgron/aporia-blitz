@@ -187,6 +187,10 @@ static bool load_engine_config_from_file(String filepath)
                 {
                     get_value_from_field(editor_node, &editor_config.display_editor_grid);
                 }
+                else if (editor_node->name == "editor_grid_size")
+                {
+                    get_value_from_field(editor_node, &editor_config.editor_grid_size);
+                }
             }
         }
 #endif

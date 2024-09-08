@@ -11,8 +11,7 @@
     ; custom_ui_resolution    1280 720
 
 [camera]
-    ; fov                     360
-    aspect_ratio            1.7778
+    ; fov                     450
     background_color        80 80 102 255
     zoom_speed              250.0
     zoom_max                20.0
@@ -29,3 +28,4 @@
 
 [editor]
     display_editor_grid     true
+    editor_grid_size        100

@@ -10,7 +10,6 @@
 #include "aporia_world.hpp"
 
 bool editor_is_open = true;
-f32 editor_grid_size = 100.f;
 
 EntityID selected_entity_id;
 f32 time_since_selected = 0.f;
@@ -317,7 +316,7 @@ void editor_update(f32 frame_time)
                     v2 mouse_offset = mouse_current_position - initial_mouse_position;
 
                     bool snap_to_grid = input_is_held(Key_LShift);
-                    f32 snap_resolution = editor_grid_size / 2.f;
+                    f32 snap_resolution = editor_config.editor_grid_size / 2.f;
 
                     entity->position = initial_entity_state.position;
 

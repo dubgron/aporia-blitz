@@ -23,6 +23,7 @@ struct CameraConfig
 struct EditorConfig
 {
     bool display_editor_grid = false;
+    i32 editor_grid_size = 100;
 };
 #endif
 

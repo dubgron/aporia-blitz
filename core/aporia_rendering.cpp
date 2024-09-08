@@ -1057,7 +1057,7 @@ void rendering_flush_to_screen()
 
         bind_shader(editor_grid_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
-        shader_set_float("u_grid_size", editor_grid_size);
+        shader_set_float("u_grid_size", editor_config.editor_grid_size);
 
         VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
