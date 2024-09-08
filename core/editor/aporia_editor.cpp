@@ -519,15 +519,41 @@ void editor_update(f32 frame_time)
 
                 if (ImGui::BeginCombo("Texture", *get_subtexture_name(selected_entity->texture)))
                 {
-                    for (u32 idx = 0; idx < subtextures.bucket_count; ++idx)
+                    struct SortedTexture
+                    {
+                        SubTexture texture;
+                        String name = nullptr;
+                    };
+
+                    SortedTexture* textures = arena_push_uninitialized<SortedTexture>(&memory.frame, subtextures.valid_buckets);
+                    i64 textures_count = 0;
+
+                    for (i64 idx = 0; idx < subtextures.bucket_count; ++idx)
                     {
                         const SubTexture& texture = subtextures.buckets[idx].value;
                         if (texture.texture_index == INDEX_INVALID)
                             continue;
 
+                        textures[textures_count].texture = texture;
+                        textures[textures_count].name = get_subtexture_name(texture);
+                        textures_count += 1;
+                    }
+
+                    qsort(textures, textures_count, sizeof(SortedTexture),
+                        [](const void* elem0, const void* elem1) -> i32
+                        {
+                            SortedTexture* texture0 = (SortedTexture*)elem0;
+                            SortedTexture* texture1 = (SortedTexture*)elem1;
+                            return strcmp(*texture0->name, *texture1->name);
+                        });
+
+                    for (i64 idx = 0; idx < textures_count; ++idx)
+                    {
+                        const SubTexture& texture = textures[idx].texture;
                         bool is_selected = (texture == selected_entity->texture);
 
-                        if (ImGui::Selectable(*get_subtexture_name(texture), is_selected))
+                        String name = textures[idx].name;
+                        if (ImGui::Selectable(*name, is_selected))
                         {
                             selected_entity->texture = texture;
 

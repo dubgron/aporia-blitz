@@ -22,7 +22,7 @@ constexpr u64 MAX_OBJECTS_PER_DRAW_CALL = 10000;
 static u32 textures_used_in_draw_call[OPENGL_MAX_TEXTURE_UNITS] = { 0 };
 static u32 first_unused_texture_unit = 0;
 
-u32 find_or_assign_texture_unit(u32 texture_id)
+static u32 find_or_assign_texture_unit(u32 texture_id)
 {
     for (u64 texture_unit = 0; texture_unit < first_unused_texture_unit; ++texture_unit)
     {
@@ -381,10 +381,10 @@ static void renderqueue_flush(RenderQueue* render_queue)
     }
 
     qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
-        [](const void* elem1, const void* elem2) -> i32
+        [](const void* elem0, const void* elem1) -> i32
         {
-            const RenderQueueKey& key1 = *(RenderQueueKey*)elem1;
-            const RenderQueueKey& key2 = *(RenderQueueKey*)elem2;
+            const RenderQueueKey& key1 = *(RenderQueueKey*)elem0;
+            const RenderQueueKey& key2 = *(RenderQueueKey*)elem1;
 
             f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
             if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
@@ -395,7 +395,7 @@ static void renderqueue_flush(RenderQueue* render_queue)
                     i32 shader_diff = key1.shader_id - key2.shader_id;
                     if (shader_diff == 0)
                     {
-                        uintptr_t ptr_diff = PTR_TO_INT(elem1) - PTR_TO_INT(elem2);
+                        uintptr_t ptr_diff = PTR_TO_INT(elem0) - PTR_TO_INT(elem1);
                         return ptr_diff;
                     }
                     return shader_diff;
