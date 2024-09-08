@@ -432,7 +432,7 @@ struct AsepriteLayerChunkData
         u16 default_layer_height_in_pixels = 0;                     // ignored
         AsepriteBlendMode blend_mode = AsepriteBlendMode_Normal;    // always 0 for layer set
         u8 opacity = 0;                                             // valid only if file header flags field has bit 1 set
-        u8 __unused[3] = { 0 };                                     // for future (set to zero)
+        u8 _unused[3] = { 0 };                                      // for future (set to zero)
     } header;
 
     AsepriteString layer_name;
@@ -457,7 +457,7 @@ struct AsepriteCelChunkData
         u8 opacity_level = 0;
         AsepriteCelType cel_type = (AsepriteCelType)0;
         i16 z_index = 0;        // 0 = default layer ordering; +N = show this cel N layers later; -N = show this cel N layers back
-        u8 __unused[5] = { 0 }; // for future (set to zero)
+        u8 _unused[5] = { 0 };  // for future (set to zero)
     } header;
 
     struct RawImageData // for cel type = 0 (Raw Image Data)
@@ -490,7 +490,7 @@ struct AsepriteCelChunkData
             u32 bitmask_x_flip = 0;
             u32 bitmask_y_flip = 0;
             u32 bitmask_diagonal_flip = 0;  // swap X/Y axis
-            u8 __unused[10] = { 0 };        // reserved
+            u8 _unused[10] = { 0 };         // reserved
         } header;
 
         u8* tiles = nullptr; // Row by row, from top to bottom tile by tile compressed with ZLIB method (in .aseprite file)
@@ -523,7 +523,7 @@ struct AsepriteCelExtraChunkData
     AsepriteFixed precise_y_position{ 0 };
     AsepriteFixed width_of_cel_in_sprite{ 0 };  // scaled in real-time
     AsepriteFixed height_of_cel_in_sprite{ 0 };
-    u8 __unused[16] = { 0 };                    // for future use (set to zero)
+    u8 _unused[16] = { 0 };                     // for future use (set to zero)
 };
 
 struct AsepriteColorProfileChunkData
@@ -533,7 +533,7 @@ struct AsepriteColorProfileChunkData
         u16 type = 0;                   // 0 - no color profile (as in old .aseprite files), 1 - use sRGB, 2 - use the embedded ICC profile
         u16 flags = 0;                  // 1 - use special fixed gamma
         AsepriteFixed fixed_gamma{ 0 }; // 1.0 = linear, Note: The gamma in sRGB is 2.2 in overall but it doesn't use this fixed gamma, because sRGB uses different gamma sections (linear and non-linear). If sRGB is specified with a fixed gamma = 1.0, it means that this is Linear sRGB.
-        u8 __unused[8] = { 0 };         // reserved (set to zero)
+        u8 _unused[8] = { 0 };          // reserved (set to zero)
     } header;
 
     u32 icc_profile_data_length = 0;
@@ -548,7 +548,7 @@ struct AsepriteExternalFilesChunkData
         {
             u32 entry_id = 0;       // this ID is referenced by tilesets, palettes, or extended properties
             u8 type = 0;            // 0 - external palette, 1 - external tileset, 2 - extension name for properties, 3 - extension name for tile management (can exist one per sprite)
-            u8 __unused[7] = { 0 }; // reserved (set to zero)
+            u8 _unused[7] = { 0 };  // reserved (set to zero)
         } header;
 
         AsepriteString external_file_name_or_extension_id;
@@ -557,7 +557,7 @@ struct AsepriteExternalFilesChunkData
     struct Header
     {
         u32 entry_count = 0;
-        u8 __unused[8] = { 0 }; // reserved (set to zero)
+        u8 _unused[8] = { 0 }; // reserved (set to zero)
     } header;
 
     Entry* entries = nullptr;
@@ -571,7 +571,7 @@ struct AsepriteMaskChunkData // DEPRECATED
         i16 y_position = 0;
         u32 width = 0;
         u32 height = 0;
-        u8 __unused[8] = { 0 };
+        u8 _unused[8] = { 0 };
     } header;
 
     AsepriteString name;
@@ -592,9 +592,9 @@ struct AsepriteTagsChunkData
             u16 to_frame = 0;
             u8 loop_animation_direction = 0;    // 0 = forward, 1 = reverse, 2 = ping-pong, 3 = ping-pong reverse
             u16 repeat_count = 0;               // play this animation section N times: 0 = doesn't specify (plays infinite in UI, once on export, for ping-pong it plays once in each direction); 1 = plays once (for ping-pong, it plays just in one direction); 2 = plays twice (for ping-pong, it plays once in one direction, and once in reverse); n = plays N times
-            u8 __unused1[6] = { 0 };            // for future (set to zero)
+            u8 _unused1[6] = { 0 };             // for future (set to zero)
             u8 rgb_values[3] = { 0 };           // DEPRECATED, used only for backward compatibility with Aseprite v1.2.x; the color of the tag is the one in the user data field following the tags chunk
-            u8 __unused2 = 0;
+            u8 _unused2 = 0;
         } header;
 
         AsepriteString name;
@@ -603,7 +603,7 @@ struct AsepriteTagsChunkData
     struct Header
     {
         u16 tag_count = 0;
-        u8 __unused[8] = {0}; // for future (set to zero)
+        u8 _unused[8] = {0}; // for future (set to zero)
     } header;
 
     Tag* tags = nullptr;
@@ -635,7 +635,7 @@ struct AsepritePaletteChunkData
         u32 new_palette_size = 0;   // total number of entries
         u32 first_color_index_to_change = 0;
         u32 last_color_index_to_change = 0;
-        u8 __unused[8] = { 0 };     // for future (set_to_zero)
+        u8 _unused[8] = { 0 };      // for future (set_to_zero)
     } header;
 
     PaletteEntry* palette_entries = nullptr;
@@ -808,7 +808,7 @@ struct AsepriteSliceChunkData
     {
         u32 slice_key_count = 0;
         u32 flags = 0; // 1 = it's a 9-patches slice, 2 = has pivot information
-        u32 __unused = 0;
+        u32 _unused = 0;
     } header;
 
     AsepriteString name;
@@ -830,7 +830,7 @@ struct AsepriteTilesetChunkData
         u16 tile_width = 0;
         u16 tile_height = 0;
         i16 base_index = 0;         // number to show in the screen from the tile with index 1 and so on (by default this is field is 1, so the data that is displayed is equivalent to the data in memory); but it can be 0 to display zero-based indexing (this field isn't used for the representation of the data in the file, it's just for UI purposes)
-        u8 __unused[14] = { 0 };    // reserved
+        u8 _unused[14] = { 0 };     // reserved
     } header;
 
     AsepriteString name;
@@ -896,7 +896,7 @@ struct AsepriteFrame
         u16 magic_number = 0;       // always 0xF1FA
         u16 chunk_count_old = 0;    // old field which specifies the number of "chunks" in this frame; if this value is 0xFFFF, we might have more chunks to read in this frame (so we have to use the new field)
         u16 duration = 0;           // in milliseconds
-        u8 __unused[2] = { 0 };     // for future (set to zero)
+        u8 _unused[2] = { 0 };      // for future (set to zero)
         u32 chunk_count_new = 0;    // new field which specifies the number of "chunks" in this frame (if this is 0, use the old field)
     } header;
 
@@ -915,10 +915,10 @@ struct AsepriteFile
         u16 bits_per_pixel = 0;     // color depth: 32 bpp = RGBA, 16 bpp = Grayscale, 8 bpp = Indexed
         u32 flags = 0;              // 1 = layer opacity has valid value
         u16 speed = 0;              // milliseconds between frame, like in FLC files [DEPRECATED: You should use the frame duration field from each frame header]
-        u32 __unused1 = 0;          // set be 0
-        u32 __unused2 = 0;          // set be 0
+        u32 _unused1 = 0;           // set be 0
+        u32 _unused2 = 0;           // set be 0
         u8 pallete_entry_index = 0; // which represent transparent color in all non-background layers (only for Indexed sprites)
-        u8 __unused3[3] = { 0 };    // ignore these bytes
+        u8 _unused3[3] = { 0 };     // ignore these bytes
         u16 number_of_colors = 0;   // 0 means 256 for old sprites
         u8 pixel_width = 0;         // pixel ratio is "pixel width/pixel height"; if this or pixel height field is zero, pixel ratio is 1:1
         u8 pixel_height = 0;
@@ -926,7 +926,7 @@ struct AsepriteFile
         i16 y_position_of_grid = 0;
         u16 grid_width = 0;         // zero if there is no grid, grid size is 16x16 on Aseprite by default
         u16 grid_height = 0;        // zero if there is no grid
-        u8 __unused4[84] = { 0 };   // for future (set to zero)
+        u8 _unused4[84] = { 0 };    // for future (set to zero)
     } header;
 
     AsepriteFrame* frames = nullptr;
