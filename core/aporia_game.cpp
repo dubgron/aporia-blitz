@@ -178,6 +178,10 @@ static void engine_main(String config_filepath)
         IMGUI_INIT();
 
         game_initialize();
+
+#if defined(APORIA_EDITOR)
+        watch_project_directory();
+#endif
     }
 
     // Update
