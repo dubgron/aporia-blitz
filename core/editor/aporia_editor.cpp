@@ -518,13 +518,15 @@ void editor_update(f32 frame_time)
 
                 if (ImGui::BeginCombo("Texture", *get_subtexture_name(selected_entity->texture)))
                 {
+                    ScratchArena temp = scratch_begin();
+
                     struct SortedTexture
                     {
                         SubTexture texture;
                         String name = nullptr;
                     };
 
-                    SortedTexture* textures = arena_push_uninitialized<SortedTexture>(&memory.frame, subtextures.valid_buckets);
+                    SortedTexture* textures = arena_push_uninitialized<SortedTexture>(temp.arena, subtextures.valid_buckets);
                     i64 textures_count = 0;
 
                     for (i64 idx = 0; idx < subtextures.bucket_count; ++idx)
@@ -563,6 +565,9 @@ void editor_update(f32 frame_time)
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
                     }
+
+                    scratch_end(temp);
+
                     ImGui::EndCombo();
                 }
 
@@ -573,11 +578,11 @@ void editor_update(f32 frame_time)
                 ImGui::Checkbox("Fit by Default", &fit_size_by_default);
 
                 ImGui::Separator();
-
-                v4 color = vec4_from_color(selected_entity->color);
-                ImGui::ColorEdit4("Color", &color[0]);
-                selected_entity->color = color_from_vec4(color);
             }
+
+            v4 color = vec4_from_color(selected_entity->color);
+            ImGui::ColorEdit4("Color", &color[0]);
+            selected_entity->color = color_from_vec4(color);
 
             // @TODO(dubgron): Action should be registered only when editing is finished.
             u32 after_hash = get_hash(selected_entity, sizeof(Entity));

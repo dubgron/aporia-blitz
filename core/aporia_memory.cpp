@@ -39,7 +39,7 @@ void arena_clear(MemoryArena* arena)
 void* arena_push_uninitialized(MemoryArena* arena, u64 size)
 {
     u64 space_left = arena->max - arena->pos;
-    APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= space_left,
+    APORIA_ASSERT_WITH_MESSAGE(size >= 0 && size <= space_left,
         "Can't allocate % B! Pos: % B, Max: % B, Left: % B", size, arena->pos, arena->max, space_left);
 
     u64 result = PTR_TO_INT(arena->memory) + arena->pos;
@@ -57,7 +57,7 @@ void* arena_push(MemoryArena* arena, u64 size)
 
 void arena_pop(MemoryArena* arena, u64 size)
 {
-    APORIA_ASSERT_WITH_MESSAGE(size > 0 && size <= arena->pos,
+    APORIA_ASSERT_WITH_MESSAGE(size >= 0 && size <= arena->pos,
         "Can't pop % B! Pos: % B", size, arena->pos);
 
     arena->pos = next_aligned(arena->pos - size, arena->align);

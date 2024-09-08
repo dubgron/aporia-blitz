@@ -376,9 +376,7 @@ static void renderqueue_add(RenderQueue* render_queue, const RenderQueueKey& key
 static void renderqueue_flush(RenderQueue* render_queue)
 {
     if (render_queue->count == 0)
-    {
         return;
-    }
 
     qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
         [](const void* elem0, const void* elem1) -> i32
@@ -732,23 +730,23 @@ void rendering_init(MemoryArena* arena)
 #endif
 
     // Setup default shaders
-    default_shader = load_shader(SHADERS_DIRECTORY "default.glsl");
-    rectangle_shader = load_shader(SHADERS_DIRECTORY "rectangle.glsl");
-    line_shader = load_shader(SHADERS_DIRECTORY "line.glsl");
-    circle_shader = load_shader(SHADERS_DIRECTORY "circle.glsl");
-    font_shader = load_shader(SHADERS_DIRECTORY "font.glsl");
+    default_shader          = load_shader(SHADERS_DIRECTORY "default.glsl");
+    rectangle_shader        = load_shader(SHADERS_DIRECTORY "rectangle.glsl");
+    line_shader             = load_shader(SHADERS_DIRECTORY "line.glsl");
+    circle_shader           = load_shader(SHADERS_DIRECTORY "circle.glsl");
+    font_shader             = load_shader(SHADERS_DIRECTORY "font.glsl");
 
     // Setup post-processing shaders
-    postprocessing_shader = load_shader(SHADERS_DIRECTORY "postprocessing.glsl");
+    postprocessing_shader   = load_shader(SHADERS_DIRECTORY "postprocessing.glsl");
 
     // Setup lighting shaders
-    raymarching_shader = load_shader(SHADERS_DIRECTORY "raymarching.glsl");
-    shadowcasting_shader = load_shader(SHADERS_DIRECTORY "shadowcasting.glsl");
+    raymarching_shader      = load_shader(SHADERS_DIRECTORY "raymarching.glsl");
+    shadowcasting_shader    = load_shader(SHADERS_DIRECTORY "shadowcasting.glsl");
 
 #if defined(APORIA_EDITOR)
     // Setup editor shaders
-    editor_grid_shader = load_shader(SHADERS_DIRECTORY "editor/grid.glsl");
-    editor_selected_shader = load_shader(SHADERS_DIRECTORY "editor/selected.glsl");
+    editor_grid_shader      = load_shader(SHADERS_DIRECTORY "editor/grid.glsl");
+    editor_selected_shader  = load_shader(SHADERS_DIRECTORY "editor/selected.glsl");
 #endif
 
     unbind_shader();
