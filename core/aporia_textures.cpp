@@ -1,5 +1,17 @@
 #include "aporia_textures.hpp"
 
+static MemoryArena* stbi_arena = nullptr;
+
+static void* stbi_realloc(void* ptr, u64 new_size)
+{
+    void* result = arena_push_uninitialized(stbi_arena, new_size);
+    return ptr ? ptr : result;
+}
+
+#define STBI_MALLOC(size)           arena_push_uninitialized(stbi_arena, size)
+#define STBI_REALLOC(ptr, new_size) stbi_realloc(ptr, new_size)
+#define STBI_FREE(ptr)
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #include <stb_image.h>
@@ -27,19 +39,18 @@ Bitmap load_bitmap(MemoryArena* arena, String filepath)
     Bitmap result;
 
     ScratchArena temp = scratch_begin(arena);
+    stbi_arena = temp.arena;
     {
         String contents = read_entire_file(temp.arena, filepath);
         result.pixels = stbi_load_from_memory(contents.data, contents.length, &result.width, &result.height, &result.channels, 0);
 
-        // @HACK(dubgron): It would be nice if we didn't have to use malloc in stb_image
-        // and have the bitmap already pushed onto the arena.
         u64 num_of_pixels = result.width * result.height * result.channels;
         u8* pixels = arena_push_uninitialized<u8>(arena, num_of_pixels);
         memcpy(pixels, result.pixels, num_of_pixels);
 
-        stbi_image_free(result.pixels);
         result.pixels = pixels;
     }
+    stbi_arena = nullptr;
     scratch_end(temp);
 
     if (result.pixels)
