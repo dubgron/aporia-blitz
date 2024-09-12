@@ -12,6 +12,19 @@
 #define ARRAY_ZERO(arr) memset(arr, 0, sizeof(arr))
 #define INDEX_IN_ARRAY(elem, arr) ((PTR_TO_INT(elem) - PTR_TO_INT(arr)) / sizeof(*elem))
 
+#define CONCAT_HELPER(x, y) x##y
+#define CONCAT(x, y) CONCAT_HELPER(x, y)
+
+template<typename F>
+struct _DeferStruct
+{
+    _DeferStruct(F _code) : code(_code) {}
+    ~_DeferStruct() { code(); }
+    F code;
+};
+
+#define defer(code) _DeferStruct CONCAT(_defer, __LINE__){ [&]{ code; } }
+
 String read_entire_file(MemoryArena* arena, String filepath);
 String read_entire_text_file(MemoryArena* arena, String filepath);
 
