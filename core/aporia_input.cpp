@@ -15,7 +15,7 @@
 static Input input;
 
 // @TODO(dubgron): This is weird, we should figure something nicer.
-static InputOwner active_owner = InputOwner_None;
+InputOwner active_owner = InputOwner_None;
 
 static void input_process_event(InputState* state, InputAction action)
 {
@@ -188,11 +188,6 @@ void input_process_events()
 #endif
 
 #endif
-}
-
-void input_set_active_owner(InputOwner owner)
-{
-    active_owner = owner;
 }
 
 static InputState input_resolve_ownership(InputState* state)

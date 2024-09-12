@@ -188,7 +188,7 @@ static void editor_try_redo_last_action()
 
 void editor_update(f32 frame_time)
 {
-    input_set_active_owner(InputOwner_Editor);
+    input_push_active_owner(InputOwner_Editor);
 
     if (input_is_pressed(Key_F1))
         editor_is_open = !editor_is_open;
