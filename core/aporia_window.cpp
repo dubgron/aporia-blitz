@@ -165,7 +165,7 @@ v2 get_mouse_world_position()
         0.f, 0.f, -1.f, 0.f,
         -1.f, -1.f, 0.f, 1.f };
 
-    m4 view_projection_matrix = active_camera.calculate_view_projection_matrix();
+    m4 view_projection_matrix = camera_calculate_view_projection_matrix(&active_camera);
     m4 clip_to_world = glm::inverse(view_projection_matrix);
     v2 world_position = clip_to_world * viewport_to_clip * v4{ mouse_viewport_position, 0.f, 1.f };
 

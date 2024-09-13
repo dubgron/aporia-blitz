@@ -859,7 +859,7 @@ void rendering_frame_begin()
 
         if (game_render_width != old_game_render_width || game_render_height != old_game_render_height)
         {
-            active_camera.adjust_aspect_ratio_to_render_surface();
+            camera_adjust_aspect_ratio_to_render_surface(&active_camera);
             framebuffer_resize(&game_framebuffer, game_render_width, game_render_height);
         }
     }
@@ -904,7 +904,7 @@ void rendering_frame_end()
     glClearTexImage(game_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
 #endif
 
-    const m4& view_projection_matrix = active_camera.calculate_view_projection_matrix();
+    const m4& view_projection_matrix = camera_calculate_view_projection_matrix(&active_camera);
     f32 camera_zoom = 1.f / active_camera.projection.zoom;
 
     // Initialize texture sampler
@@ -1051,7 +1051,7 @@ void rendering_flush_to_screen()
     // Draw the editor grid
     if (editor_is_open && editor_config.display_editor_grid)
     {
-        const m4& view_projection_matrix = active_camera.calculate_view_projection_matrix();
+        const m4& view_projection_matrix = camera_calculate_view_projection_matrix(&active_camera);
 
         bind_shader(editor_grid_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);

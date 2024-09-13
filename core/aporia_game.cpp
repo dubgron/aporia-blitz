@@ -165,7 +165,7 @@ static void engine_main(String config_filepath)
         APORIA_ASSERT(config_loaded_successfully);
 
         window_create(&memory.persistent);
-        active_camera.apply_config();
+        camera_apply_config(&active_camera);
 
         opengl_init();
         shaders_init(&memory.persistent);

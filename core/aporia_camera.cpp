@@ -44,28 +44,28 @@ static void recalculate_projection(Camera* camera)
     camera->projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height);
 }
 
-const m4& Camera::calculate_view_projection_matrix()
+const m4& camera_calculate_view_projection_matrix(Camera* camera)
 {
-    if (is_marked_dirty(CameraDirtyFlag_View))
+    if (camera->dirty_flags & CameraDirtyFlag_View)
     {
-        recalculate_view(this);
+        recalculate_view(camera);
     }
 
-    if (is_marked_dirty(CameraDirtyFlag_Projection))
+    if (camera->dirty_flags & CameraDirtyFlag_Projection)
     {
-        recalculate_projection(this);
+        recalculate_projection(camera);
     }
 
-    if (dirty_flags)
+    if (camera->dirty_flags)
     {
-        view_projection_matrix = projection.matrix * view.matrix;
-        dirty_flags = 0;
+        camera->view_projection_matrix = camera->projection.matrix * camera->view.matrix;
+        camera->dirty_flags = 0;
     }
 
-    return view_projection_matrix;
+    return camera->view_projection_matrix;
 }
 
-void Camera::control_movement(f32 delta_time)
+void camera_control_movement(Camera* camera)
 {
     if (input_is_held(Key_LShift))
         return;
@@ -78,19 +78,19 @@ void Camera::control_movement(f32 delta_time)
     if (input_is_pressed(right_mouse_button))
     {
         initial_mouse_position = current_mouse_position;
-        initial_camera_position = view.position;
+        initial_camera_position = camera->view.position;
     }
     else if (input_is_held(right_mouse_button))
     {
         v2 mouse_position_offset = current_mouse_position - initial_mouse_position;
-        v2 rotated_mouse_offset = mouse_position_offset.x * view.right_vector + mouse_position_offset.y * view.up_vector;
+        v2 rotated_mouse_offset = mouse_position_offset.x * camera->view.right_vector + mouse_position_offset.y * camera->view.up_vector;
 
-        view.position = initial_camera_position - rotated_mouse_offset * projection.zoom;
-        mark_as_dirty(CameraDirtyFlag_View);
+        camera->view.position = initial_camera_position - rotated_mouse_offset * camera->projection.zoom;
+        camera->dirty_flags |= CameraDirtyFlag_View;
     }
 }
 
-void Camera::control_rotation(f32 delta_time)
+void camera_control_rotation(Camera* camera)
 {
     if (!input_is_held(Key_LShift))
         return;
@@ -107,8 +107,8 @@ void Camera::control_rotation(f32 delta_time)
         initial_rotation_right = glm::normalize(current_mouse_position - half_viewport_size);
         initial_rotation_up = v2{ -initial_rotation_right.y, initial_rotation_right.x };
 
-        initial_camera_right = view.right_vector;
-        initial_camera_up = view.up_vector;
+        initial_camera_right = camera->view.right_vector;
+        initial_camera_up = camera->view.up_vector;
     }
     else if (input_is_held(right_mouse_button))
     {
@@ -117,12 +117,12 @@ void Camera::control_rotation(f32 delta_time)
         v2 projected_dir = glm::dot(initial_rotation_right, rotation_dir) * initial_camera_right
             - glm::dot(initial_rotation_up, rotation_dir) * initial_camera_up;
 
-        view.rotation = std::atan2(projected_dir.y, projected_dir.x);
-        mark_as_dirty(CameraDirtyFlag_View);
+        camera->view.rotation = std::atan2(projected_dir.y, projected_dir.x);
+        camera->dirty_flags |= CameraDirtyFlag_View;
     }
 }
 
-void Camera::control_zoom(f32 delta_time)
+void camera_control_zoom(Camera* camera, f32 delta_time)
 {
     f32 zoom_dir = -input_get(Mouse_VerticalWheel).end_value;
     if (zoom_dir != 0.f)
@@ -136,43 +136,44 @@ void Camera::control_zoom(f32 delta_time)
         if (input_is_held(Key_LControl))
             zoom /= 5.f;
 
-        projection.zoom = std::clamp(projection.zoom + zoom, camera_config.zoom_min, camera_config.zoom_max);
-        mark_as_dirty(CameraDirtyFlag_Projection);
+        camera->projection.zoom = std::clamp(camera->projection.zoom + zoom, camera_config.zoom_min, camera_config.zoom_max);
+        camera->dirty_flags |= CameraDirtyFlag_Projection;
     }
 }
 
-void Camera::follow(v2 to_follow, f32 delta_time)
+void camera_follow(Camera* camera, v2 to_follow, f32 delta_time)
 {
-    v2 direction{ to_follow - view.position };
+    v2 direction{ to_follow - camera->view.position };
 
     f32 dist2 = glm::length2(direction);
     if (dist2 > 0.1f)
     {
-        view.position += v2{ direction * camera_config.movement_speed * delta_time * projection.zoom / projection.fov };
-        mark_as_dirty(CameraDirtyFlag_View);
+        f32 velocity = camera_config.movement_speed * delta_time * camera->projection.zoom / camera->projection.fov;
+        camera->view.position += direction * velocity;
+        camera->dirty_flags |= CameraDirtyFlag_View;
     }
 }
 
-void Camera::apply_config()
+void camera_apply_config(Camera* camera)
 {
-    adjust_aspect_ratio_to_render_surface();
+    camera_adjust_aspect_ratio_to_render_surface(camera);
 
     if (camera_config.fov > 0.f)
     {
-        projection.fov = camera_config.fov;
+        camera->projection.fov = camera_config.fov;
     }
     else if (rendering_config.custom_game_resolution_height > 0)
     {
-        projection.fov = rendering_config.custom_game_resolution_height / 2.f;
+        camera->projection.fov = rendering_config.custom_game_resolution_height / 2.f;
     }
     else
     {
-        projection.fov = window_config.height / 2.f;
+        camera->projection.fov = window_config.height / 2.f;
     }
 }
 
-void Camera::adjust_aspect_ratio_to_render_surface()
+void camera_adjust_aspect_ratio_to_render_surface(Camera* camera)
 {
-    projection.aspect_ratio = (f32)game_render_width / (f32)game_render_height;
-    mark_as_dirty(CameraDirtyFlag_Projection);
+    camera->projection.aspect_ratio = (f32)game_render_width / (f32)game_render_height;
+    camera->dirty_flags |= CameraDirtyFlag_Projection;
 }

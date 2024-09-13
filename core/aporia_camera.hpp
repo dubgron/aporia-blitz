@@ -39,19 +39,16 @@ struct Camera
 
     m4 view_projection_matrix{ 1.f };
     CameraDirtyFlags dirty_flags = CameraDirtyFlag_View | CameraDirtyFlag_Projection;
-
-    void mark_as_dirty(CameraDirtyFlags flag) { dirty_flags |= flag; }
-    bool is_marked_dirty(CameraDirtyFlags flag) { return dirty_flags & flag; }
-
-    const m4& calculate_view_projection_matrix();
-
-    void control_movement(f32 delta_time);
-    void control_rotation(f32 delta_time);
-    void control_zoom(f32 delta_time);
-    void follow(v2 to_follow, f32 delta_time);
-
-    void apply_config();
-    void adjust_aspect_ratio_to_render_surface();
 };
+
+const m4& camera_calculate_view_projection_matrix(Camera* camera);
+
+void camera_control_movement(Camera* camera);
+void camera_control_rotation(Camera* camera);
+void camera_control_zoom(Camera* camera, f32 delta_time);
+void camera_follow(Camera* camera, v2 to_follow, f32 delta_time);
+
+void camera_apply_config(Camera* camera);
+void camera_adjust_aspect_ratio_to_render_surface(Camera* camera);
 
 extern Camera active_camera;
