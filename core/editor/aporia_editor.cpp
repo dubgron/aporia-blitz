@@ -209,9 +209,9 @@ void editor_update(f32 frame_time)
 
     if (mouse_within_viewport)
     {
-        active_camera->control_movement(frame_time);
-        active_camera->control_rotation(frame_time);
-        active_camera->control_zoom(frame_time);
+        active_camera.control_movement(frame_time);
+        active_camera.control_rotation(frame_time);
+        active_camera.control_zoom(frame_time);
     }
 
     i32 index = gizmo_index;
@@ -397,10 +397,10 @@ void editor_update(f32 frame_time)
         ImGui::SameLine();
         if (ImGui::Button("Reset camera"))
         {
-            active_camera->view = CameraView{};
-            active_camera->projection = CameraProjection{};
-            active_camera->apply_config();
-            active_camera->mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
+            active_camera.view = CameraView{};
+            active_camera.projection = CameraProjection{};
+            active_camera.apply_config();
+            active_camera.mark_as_dirty(CameraDirtyFlag_View | CameraDirtyFlag_Projection);
         }
 
         ImGui::Separator();
@@ -621,7 +621,7 @@ void editor_draw_gizmos()
     f32 line_length = 100.f;
     f32 end_size = 25.f;
 
-    const m4& world_to_clip = active_camera->calculate_view_projection_matrix();
+    const m4& world_to_clip = active_camera.calculate_view_projection_matrix();
 
     // @NOTE(dubgron): Precalculated following lines:
     //     viewport_to_clip = glm::scale(glm::mat4{ 1.f }, glm::vec3{ width / 2.f, height / 2.f, -1.f });
@@ -634,7 +634,7 @@ void editor_draw_gizmos()
 
     v2 start = clip_to_viewport * world_to_clip * v4{ entity->position, 0.f, 1.f };
 
-    m2 camera_rotation = active_camera->view.matrix;
+    m2 camera_rotation = active_camera.view.matrix;
 
     f32 point_radius = 7.5f;
     set_editor_index(TRANSLATE_XY_AXIS_INDEX);

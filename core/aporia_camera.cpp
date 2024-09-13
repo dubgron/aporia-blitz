@@ -6,7 +6,9 @@
 #include "aporia_rendering.hpp"
 #include "aporia_window.hpp"
 
-Camera* active_camera = nullptr;
+#include <glm/gtx/norm.hpp>
+
+Camera active_camera;
 
 static void recalculate_view(Camera* camera)
 {
@@ -63,51 +65,6 @@ const m4& Camera::calculate_view_projection_matrix()
     return view_projection_matrix;
 }
 
-void Camera::set_position(v2 new_position)
-{
-    mark_as_dirty(CameraDirtyFlag_View);
-    view.position = new_position;
-}
-
-void Camera::move(v2 vector)
-{
-    set_position(view.position + vector);
-}
-
-void Camera::set_rotation(f32 new_rotation)
-{
-    mark_as_dirty(CameraDirtyFlag_View);
-    view.rotation = new_rotation;
-}
-
-void Camera::rotate(f32 rotation)
-{
-    set_rotation(view.rotation + rotation);
-}
-
-void Camera::set_fov(f32 new_fov)
-{
-    mark_as_dirty(CameraDirtyFlag_Projection);
-    projection.fov = new_fov;
-}
-
-void Camera::set_aspect_ratio(f32 new_aspect_ratio)
-{
-    mark_as_dirty(CameraDirtyFlag_Projection);
-    projection.aspect_ratio = new_aspect_ratio;
-}
-
-void Camera::set_zoom(f32 new_zoom)
-{
-    mark_as_dirty(CameraDirtyFlag_Projection);
-    projection.zoom = new_zoom;
-}
-
-void Camera::zoom(f32 zoom)
-{
-    set_zoom(projection.zoom + zoom);
-}
-
 void Camera::control_movement(f32 delta_time)
 {
     if (input_is_held(Key_LShift))
@@ -128,8 +85,8 @@ void Camera::control_movement(f32 delta_time)
         v2 mouse_position_offset = current_mouse_position - initial_mouse_position;
         v2 rotated_mouse_offset = mouse_position_offset.x * view.right_vector + mouse_position_offset.y * view.up_vector;
 
-        v2 new_position = initial_camera_position - rotated_mouse_offset * projection.zoom;
-        set_position(new_position);
+        view.position = initial_camera_position - rotated_mouse_offset * projection.zoom;
+        mark_as_dirty(CameraDirtyFlag_View);
     }
 }
 
@@ -160,8 +117,8 @@ void Camera::control_rotation(f32 delta_time)
         v2 projected_dir = glm::dot(initial_rotation_right, rotation_dir) * initial_camera_right
             - glm::dot(initial_rotation_up, rotation_dir) * initial_camera_up;
 
-        f32 new_rotation = std::atan2(projected_dir.y, projected_dir.x);
-        set_rotation(new_rotation);
+        view.rotation = std::atan2(projected_dir.y, projected_dir.x);
+        mark_as_dirty(CameraDirtyFlag_View);
     }
 }
 
@@ -179,16 +136,21 @@ void Camera::control_zoom(f32 delta_time)
         if (input_is_held(Key_LControl))
             zoom /= 5.f;
 
-        f32 new_zoom = std::clamp(projection.zoom + zoom, camera_config.zoom_min, camera_config.zoom_max);
-        set_zoom(new_zoom);
+        projection.zoom = std::clamp(projection.zoom + zoom, camera_config.zoom_min, camera_config.zoom_max);
+        mark_as_dirty(CameraDirtyFlag_Projection);
     }
 }
 
 void Camera::follow(v2 to_follow, f32 delta_time)
 {
     v2 direction{ to_follow - view.position };
-    v2 to_move{ direction * camera_config.movement_speed * delta_time * projection.zoom / projection.fov };
-    move(to_move);
+
+    f32 dist2 = glm::length2(direction);
+    if (dist2 > 0.1f)
+    {
+        view.position += v2{ direction * camera_config.movement_speed * delta_time * projection.zoom / projection.fov };
+        mark_as_dirty(CameraDirtyFlag_View);
+    }
 }
 
 void Camera::apply_config()
@@ -211,15 +173,6 @@ void Camera::apply_config()
 
 void Camera::adjust_aspect_ratio_to_render_surface()
 {
-    mark_as_dirty(CameraDirtyFlag_Projection);
     projection.aspect_ratio = (f32)game_render_width / (f32)game_render_height;
-}
-
-Camera* create_camera(MemoryArena* arena)
-{
-    Camera* result = arena_push_uninitialized<Camera>(arena);
-    *result = Camera{};
-    result->apply_config();
-
-    return result;
+    mark_as_dirty(CameraDirtyFlag_Projection);
 }

@@ -223,7 +223,7 @@ bool reload_config_asset(Asset* config_asset)
     config_asset->status = success ? AssetStatus::Loaded : AssetStatus::Unloaded;
 
     window_apply_config();
-    active_camera->apply_config();
+    active_camera.apply_config();
 
     return success;
 }

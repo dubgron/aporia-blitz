@@ -31,7 +31,7 @@ static void get_icursor_and_remainder(f32 cursor, i64* out_icursor, f32* out_rem
 static void calculate_spatial_sound(AudioStream* stream, f32* out_left, f32* out_right)
 {
     v2 stream_position = stream->position;
-    v2 listener_position = active_camera->view.position;
+    v2 listener_position = active_camera.view.position;
 
     if (stream_position == listener_position)
     {
@@ -42,8 +42,8 @@ static void calculate_spatial_sound(AudioStream* stream, f32* out_left, f32* out
 
     v2 from_listener_to_stream = stream_position - listener_position;
 
-    v2 listener_right = active_camera->view.right_vector;
-    v2 listener_up = active_camera->view.up_vector;
+    v2 listener_right = active_camera.view.right_vector;
+    v2 listener_up = active_camera.view.up_vector;
 
     v2 direction = glm::normalize(from_listener_to_stream);
     direction.x = glm::dot(direction, listener_right);

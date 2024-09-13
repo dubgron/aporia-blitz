@@ -859,7 +859,7 @@ void rendering_frame_begin()
 
         if (game_render_width != old_game_render_width || game_render_height != old_game_render_height)
         {
-            active_camera->adjust_aspect_ratio_to_render_surface();
+            active_camera.adjust_aspect_ratio_to_render_surface();
             framebuffer_resize(&game_framebuffer, game_render_width, game_render_height);
         }
     }
@@ -904,8 +904,8 @@ void rendering_frame_end()
     glClearTexImage(game_framebuffer.editor_buffer_id, 0, GL_RED_INTEGER, GL_INT, &value);
 #endif
 
-    const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
-    f32 camera_zoom = 1.f / active_camera->projection.zoom;
+    const m4& view_projection_matrix = active_camera.calculate_view_projection_matrix();
+    f32 camera_zoom = 1.f / active_camera.projection.zoom;
 
     // Initialize texture sampler
     static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -1051,7 +1051,7 @@ void rendering_flush_to_screen()
     // Draw the editor grid
     if (editor_is_open && editor_config.display_editor_grid)
     {
-        const m4& view_projection_matrix = active_camera->calculate_view_projection_matrix();
+        const m4& view_projection_matrix = active_camera.calculate_view_projection_matrix();
 
         bind_shader(editor_grid_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
@@ -1090,7 +1090,7 @@ void rendering_flush_to_screen()
     if (editor_is_open && selected_entity_id.index != INDEX_INVALID)
     {
         m4 viewport_to_clip = glm::ortho<f32>(0.f, viewport_width, 0.f, viewport_height);
-        f32 camera_zoom = 1.f / active_camera->projection.zoom;
+        f32 camera_zoom = 1.f / active_camera.projection.zoom;
 
         // Initialize texture sampler
         static i32 sampler[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,

@@ -45,17 +45,6 @@ struct Camera
 
     const m4& calculate_view_projection_matrix();
 
-    void set_position(v2 new_position);
-    void move(v2 vector);
-
-    void set_rotation(f32 new_rotation);
-    void rotate(f32 rotation);
-
-    void set_fov(f32 new_fov);
-    void set_aspect_ratio(f32 new_aspect_ratio);
-    void set_zoom(f32 new_zoom);
-    void zoom(f32 zoom);
-
     void control_movement(f32 delta_time);
     void control_rotation(f32 delta_time);
     void control_zoom(f32 delta_time);
@@ -65,6 +54,4 @@ struct Camera
     void adjust_aspect_ratio_to_render_surface();
 };
 
-Camera* create_camera(MemoryArena* arena);
-
-extern Camera* active_camera;
+extern Camera active_camera;
