@@ -265,7 +265,7 @@ extern InputOwner active_owner;
 #define input_push_active_owner(owner) \
     InputOwner CONCAT(_last_owner, __LINE__) = active_owner; \
     active_owner = owner; \
-    defer(active_owner = CONCAT(_last_owner, __LINE__))
+    defer { active_owner = CONCAT(_last_owner, __LINE__); };
 
 InputState input_get(Key key);
 InputState input_get(MouseButton button);

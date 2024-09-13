@@ -18,12 +18,12 @@
 template<typename F>
 struct _DeferStruct
 {
-    _DeferStruct(F _code) : code(_code) {}
+    _DeferStruct(F code) : code(code) {}
     ~_DeferStruct() { code(); }
     F code;
 };
 
-#define defer(code) _DeferStruct CONCAT(_defer, __LINE__){ [&]{ code; } }
+#define defer _DeferStruct CONCAT(_defer, __LINE__) = [&]
 
 String read_entire_file(MemoryArena* arena, String filepath);
 String read_entire_text_file(MemoryArena* arena, String filepath);
