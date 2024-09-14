@@ -46,7 +46,7 @@ const m4& camera_calculate_view_projection_matrix(Camera* camera);
 void camera_control_movement(Camera* camera);
 void camera_control_rotation(Camera* camera);
 void camera_control_zoom(Camera* camera, f32 delta_time);
-void camera_follow(Camera* camera, v2 to_follow, f32 delta_time);
+void camera_follow(Camera* camera, v2 target_position, f32 delta_time);
 
 void camera_apply_config(Camera* camera);
 void camera_adjust_aspect_ratio_to_render_surface(Camera* camera);

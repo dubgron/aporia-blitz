@@ -141,17 +141,12 @@ void camera_control_zoom(Camera* camera, f32 delta_time)
     }
 }
 
-void camera_follow(Camera* camera, v2 to_follow, f32 delta_time)
+void camera_follow(Camera* camera, v2 target_position, f32 delta_time)
 {
-    v2 direction{ to_follow - camera->view.position };
-
-    f32 dist2 = glm::length2(direction);
-    if (dist2 > 0.1f)
-    {
-        f32 velocity = camera_config.movement_speed * delta_time * camera->projection.zoom / camera->projection.fov;
-        camera->view.position += direction * velocity;
-        camera->dirty_flags |= CameraDirtyFlag_View;
-    }
+    f32 velocity = camera_config.movement_speed * delta_time * camera->projection.zoom / camera->projection.fov;
+    f32 alpha = 1.f - pow(2.f, -4.f * velocity);
+    camera->view.position = lerp(camera->view.position, target_position, alpha);
+    camera->dirty_flags |= CameraDirtyFlag_View;
 }
 
 void camera_apply_config(Camera* camera)
