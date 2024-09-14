@@ -211,6 +211,26 @@ CString String::operator*() const
     return cstring(&memory.frame);
 }
 
+i32 string_compare(String str0, String str1)
+{
+    u64 min_length = min(str0.length, str1.length);
+    for (u64 idx = 0; idx < min_length; ++idx)
+    {
+        if (str0.data[idx] > str1.data[idx]) return 1;
+        if (str0.data[idx] < str1.data[idx]) return -1;
+    }
+
+    if (str0.length > str1.length) return 1;
+    if (str0.length < str1.length) return -1;
+
+    return 0;
+}
+
+i32 string_compare(const String* str0, const String* str1)
+{
+    return string_compare(*str0, *str1);
+}
+
 String push_string(MemoryArena* arena, String string)
 {
     String result = push_string(arena, string.length);

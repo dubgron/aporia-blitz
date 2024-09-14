@@ -190,3 +190,137 @@ void ring_buffer_decrement_index(T* index, T count)
     *index -= 1;
     if (*index == -1) *index = count - 1;
 }
+
+template<typename F, typename T>
+concept CompFn = std::is_invocable_r_v<i32, F, const T*, const T*>;
+
+template<typename T, CompFn<T> F>
+void insertion_sort(T* data, i64 count, F comp)
+{
+    for (i64 i = 1; i < count; ++i)
+    {
+        T tmp = data[i];
+        i64 j = i;
+        while (j > 0 && comp(&data[j - 1], &tmp) > 0)
+        {
+            data[j] = data[j - 1];
+            j -= 1;
+        }
+        data[j] = tmp;
+    }
+}
+
+template<typename T>
+inline void swap(T* a, T* b)
+{
+    T tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+template<typename T, CompFn<T> F>
+void heap_sort(T* data, i64 count, F comp)
+{
+    i64 start = floor(count / 2);
+    i64 end = count;
+    while (end > 1)
+    {
+        if (start > 0)
+        {
+            start -= 1;
+        }
+        else
+        {
+            end -= 1;
+            swap(&data[0], &data[end]);
+        }
+
+        i64 root = start;
+        i64 child = root * 2 + 1;
+        while (child < end)
+        {
+            if (child + 1 < end && comp(&data[child], &data[child + 1]) < 0)
+            {
+                child += 1;
+            }
+
+            if (comp(&data[root], &data[child]) < 0)
+            {
+                swap(&data[root], &data[child]);
+                root = child;
+            }
+            else
+            {
+                break;
+            }
+
+            child = root * 2 + 1;
+        }
+    }
+}
+
+template<typename T, CompFn<T> F>
+i64 partition(T* data, i64 count, F comp)
+{
+    i64 pivot = floor(count / 2);
+
+    i64 i = 0;
+    i64 j = count - 1;
+
+    while (true)
+    {
+        while (comp(&data[i], &data[pivot]) < 0) i += 1;
+        while (comp(&data[pivot], &data[j]) < 0) j -= 1;
+
+        if (i >= j)
+            return i;
+
+        swap(&data[i], &data[j]);
+
+        if (pivot == i) pivot = j;
+        else if (pivot == j) pivot = i;
+
+        i += 1;
+        j -= 1;
+    }
+
+    return -1;
+}
+
+template<typename T, CompFn<T> F>
+void quick_sort(T* data, i64 count, F comp)
+{
+    if (count < 2)
+        return;
+
+    i64 p = partition(data, count, comp);
+
+    quick_sort(data, p, comp);
+    quick_sort(data + p, count - p, comp);
+}
+
+template<typename T, CompFn<T> F>
+void intro_sort(T* data, i64 count, F comp, i64 max_depth)
+{
+    if (count < 16)
+    {
+        insertion_sort(data, count, comp);
+    }
+    else if (max_depth == 0)
+    {
+        heap_sort(data, count, comp);
+    }
+    else
+    {
+        i64 p = partition(data, count, comp);
+        intro_sort(data, p, comp, max_depth - 1);
+        intro_sort(data + p, count - p, comp, max_depth - 1);
+    }
+}
+
+template<typename T, CompFn<T> F>
+void intro_sort(T* data, i64 count, F comp)
+{
+    i64 max_depth = floor(log2(count)) * 2;
+    intro_sort(data, count, comp, max_depth);
+}

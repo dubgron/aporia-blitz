@@ -378,22 +378,19 @@ static void renderqueue_flush(RenderQueue* render_queue)
     if (render_queue->count == 0)
         return;
 
-    qsort(render_queue->data, render_queue->count, sizeof(RenderQueueKey),
-        [](const void* elem0, const void* elem1) -> i32
+    intro_sort(render_queue->data, render_queue->count,
+        [](const RenderQueueKey* key0, const RenderQueueKey* key1) -> i32
         {
-            const RenderQueueKey& key1 = *(RenderQueueKey*)elem0;
-            const RenderQueueKey& key2 = *(RenderQueueKey*)elem1;
-
-            f32 z_diff = key1.vertex[0].position.z - key2.vertex[0].position.z;
+            f32 z_diff = key0->vertex[0].position.z - key1->vertex[0].position.z;
             if (z_diff < FLT_EPSILON && z_diff > -FLT_EPSILON)
             {
-                i32 buffer_diff = (i32)key1.buffer - (i32)key2.buffer;
+                i32 buffer_diff = (i32)key0->buffer - (i32)key1->buffer;
                 if (buffer_diff == 0)
                 {
-                    i32 shader_diff = key1.shader_id - key2.shader_id;
+                    i32 shader_diff = key0->shader_id - key1->shader_id;
                     if (shader_diff == 0)
                     {
-                        uintptr_t ptr_diff = PTR_TO_INT(elem0) - PTR_TO_INT(elem1);
+                        uintptr_t ptr_diff = PTR_TO_INT(key0) - PTR_TO_INT(key1);
                         return ptr_diff;
                     }
                     return shader_diff;

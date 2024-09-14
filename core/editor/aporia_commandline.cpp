@@ -175,12 +175,10 @@ static StringList find_matching_commands(String command_prefix)
         }
     }
 
-    qsort(matches, match_count, sizeof(CommandMatch),
-        [](const void* elem1, const void* elem2) -> i32
+    intro_sort(matches, match_count,
+        [](const CommandMatch* m0, const CommandMatch* m1) -> i32
         {
-            const CommandMatch& m1 = *(CommandMatch*)elem1;
-            const CommandMatch& m2 = *(CommandMatch*)elem2;
-            return m1.match_score - m2.match_score;
+            return m0->match_score - m1->match_score;
         });
 
     StringList result;

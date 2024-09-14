@@ -46,6 +46,9 @@ struct String
     CString operator*() const; // @NOTE(dubgron): This allocates a temporary null-terminated string on the frame arena.
 };
 
+i32 string_compare(String str0, String str1);
+i32 string_compare(const String* str0, const String* str1);
+
 struct StringNode
 {
     StringNode* next = nullptr;

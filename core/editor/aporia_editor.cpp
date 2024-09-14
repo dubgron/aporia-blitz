@@ -540,12 +540,10 @@ void editor_update(f32 frame_time)
                         textures_count += 1;
                     }
 
-                    qsort(textures, textures_count, sizeof(SortedTexture),
-                        [](const void* elem0, const void* elem1) -> i32
+                    quick_sort(textures, textures_count,
+                        [](const SortedTexture* tex0, const SortedTexture* tex1) -> i32
                         {
-                            SortedTexture* texture0 = (SortedTexture*)elem0;
-                            SortedTexture* texture1 = (SortedTexture*)elem1;
-                            return strcmp(*texture0->name, *texture1->name);
+                            return string_compare(tex0->name, tex1->name);
                         });
 
                     for (i64 idx = 0; idx < textures_count; ++idx)
