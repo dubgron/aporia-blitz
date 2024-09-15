@@ -72,23 +72,23 @@ static void game_main_loop()
 
     if (editor_is_open)
     {
-        frame_time = 0.f;
-
         world_next_frame(&current_world);
     }
+    else
 #endif
-
-    game_time += frame_time;
-
-    game_handle_input(frame_time);
-
-    accumulated_frame_time += frame_time;
-    while (accumulated_frame_time > delta_time)
     {
-        world_next_frame(&current_world);
+        game_time += frame_time;
 
-        game_simulate_frame(game_time, delta_time);
-        accumulated_frame_time -= delta_time;
+        game_handle_input(frame_time);
+
+        accumulated_frame_time += frame_time;
+        while (accumulated_frame_time > delta_time)
+        {
+            world_next_frame(&current_world);
+
+            game_simulate_frame(game_time, delta_time);
+            accumulated_frame_time -= delta_time;
+        }
     }
 
     rendering_frame_begin();
@@ -98,8 +98,6 @@ static void game_main_loop()
             Entity* entity = &current_world.entity_array[idx];
             if (entity_flags_has_all(*entity, EntityFlag_Active | EntityFlag_Visible))
             {
-                animation_tick(entity, frame_time);
-
 #if defined(APORIA_EDITOR)
                 if (editor_is_open)
                 {
@@ -107,15 +105,19 @@ static void game_main_loop()
                 }
                 else
 #endif
-                if (entity_flags_has_all(*entity, EntityFlag_SkipInterpolationNextFrame))
                 {
-                    draw_entity(*entity);
-                }
-                else
-                {
-                    f32 alpha = accumulated_frame_time / delta_time;
-                    Entity entity_interpolated = entity_lerp(current_world.entity_array_last_frame[idx], *entity, alpha);
-                    draw_entity(entity_interpolated);
+                    animation_tick(entity, frame_time);
+
+                    if (entity_flags_has_all(*entity, EntityFlag_SkipInterpolationNextFrame))
+                    {
+                        draw_entity(*entity);
+                    }
+                    else
+                    {
+                        f32 alpha = accumulated_frame_time / delta_time;
+                        Entity entity_interpolated = entity_lerp(current_world.entity_array_last_frame[idx], *entity, alpha);
+                        draw_entity(entity_interpolated);
+                    }
                 }
             }
         }
@@ -126,18 +128,14 @@ static void game_main_loop()
 
 #if defined(APORIA_EDITOR)
     if (!editor_is_open)
-    {
 #endif
-
-    rendering_ui_begin();
     {
-        game_draw_ui(frame_time);
+        rendering_ui_begin();
+        {
+            game_draw_ui(frame_time);
+        }
+        rendering_ui_end();
     }
-    rendering_ui_end();
-
-#if defined(APORIA_EDITOR)
-    }
-#endif
 
     rendering_flush_to_screen();
 
