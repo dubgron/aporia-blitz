@@ -179,7 +179,10 @@ void input_process_events()
     }
 
 #if defined(APORIA_EDITOR)
-    input_set_owner(input.mouse, InputOwner_Editor);
+    if (editor_is_open)
+    {
+        input_set_owner(input.mouse, InputOwner_Editor);
+    }
 #else
     if (io->WantCaptureMouse)
     {
