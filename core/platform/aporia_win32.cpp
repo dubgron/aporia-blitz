@@ -7,11 +7,10 @@
 void* load_library(String library_name)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     String library_full_name = string_concat(temp.arena, library_name, ".dll");
     HMODULE library = LoadLibrary(*library_full_name);
-
-    scratch_end(temp);
 
     return library;
 }

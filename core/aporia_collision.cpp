@@ -132,6 +132,7 @@ bool collision_aabb_to_circle(const Collider_AABB& aabb, const Collider_Circle& 
 bool collision_aabb_to_polygon(const Collider_AABB& aabb, const Collider_Polygon& polygon)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     constexpr i64 aabb_axis_count = 2;
 
@@ -151,8 +152,6 @@ bool collision_aabb_to_polygon(const Collider_AABB& aabb, const Collider_Polygon
 
     bool collides = !does_separating_axis_exist(axis, axis_count,
         aabb_points, ARRAY_COUNT(aabb_points), polygon.points, polygon.point_count);
-
-    scratch_end(temp);
 
     return collides;
 }
@@ -182,6 +181,7 @@ bool collision_circle_to_polygon(const Collider_Circle& circle, const Collider_P
     v2 from_circle_to_closest = polygon.points[closest_point_idx] - circle.base;
 
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     constexpr i64 circle_axis_count = 1;
     i64 axis_count = polygon.point_count + circle_axis_count;
@@ -208,14 +208,13 @@ bool collision_circle_to_polygon(const Collider_Circle& circle, const Collider_P
         }
     }
 
-    scratch_end(temp);
-
     return collides;
 }
 
 bool collision_polygon_to_polygon(const Collider_Polygon& polygon_a, const Collider_Polygon& polygon_b)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     i64 axis_count = polygon_a.point_count + polygon_b.point_count;
     v2* axis = arena_push_uninitialized<v2>(temp.arena, axis_count);
@@ -225,8 +224,6 @@ bool collision_polygon_to_polygon(const Collider_Polygon& polygon_a, const Colli
 
     bool collides = !does_separating_axis_exist(axis, axis_count,
         polygon_a.points, polygon_a.point_count, polygon_b.points, polygon_b.point_count);
-
-    scratch_end(temp);
 
     return collides;
 }

@@ -161,6 +161,7 @@ static StringList find_matching_commands(String command_prefix)
     }
 
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     CommandMatch* matches = arena_push_uninitialized<CommandMatch>(temp.arena, command_count);
     u64 match_count = 0;
@@ -187,8 +188,6 @@ static StringList find_matching_commands(String command_prefix)
     {
         result.push_node(&suggestion_arena, matches[i].command_name);
     }
-
-    scratch_end(temp);
 
     return result;
 }

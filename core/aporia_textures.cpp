@@ -73,6 +73,8 @@ bool operator==(const SubTexture& tex0, const SubTexture& tex1)
 i64 load_texture_atlas(String filepath)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
+
     ParseTreeNode* parsed_file = parse_from_file(temp.arena, filepath);
 
     ParseTreeNode* subtextures_node = nullptr;
@@ -145,8 +147,6 @@ i64 load_texture_atlas(String filepath)
     }
 
     APORIA_LOG(Info, "All textures from '%' loaded successfully", filepath);
-
-    scratch_end(temp);
 
     return atlas_texture;
 }
@@ -243,11 +243,11 @@ static i64 load_texture_from_bitmap(Bitmap bitmap)
 static i64 load_texture_from_file(String filepath)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     Bitmap bitmap = load_bitmap(temp.arena, filepath);
     if (!bitmap.pixels)
     {
-        scratch_end(temp);
         return INDEX_INVALID;
     }
 
@@ -261,8 +261,6 @@ static i64 load_texture_from_file(String filepath)
     {
         APORIA_LOG(Error, "Failed to create OpenGL texture from '%'!", filepath);
     }
-
-    scratch_end(temp);
 
     return texture_index;
 }
@@ -1124,6 +1122,7 @@ static void read_properties_from_file(BinaryFile* file, MemoryArena* arena, Asep
 static AsepriteFile load_aseprite_file(MemoryArena* arena, String filepath)
 {
     ScratchArena temp = scratch_begin(arena);
+    defer { scratch_end(temp); };
 
     BinaryFile file;
     file.buffer = read_entire_file(temp.arena, filepath);
@@ -1421,8 +1420,6 @@ static AsepriteFile load_aseprite_file(MemoryArena* arena, String filepath)
             }
         }
     }
-
-    scratch_end(temp);
 
     return aseprite;
 }

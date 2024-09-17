@@ -27,14 +27,13 @@ static void get_value_from_field(ParseTreeNode* node, Key* out_value)
 static void get_value_from_field(ParseTreeNode* node, ShaderBlend* out_value, i64 count)
 {
     ScratchArena temp = scratch_begin();
-    {
-        String* strings = arena_push_uninitialized<String>(temp.arena, count);
-        get_value_from_field(node, strings, count);
+    defer { scratch_end(temp); };
 
-        for (i64 idx = 0; idx < count; ++idx)
-            out_value[idx] = string_to_shader_blend(strings[idx]);
-    }
-    scratch_end(temp);
+    String* strings = arena_push_uninitialized<String>(temp.arena, count);
+    get_value_from_field(node, strings, count);
+
+    for (i64 idx = 0; idx < count; ++idx)
+        out_value[idx] = string_to_shader_blend(strings[idx]);
 }
 
 static void get_value_from_field(ParseTreeNode* node, ShaderBlendOp* out_value)
@@ -61,13 +60,12 @@ static void get_value_from_field(ParseTreeNode* node, ShaderDepthWrite* out_valu
 static bool load_engine_config_from_file(String filepath)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
+
     ParseTreeNode* parsed_config = parse_from_file(temp.arena, filepath);
 
     if (!parsed_config)
-    {
-        scratch_end(temp);
         return false;
-    }
 
     for (ParseTreeNode* node = parsed_config->child_first; node; node = node->next)
     {
@@ -195,8 +193,6 @@ static bool load_engine_config_from_file(String filepath)
         }
 #endif
     }
-
-    scratch_end(temp);
 
     return true;
 }

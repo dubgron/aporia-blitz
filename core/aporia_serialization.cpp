@@ -1,6 +1,7 @@
 #include "aporia_serialization.hpp"
 
 #include "aporia_parser.hpp"
+#include "aporia_utils.hpp"
 
 template<typename T>
 static void serialize_write(Serializer* serializer, T value)
@@ -289,7 +290,9 @@ static void serialize_text_write_as_hex(StringList* builder, MemoryArena* arena,
 static void entity_serialize_to_text(MemoryArena* arena, StringList* builder, const Entity& entity)
 {
     const Entity default_entity;
+
     ScratchArena temp = scratch_begin(arena);
+    defer { scratch_end(temp); };
 
     serialize_text_write(builder, arena, "{");
 
@@ -389,8 +392,6 @@ static void entity_serialize_to_text(MemoryArena* arena, StringList* builder, co
     }
 
     serialize_text_write(builder, arena, "}");
-
-    scratch_end(temp);
 }
 
 String world_serialize_to_text(MemoryArena* arena, const World& world)

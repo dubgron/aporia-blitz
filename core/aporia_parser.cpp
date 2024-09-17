@@ -792,16 +792,13 @@ ParseTreeNode* parse_from_memory(MemoryArena* arena, String contents)
 
 ParseTreeNode* parse_from_file(MemoryArena* arena, String filepath)
 {
-    ParseTreeNode* result = nullptr;
-
     ScratchArena temp = scratch_begin(arena);
-    {
-        Lexer lexer;
-        lexer.buffer = read_entire_file(temp.arena, filepath);
-        lexer.source_filepath = filepath;
-        result = parse(arena, &lexer);
-    }
-    scratch_end(temp);
+    defer { scratch_end(temp); };
+
+    Lexer lexer;
+    lexer.buffer = read_entire_file(temp.arena, filepath);
+    lexer.source_filepath = filepath;
+    ParseTreeNode* result = parse(arena, &lexer);
 
     return result;
 }
@@ -820,6 +817,7 @@ static String make_indent(MemoryArena* arena, i32 depth)
 void print_parse_tree(ParseTreeNode* node, i32 depth /* = -1 */)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     String indent = depth > 0 ? make_indent(temp.arena, depth) : "";
 
@@ -865,6 +863,4 @@ void print_parse_tree(ParseTreeNode* node, i32 depth /* = -1 */)
     {
         print_parse_tree(node->next, depth);
     }
-
-    scratch_end(temp);
 }

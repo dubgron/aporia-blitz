@@ -670,6 +670,7 @@ void rendering_init(MemoryArena* arena)
         quads->vertex_buffer = quads_vbo;
 
         ScratchArena temp = scratch_begin(arena);
+        defer { scratch_end(temp); };
 
         u32* quad_indices = arena_push_uninitialized<u32>(temp.arena, MAX_OBJECTS_PER_DRAW_CALL * 6);
         for (u32 i = 0, offset = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 6; i += 6, offset += 4)
@@ -688,8 +689,6 @@ void rendering_init(MemoryArena* arena)
         quads->index_buffer = quads_ibo;
 
         vertexarray_unbind();
-
-        scratch_end(temp);
     }
 
     // Set VertexArray for Lines
@@ -704,6 +703,7 @@ void rendering_init(MemoryArena* arena)
         lines->vertex_buffer = lines_vbo;
 
         ScratchArena temp = scratch_begin(arena);
+        defer { scratch_end(temp); };
 
         u32* line_indices = arena_push_uninitialized<u32>(temp.arena, MAX_OBJECTS_PER_DRAW_CALL * 2);
         for (u32 i = 0; i < MAX_OBJECTS_PER_DRAW_CALL * 2; ++i)
@@ -716,8 +716,6 @@ void rendering_init(MemoryArena* arena)
         lines->index_buffer = lines_ibo;
 
         vertexarray_unbind();
-
-        scratch_end(temp);
     }
 
 #if defined(APORIA_EMSCRIPTEN)
@@ -1375,6 +1373,7 @@ void draw_text(const Text& text)
     }
 
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     f32* line_alignments = arena_push<f32>(temp.arena, line_count);
     f32 max_line_alignment = 0.f;
@@ -1569,8 +1568,6 @@ void draw_text(const Text& text)
             renderqueue_add(&render_queue, key);
         }
     }
-
-    scratch_end(temp);
 }
 
 void draw_triangle(v2 p0, v2 p1, v2 p2, Color color /* = Color::White */, u32 shader_id /* = rectangle_shader */)

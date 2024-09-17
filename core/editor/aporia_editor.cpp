@@ -220,7 +220,7 @@ void editor_update(f32 frame_time)
         index = read_editor_index();
     }
 
-    InputState left_mouse_button = input_get(Mouse_Button1);
+    InputState left_mouse_button = input_get(Mouse_Left);
 
     if (!input_is_held(left_mouse_button))
     {
@@ -519,6 +519,7 @@ void editor_update(f32 frame_time)
                 if (ImGui::BeginCombo("Texture", *get_subtexture_name(selected_entity->texture)))
                 {
                     ScratchArena temp = scratch_begin();
+                    defer { scratch_end(temp); };
 
                     struct SortedTexture
                     {
@@ -563,8 +564,6 @@ void editor_update(f32 frame_time)
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
                     }
-
-                    scratch_end(temp);
 
                     ImGui::EndCombo();
                 }

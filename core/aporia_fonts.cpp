@@ -14,6 +14,7 @@ static u64 fonts_count = 0;
 void load_font(String name, String filepath)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     String png_filepath = replace_extension(temp.arena, filepath, "png");
     String config_filepath = replace_extension(temp.arena, filepath, "aporia-config");
@@ -23,7 +24,6 @@ void load_font(String name, String filepath)
         if (fonts[idx].name == name)
         {
             APORIA_LOG(Warning, "Already loaded font named '%'!", name);
-            scratch_end(temp);
             return;
         }
     }
@@ -231,8 +231,6 @@ void load_font(String name, String filepath)
 
     fonts[fonts_count] = result;
     fonts_count += 1;
-
-    scratch_end(temp);
 }
 
 Font* get_font(String name)

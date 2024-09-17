@@ -27,6 +27,8 @@ void animations_init(MemoryArena* arena)
 void load_animations(String filepath)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
+
     ParseTreeNode* parsed_file = parse_from_file(temp.arena, filepath);
 
     for (ParseTreeNode* node = parsed_file->child_first; node; node = node->next)
@@ -60,8 +62,6 @@ void load_animations(String filepath)
             }
         }
     }
-
-    scratch_end(temp);
 }
 
 void animation_tick(Entity* entity, f32 frame_time)

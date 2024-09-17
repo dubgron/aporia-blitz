@@ -192,12 +192,11 @@ static bool is_subshader_status_ok(u32 subshader_id, u32 status_type)
         glGetShaderiv(subshader_id, GL_INFO_LOG_LENGTH, &length);
 
         ScratchArena temp = scratch_begin();
+        defer { scratch_end(temp); };
 
         GLchar* error_message = arena_push_uninitialized<GLchar>(temp.arena, length);
         glGetShaderInfoLog(subshader_id, length, &length, error_message);
         APORIA_LOG(Error, error_message);
-
-        scratch_end(temp);
     }
 
     return is_valid == GL_TRUE;
@@ -290,12 +289,11 @@ static bool is_shader_status_ok(u32 shader_id, u32 status_type)
         glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH, &length);
 
         ScratchArena temp = scratch_begin();
+        defer { scratch_end(temp); };
 
         GLchar* error_message = arena_push_uninitialized<GLchar>(temp.arena, length);
         glGetProgramInfoLog(shader_id, length, &length, error_message);
         APORIA_LOG(Error, error_message);
-
-        scratch_end(temp);
     }
 
     return is_valid == GL_TRUE;
@@ -304,6 +302,7 @@ static bool is_shader_status_ok(u32 shader_id, u32 status_type)
 static u32 load_shader_from_file(String filepath, u64 subshaders_count)
 {
     ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
 
     //////////////////////////////////////////////////////////////////////
     // Parse the shader file
@@ -437,7 +436,6 @@ static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     if (linking_failed || validation_failed)
     {
         glDeleteProgram(shader_id);
-        scratch_end(temp);
         return 0;
     }
 
@@ -446,8 +444,6 @@ static u32 load_shader_from_file(String filepath, u64 subshaders_count)
     shader_info.subshaders_count = subshaders_count;
     shader_info.source_file = filepath;
     shader_info.properties = shader_data.properties;
-
-    scratch_end(temp);
 
     //////////////////////////////////////////////////////////////////////
     // Apply default properties

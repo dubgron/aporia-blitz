@@ -28,6 +28,52 @@ struct _DeferStruct
 String read_entire_file(MemoryArena* arena, String filepath);
 String read_entire_text_file(MemoryArena* arena, String filepath);
 
+template<typename T, typename... Ts>
+[[nodiscard]] String sprintf(MemoryArena* arena, String format, T arg, Ts... args)
+{
+    ScratchArena temp = scratch_begin(arena);
+    defer { scratch_end(temp); };
+
+    StringList builder;
+
+    u64 args_begin = format.find('%');
+    while (args_begin < format.length - 1 && format.data[args_begin + 1] == '%')
+    {
+        args_begin = format.find('%', args_begin + 2);
+    }
+
+    String before_args = format.substr(0, args_begin);
+    if (before_args.length > 0)
+    {
+        builder.push_node(temp.arena, before_args);
+    }
+
+    if (args_begin < format.length)
+    {
+        String arg_as_string = to_string(temp.arena, arg);
+        builder.push_node(temp.arena, arg_as_string);
+
+        String after_args = format.substr(args_begin + 1);
+        if (after_args.length > 0)
+        {
+            if constexpr (sizeof...(args) > 0)
+            {
+                after_args = sprintf(temp.arena, after_args, std::forward<Ts>(args)...);
+            }
+
+            builder.push_node(temp.arena, after_args);
+        }
+    }
+
+    return builder.join(arena);
+}
+
+template<typename T, typename... Ts>
+[[nodiscard]] String tprintf(String format, T arg, Ts... args)
+{
+    return sprintf(&memory.frame, format, arg, args...);
+}
+
 String replace_extension(MemoryArena* arena, String filepath, String ext);
 String extract_filename(String filepath);
 

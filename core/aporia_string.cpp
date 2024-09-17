@@ -295,38 +295,36 @@ i64 string_to_int(String string)
 
 f32 string_to_float(String string)
 {
+    ScratchArena temp = scratch_begin();
+    defer { scratch_end(temp); };
+
     f32 result = 0.f;
 
-    ScratchArena temp = scratch_begin();
+    StringList split_number = string.split(temp.arena, '.');
+    if (split_number.node_count == 2)
     {
-        StringList split_number = string.split(temp.arena, '.');
+        String fractional_part = split_number.last->string;
 
-        if (split_number.node_count == 2)
+        f32 running_10s = 0.1f;
+        for (u64 idx = 0; idx < fractional_part.length; ++idx)
         {
-            String fractional_part = split_number.last->string;
-
-            f32 running_10s = 0.1f;
-            for (u64 idx = 0; idx < fractional_part.length; ++idx)
-            {
-                u8 digit = fractional_part.data[idx] - '0';
-                result += digit * running_10s;
-                running_10s /= 10.f;
-            }
-        }
-
-        String integral_part = split_number.first->string;
-        i64 result_int = string_to_int(integral_part);
-
-        if (result_int != 0)
-        {
-            result += (f32)result_int;
-        }
-        else if (integral_part.data[0] == '-')
-        {
-            result = -result;
+            u8 digit = fractional_part.data[idx] - '0';
+            result += digit * running_10s;
+            running_10s /= 10.f;
         }
     }
-    scratch_end(temp);
+
+    String integral_part = split_number.first->string;
+    i64 result_int = string_to_int(integral_part);
+
+    if (result_int != 0)
+    {
+        result += (f32)result_int;
+    }
+    else if (integral_part.data[0] == '-')
+    {
+        result = -result;
+    }
 
     return result;
 }
