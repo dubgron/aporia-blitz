@@ -28,6 +28,10 @@ static void game_handle_input(f32 frame_time)
 {
 }
 
+static void game_update_frame(f32 frame_time)
+{
+}
+
 static void game_simulate_frame(f32 time, f32 delta_time)
 {
 }
@@ -80,6 +84,7 @@ static void game_main_loop()
         game_time += frame_time;
 
         game_handle_input(frame_time);
+        game_update_frame(frame_time);
 
         accumulated_frame_time += frame_time;
         while (accumulated_frame_time > delta_time)
