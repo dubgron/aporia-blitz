@@ -447,9 +447,8 @@ void editor_update(f32 frame_time)
                 if (ImGui::Selectable(*name, selected_entity_id == entity.id))
                     selected_entity_id = entity.id;
             }
-
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
 
         if (ImGui::Button("Create Entity"))
         {
