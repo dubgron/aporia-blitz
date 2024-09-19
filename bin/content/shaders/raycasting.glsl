@@ -97,6 +97,9 @@ void main()
 
         float dist = march_shadow(origin, light.range, dir);
 
-        out_color = vec4(dist, 0.0, 0.0, 1.0);
+        float d0 = floor(dist * 255.0) / 255.0;
+        float d1 = fract(dist * 255.0);
+
+        out_color = vec4(d0, d1, 0.0, 1.0);
     }
 }

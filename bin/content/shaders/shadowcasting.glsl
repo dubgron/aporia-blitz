@@ -48,7 +48,7 @@ layout (std140) uniform Lights
 
 uniform uint u_num_lights;
 
-uniform sampler2D u_raymarching;
+uniform sampler2D u_raycasting;
 uniform mat4 u_vp_matrix;
 uniform vec2 u_window_size;
 uniform float u_camera_zoom;
@@ -60,13 +60,15 @@ vec2 aspect_ratio = u_window_size.xy / u_window_size.y;
 
 float sample_shadow(int id, vec2 uv)
 {
+    float r = length(uv) / lights[id].range;
+
     float a = atan(uv.y, uv.x) / TAU + 0.5;
     float idn = float(id) / u_window_size.y;
 
-    float s = texture(u_raymarching, vec2(a, idn) + half_pixel_offset).x;
-    float r = length(uv) / lights[id].range;
+    vec2 d = texture(u_raycasting, vec2(a, idn) + half_pixel_offset).xy;
+    float s = d.r + (d.g / 255.0);
 
-    return 1.0 - smoothstep(s, s + 0.02, r);
+    return 1.0 - smoothstep(s, s + 0.01, r);
 }
  
 vec3 mix_lights(vec2 uv)

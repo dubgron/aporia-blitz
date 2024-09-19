@@ -416,10 +416,10 @@ static void renderqueue_flush(RenderQueue* render_queue)
 
         u32 texture_unit = find_or_assign_texture_unit(key->texture_id);
 
-        bool no_available_texture_unit = (texture_unit == INDEX_INVALID);
+        bool no_available_texture_units = (texture_unit == INDEX_INVALID);
         bool vertex_buffer_overflow = (vertex_buffer->count + vertex_buffer->vertex_per_object > vertex_buffer->max_count);
 
-        if (no_available_texture_unit || vertex_buffer_overflow)
+        if (no_available_texture_units || vertex_buffer_overflow)
         {
             bind_shader(key->shader_id);
             vertexarray_render(vertex_array);
@@ -603,7 +603,7 @@ static constexpr u64 MAX_LIGHT_SOURCES = 1000;
 // @TODO(dubgron): Move the lighting code to the separate file.
 static bool lighting_enabled = false;
 static Framebuffer masking;
-static Framebuffer raymarching;
+static Framebuffer raycasting;
 static UniformBuffer lights_uniform_buffer;
 static LightSourceArray light_sources;
 
@@ -617,7 +617,7 @@ void enable_lighting()
     lighting_enabled = true;
 
     masking = framebuffer_create(active_window->width, active_window->height);
-    raymarching = framebuffer_create(active_window->width, active_window->height);
+    raycasting = framebuffer_create(active_window->width, active_window->height);
 
     if (light_sources.data == nullptr)
     {
@@ -628,7 +628,7 @@ void enable_lighting()
     }
 
     lights_uniform_buffer = uniformbuffer_create(MAX_LIGHT_SOURCES * sizeof(LightSource), 0, "Lights");
-    uniformbuffer_bind_to_shader(&lights_uniform_buffer, raymarching_shader);
+    uniformbuffer_bind_to_shader(&lights_uniform_buffer, raycasting_shader);
     uniformbuffer_bind_to_shader(&lights_uniform_buffer, shadowcasting_shader);
 }
 
@@ -637,7 +637,7 @@ void disable_lighting()
     lighting_enabled = false;
 
     framebuffer_destroy(&masking);
-    framebuffer_destroy(&raymarching);
+    framebuffer_destroy(&raycasting);
 
     light_sources.count = 0;
 
@@ -735,7 +735,7 @@ void rendering_init(MemoryArena* arena)
     postprocessing_shader   = load_shader(SHADERS_DIRECTORY "postprocessing.glsl");
 
     // Setup lighting shaders
-    raymarching_shader      = load_shader(SHADERS_DIRECTORY "raymarching.glsl");
+    raycasting_shader       = load_shader(SHADERS_DIRECTORY "raycasting.glsl");
     shadowcasting_shader    = load_shader(SHADERS_DIRECTORY "shadowcasting.glsl");
 
 #if defined(APORIA_EDITOR)
@@ -824,7 +824,7 @@ void rendering_frame_begin()
             if (lighting_enabled)
             {
                 framebuffer_resize(&masking, active_window->width, active_window->height);
-                framebuffer_resize(&raymarching, active_window->width, active_window->height);
+                framebuffer_resize(&raycasting, active_window->width, active_window->height);
             }
         }
     }
@@ -964,38 +964,38 @@ void rendering_frame_end()
         framebuffer_unbind();
 
         //////////////////////////////////////////////////
-        // Raymarching Shader
+        // Raycasting Shader
 
         uniformbuffer_set_data(&lights_uniform_buffer, light_sources.data, light_sources.count * sizeof(LightSource));
 
         u32 masking_unit = find_or_assign_texture_unit(masking.color_buffer_id);
 
-        bind_shader(raymarching_shader);
+        bind_shader(raycasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_masking", masking_unit);
         shader_set_float("u_camera_zoom", camera_zoom);
         shader_set_float2("u_window_size", active_window->width, active_window->height);
         shader_set_uint("u_num_lights", light_sources.count);
 
-        framebuffer_bind(raymarching);
+        framebuffer_bind(raycasting);
         framebuffer_clear(Color::Black);
-        framebuffer_flush(masking, raymarching_shader);
+        framebuffer_flush(masking, raycasting_shader);
         framebuffer_unbind();
 
         //////////////////////////////////////////////////
         // Shadowcasting Shader
 
-        u32 raymarching_unit = find_or_assign_texture_unit(raymarching.color_buffer_id);
+        u32 raycasting_unit = find_or_assign_texture_unit(raycasting.color_buffer_id);
 
         bind_shader(shadowcasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
-        shader_set_int("u_raymarching", raymarching_unit);
+        shader_set_int("u_raycasting", raycasting_unit);
         shader_set_float("u_camera_zoom", camera_zoom);
         shader_set_float2("u_window_size", active_window->width, active_window->height);
         shader_set_uint("u_num_lights", light_sources.count);
 
         framebuffer_bind(game_framebuffer);
-        framebuffer_flush(raymarching, shadowcasting_shader);
+        framebuffer_flush(raycasting, shadowcasting_shader);
         framebuffer_unbind();
     }
 }

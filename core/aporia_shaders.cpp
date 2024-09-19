@@ -12,7 +12,7 @@ u32 line_shader = 0;
 u32 circle_shader = 0;
 u32 font_shader = 0;
 u32 postprocessing_shader = 0;
-u32 raymarching_shader = 0;
+u32 raycasting_shader = 0;
 u32 shadowcasting_shader = 0;
 
 #if defined(APORIA_EDITOR)

@@ -160,7 +160,7 @@ extern u32 line_shader;
 extern u32 circle_shader;
 extern u32 font_shader;
 extern u32 postprocessing_shader;
-extern u32 raymarching_shader;
+extern u32 raycasting_shader;
 extern u32 shadowcasting_shader;
 
 #if defined(APORIA_EDITOR)
