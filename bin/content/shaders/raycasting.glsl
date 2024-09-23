@@ -48,7 +48,8 @@ uniform uint u_num_lights;
 
 uniform sampler2D u_masking;
 uniform mat4 u_vp_matrix;
-uniform vec2 u_window_size;
+uniform vec2 u_viewport_size;
+uniform vec2 u_render_surface_size;
 uniform float u_camera_zoom;
 
 layout (location = 0) out vec4 out_color;
@@ -56,12 +57,16 @@ layout (location = 0) out vec4 out_color;
 #define MAX_STEPS (100000 / MAX_LIGHTS)
 #define EPS 1e-4
 
-vec2 half_pixel_offset = 0.5 / u_window_size;
-vec2 aspect_ratio = u_window_size.xy / u_window_size.y;
+vec2 half_pixel_offset = 0.5 / u_viewport_size;
+
+vec2 aspect_ratio = u_render_surface_size.xy / u_render_surface_size.y;
+vec2 viewport_scale = u_viewport_size / u_render_surface_size;
+vec2 range_scale = vec2(1.0) / u_viewport_size.y;
+vec2 distance_normalization = u_camera_zoom * viewport_scale * range_scale / aspect_ratio;
 
 float march_shadow(vec2 origin, float range, vec2 dir)
 {
-    vec2 range_scaled = range * u_camera_zoom / aspect_ratio;
+    vec2 range_scaled = range * distance_normalization;
     float step = 1.0 / MAX_STEPS;
     float total_step = 0.0;
     for(int i = 0; i < MAX_STEPS; i++)
@@ -83,8 +88,8 @@ float march_shadow(vec2 origin, float range, vec2 dir)
 
 void main()
 {
-    int x = int(in_tex_coord.x * u_window_size.x);
-    int y = int(in_tex_coord.y * u_window_size.y);
+    int x = int(in_tex_coord.x * u_viewport_size.x);
+    int y = int(in_tex_coord.y * u_viewport_size.y);
 
     if (y < u_num_lights)
     {

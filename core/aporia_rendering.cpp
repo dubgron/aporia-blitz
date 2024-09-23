@@ -458,8 +458,6 @@ struct Framebuffer
 #if defined(APORIA_EDITOR)
     u32 editor_buffer_id = 0;
 #endif
-
-    Vertex vertex[4];
 };
 
 static Framebuffer main_framebuffer;
@@ -489,10 +487,12 @@ static Framebuffer framebuffer_create(i32 width, i32 height)
         glBindTexture(GL_TEXTURE_2D, result.color_buffer_id);
 
         glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, result.color_buffer_id, 0);
     }
 
@@ -525,19 +525,6 @@ static Framebuffer framebuffer_create(i32 width, i32 height)
 #endif
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // Setup vertices
-    result.vertex[0].position   = v3{ -1.f, -1.f, 0.f };
-    result.vertex[0].tex_coord  = v2{ 0.f, 0.f };
-
-    result.vertex[1].position   = v3{ 1.f, -1.f, 0.f };
-    result.vertex[1].tex_coord  = v2{ 1.f, 0.f };
-
-    result.vertex[2].position   = v3{ 1.f, 1.f, 0.f };
-    result.vertex[2].tex_coord  = v2{ 1.f, 1.f };
-
-    result.vertex[3].position   = v3{ -1.f, 1.f, 0.f };
-    result.vertex[3].tex_coord  = v2{ 0.f, 1.f };
 
     return result;
 }
@@ -577,15 +564,25 @@ static void framebuffer_clear(Color color /* = Color::Black */)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-static void framebuffer_flush(const Framebuffer& framebuffer, u32 shader_id)
+static void framebuffer_flush(u32 shader_id)
 {
     VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
-    for (const Vertex& vertex : framebuffer.vertex)
+    Vertex* verts = &quads->vertex_buffer.data[quads->vertex_buffer.count];
     {
-        quads->vertex_buffer.data[quads->vertex_buffer.count] = vertex;
-        quads->vertex_buffer.count += 1;
+        verts[0].position = v3{ -1.f, -1.f, 0.f };
+        verts[0].tex_coord = v2{ 0.f, 0.f };
+
+        verts[1].position = v3{ 1.f, -1.f, 0.f };
+        verts[1].tex_coord = v2{ 1.f, 0.f };
+
+        verts[2].position = v3{ 1.f, 1.f, 0.f };
+        verts[2].tex_coord = v2{ 1.f, 1.f };
+
+        verts[3].position = v3{ -1.f, 1.f, 0.f };
+        verts[3].tex_coord = v2{ 0.f, 1.f };
     }
+    quads->vertex_buffer.count += 4;
 
     bind_shader(shader_id);
     vertexarray_render(quads);
@@ -616,15 +613,11 @@ void enable_lighting()
 {
     lighting_enabled = true;
 
-    masking = framebuffer_create(active_window->width, active_window->height);
-    raycasting = framebuffer_create(active_window->width, active_window->height);
-
     if (light_sources.data == nullptr)
     {
         light_sources.data = arena_push_uninitialized<LightSource>(&memory.persistent, MAX_LIGHT_SOURCES);
         light_sources.max_count = MAX_LIGHT_SOURCES;
         light_sources.count = 0;
-
     }
 
     lights_uniform_buffer = uniformbuffer_create(MAX_LIGHT_SOURCES * sizeof(LightSource), 0, "Lights");
@@ -730,8 +723,6 @@ void rendering_init(MemoryArena* arena)
     line_shader             = load_shader(SHADERS_DIRECTORY "line.glsl");
     circle_shader           = load_shader(SHADERS_DIRECTORY "circle.glsl");
     font_shader             = load_shader(SHADERS_DIRECTORY "font.glsl");
-
-    // Setup post-processing shaders
     postprocessing_shader   = load_shader(SHADERS_DIRECTORY "postprocessing.glsl");
 
     // Setup lighting shaders
@@ -973,13 +964,14 @@ void rendering_frame_end()
         bind_shader(raycasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_masking", masking_unit);
-        shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", active_window->width, active_window->height);
+        shader_set_float("u_camera_zoom", active_camera.projection.zoom);
+        shader_set_float2("u_viewport_size", viewport_width, viewport_height);
+        shader_set_float2("u_render_surface_size", game_render_width, game_render_height);
         shader_set_uint("u_num_lights", light_sources.count);
 
         framebuffer_bind(raycasting);
         framebuffer_clear(Color::Black);
-        framebuffer_flush(masking, raycasting_shader);
+        framebuffer_flush(raycasting_shader);
         framebuffer_unbind();
 
         //////////////////////////////////////////////////
@@ -990,12 +982,13 @@ void rendering_frame_end()
         bind_shader(shadowcasting_shader);
         shader_set_mat4("u_vp_matrix", view_projection_matrix);
         shader_set_int("u_raycasting", raycasting_unit);
-        shader_set_float("u_camera_zoom", camera_zoom);
-        shader_set_float2("u_window_size", active_window->width, active_window->height);
+        shader_set_float("u_camera_zoom", active_camera.projection.zoom);
+        shader_set_float2("u_viewport_size", viewport_width, viewport_height);
+        shader_set_float2("u_render_surface_size", game_render_width, game_render_height);
         shader_set_uint("u_num_lights", light_sources.count);
 
         framebuffer_bind(game_framebuffer);
-        framebuffer_flush(raycasting, shadowcasting_shader);
+        framebuffer_flush(shadowcasting_shader);
         framebuffer_unbind();
     }
 }
@@ -1054,18 +1047,18 @@ void rendering_flush_to_screen()
 
         VertexArray* quads = get_vao_from_buffer(BufferType::Quads);
 
-        u64 idx = quads->vertex_buffer.count;
-        quads->vertex_buffer.data[idx + 0] = Vertex{ v3{ -1.f, -1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 1] = Vertex{ v3{  1.f, -1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 2] = Vertex{ v3{  1.f,  1.f, Z_ALWAYS_BEHIND } };
-        quads->vertex_buffer.data[idx + 3] = Vertex{ v3{ -1.f,  1.f, Z_ALWAYS_BEHIND } };
+        Vertex* verts = &quads->vertex_buffer.data[quads->vertex_buffer.count];
+        verts[0] = Vertex{ v3{ -1.f, -1.f, Z_ALWAYS_BEHIND } };
+        verts[1] = Vertex{ v3{  1.f, -1.f, Z_ALWAYS_BEHIND } };
+        verts[2] = Vertex{ v3{  1.f,  1.f, Z_ALWAYS_BEHIND } };
+        verts[3] = Vertex{ v3{ -1.f,  1.f, Z_ALWAYS_BEHIND } };
         quads->vertex_buffer.count += 4;
 
         vertexarray_render(quads);
     }
 #endif
 
-    // Draw the game and the UI.
+    // Draw the game and the UI
     {
         u32 game_framebuffer_unit = find_or_assign_texture_unit(game_framebuffer.color_buffer_id);
         u32 ui_framebuffer_unit = find_or_assign_texture_unit(ui_framebuffer.color_buffer_id);
@@ -1074,7 +1067,7 @@ void rendering_flush_to_screen()
         shader_set_int("u_game_framebuffer", game_framebuffer_unit);
         shader_set_int("u_ui_framebuffer", ui_framebuffer_unit);
 
-        framebuffer_flush(game_framebuffer, postprocessing_shader);
+        framebuffer_flush(postprocessing_shader);
     }
 
 #if defined(APORIA_EDITOR)

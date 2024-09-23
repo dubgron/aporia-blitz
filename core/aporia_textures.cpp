@@ -211,8 +211,6 @@ static i64 load_texture_from_bitmap(Bitmap bitmap)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
 #else
     glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
@@ -226,8 +224,6 @@ static i64 load_texture_from_bitmap(Bitmap bitmap)
     glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glGenerateTextureMipmap(id);
 #endif
 
     Texture texture;

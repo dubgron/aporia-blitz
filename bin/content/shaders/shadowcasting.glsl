@@ -50,20 +50,25 @@ uniform uint u_num_lights;
 
 uniform sampler2D u_raycasting;
 uniform mat4 u_vp_matrix;
-uniform vec2 u_window_size;
+uniform vec2 u_viewport_size;
+uniform vec2 u_render_surface_size;
 uniform float u_camera_zoom;
 
 layout (location = 0) out vec4 out_color;
 
-vec2 half_pixel_offset = 0.5 / u_window_size;
-vec2 aspect_ratio = u_window_size.xy / u_window_size.y;
+vec2 half_pixel_offset = 0.5 / u_viewport_size;
+
+vec2 aspect_ratio = u_render_surface_size.xy / u_render_surface_size.y;
+vec2 viewport_scale = u_viewport_size / u_render_surface_size;
+vec2 range_scale = vec2(1.0) / u_viewport_size.y;
+vec2 distance_normalization = u_camera_zoom * viewport_scale * range_scale / aspect_ratio;
 
 float sample_shadow(int id, vec2 uv)
 {
     float r = length(uv) / lights[id].range;
 
     float a = atan(uv.y, uv.x) / TAU + 0.5;
-    float idn = float(id) / u_window_size.y;
+    float idn = float(id) / u_viewport_size.y;
 
     vec2 d = texture(u_raycasting, vec2(a, idn) + half_pixel_offset).xy;
     float s = d.r + (d.g / 255.0);
@@ -82,7 +87,7 @@ vec3 mix_lights(vec2 uv)
         vec2 origin = vec2(u_vp_matrix * vec4(light.origin, 0.0, 1.0)) / 2.0;
         vec3 color = light.color * light.intensity;
 
-        vec2 from_light = (uv - origin) * aspect_ratio / u_camera_zoom;
+        vec2 from_light = (uv - origin) / distance_normalization;
         float dist = length(from_light);
 
         float attenuation = clamp(pow(1.0 - dist / light.range, light.falloff), 0.0, 1.0);
