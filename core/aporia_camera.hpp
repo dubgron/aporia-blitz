@@ -17,7 +17,6 @@ struct CameraView
 
 struct CameraProjection
 {
-    f32 fov = 1.f;
     f32 aspect_ratio = 1.f;
     f32 zoom = 1.f;
 

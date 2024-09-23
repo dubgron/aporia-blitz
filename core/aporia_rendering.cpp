@@ -1649,12 +1649,11 @@ i32 read_editor_index()
 
     if (index == INDEX_INVALID)
     {
-        mouse_viewport_position /= v2{ viewport_width, viewport_height };
-        mouse_viewport_position *= v2{ game_render_width, game_render_height };
+        v2 mouse_render_surface_position = get_mouse_render_surface_position();
 
         glBindFramebuffer(GL_FRAMEBUFFER, game_framebuffer.framebuffer_id);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glReadPixels(mouse_viewport_position.x, mouse_viewport_position.y, 1, 1, GL_RED_INTEGER, GL_INT, &index);
+        glReadPixels(mouse_render_surface_position.x, mouse_render_surface_position.y, 1, 1, GL_RED_INTEGER, GL_INT, &index);
     }
 
     return index;

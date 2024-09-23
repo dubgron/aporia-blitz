@@ -38,7 +38,7 @@ static void recalculate_view(Camera* camera)
 
 static void recalculate_projection(Camera* camera)
 {
-    f32 half_height = camera->projection.fov * camera->projection.zoom;
+    f32 half_height = 0.5f * game_render_height / camera->projection.zoom;
     f32 half_width = half_height * camera->projection.aspect_ratio;
 
     camera->projection.matrix = glm::ortho(-half_width, half_width, -half_height, half_height);
@@ -72,7 +72,7 @@ void camera_control_movement(Camera* camera)
 
     static v2 initial_mouse_position, initial_camera_position;
 
-    v2 current_mouse_position = get_mouse_viewport_position();
+    v2 current_mouse_position = get_mouse_render_surface_position();
 
     InputState right_mouse_button = input_get(Mouse_Right);
     if (input_is_pressed(right_mouse_button))
@@ -85,7 +85,7 @@ void camera_control_movement(Camera* camera)
         v2 mouse_position_offset = current_mouse_position - initial_mouse_position;
         v2 rotated_mouse_offset = mouse_position_offset.x * camera->view.right_vector + mouse_position_offset.y * camera->view.up_vector;
 
-        camera->view.position = initial_camera_position - rotated_mouse_offset * camera->projection.zoom;
+        camera->view.position = initial_camera_position - (rotated_mouse_offset / camera->projection.zoom);
         camera->dirty_flags |= CameraDirtyFlag_View;
     }
 }
@@ -124,7 +124,7 @@ void camera_control_rotation(Camera* camera)
 
 void camera_control_zoom(Camera* camera, f32 delta_time)
 {
-    f32 zoom_dir = -input_get(Mouse_VerticalWheel).end_value;
+    f32 zoom_dir = input_get(Mouse_VerticalWheel).end_value;
     if (zoom_dir != 0.f)
     {
         f32 zoom_speed = camera_config.zoom_speed * delta_time;
@@ -143,7 +143,7 @@ void camera_control_zoom(Camera* camera, f32 delta_time)
 
 void camera_follow(Camera* camera, v2 target_position, f32 delta_time)
 {
-    f32 velocity = camera_config.movement_speed * delta_time * camera->projection.zoom / camera->projection.fov;
+    f32 velocity = camera_config.movement_speed / camera->projection.zoom * delta_time;
     f32 alpha = 1.f - pow(2.f, -4.f * velocity);
     camera->view.position = lerp(camera->view.position, target_position, alpha);
     camera->dirty_flags |= CameraDirtyFlag_View;
@@ -151,20 +151,9 @@ void camera_follow(Camera* camera, v2 target_position, f32 delta_time)
 
 void camera_apply_config(Camera* camera)
 {
-    camera_adjust_aspect_ratio_to_render_surface(camera);
+    camera->projection.zoom = camera_config.zoom;
 
-    if (camera_config.fov > 0.f)
-    {
-        camera->projection.fov = camera_config.fov;
-    }
-    else if (rendering_config.custom_game_resolution_height > 0)
-    {
-        camera->projection.fov = rendering_config.custom_game_resolution_height / 2.f;
-    }
-    else
-    {
-        camera->projection.fov = window_config.height / 2.f;
-    }
+    camera_adjust_aspect_ratio_to_render_surface(camera);
 }
 
 void camera_adjust_aspect_ratio_to_render_surface(Camera* camera)

@@ -31,4 +31,5 @@ void window_apply_config();
 
 v2 get_mouse_screen_position();
 v2 get_mouse_viewport_position();
+v2 get_mouse_render_surface_position();
 v2 get_mouse_world_position();

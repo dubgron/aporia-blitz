@@ -8,13 +8,13 @@
 
 struct CameraConfig
 {
-    f32 fov = 0.f;
     Color background_color;
 
     f32 movement_speed = 0.f;
     f32 rotation_speed = 0.f;
     f32 zoom_speed = 0.f;
 
+    f32 zoom = 1.f;
     f32 zoom_max = 1.f;
     f32 zoom_min = 1.f;
 };

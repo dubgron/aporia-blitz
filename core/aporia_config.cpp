@@ -100,11 +100,7 @@ static bool load_engine_config_from_file(String filepath)
             for (ParseTreeNode* camera_node = node->child_first; camera_node; camera_node = camera_node->next)
             {
                 APORIA_ASSERT(camera_node->type == ParseTreeNode_Field);
-                if (camera_node->name == "fov")
-                {
-                    get_value_from_field(camera_node, &camera_config.fov);
-                }
-                else if (camera_node->name == "background_color")
+                if (camera_node->name == "background_color")
                 {
                     get_value_from_field(camera_node, &camera_config.background_color.r, 4);
                 }
@@ -115,6 +111,10 @@ static bool load_engine_config_from_file(String filepath)
                 else if (camera_node->name == "rotation_speed")
                 {
                     get_value_from_field(camera_node, &camera_config.rotation_speed);
+                }
+                else if (camera_node->name == "zoom")
+                {
+                    get_value_from_field(camera_node, &camera_config.zoom);
                 }
                 else if (camera_node->name == "zoom_speed")
                 {

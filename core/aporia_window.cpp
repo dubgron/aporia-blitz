@@ -152,6 +152,14 @@ v2 get_mouse_viewport_position()
     return mouse_viewport_position;
 }
 
+v2 get_mouse_render_surface_position()
+{
+    v2 mouse_render_surface_position = get_mouse_viewport_position();
+    mouse_render_surface_position /= v2{ (f32)viewport_width, (f32)viewport_height };
+    mouse_render_surface_position *= v2{ (f32)game_render_width, (f32)game_render_height };
+    return mouse_render_surface_position;
+}
+
 v2 get_mouse_world_position()
 {
     v2 mouse_viewport_position = get_mouse_viewport_position();
